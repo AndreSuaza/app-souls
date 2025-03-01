@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Type {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String    
+  createDate    DateTime      @default(now())
+  
+  cardsIDs      String[]      @db.ObjectId
+  cards         Card[]        @relation(fields: [cardsIDs], references: [id])  
+}
+
+model Archetype {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  
+  createDate    DateTime      @default(now())
+
+  cardsIDs    String[]      @db.ObjectId
+  cards       Card[]        @relation(fields: [cardsIDs], references: [id])  
+}
+
+model Keyword {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String  
+  createDate    DateTime      @default(now())
+
+  cardsIDs      String[]      @db.ObjectId
+  cards         Card[]        @relation(fields: [cardsIDs], references: [id])  
+}
+
+model Rarity {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String  
+  createDate    DateTime      @default(now()) 
+  Card          CardPrice[]
+  
+  cardsIDs      String[]      @db.ObjectId
+  cards         Card[]        @relation(fields: [cardsIDs], references: [id])  
+  
+}
+
+model Product {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  index         Int
+  name          String        
+  code          String        @unique
+  releaseDate   String      
+  descripcion   String
+  url           String        @unique
+  numberCards   Int   
+  show          Boolean 
+  createDate    DateTime      @default(now()) 
+  Card          Card[]
+  ProductImage ProductImage[]
+}
+
+model ProductImage {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  url           String
+  alt           String
+  createDate    DateTime      @default(now()) 
+
+  product       Product       @relation(fields: [productId], references: [id])
+  productId     String        @db.ObjectId
+}
+
+model Card {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  idd             String
+  code            String        @unique     
+  limit           String
+  cost            String
+  force           String
+  defense         String  
+  name            String
+  effect          String
+  createDate      DateTime      @default(now()) 
+
+  price           CardPrice[]
+
+  typeIds         String[]      @db.ObjectId
+  types           Type[]        @relation(fields: [typeIds], references: [id])
+
+  archetypesIds  String[]      @db.ObjectId
+  archetypes      Archetype[]   @relation(fields: [archetypesIds], references: [id])
+
+  keywordsIds    String[]      @db.ObjectId
+  keywords        Keyword[]     @relation(fields: [keywordsIds], references: [id])
+  
+  raritiesIds     String[]      @db.ObjectId
+  rarities        Rarity[]      @relation(fields: [raritiesIds], references: [id])
+
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String        @db.ObjectId
+
+  @@index([cost, force, defense])
+}
+
+model CardPrice {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  price         Float         @default(0)
+  createDate    DateTime      @default(now()) 
+
+  rarityId      String        @db.ObjectId
+  rarity        Rarity        @relation(fields: [rarityId], references: [id])
+
+  cardId        String        @db.ObjectId
+  card          Card          @relation(fields: [cardId], references: [id])
+} 
