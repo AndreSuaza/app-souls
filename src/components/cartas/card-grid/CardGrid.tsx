@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import type { Card } from "@/interfaces";
 import { useCardDetailStore } from "@/store";

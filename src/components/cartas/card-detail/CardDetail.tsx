@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import type { Archetype, Card, Keyword, Rarity, Type } from "@/interfaces";
 import { useCardDetailStore } from "@/store";

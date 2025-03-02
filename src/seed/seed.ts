@@ -50,16 +50,34 @@ interface Product {
     images: any[];
 }
 
+interface Store {
+    name: string;        
+    city: string;
+    address: string;
+    country: string;
+    postalCode: string;
+    phone: string;
+    length: string;
+    latitude: string;  
+    url: string; 
+}
+
+interface TypeEvent {
+    name: string;
+}
+
 interface Event {
-    _id: string;
-    date: string;
+    id: string;
     title: string;
-    store: any;
-    description: string;
-    url:string;
-    facebook: string;
-    instagram: string;
-    image: string;
+    descripcion: string;
+    url: string;
+    typeEvent: TypeEvent;
+    length?: string;
+    latitude?: string; 
+    price: string;
+    format: string;
+    date: Date;
+    store: Store;
 }
 
 interface CardsData {
@@ -88,6 +106,10 @@ interface RaritiesData {
 
 interface KeywordsData {
   keywords: Keyword[],
+}
+
+interface StoresData {
+  stores: Store[],
 }
 
 export const keywordsData: KeywordsData = {
@@ -375,7 +397,6 @@ export const productsData: ProducstData = {
         "show": true
       }]
 }
-
 
 export const initialData: CardsData = {
     cards: [{
@@ -7724,3 +7745,49 @@ export const initialData: CardsData = {
     ]
 }
 
+export const storeData: StoresData = {
+  stores: [{
+    "name": "Hidden TCG Store",
+    "address": "Cl. 52 #24-18",
+    "city": "Bogotá",
+    "country": "Colombia",
+    "length": "",
+    "latitude": "",
+    "url": "", 
+    "postalCode": "",
+    "phone": "string",
+  },
+  {
+    "name": "TCG Collectibles",
+    "address": "Cra. 13a #127-8",
+    "city": "Bogotá",
+    "country": "Colombia",
+    "length": "",
+    "latitude": "",
+    "url": "", 
+    "postalCode": "",
+    "phone": "string",
+  },
+  {
+    "name": "CLOVER TCG STORE",
+    "address": "Calle 14 # 69-78",
+    "city": "Cali",
+    "country": "Colombia",
+    "length": "",
+    "latitude": "",
+    "url": "", 
+    "postalCode": "",
+    "phone": "string",
+  },
+  {
+    "name": "Excelsior Hobby Center",
+    "address": "Cra 66 # 49A-26 Local 301 Suramericana",
+    "city": "Medellín",
+    "country": "Colombia",
+    "length": "",
+    "latitude": "",
+    "url": "", 
+    "postalCode": "",
+    "phone": "string",
+  }]
+}

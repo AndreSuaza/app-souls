@@ -63,7 +63,7 @@ model Product {
   show          Boolean 
   createDate    DateTime      @default(now()) 
   Card          Card[]
-  ProductImage ProductImage[]
+  ProductImage  ProductImage[]
 }
 
 model ProductImage {
@@ -119,3 +119,37 @@ model CardPrice {
   cardId        String        @db.ObjectId
   card          Card          @relation(fields: [cardId], references: [id])
 } 
+
+model Store {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String        
+  city          String
+  address       String
+  country       String
+  postalCode    String
+  phone         String
+  length        String
+  latitude      String  
+  url           String 
+  createDate    DateTime      @default(now())
+
+  Tournament    Tournament[]
+}
+
+model Tournament {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  title         Float         @default(0)
+  descripcion   String
+  url           String
+  typeEvent     String
+  length        String
+  latitude      String  
+  price         Float
+  format        String
+  date          DateTime
+  createDate    DateTime      @default(now()) 
+
+  storeId       String        @db.ObjectId
+  store         Store         @relation(fields: [storeId], references: [id])
+} 
+

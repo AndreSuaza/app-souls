@@ -1,4 +1,5 @@
-'use client'
+'use client';
+
 import { useUIStore } from '@/store';
 import clsx from 'clsx';
 import Link from 'next/link';

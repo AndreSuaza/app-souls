@@ -26,10 +26,10 @@ export const ProductItem = ({ product }: Props) => {
               // onMouseLeave={ () => setDisplayImage(`${product.images[1].name}.webp`) }
           />
       </Link>
-      <div className='p-4 flex flex-col b'>
-        <span className='font-bold text-sm text-indigo-500'>{product.releaseDate}</span>
+      <div className='p-4 flex flex-col text-center'>
+        <p className='font-bold text-indigo-900'>{`${product.releaseDate}`}</p>
         <Link 
-        className='hover:text-violet-500'
+        className='hover:text-violet-500 font-semibold text-2xl'
         href={`/product/${ displayImage }`}>
           { product.name }
         </Link>

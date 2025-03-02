@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+h2 {
+    @apply text-6xl font-bold mt-6 mb-10 text-center;
+}
+
+P {
+    @apply text-2xl text-center;
+}

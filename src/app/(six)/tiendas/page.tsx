@@ -1,9 +1,18 @@
+import { getStorePagination } from "@/actions";
 import { Title } from "@/components";
 
-export default function TiendasPage() {
+
+
+export default async function TiendasPage() {
+
+  const stores = await getStorePagination();
+
   return (
-     <Title 
+    <div className="lg:mx-40">
+    <Title 
       title="Tiendas"
     />
+    
+    </div>
   )
 }
