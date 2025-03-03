@@ -45,7 +45,7 @@ export const ProductMobileSlideshow = ( { images, title, className }: Props ) =>
             <SwiperSlide key={ image }>
                 <div className='m-4'>
                     <Image
-                        width={ 500 }
+                        width={ 300 }
                         height={ 718 }
                         src={ `/cards/${ image }` }
                         alt={ title }

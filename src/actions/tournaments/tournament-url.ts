@@ -2,23 +2,12 @@
 
 import prisma from "@/lib/prisma";
 
-interface PaginationOptions {
-    page?: number;
-    take?: number;
-}
 
-export const getTournamentsPagination = async({page = 1,take = 12}: PaginationOptions) => {
-
-    if( isNaN( Number(page))) page = 1;
-    if( page < 1) page = 1;
+export const getTournamenttUrl = async(url: string) => {
 
     try {
 
-       
-
-        const tournaments = await prisma.tournament.findMany({
-            take:12,
-            skip: (page -1) * take,
+        const tournament = await prisma.tournament.findFirst({
             include: {
                 store: {
                     select: {
@@ -49,27 +38,24 @@ export const getTournamentsPagination = async({page = 1,take = 12}: PaginationOp
                     }
                 }
             },
-            orderBy: [
-                {
-                    createDate: 'desc',
-                },
-            ],
-        })
-    
-        const totalCount = await prisma.tournament.count({})
-        const totalPages = Math.ceil( totalCount / take );
+            where: {
+                url: url
+            },
+        })     
 
+        if(!tournament) return null;
 
         return {
-            currentPage: page,
-            totalPage: totalPages,
-            tournaments
-
-        }
+            ...tournament,
+            images: tournament.TournamentImage.map( image => image.url )
+        };
         
     } catch (error) {
-        throw new Error(`No se pudo cargar los Torneos` );
+        throw new Error(`No se pudo cargar el torneo con la URL: ${url}` );
     }
+
     
+
+   
 
 };

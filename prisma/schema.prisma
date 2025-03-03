@@ -57,7 +57,7 @@ model Product {
   name          String        
   code          String        @unique
   releaseDate   String      
-  descripcion   String
+  description   String
   url           String        @unique
   numberCards   Int   
   show          Boolean 
@@ -81,7 +81,7 @@ model Card {
   idd             String
   code            String        @unique     
   limit           String
-  cost            String
+  cost            Int
   force           String
   defense         String  
   name            String

@@ -1,3 +1,4 @@
+import { Store } from "./store.interface";
 
 export interface Tournament {
     id: string;
@@ -12,7 +13,7 @@ export interface Tournament {
     createDate: Date;
     TournamentImage: TournamentImage[];
     typeTournament: TypeTournament;
-    store: StoreTournament
+    store: Store
   } 
 
 

@@ -72,10 +72,6 @@ async function main() {
     // });
 
 
-
-
-
-
     // //Busca los TYPES en base de datos y los mapea a la informacion de JSON
     // const typesDB = await prisma.type.findMany();
     // const archetypesDB = await prisma.archetype.findMany();
@@ -120,7 +116,7 @@ async function main() {
 
     // cards.forEach(async (card) => {
 
-    //     const { products, types, archetypes, keywords, rarity, price, ...rest } = card;
+    //     const { products, types, archetypes, keywords, rarity, price, cost, ...rest } = card;
 
     //     const dbCard = await prisma.card.create({
     //         data: {
@@ -130,6 +126,7 @@ async function main() {
     //           archetypesIds: prosMap(archetypesDB, archetypes),
     //           keywordsIds: prosMap(keywordsDB, keywords),
     //           raritiesIds: prosMap(raritiesDB, rarity),
+    //           cost: Number.parseInt(cost),
     //         }
     //     })
 
@@ -144,7 +141,7 @@ async function main() {
     // });
 
 
-    console.log('Ejecutado correctamente')
+    // console.log('Ejecutado correctamente')
 
 }
 

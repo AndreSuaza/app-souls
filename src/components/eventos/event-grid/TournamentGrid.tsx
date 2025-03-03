@@ -1,21 +1,29 @@
 import { Tournament } from "@/interfaces";
 import { TournamentItem } from "./TournamentItem";
+import { TournamentItemShort } from "./TournamentItemShort";
 
 
 
 interface Props {
   tournaments: Tournament[];
+  short?: Boolean;
 }
 
-export const TournamentGrid = ({tournaments}: Props) => {
+export const TournamentGrid = ({tournaments, short = false}: Props) => {
   return (
-    <div className='m-4 rounded-lg'>
+    <div className='rounded-lg'>
         {
             tournaments.map( tournament => (
-               <TournamentItem 
-                key={ tournament.id }
-                tournament={ tournament }
-               />
+              
+               short ? 
+                  <TournamentItemShort 
+                    key={ tournament.id }
+                    tournament={ tournament }
+                  />
+               : <TournamentItem 
+                    key={ tournament.id }
+                    tournament={ tournament }
+                  />
             ))
         }
 

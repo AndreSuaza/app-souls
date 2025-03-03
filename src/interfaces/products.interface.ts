@@ -5,7 +5,7 @@ export interface Product {
     code: string;
     name: string;
     releaseDate: string;
-    descripcion: string;
+    description: string;
     url:string;
     numberCards: number;
     show: boolean;

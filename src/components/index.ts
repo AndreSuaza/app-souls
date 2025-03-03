@@ -6,6 +6,7 @@ export * from './productos/slideshow/cards-slideshow';
 export * from './cartas/card-grid/CardGrid';
 export * from './cartas/card-grid/CardItem';
 export * from './cartas/card-detail/CardDetail';
+export * from './cartas/card-grid/CardGridX';
 
 export * from './eventos/event-grid/TournamentGrid';
 export * from './eventos/event-grid/TournamentItem';

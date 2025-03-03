@@ -14,12 +14,12 @@ export const ProductItem = ({ product }: Props) => {
   const [displayImage, setDisplayImage] = useState(`${product.ProductImage[0].url}.webp`);
 
   return (
-    <div className='rounded-md overflow-hidden fade-in'>
+    <div className='rounded-lg overflow-hidden fade-in'>
       <Link href={`/productos/${ product.url }`}>
           <Image
               src={`/products/${displayImage}`}
               alt={product.name}
-              className='w-full object-cover'
+              className='w-full object-cover shadow-md'
               width={500}
               height={500}
               // onMouseEnter={ () => setDisplayImage(`${product.images[0].name}.webp`) }
@@ -27,9 +27,9 @@ export const ProductItem = ({ product }: Props) => {
           />
       </Link>
       <div className='p-4 flex flex-col text-center'>
-        <p className='font-bold text-indigo-900'>{`${product.releaseDate}`}</p>
+        <p className='font-semibold uppercase text-indigo-500 text-base md:text-xl'>{`${product.releaseDate}`}</p>
         <Link 
-        className='hover:text-violet-500 font-semibold text-2xl'
+        className='hover:text-violet-500 font-bold text-xl md:text-2xl uppercase'
         href={`/product/${ displayImage }`}>
           { product.name }
         </Link>

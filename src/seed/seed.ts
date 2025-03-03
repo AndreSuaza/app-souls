@@ -42,7 +42,7 @@ interface Product {
     code: string;
     name: string;
     releaseDate: string;
-    descripcion: string;
+    description: string;
     url:string;
     numberCards: number;
     show: boolean;
@@ -240,8 +240,8 @@ export const productsData: ProducstData = {
         "index": 5,
         "code": "ME4",
         "name": "Mazo Humanos - Despliegue  de la Armada",
-        "releaseDate": "Ago 2024",
-        "descripcion": "Mazo Humanos tendras todas las armanas necesarias para aniquilar a tu enemigo.",
+        "releaseDate": "Agosto 2024",
+        "description": "Mazo Humanos tendras todas las armanas necesarias para aniquilar a tu enemigo.",
         "images": [
           {
             "alt": "logo Mazo Humanos six",
@@ -256,8 +256,8 @@ export const productsData: ProducstData = {
         "index": 1,
         "code": "MD1",
         "name": "Mazo De Demostración - Primer Estallido",
-        "releaseDate": "Ago 2024",
-        "descripcion": "mazo de demostracion para iniciar en el mundo del six.",
+        "releaseDate": "Agosto 2024",
+        "description": "mazo de demostracion para iniciar en el mundo del six.",
         "images": [
           {
             "alt": "logo Mazo Humanos six",
@@ -272,8 +272,8 @@ export const productsData: ProducstData = {
         "index": 2,
         "code": "ME1",
         "name": "Mazo Demonios - Arte de la Destrucción",
-        "releaseDate": "Ago 2024",
-        "descripcion": "Mazo Demonios su gran numero y agresividad caracterizticas nesesarias para destruir a tu oponente.",
+        "releaseDate": "Agosto 2024",
+        "description": "Mazo Demonios su gran numero y agresividad caracterizticas nesesarias para destruir a tu oponente.",
         "images": [
           {
             "alt": "logo Mazo Demonios six",
@@ -288,8 +288,8 @@ export const productsData: ProducstData = {
         "index": 3,
         "code": "ME2",
         "name": "Mazo Ángeles - Amanecer Celestial",
-        "releaseDate": "Ago 2024",
-        "descripcion": "Mazo Angeles Lleva todo el control de la justicia a tus manos.",
+        "releaseDate": "Agosto 2024",
+        "description": "Mazo Angeles Lleva todo el control de la justicia a tus manos.",
         "images": [
           {
             "alt": "logo Mazo Angeles six",
@@ -304,8 +304,8 @@ export const productsData: ProducstData = {
         "index": 4,
         "code": "ME3",
         "name": "Mazo Espíritus - El Árbol de la Vida",
-        "releaseDate": "Ago 2024",
-        "descripcion": "Mazo Espíritus cada minuto que pasa drenara esperanza a tu oponente hasta llevarte a la victoria.",
+        "releaseDate": "Agosto 2024",
+        "description": "Mazo Espíritus cada minuto que pasa drenara esperanza a tu oponente hasta llevarte a la victoria.",
         "images": [
           {
             "alt": "logo Mazo Espíritus six",
@@ -320,8 +320,8 @@ export const productsData: ProducstData = {
         "index": 6,
         "code": "PGC",
         "name": "Cartas Promocionales Génesis del Caos",
-        "releaseDate": "Ago 2024",
-        "descripcion": "Promocionales de torneos de la temporada Génesis del Caos.",
+        "releaseDate": "Agosto 2024",
+        "description": "Promocionales de torneos de la temporada Génesis del Caos.",
         "images": [
           {
             "alt": "Promo Génesis del Caos",
@@ -336,8 +336,8 @@ export const productsData: ProducstData = {
         "index": 7,
         "code": "PGCC",
         "name": "Carta de Campeón Génesis del Caos",
-        "releaseDate": "Ago 2024",
-        "descripcion": "Carta promocional para el campeon del torneo de inicio de temporada Génesis del Caos.",
+        "releaseDate": "Agosto 2024",
+        "description": "Carta promocional para el campeon del torneo de inicio de temporada Génesis del Caos.",
         "images": [
           {
             "alt": "Promo Campeón Génesis del Caos",
@@ -352,8 +352,8 @@ export const productsData: ProducstData = {
         "index": 8,
         "code": "LP",
         "name": "Producto Especial - Leyendas Peludas",
-        "releaseDate": "Oct 2024",
-        "descripcion": "Producto Especial Souls In Xtinction",
+        "releaseDate": "Octubre 2024",
+        "description": "Producto Especial Souls In Xtinction",
         "images": [
           {
             "alt": "logo Leyendas Peludas",
@@ -368,8 +368,8 @@ export const productsData: ProducstData = {
         "index": 9,
         "code": "GNC",
         "name": "Génesis del Caos",
-        "releaseDate": "Dic 2024",
-        "descripcion": "Expansión Souls In Xtinction",
+        "releaseDate": "Diciembre 2024",
+        "description": "Expansión Souls In Xtinction",
         "images": [
           {
             "alt": "logo Génesis del Caos",
@@ -384,8 +384,8 @@ export const productsData: ProducstData = {
         "index": 10,
         "code": "SMC01",
         "name": "Souls Masters Circuit",
-        "releaseDate": "Dic 2024",
-        "descripcion": "Sobre Souls Masters Circuit",
+        "releaseDate": "Diciembre 2024",
+        "description": "Sobre Souls Masters Circuit",
         "images": [
           {
             "alt": "logo Sobre Souls Masters Circuit",
@@ -400,8 +400,8 @@ export const productsData: ProducstData = {
         "index": 11,
         "code": "EDA",
         "name": "Ecos del Abismo",
-        "releaseDate": "Feb 2025",
-        "descripcion": "Nuevo producto especial ecos del abismo.",
+        "releaseDate": "Febrero 2025",
+        "description": "Nuevo producto especial ecos del abismo.",
         "images": [
           {
             "alt": "logo Ecos del Abismo",
@@ -1155,7 +1155,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun"],
-        "cost": "",
+        "cost": "-1",
         "force": "1",
         "defense": "0",
         "archetypes": [
@@ -1180,7 +1180,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [
@@ -1756,7 +1756,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [
@@ -2383,7 +2383,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [
@@ -2871,7 +2871,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [
@@ -3428,7 +3428,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [
@@ -3453,7 +3453,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [
@@ -3478,7 +3478,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [
@@ -3633,7 +3633,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Secreta"],
-        "cost": "",
+        "cost": "-1",
         "force": "0",
         "defense": "0",
         "archetypes": [
@@ -4047,7 +4047,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -4070,7 +4070,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -5080,7 +5080,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -6238,7 +6238,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "*",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -6615,7 +6615,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -6638,7 +6638,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -6840,7 +6840,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -6863,7 +6863,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -6886,7 +6886,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -6932,7 +6932,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -6955,7 +6955,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "",
         "defense": "",
         "archetypes": [""],
@@ -7415,7 +7415,7 @@ export const initialData: CardsData = {
         ],
         "limit": "",
         "rarity": ["Comun","Ultra"],
-        "cost": "",
+        "cost": "-1",
         "force": "0",
         "defense": "0",
         "archetypes": [

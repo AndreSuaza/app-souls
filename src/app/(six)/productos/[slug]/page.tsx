@@ -1,8 +1,8 @@
 // export const revalidate = 604800; //7 dias
 
 
-import { getProductUrl } from '@/actions';
-import { ProductMobileSlideshow, Title } from '@/components';
+import { getCardsByIds, getPaginatedCards, getProductUrl } from '@/actions';
+import { CardGrid, CardGridX, ProductMobileSlideshow, Title } from '@/components';
 import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc'
@@ -38,18 +38,12 @@ interface Props {
 //     },
 //   }
 // }
- 
-
-const mku = `
-## Primer Estallido
-
-El **_Mazo de Demostración - Primer estallido_** contiene todos los tipos de cartas, mecánicas y la mayoría de arquetipos de la primera temporada de **_Souls In Xtinction_**, además, viene con cartas extremadamente útiles y versátiles para armar cualquier tipo de estrategia que se te ocurra, no te pierdas la oportunidad de entrar en este maravilloso y competitivo universo de **_Souls In Xtinction_**.
-`;
 
 export default async function getProductBySlug({ params }: Props) {
 
   const { slug } = await params;
   const product = await getProductUrl(slug)
+  const cardsTop =  await getCardsByIds(["67c5d5290edb5d80d7a66aff", "67c5d52a0edb5d80d7a66b00"])
   
   if (!product) {
     notFound();
@@ -59,31 +53,32 @@ export default async function getProductBySlug({ params }: Props) {
 
     <>
     <section className='grid grid-cols-1 lg:grid-cols-2 lg:mx-40'>
-      <div className='flex flex-col items-center justify-center w-full h-[500px] p-12 lg:ml-20 lg:w-[500px] lg:h-[800px]'>
+      <div className='flex flex-col items-center justify-center w-full p-12'>
           <Image
                   src={`/products/${product.code}S.webp`}
                   alt={'logo ecos del abismo'}
-                  className='m-10'
+                  className='my-auto'
                   width={400}
                   height={160}
               />
       </div>
-      <div className='pb-10 flex flex-col justify-center items-center mx-4 lg:mx-20'>
-
-          <MDXRemote source={mku} />
-    
-
+      <div className='pb-10 flex flex-col justify-center items-center mx-4 md:mt-10 lg:mt-0'>
+          <h1 className='text-5xl font-bold text-center mb-10 md:my-10 lg:mx-40'>{product.name}</h1>
+          <MDXRemote source={product.description} />
       </div>
     </section>
     <section className='flex flex-col items-center py-8 bg-red-400'>
       <div className='lg:w-1/2 text-center my-10'>
-        <h3 className='text-3xl uppercase mb-4'>Resuenan los Ecos del Abismo</h3>
-        <p className='text-xl mx-4'>Antiguas fuerzas despiertan desde las profundidades, trayendo consigo poder y caos. Solo los más valientes podrán dominar su energía y convertirla en su arma definitiva.</p> 
+          {/* <MDXRemote source={product.text} /> */}
       </div>
-      <ProductMobileSlideshow 
+      {/* <ProductMobileSlideshow 
         title={ "test" }
         images={ ["GNC-001-8225.webp", "GNC-002-2415.webp"] }
-      />
+      /> */}
+      <div>
+        {/* <CardGridX cards={cardsTop}/> */}
+
+      </div>
     </section>
 
     <section className='grid grid-cols-1 lg:grid-cols-2'>
@@ -96,10 +91,7 @@ export default async function getProductBySlug({ params }: Props) {
               className='mb-10 mt-6 lg:-mt-20'
               width={400}
               height={160}
-          />
-
-            <MDXRemote source={mku} />
-    
+          />    
 
       </div>
     </section>
