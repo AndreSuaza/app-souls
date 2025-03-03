@@ -22,7 +22,7 @@ export const TopMenu = () => {
         <div className="hidden sm:block">
           <Link className="m-2 p-2 rounded-md transition-all hover:bg-gray-100" href="/como-jugar">Como Jugar</Link>
           <Link className="m-2 p-2 rounded-md transition-all hover:bg-gray-100" href="/productos">Productos</Link>
-          <Link className="m-2 p-2 rounded-md transition-all hover:bg-gray-100" href="/eventos">Eventos</Link>
+          <Link className="m-2 p-2 rounded-md transition-all hover:bg-gray-100" href="/torneos">Torneos</Link>
           <Link className="m-2 p-2 rounded-md transition-all hover:bg-gray-100" href="/laboratorio">Laboratorio</Link>
           <Link className="m-2 p-2 rounded-md transition-all hover:bg-gray-100" href="/tiendas">Tiendas</Link>
           <Link className="m-2 p-2 rounded-md transition-all hover:bg-gray-100" href="/boveda">Boveda</Link>

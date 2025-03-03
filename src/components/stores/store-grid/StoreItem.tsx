@@ -2,15 +2,15 @@
 
 import { Store } from '@prisma/client';
 import Image from 'next/image';
-import { IoLogoInstagram } from 'react-icons/io5';
 
 
 interface Props {
     store: Store;
-    setUrl: (url: string) => void
+    index: number;
+    setPostion: (index: number) => void
 }
 
-export const StoreItem = ({ store, setUrl }: Props) => {
+export const StoreItem = ({ store, index, setPostion }: Props) => {
 
   return (
     <div className='rounded-md overflow-hidden fade-in mb-4 bg-white pb-2 shadow-md'>
@@ -23,7 +23,7 @@ export const StoreItem = ({ store, setUrl }: Props) => {
             <p className='flex flex-row text-lg font-semibold'>Dirección: {store.address}</p>
             <p className='flex flex-row text-lg font-semibold'>Teléfono: {store.phone}</p>
             <button className='btn-primary mt-3 mr-2'>Ver Eventos</button>
-            <button className='btn-primary mt-3' onClick={() => setUrl(store.url)}>Mapa</button>
+            <button className='btn-primary mt-3' onClick={() => setPostion(index)}>Mapa</button>
         </div>
         <div className='flex flex-col justify-center items-center'>
             <Image

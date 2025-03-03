@@ -8,14 +8,17 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "ts-node src/seed/seed-database.ts",
-    "seed-store": "ts-node src/seed/seed-store-database.ts"
+    "seed-store": "ts-node src/seed/seed-store-database.ts",
+    "seed-tournament": "ts-node src/seed/seed-tournament-database.ts"
   },
   "dependencies": {
     "@auth/core": "^0.38.0",
+    "@googlemaps/js-api-loader": "^1.16.8",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
     "@next/mdx": "^15.2.0",
     "@prisma/client": "^6.4.1",
+    "@types/google.maps": "^3.58.1",
     "@types/mdx": "^2.0.13",
     "clsx": "^2.1.1",
     "mongodb": "^6.13.1",

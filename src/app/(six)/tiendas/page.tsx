@@ -1,5 +1,6 @@
 import { getStorePagination } from "@/actions";
 import { Title } from "@/components";
+import { StoreGrid } from "@/components/stores/store-grid/StoreGrid";
 
 
 
@@ -12,7 +13,7 @@ export default async function TiendasPage() {
     <Title 
       title="Tiendas"
     />
-    
+    <StoreGrid stores={stores}/>
     </div>
   )
 }

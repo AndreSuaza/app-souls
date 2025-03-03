@@ -1,5 +1,4 @@
 
-
 interface Card {
     idd: string;
     code: string;
@@ -57,27 +56,39 @@ interface Store {
     country: string;
     postalCode: string;
     phone: string;
-    length: string;
-    latitude: string;  
+    lat: number;
+    lgn: number;  
     url: string; 
 }
 
-interface TypeEvent {
+interface StoreTourname {
+  name: string;        
+}
+
+interface TypeTournament {
     name: string;
 }
 
-interface Event {
-    id: string;
-    title: string;
-    descripcion: string;
-    url: string;
-    typeEvent: TypeEvent;
-    length?: string;
-    latitude?: string; 
-    price: string;
-    format: string;
-    date: Date;
-    store: Store;
+
+export interface Tournament {
+  title: string;  
+  descripcion: string;
+  url: string;
+  lat: number;
+  lgn: number;
+  price: number;
+  format: string;
+  date: Date;
+  TournamentImage: string;
+  typeTournament: string;
+  store: string
+} 
+
+
+export interface TournamentImage {
+  id: string;
+  url: string;
+  alt: string;
 }
 
 interface CardsData {
@@ -88,9 +99,6 @@ interface ProducstData {
     products: Product[],
 }
 
-interface EventsData {
-    events: Event[],
-}
 
 interface TypesData {
     types: Type[],
@@ -110,6 +118,14 @@ interface KeywordsData {
 
 interface StoresData {
   stores: Store[],
+}
+
+interface TournamentsData {
+  tournaments: Tournament[],
+}
+
+interface TypesTournament {
+  typesTournament: TypeTournament[],
 }
 
 export const keywordsData: KeywordsData = {
@@ -7751,19 +7767,19 @@ export const storeData: StoresData = {
     "address": "Cl. 52 #24-18",
     "city": "Bogotá",
     "country": "Colombia",
-    "length": "",
-    "latitude": "",
+    "lat": 4.641061151712014,
+    "lgn": -74.07435758650631,
     "url": "", 
     "postalCode": "",
     "phone": "string",
   },
   {
     "name": "TCG Collectibles",
-    "address": "Cra. 13a #127-8",
+    "address": "Auto. Norte #120-77, Bogotá",
     "city": "Bogotá",
     "country": "Colombia",
-    "length": "",
-    "latitude": "",
+    "lat": 4.702978522839585,
+    "lgn": -74.05501083650137,
     "url": "", 
     "postalCode": "",
     "phone": "string",
@@ -7773,8 +7789,8 @@ export const storeData: StoresData = {
     "address": "Calle 14 # 69-78",
     "city": "Cali",
     "country": "Colombia",
-    "length": "",
-    "latitude": "",
+    "lat": 3.3938935852674077,
+    "lgn": -76.53260481349368,
     "url": "", 
     "postalCode": "",
     "phone": "string",
@@ -7784,10 +7800,54 @@ export const storeData: StoresData = {
     "address": "Cra 66 # 49A-26 Local 301 Suramericana",
     "city": "Medellín",
     "country": "Colombia",
-    "length": "",
-    "latitude": "",
+    "lat": 6.2561282911513985,
+    "lgn": -75.58232372883545,
     "url": "", 
     "postalCode": "",
     "phone": "string",
   }]
+}
+
+export const typeTournament: TypesTournament = {
+  typesTournament: [
+    {
+      "name": "Tier 1"
+    },
+    {
+      "name": "Tier 2"
+    },
+    {
+      "name": "Tier 3"
+    }
+  ]
+}
+
+export const tournamentsData: TournamentsData = {
+  tournaments: [{
+    "title": "Souls Masters Circuit Clover TCG",
+    "descripcion": "",
+    "url": "souls-masters-circuit-clover-junio-2025",
+    "lat": 0,
+    "lgn": 0,
+    "price": 48000,
+    "format": "Masters",
+    "date": new Date(),
+    "typeTournament": "Tier 2",
+    "store": "",
+    "TournamentImage": "",
+  },
+  {
+    "title": "Souls Masters Circuit Ecxelsior Hobby",
+    "descripcion": "",
+    "url": "souls-masters-circuit-clover-agosto-2025",
+    "lat": 0,
+    "lgn": 0,
+    "price": 48000,
+    "format": "Masters",
+    "date": new Date(),
+    "typeTournament": "Tier 2",
+    "store": "",
+    "TournamentImage": "",
+  },
+  ]
 }

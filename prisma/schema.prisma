@@ -128,8 +128,8 @@ model Store {
   country       String
   postalCode    String
   phone         String
-  length        String
-  latitude      String  
+  lat           Float
+  lgn           Float  
   url           String 
   createDate    DateTime      @default(now())
 
@@ -138,12 +138,11 @@ model Store {
 
 model Tournament {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  title         Float         @default(0)
+  title         String         
   descripcion   String
   url           String
-  typeEvent     String
-  length        String
-  latitude      String  
+  lat           Float
+  lgn           Float 
   price         Float
   format        String
   date          DateTime
@@ -151,5 +150,27 @@ model Tournament {
 
   storeId       String        @db.ObjectId
   store         Store         @relation(fields: [storeId], references: [id])
+
+  typeTournamentId      String                @db.ObjectId
+  typeTournament        TypeTournament        @relation(fields: [typeTournamentId], references: [id])  
+
+  TournamentImage    TournamentImage[]
 } 
 
+model TournamentImage {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  url           String
+  alt           String
+  createDate    DateTime      @default(now()) 
+
+  tournament    Tournament    @relation(fields: [tournamentId], references: [id])
+  tournamentId  String        @db.ObjectId
+}
+
+model TypeTournament {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String    
+  createDate    DateTime      @default(now())
+  
+  Tournament    Tournament[]
+}
