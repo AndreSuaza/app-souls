@@ -1,13 +1,15 @@
 'use server';
 
 import prisma from "@/lib/prisma";
+import { typeTournament } from "@/seed/seed";
 
 interface PaginationOptions {
     page?: number;
     take?: number;
+    types: string[];
 }
 
-export const getTournamentsPagination = async({page = 1,take = 12}: PaginationOptions) => {
+export const getTournamentsPagination = async({page = 1,take = 12, types}: PaginationOptions) => {
 
     if( isNaN( Number(page))) page = 1;
     if( page < 1) page = 1;
@@ -49,14 +51,29 @@ export const getTournamentsPagination = async({page = 1,take = 12}: PaginationOp
                     }
                 }
             },
+            where: {
+                typeTournament: {
+                    name: {
+                        in: types
+                    }
+                }
+            },  
             orderBy: [
                 {
-                    createDate: 'desc',
-                },
+                    date: 'desc',
+                }
             ],
         })
     
-        const totalCount = await prisma.tournament.count({})
+        const totalCount = await prisma.tournament.count({
+            where: {
+                typeTournament: {
+                    name: {
+                        in: types
+                    }
+                }
+            },  
+        })
         const totalPages = Math.ceil( totalCount / take );
 
 

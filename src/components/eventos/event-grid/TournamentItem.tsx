@@ -17,18 +17,23 @@ export const TournamentItem = ({ tournament }: Props) => {
     <div className='bg-white shadow-md grid grid-cols-5 md:grid-cols-6 my-4 px-2 rounded-lg py-4'>
       <div className=''>
         <div className='text-center'>
-          <p className='text-2xl'>{moment().format('MMMM')}</p>
-          <p className='text-5xl mb-2'>{moment().format('DD')}</p>
-          <p className='font-semibold '>{moment().format('h:mm a')}</p>
+          <p className='text-2xl font-bold'>{moment(tournament.date).format('MMMM')}</p>
+          <p className='text-5xl mb-2'>{moment(tournament.date).format('DD')}</p>
+          <p className='font-bold '>{moment(tournament.date).format('h:mm a')}</p>
         </div>
       </div>
       <div className='col-span-4 mx-2'>
         <span className='font-semibold text-indigo-400'>{`${tournament.store.name}, ${tournament.store.city}`}</span>
-        <h2 className='text-2xl font-bold'>{tournament.title}</h2>
+        <h2 className='text-2xl font-bold mb-2'>{tournament.title}</h2>
         <p>{tournament.descripcion}</p>
-        <Link href={`/torneos/${ tournament.url }`}>
-          <button className='btn-primary mt-3'>Conoce Mas</button>
-        </Link>
+        { tournament.url !== "" ?
+          <Link href={`/torneos/${ tournament.url }`}>
+            <button className='btn-primary mt-3'>Conoce Mas</button>
+          </Link>
+          :
+          <p className='font-bold uppercase my-2 text-indigo-600'>Más información próximamente.</p>
+        }
+        
       </div>
       <div className='m-auto hidden md:block'>
         <Image

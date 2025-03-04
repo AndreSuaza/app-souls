@@ -3,7 +3,7 @@
 import { useUIStore } from '@/store';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { IoCloseOutline, IoLogInOutline, IoLogOutOutline, IoPeopleOutline, IoPersonOutline, IoSearchOutline, IoShieldOutline, IoTicketOutline } from 'react-icons/io5';
+import { IoBagHandleOutline, IoBagRemoveOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLogInOutline, IoLogOutOutline, IoPeopleOutline, IoPersonOutline, IoSearchOutline, IoShieldOutline, IoStorefrontOutline, IoTicketOutline, IoTrophyOutline } from 'react-icons/io5';
 
 export const Sidebar = () => {
 
@@ -35,7 +35,7 @@ export const Sidebar = () => {
         {/* Sidemenu */}
         <nav className={
             clsx(
-                "fixed p-5 right-0 top-0 w-[500px] h-screen bg-white z-20 shadow-2xl transform transition-all duration-200",
+                "fixed p-5 right-0 top-0 w-4/6 h-screen bg-slate-900 text-white z-20 shadow-2xl transform transition-all duration-200",
                 {
                     "translate-x-full": !isSideMenuOpen
                 }
@@ -48,7 +48,7 @@ export const Sidebar = () => {
             />
 
             {/* Input */}
-            <div className="relative mt-14">
+            {/* <div className="relative mt-14">
                 <IoSearchOutline
                     size={20}
                     className="absolute top-2 left-2"
@@ -58,52 +58,36 @@ export const Sidebar = () => {
                     placeholder="Buscar"
                     className="w-full bg-gray-50 rounded pl-10 py-1 pr-10 border-b-2 text-xl border-gray-200 focus:outline-none focus:border-indigo-500 "    
                 />
+            </div> */}
+            <div className='flex flex-col mt-12'>
+                <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/como-jugar"  onClick={ closeMenu }>
+                    <IoFlashOutline className="w-6 h-6 mr-3"/>
+                    Como Jugar
+                </Link>
+                
+                <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/torneos"  onClick={ closeMenu }>
+                    <IoTrophyOutline className="w-6 h-6 mr-3"/>
+                    Torneos
+                </Link>
+                <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/laboratorio"  onClick={ closeMenu }>
+                    <IoFlaskOutline className="w-6 h-6 mr-3"/>
+                    Laboratorio
+                </Link>
+                <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/productos"  onClick={ closeMenu }>
+                    <IoBagRemoveOutline className="w-6 h-6 mr-3"/>
+                    Productos
+                </Link>
+                <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/tiendas"  onClick={ closeMenu }>
+                    <IoStorefrontOutline  className="w-6 h-6 mr-3"/>
+                    Tiendas
+                </Link>
+                <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/boveda"  onClick={ closeMenu }>
+                    <IoDiamondOutline className="w-6 h-6 mr-3"/>
+                    Boveda
+                </Link>
             </div>
-
-            <Link href="/"
-                className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
-            >
-                <IoPersonOutline size={30}/>
-                <span className="ml-3 text-xl">Perfil</span>
-            </Link>
-
-            <Link href="/"
-                className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
-            >
-                <IoLogInOutline size={30}/>
-                <span className="ml-3 text-xl">Ingresar</span>
-            </Link>
-
-            <Link href="/"
-                className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
-            >
-                <IoLogOutOutline size={30}/>
-                <span className="ml-3 text-xl">Salir</span>
-            </Link>
-
-            {/* line sparator */}
-            <div className='w-full h-px bg-gray-200 my-10'/>
-
-            <Link href="/"
-                className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
-            >
-                <IoShieldOutline size={30}/>
-                <span className="ml-3 text-xl">Productos</span>
-            </Link>
-
-            <Link href="/"
-                className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
-            >
-                <IoTicketOutline size={30}/>
-                <span className="ml-3 text-xl">Cartas</span>
-            </Link>
-
-            <Link href="/"
-                className="flex items-center mt-10 p-2 hover:bg-gray-100 rounded transition-all"
-            >
-                <IoPeopleOutline size={30}/>
-                <span className="ml-3 text-xl">Usuarios</span>
-            </Link>
+           
+                
         </nav>
     </div>
   )

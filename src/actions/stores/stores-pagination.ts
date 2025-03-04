@@ -7,7 +7,7 @@ export const getStorePagination = async() => {
         const stores = await prisma.store.findMany({
             orderBy: [
                 {
-                    createDate: 'desc',
+                    createDate: 'asc',
                 },
             ],
         })

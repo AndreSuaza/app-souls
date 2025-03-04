@@ -34,7 +34,7 @@ export const StoreGrid = ({stores}: Props) => {
         }
       </div>
       <div className="col-span-3 mx-4">
-        <Map title={stores[index].name} lat={stores[index].lat} lgn={stores[index].lgn} className={"w-full h-screen border-0 rounded-lg"}/>
+        <Map title={stores[index].name} lat={stores[index].lat} lgn={stores[index].lgn} className={"w-full h-[500px] md:h-screen border-0 rounded-lg mb-6"}/>
       </div>
     </div>
   )

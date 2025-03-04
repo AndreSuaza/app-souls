@@ -8,8 +8,8 @@ interface Props {
 
 export const Title = ({title, subtitle, className}: Props) => {
   return (
-    <div className={ `mt-3 ${ className }`}>
-        <h1 className={`${titleFont.className} antialiased text-4xl font-semibold my-10`}>
+    <div className={ `bg-[url(/title.jpg)] bg-cover bg-no-repeat p-4 text-center uppercase border-b-2 border-indigo-500 text-white ${ className }`}>
+        <h1 className={`${titleFont.className} antialiased text-4xl font-semibold my-4`}>
             { title }
         </h1>
         {

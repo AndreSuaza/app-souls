@@ -27,7 +27,7 @@ export const ProductItem = ({ product }: Props) => {
           />
       </Link>
       <div className='p-4 flex flex-col text-center'>
-        <p className='font-semibold uppercase text-indigo-500 text-base md:text-xl'>{`${product.releaseDate}`}</p>
+        <p className='uppercase text-indigo-600 font-bold'>{`${product.releaseDate}`}</p>
         <Link 
         className='hover:text-violet-500 font-bold text-xl md:text-2xl uppercase'
         href={`/product/${ displayImage }`}>

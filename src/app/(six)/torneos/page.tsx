@@ -11,31 +11,37 @@ interface Props {
 export default async function EventosPage({ searchParams }: Props) {
 
   const take = 5;
+
   const page = searchParams.page ? parseInt( searchParams.page ) : 1;
-  const { tournaments, currentPage, totalPage } = await getTournamentsPagination({ page, take });
-  
+  const { tournaments, totalPage } = await getTournamentsPagination({ page, take, types:["Tier 1","Tier 2","Tier 3"] });
+  const { tournaments: tournamentsT1 } = await getTournamentsPagination({ types:["Tier 4"] });
+
   return (
     <>
     <Title
       title="Torneos"
+      className="mb-3 lg:mb-6"
     />
 
     <div className="grid grid-cols-1 md:grid-cols-3 lg:mx-40 m-2">
-      <div className="bg-indigo-300 px-4 rounded-lg md:mr-4">
-        <h2 className="text-white text-4xl font-bold my-4">Torneos Semanales</h2>
-        <TournamentGrid
-            tournaments={tournaments}
-            short={true}
-        />
-      </div>
-      <div className="bg-indigo-400 px-4 rounded-lg col-span-2">
-        <h2 className="text-white text-4xl font-bold my-4">Torneos élite</h2>
+      
+      <div className="px-4 col-span-2 mb-4">
+        <h2 className="text-4xl font-bold my-6 uppercase ">Torneos élite</h2>
         <TournamentGrid
               tournaments={tournaments}
           />
         <Pagination totalPages={totalPage}/>
       </div>
       
+      <div className="md:ml-4">
+        <div className="bg-indigo-500 px-4 rounded-lg pb-4">
+          <h2 className="text-white text-4xl font-bold pt-4 mb-6 uppercase">Torneos Semanales</h2>
+          <TournamentGrid
+              tournaments={tournamentsT1}
+              short={true}
+          />
+        </div>
+      </div>
     </div>
 
      

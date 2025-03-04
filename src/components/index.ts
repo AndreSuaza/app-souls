@@ -18,5 +18,6 @@ export * from './ui/title/Title';
 export * from './ui/sidebar/Sidebar';
 
 export * from './stores/store-grid/StoreItem';
+export * from './stores/store-grid/StoreItemSimple';
 
 export * from './map/Map';

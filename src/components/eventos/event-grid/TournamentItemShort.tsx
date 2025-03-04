@@ -12,14 +12,14 @@ interface Props {
 }
 
 export const TournamentItemShort = ({ tournament }: Props) => {
-
+  console.log(tournament);
   return (
     <div className='bg-white shadow-md grid grid-cols-5 my-4 px-2 rounded-lg py-4'>
       <div className=''>
         <div className='text-center'>
-          <p className='text-xl md:text-2xl mb-2'>{moment().format('dddd')}</p>
+          <p className='text-xl md:text-lg mb-2 font-bold'>{moment(tournament.date).format('dddd')}</p>
           <IoCalendarOutline className='w-16 h-16 mx-auto mb-3'/>
-          <p className='font-semibold '>{moment().format('h:mm a')}</p>
+          <p className='font-semibold '>{moment(tournament.date).format('h:mm a')}</p>
         </div>
       </div>
       <div className='col-span-4 mx-4'>
