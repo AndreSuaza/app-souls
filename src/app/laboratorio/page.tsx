@@ -1,5 +1,5 @@
 import { getPaginatedCards, getPropertiesCards } from "@/actions";
-import { CardGrid, DeckCreator, Pagination, Title } from "@/components";
+import { DeckCreator, Pagination, Sidebar, Title, TopMenu } from "@/components";
 
 interface Props {
   searchParams: {
@@ -24,16 +24,19 @@ export default async function Cards({ searchParams }: Props) {
   const { cards, currentPage, totalPage } = await getPaginatedCards({ page });
 
   return (
-    <>
-    <Title
-      title="Laboratorio"
-    />
+    <main className="">
+            <TopMenu/>
+            <Sidebar/>
+            <div className="h-screen overflow-auto">
+              <DeckCreator cards={cards}/>
 
-    <DeckCreator cards={cards}/>
+              <div className="grid grid-cols-4">
+                <div className="col-span-2 lg:col-span-3"><Pagination totalPages={totalPage}/></div>
+                
+              </div>
 
-
-    <Pagination totalPages={totalPage}/>
-
-    </>
+            </div>
+        </main>
+    
   )
 }

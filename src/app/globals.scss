@@ -58,6 +58,10 @@ h2 {
   @apply bg-indigo-600 hover:bg-indigo-800 text-white py-2 px-4 rounded transition-all;
 }
 
+.btn-short {
+  @apply hover:text-black hover:bg-gray-300 py-2 px-2 rounded transition-all;
+}
+
 .btn-secondary {
   @apply bg-yellow-600 hover:bg-yellow-800 text-black py-2 px-4 rounded transition-all;
 }
@@ -158,4 +162,8 @@ h2 {
 .test {
   overflow: hidden;
   clip-path: polygon(80% 100%, 100% 0px, 0 0px, 0px 0,0 100%);
+}
+
+.h-cal-200 {
+  height: calc(100% - 200px);
 }

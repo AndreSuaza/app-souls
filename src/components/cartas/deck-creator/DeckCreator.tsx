@@ -1,13 +1,11 @@
 'use client';
 
 import type { Card } from "@/interfaces";
-import { useCardDetailStore } from "@/store";
-import { CardDetail } from '../card-detail/CardDetail';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from 'clsx';
 import { CardItemDeckList } from "@/components/cartas/card-grid/CardItemDeckList";
-import { CardItem } from "@/components/cartas/card-grid/CardItem";
 import { CardGrid } from "../card-grid/CardGrid";
+import { IoDownloadOutline, IoImageOutline, IoLogoUsd, IoPushOutline, IoSwapHorizontalSharp, IoTrashOutline } from "react-icons/io5";
 
 
 interface Props {
@@ -61,20 +59,19 @@ const dropCardDecklist = (deckListSelected:Decklist[], cardSeleted: Card) => {
 
 export const DeckCreator = ({cards, className}: Props) => {
 
+  const [mazoApoyo, setMazoApoyo] = useState(false);
   const [positionFixed, setPositionFixed] = useState(false);
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
   const [deckListMainSideDeck, setDeckListMainSideDeck] = useState<Decklist[]>([]);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
 
   const addCard = (cardSeleted: Card) => {
 
     if(cardSeleted.types.filter(type => type.name === "Limbo").length === 0) {
 
       if(deckListMain.reduce((acc, deck) => acc + deck.count, 0) > 39) return
+      if(cardSeleted.types.filter(type => type.name === "Alma").length > 0) { return }
+      if(cardSeleted.types.filter(type => type.name === "Ficha").length > 0) { return }
 
       const result = addCardDecklist(deckListMain, cardSeleted);
       if(result) { setDeckListMain(result); }
@@ -101,6 +98,22 @@ export const DeckCreator = ({cards, className}: Props) => {
 
   }
 
+  const countDecklist = (decklist: Decklist[]) => {
+    return decklist.reduce((acc, deck) => acc + deck.count, 0)
+  }
+
+  const priceDeck = () => {
+    const main = deckListMain.reduce((acc, deck) => acc + deck.card.price, 0);
+    const limbo = deckListMain.reduce((acc, deck) => acc + deck.card.price, 0);
+
+    return main+limbo;
+  }
+
+  const clearDecklist = () => {
+    setDeckListMain([]);
+    setDeckListLimbo([]);
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       if(window.scrollY > 180) {setPositionFixed(true);}
@@ -119,35 +132,53 @@ export const DeckCreator = ({cards, className}: Props) => {
 
   return (
     <div className="grid grid-cols-4 ">
-      <div className="col-span-2 lg:col-span-3 sm:my-10">
+      <div className="col-span-2 lg:col-span-3">
         <CardGrid cards={cards} addCard={addCard}/>
       </div>
-      <div ref={containerRef} 
-            className={
-            clsx(
-                            "fixed bg-gray-200 rounded-s-lg right-0 transition-all md:my-10 w-1/2 lg:w-1/4 h-5/6 px-4 py-2",
+      <div className={
+            clsx("fixed bg-gray-200 right-0 transition-all w-1/2 px-4 py-2 h-screen lg:w-1/4",
                             {
                                 "fixed -mt-[12rem] md:-mt-[180px]": positionFixed
-                            }
-                        )}
+                            })}
       >
-        <h1>Botones</h1>
-        <div className="border-b-2 pb-1">
-          <h3 className="font-bold">Mazo de Limbo</h3>
-        {
-          deckListLimbo.map( (deck, index) => (
-              <CardItemDeckList card={deck.card} count={deck.count} dropCard={() => dropCard(deck.card)}/>
-          ))
-        }
+        <div className="grid grid-cols-3 md:flex md:flex-row gap-1 mb-1">
+            {/* <button className="btn-short" title="Mazo de apoyo">
+              <IoSwapHorizontalSharp className="text-indigo-600 w-6 h-6 -mb-0.5"/>
+            </button> */}
+            <button className="btn-short" title="Importar Mazo">
+              <IoDownloadOutline className="w-6 h-6 -mt-0.5"/>
+            </button>
+            <button className="btn-short" title="Exportar Mazo">
+              <IoPushOutline className="w-6 h-6 -mb-0.5"/>
+            </button>
+            <button className="btn-short" title="Limpiar Mazo" onClick={clearDecklist}>
+              <IoTrashOutline className="w-6 h-6 -mb-0.5"/>
+            </button>
+            <button className="btn-short" title="Exportar Imagen">
+              <IoImageOutline className="w-6 h-6 -mb-0.5"/>          
+            </button>       
+            <span className="flex flex-row py-2 px-2 font-bold"><IoLogoUsd className="w-6 h-6 -mb-0.5"/> { priceDeck() }</span>
+          </div>
+        <div className="overflow-auto h-cal-200">
+          
+          <div className="border-b-2 bg-yellow-500 px-1.5 py-1 rounded-lg">
+            <h3 className="font-bold ml-2 text-black">{`${countDecklist(deckListLimbo)} Mazo de Limbo`}</h3>
+            {
+              deckListLimbo.map( (deck, index) => (
+                  <CardItemDeckList card={deck.card} count={deck.count} dropCard={() => dropCard(deck.card)}/>
+              ))
+            }
+          </div>
+          <div className="px-1.5 rounded-lg">
+            <h3 className="font-bold ml-2 text-black">{`${countDecklist(deckListMain)} Mazo de principal`}</h3>
+            {
+              deckListMain.map( (deck, index) => (
+                <CardItemDeckList card={deck.card} count={deck.count} dropCard={() => dropCard(deck.card)}/>
+              ))
+            }
+          </div>              
         </div>
-        <div>
-          <h3 className="font-bold mt-2">Mazo Principal</h3>
-        {
-          deckListMain.map( (deck, index) => (
-            <CardItemDeckList card={deck.card} count={deck.count} dropCard={() => dropCard(deck.card)}/>
-          ))
-        }
-        </div>
+        
       </div>
     </div>
   )

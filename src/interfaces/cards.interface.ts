@@ -45,5 +45,6 @@ export interface Card {
     name: string;
     effect: string;
     product: string;
+    price: number;
 }
 

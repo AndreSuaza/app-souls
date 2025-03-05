@@ -11,7 +11,7 @@ interface Props {
 export const CardItemDeckList = ({card, count, dropCard}:Props) => {
   return (
     <div 
-        className="shadow-sm mb-0.5 cursor-pointer "
+        className="shadow-sm mb-1 cursor-pointer "
         onClick={()=>dropCard(card)}
     >
         <div className="h-10 z-0 overflow-hidden rounded-md">

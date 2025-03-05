@@ -70,7 +70,7 @@ export const Pagination = ({ totalPages }: Props) => {
           {
             allPages.map( (page, index) => (
 
-              <li key={ `${page}+${index}` } className="page-item">
+              <li key={ `${page}+${index}` } className="page-item hidden md:block">
                 <Link
                   className={
                     clsx(
@@ -102,6 +102,9 @@ export const Pagination = ({ totalPages }: Props) => {
             </Link>
           </li>
         </ul>
+        <div className="md:hidden page-link relative block py-1.5 px-3 border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none">
+            <p className='font-bold'>Pag <span className='text-indigo-600'>{currentPage}</span> de {totalPages}</p>
+        </div>
       </nav>
     </div>
   );

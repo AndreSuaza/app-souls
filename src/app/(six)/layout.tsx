@@ -8,7 +8,7 @@ export default function SixLayout({
 }>) {
   return (
     <>
-    <main className="min-h-screen">
+    <main className="">
         <TopMenu/>
         <Sidebar/>
         <div className="px-0">

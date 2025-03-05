@@ -114,6 +114,11 @@ export const getPaginatedCards = async({
                     select: {
                         name: true,
                     }
+                },
+                price: {
+                    select: {
+                        price: true,
+                    }
                 }
             },
             where: whereConstruction(),
@@ -134,7 +139,8 @@ export const getPaginatedCards = async({
             totalPage: totalPages,
             cards: cards.map( card => ({
                 ...card,
-                product: card.productId
+                product: card.productId,
+                price: card.price[0].price
             }))
 
         }
