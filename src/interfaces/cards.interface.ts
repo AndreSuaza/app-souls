@@ -37,7 +37,7 @@ export interface Card {
     types: Type[];
     limit: string;
     rarities: Rarity[];
-    cost: string;
+    cost: number;
     force: string;
     defense: string;
     archetypes: Archetype[];

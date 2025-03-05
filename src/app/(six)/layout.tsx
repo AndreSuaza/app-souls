@@ -1,4 +1,5 @@
 import { Sidebar, TopMenu } from "@/components";
+import { Footer } from "@/components/ui/footer/footer";
 
 export default function SixLayout({
   children,
@@ -6,6 +7,7 @@ export default function SixLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <>
     <main className="min-h-screen">
         <TopMenu/>
         <Sidebar/>
@@ -13,5 +15,7 @@ export default function SixLayout({
           { children }
         </div>
     </main>
+    <Footer/>
+  </>
   );
 }

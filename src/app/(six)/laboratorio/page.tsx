@@ -1,5 +1,5 @@
 import { getPaginatedCards, getPropertiesCards } from "@/actions";
-import { CardGrid, Pagination, Title } from "@/components";
+import { CardGrid, DeckCreator, Pagination, Title } from "@/components";
 
 interface Props {
   searchParams: {
@@ -29,9 +29,8 @@ export default async function Cards({ searchParams }: Props) {
       title="Laboratorio"
     />
 
-    <CardGrid 
-      cards={cards}
-    />
+    <DeckCreator cards={cards}/>
+
 
     <Pagination totalPages={totalPage}/>
 

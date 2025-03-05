@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Loader } from "@googlemaps/js-api-loader"
 
 
@@ -12,7 +12,7 @@ interface Props {
 }
 
 
-export const Map = ({title, lat, lgn, className} : Props) => {
+export const MapXl = ({title, lat, lgn, className} : Props) => {
 
     const mapRef = useRef(null);
 
@@ -34,7 +34,8 @@ export const Map = ({title, lat, lgn, className} : Props) => {
             const mapOptions = {
                 center: position,
                 zoom: 17,
-                mapId: 'MY_NEXTJS_MAPID'
+                mapId: 'MY_NEXTJS_MAPID',
+                
             }
 
             const map = new Map(mapRef.current as any, mapOptions);
@@ -54,6 +55,8 @@ export const Map = ({title, lat, lgn, className} : Props) => {
     
 
   return (
-    <div className={className} ref={mapRef} />
+    <div className="absolute w-full h-screen z-0">
+    <div className="w-full h-screen" ref={mapRef}/>
+    </div>
   )
 }

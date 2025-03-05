@@ -13,7 +13,9 @@ export default async function TiendasPage() {
     <Title 
       title="Tiendas"
     />
+    
     <StoreGrid stores={stores}/>
+
     </>
   )
 }

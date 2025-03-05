@@ -7,6 +7,8 @@ export * from './cartas/card-grid/CardGrid';
 export * from './cartas/card-grid/CardItem';
 export * from './cartas/card-detail/CardDetail';
 export * from './cartas/card-grid/CardGridX';
+export * from './cartas/card-grid/CardItemDeckList';
+export * from './cartas/deck-creator/DeckCreator';
 
 export * from './eventos/event-grid/TournamentGrid';
 export * from './eventos/event-grid/TournamentItem';
@@ -21,3 +23,5 @@ export * from './stores/store-grid/StoreItem';
 export * from './stores/store-grid/StoreItemSimple';
 
 export * from './map/Map';
+export * from './map/MapXl';
+

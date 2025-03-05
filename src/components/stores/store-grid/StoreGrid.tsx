@@ -2,8 +2,8 @@
 
 import { Store } from "@/interfaces";
 import { StoreItem } from "./StoreItem"
-import { Map } from "@/components/map/Map";
 import { useState } from "react";
+import { MapXl } from "@/components/map/MapXl";
 
 interface Props {
     stores: Store[];
@@ -20,8 +20,9 @@ export const StoreGrid = ({stores}: Props) => {
   }
 
   return (
-    <div className="grid grid-col-1 lg:grid-cols-4 mx-4">
-      <div className="">
+    <>
+      
+      <div className="absolute left-0 mr-6 mt-6 overflow-auto z-10 flex flex-row w-full">
         {
           stores.map( (store, index) => (
             <StoreItem 
@@ -33,9 +34,8 @@ export const StoreGrid = ({stores}: Props) => {
           ))
         }
       </div>
-      <div className="col-span-3 mx-4">
-        <Map title={stores[index].name} lat={stores[index].lat} lgn={stores[index].lgn} className={"w-full h-[500px] md:h-screen border-0 rounded-lg mb-6"}/>
-      </div>
-    </div>
+      <MapXl title={stores[index].name} lat={stores[index].lat} lgn={stores[index].lgn}/>
+    </>
+   
   )
 }
