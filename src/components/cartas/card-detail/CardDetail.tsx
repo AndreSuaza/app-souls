@@ -7,25 +7,26 @@ import { useState } from "react";
 import { IoChevronBack, IoChevronForward, IoCloseOutline } from "react-icons/io5";
 
 interface Props {
-    cards: Card[];
+    deckList: Card[];
+    index: number;
 }
 
 
-export const CardDetail = ({ cards }: Props) => {
+export const CardDetail = ({ deckList, index }: Props) => {
 
-    const [card, setCard] = useState(cards[0]);
+    const [card, setCard] = useState(deckList[index]);
     const [indexCard, setIndexCard] = useState(0);
     const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
     const closeCardDetail = useCardDetailStore( state => state.closeCardDetail );
 
     const forwardCard = () => {
         
-        if(indexCard < cards.length-1) {
+        if(indexCard < deckList.length-1) {
             setIndexCard(indexCard+1);
-            setCard(cards[indexCard+1]);
+            setCard(deckList[indexCard+1]);
         } else {
             setIndexCard(0);
-            setCard(cards[0]);
+            setCard(deckList[0]);
         } 
     }
 
@@ -33,10 +34,10 @@ export const CardDetail = ({ cards }: Props) => {
 
         if(indexCard > 0) {
             setIndexCard(indexCard-1);
-            setCard(cards[indexCard-1]);
+            setCard(deckList[indexCard-1]);
         } else {
-            setIndexCard(cards.length-1);
-            setCard(cards[cards.length-1]);
+            setIndexCard(deckList.length-1);
+            setCard(deckList[deckList.length-1]);
         } 
     }
 

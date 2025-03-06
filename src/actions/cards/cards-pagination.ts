@@ -6,14 +6,14 @@ interface PaginationOptions {
     page?: number;
     take?: number;
     text?: string;
-    products?: string[];
-    types?: string[];
-    archetypes?: string[];
-    keywords?: string[];
-    costs?: string[];
-    forces?: string[];
-    defenses?: string[];
-    raritys?: string[];
+    products?: string;
+    types?: string;
+    archetypes?: string;
+    keywords?: string;
+    costs?: string;
+    forces?: string;
+    defenses?: string;
+    raritys?: string;
 }
 
 
@@ -30,60 +30,30 @@ export const getPaginatedCards = async({
     defenses,
     raritys,
 }: PaginationOptions) => {
-
+    
     if( isNaN( Number(page))) page = 1;
     if( page < 1) page = 1;
 
     try {
-
+        console.log(defenses?.split(',').map(item => item.trim()));
         const whereConstruction = () => {
             const where:any = {};
             if(products) {
                 where.product = {
                     code: {
-                        in: products
+                        in: products.split(',').map(item => item.trim())
                     }
                 }
             }
-            if(types) { where.typeIds = {hasEvery: types}}
-            if(archetypes) { where.archetypesIds = {hasEvery: archetypes}}
-            if(keywords) { where.keywordsIds = {hasEvery: keywords}}
-            if(costs) { where.cost = {in: costs}}
-            if(forces) { where.force = {in: forces}}
-            if(defenses) { where.defense = {in: defenses}}
-            if(raritys) { where.raritiesIds = {hasEvery: raritys}}
+            if(types) { where.typeIds = {hasEvery: types.split(',').map(item => item.trim())}}
+            if(archetypes) { where.archetypesIds = {hasEvery: archetypes.split(',').map(item => item.trim())}}
+            if(keywords) { where.keywordsIds = {hasEvery: keywords.split(',').map(item => item.trim())}}
+            if(costs) { where.cost = {in: costs.split(',').map(item => Number.parseInt(item.trim()))}}
+            if(forces) { where.force = {in: forces.split(',').map(item => item.trim())}}
+            if(defenses) { where.defense = {in: defenses.split(',').map(item => item.trim())}}
 
             return where;
         }
-
-        // const whesre =  {
-        //     product: {
-        //         code: {
-        //             in: ["ME1"]
-        //         }
-        //     },
-        //     typeIds: {
-        //         hasEvery: []
-        //     },
-        //     archetypesIds: {
-        //         hasEvery: []
-        //     },
-        //     keywordsIds: {
-        //         hasEvery: []
-        //     },
-        //     cost: {
-        //         in: costs
-        //     },
-        //     force: {
-        //         in: forces
-        //     },
-        //     defense: {
-        //         in: defenses
-        //     },
-        //     raritiesIds: {
-        //         hasEvery: []
-        //     }, 
-        // }
 
         const cards = await prisma.card.findMany({
             take:12,
@@ -146,6 +116,6 @@ export const getPaginatedCards = async({
         }
 
     } catch (error) {
-        throw new Error('No se pudo cargar las cartas ');
+        throw new Error(`No se pudo cargar las cartas ${error}`);
     }
 }

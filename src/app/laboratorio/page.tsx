@@ -1,5 +1,6 @@
 import { getPaginatedCards, getPropertiesCards } from "@/actions";
-import { DeckCreator, Pagination, Sidebar, Title, TopMenu } from "@/components";
+import { DeckCreator, Pagination, Sidebar, TopMenu } from "@/components";
+import { Archetype, Keyword, Product, Rarity, Type } from "@/interfaces";
 
 interface Props {
   searchParams: {
@@ -18,17 +19,18 @@ interface Props {
 
 export default async function Cards({ searchParams }: Props) {
 
-  const { costs } = searchParams;
-  const page = searchParams.page ? parseInt( searchParams.page ) : 1;
+  const { text, products, types, archetypes, keywords, costs, forces, defenses, page } = await searchParams;
+  const page2 = page ? parseInt( page ) : 1 
+
   const propertiesCards = await getPropertiesCards();
-  const { cards, currentPage, totalPage } = await getPaginatedCards({ page });
+  const { cards, currentPage, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses });
 
   return (
     <main className="">
             <TopMenu/>
             <Sidebar/>
             <div className="h-screen overflow-auto">
-              <DeckCreator cards={cards}/>
+              <DeckCreator cards={cards} propertiesCards={propertiesCards}/>
 
               <div className="grid grid-cols-4">
                 <div className="col-span-2 lg:col-span-3"><Pagination totalPages={totalPage}/></div>

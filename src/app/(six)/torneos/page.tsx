@@ -23,9 +23,9 @@ export default async function EventosPage({ searchParams }: Props) {
       className="mb-3 lg:mb-6"
     />
 
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:mx-40 m-2">
+    <div className="grid grid-cols-1 md:grid-cols-3 xl:mx-10 m-2">
       
-      <div className="px-4 col-span-2 mb-4">
+      <div className="px-4 col-span-2">
         <h2 className="text-4xl font-bold my-6 uppercase ">Torneos élite</h2>
         <TournamentGrid
               tournaments={tournaments}

@@ -10,6 +10,10 @@ export const getPropertiesCards = async() => {
             select: {
                 id: true,
                 name: true,
+                code: true,
+            },
+            where: {
+                show: true
             },
             orderBy: [
                 {

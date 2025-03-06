@@ -14,7 +14,7 @@ export const CardItem = ({ card, addCard }: Props) => {
 
   return (
     <div key={ card.id } className="flex flex-col transition-all hover:-mt-2 cursor-pointer drop-shadow-lg">
-      <p className="text-center font-semibold mb-3 text-md">{card.name}</p>
+      {/* <p className="text-center font-semibold mb-3 text-md">{card.name}</p> */}
       <div 
         className='rounded-xl overflow-hidden fade-in'
         onClick={() => addCard && addCard(card)}

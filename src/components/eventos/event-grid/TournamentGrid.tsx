@@ -11,22 +11,27 @@ interface Props {
 
 export const TournamentGrid = ({tournaments, short = false}: Props) => {
   return (
-    <div className='rounded-lg'>
+    <ul className='rounded-lg'>
+
         {
             tournaments.map( tournament => (
               
                short ? 
+                  <li key={ tournament.id }>
                   <TournamentItemShort 
-                    key={ tournament.id }
                     tournament={ tournament }
                   />
-               : <TournamentItem 
-                    key={ tournament.id }
-                    tournament={ tournament }
-                  />
+                  </li>
+               : 
+                <li key={ tournament.id }>
+                <TournamentItem 
+                      key={ tournament.id }
+                      tournament={ tournament }
+                    />
+                </li>
             ))
         }
 
-    </div>
+    </ul>
   )
 }

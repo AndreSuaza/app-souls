@@ -22,7 +22,7 @@ export const StoreItem = ({ store, index, setPostion }: Props) => {
               <p className='text-lg font-semibold'>Dirección: {store.address}</p>
               {/* <p className='flex flex-row text-lg font-semibold'>Teléfono: {store.phone}</p> */}
             </div>
-            <button className='btn-primary mt-3 mr-2'>Ver Eventos</button>
+            {/* <button className='btn-primary mt-3 mr-2'>Ver Eventos</button> */}
             <button className='btn-primary mt-3' onClick={() => setPostion(index)}>Mapa</button>
         </div>
         

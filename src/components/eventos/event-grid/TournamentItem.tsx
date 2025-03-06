@@ -14,12 +14,12 @@ interface Props {
 export const TournamentItem = ({ tournament }: Props) => {
 
   return (
-    <div className='bg-white shadow-md grid grid-cols-5 md:grid-cols-6 my-4 px-2 rounded-lg py-4'>
+    <div className='bg-white shadow-md grid grid-cols-1 md:grid-cols-6 my-4 px-2 rounded-lg py-4'>
       <div className=''>
-        <div className='text-center'>
-          <p className='text-2xl font-bold'>{moment(tournament.date).format('MMMM')}</p>
-          <p className='text-5xl mb-2'>{moment(tournament.date).format('DD')}</p>
-          <p className='font-bold '>{moment(tournament.date).format('h:mm a')}</p>
+        <div className='text-center flex flex-row md:flex-col'>
+          <p className='text-2xl mx-1 font-bold uppercase'>{moment(tournament.date).format('MMMM')}</p>
+          <p className='text-2xl mx-1 font-bold md:text-5xl mb-2'>{moment(tournament.date).format('DD')}</p>
+          <p className='text-2xl mx-1 font-bold '>{moment(tournament.date).format('h:mm a')}</p>
         </div>
       </div>
       <div className='col-span-4 mx-2'>

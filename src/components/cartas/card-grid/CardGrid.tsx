@@ -17,7 +17,7 @@ export const CardGrid = ({cards, addCard}: Props) => {
 
   return (
     <>
-    <div className="col-span-2 lg:col-span-3 sm:my-10">
+    <div className="col-span-2 lg:col-span-3 my-2 md:my-4">
         <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mx-4 mb-10 px-2'>
 
             {
@@ -27,9 +27,9 @@ export const CardGrid = ({cards, addCard}: Props) => {
             }
         </ul>
     </div>
-    {isCardDetailOpen && (
+    {/* {isCardDetailOpen && (
       <CardDetail cards={cards}/>
-    )}
+    )} */}
     </>
   )
 }

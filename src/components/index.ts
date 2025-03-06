@@ -25,3 +25,5 @@ export * from './stores/store-grid/StoreItemSimple';
 export * from './map/Map';
 export * from './map/MapXl';
 
+export * from './finders/CardFinderLab';
+
