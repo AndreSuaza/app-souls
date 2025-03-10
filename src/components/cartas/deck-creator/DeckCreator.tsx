@@ -155,7 +155,7 @@ export const DeckCreator = ({cards, deck, propertiesCards, className}: Props) =>
 
       deck.map(c => { if(c.card.types.filter(type => type.name === "Limbo").length === 0) { test.push(c) } else { test2.push(c)}})
       console.log(test, test2);  
-      
+      console.log(test.reduce((acc, deck) => acc + deck.count, 0));
       if(test.reduce((acc, deck) => acc + deck.count, 0) <= 40) {
         setDeckListMain([...test]);
       }
@@ -184,7 +184,11 @@ export const DeckCreator = ({cards, deck, propertiesCards, className}: Props) =>
       </div>
       <div className="fixed bg-gray-200 right-0 transition-all w-1/2 md:px-4 py-2 h-screen lg:w-1/4"
       >
-        <OptionsDeckCreator deckListMain={deckListMain} deckListLimbo={deckListLimbo} clearDecklist={clearDecklist}/>
+        <OptionsDeckCreator 
+          deckListMain={deckListMain} 
+          deckListLimbo={deckListLimbo} 
+          clearDecklist={clearDecklist}
+        />
         <div className="overflow-auto h-cal-200">
           
           <div className="border-b-2 bg-yellow-500 mx-1 px-1.5 py-1 rounded-lg">
@@ -204,12 +208,12 @@ export const DeckCreator = ({cards, deck, propertiesCards, className}: Props) =>
             }
           </div>
           <div className="px-1.5 rounded-lg">
-            <ul className="grid grid-cols-6 bg-gray-900 p-1 rounded-md mb-1 text-white">
-              <li className="col-span-2"><span className="font-bold ml-2">T:</span> {countDecklist(deckListMain)}</li>
-              <li><span className="font-bold text-red-600">U:</span> {numCards.und}</li>
-              <li><span className="font-bold text-purple-700">C:</span> {numCards.con}</li>
-              <li><span className="font-bold text-gray-400">A:</span> {numCards.arm}</li>
-              <li><span className="font-bold text-yellow-500">E:</span> {numCards.ent}</li>
+            <ul className="flex flex-row bg-gray-900 p-1 rounded-md mb-1 text-white">
+              <li className="mr-2"><span className="font-bold ml-2">T:</span> {countDecklist(deckListMain)}</li>
+              <li className="mr-2"><span className="font-bold text-red-600">U:</span> {numCards.und}</li>
+              <li className="mr-2"><span className="font-bold text-purple-700">C:</span> {numCards.con}</li>
+              <li className="mr-2"><span className="font-bold text-gray-400">A:</span> {numCards.arm}</li>
+              <li className="mr-2"><span className="font-bold text-yellow-500">E:</span> {numCards.ent}</li>
             </ul>
             {
               deckListMain.slice().reverse().map( (deck, index) => (

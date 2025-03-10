@@ -3,6 +3,7 @@
 import { Card } from "@/interfaces";
 import { copyText, pasteText } from "@/utils";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import {
     IoDownloadOutline,
     IoImageOutline,
@@ -10,6 +11,7 @@ import {
     IoPushOutline,
     IoTrashOutline,
 } from "react-icons/io5";
+import { Decklistimage } from "../decklist-image/DecklistImage";
 
 interface Decklist {
     count: number;
@@ -29,6 +31,7 @@ export const OptionsDeckCreator = ({
 }: Props) => {
 
     const router = useRouter();
+    const [showDeckImage, setShowDeckImage] = useState(false);
 
     const priceDeck = () => {
         const main = deckListMain.reduce(
@@ -61,7 +64,13 @@ export const OptionsDeckCreator = ({
         router.push(`/laboratorio?decklist=${deck}`);
     }
 
+    const closeDeckImage = () => {
+        console.log('entra')
+        setShowDeckImage(false);
+    }
+
     return (
+        <>
         <div className="grid grid-cols-3 md:grid-cols-8 gap-1 mb-1">
             {/* <button className="btn-short" title="Mazo de apoyo">
                 <IoSwapHorizontalSharp className="text-indigo-600 w-6 h-6 -mb-0.5"/>
@@ -89,12 +98,19 @@ export const OptionsDeckCreator = ({
             >
                 <IoTrashOutline className="w-6 h-6 -mb-0.5" />
             </button>
-            <button className="btn-short" title="Exportar Imagen">
+            <button className="btn-short" title="Exportar Imagen" onClick={() => setShowDeckImage(true)}>
                 <IoImageOutline className="w-6 h-6 -mb-0.5" />
             </button>
             <span className="flex flex-row py-2 px-2 font-bold col-span-2">
                 <IoLogoUsd className="w-6 h-6 -mb-0.5" /> {priceDeck()}
             </span>
         </div>
+        { showDeckImage && 
+            <div className="w-full overflow-auto">
+            <Decklistimage maindeck={deckListMain} limbodeck={deckListLimbo} close={closeDeckImage}/>
+            </div>
+        }
+
+        </>
     );
 };

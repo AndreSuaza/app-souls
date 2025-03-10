@@ -10,6 +10,8 @@ export * from './cartas/card-grid/CardGridX';
 export * from './cartas/card-grid/CardItemDeckList';
 export * from './cartas/deck-creator/DeckCreator';
 export * from './cartas/deck-creator/OptionsDeckCreator';
+export * from './cartas/decklist-image/DecklistImage';
+export * from './cartas/decklist-image/DeckImage';
 
 export * from './eventos/event-grid/TournamentGrid';
 export * from './eventos/event-grid/TournamentItem';

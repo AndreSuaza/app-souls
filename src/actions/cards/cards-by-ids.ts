@@ -15,6 +15,7 @@ export const getCardsByIds = async(ids: string | undefined) => {
     try {
 
         const cards = await prisma.card.findMany({
+            distinct:"idd",
             include: {
                 product: {
                     select: {

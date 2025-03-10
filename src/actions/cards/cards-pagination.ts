@@ -51,12 +51,12 @@ export const getPaginatedCards = async({
             if(costs) { where.cost = {in: costs.split(',').map(item => Number.parseInt(item.trim()))}}
             if(forces) { where.force = {in: forces.split(',').map(item => item.trim())}}
             if(defenses) { where.defense = {in: defenses.split(',').map(item => item.trim())}}
-
+            if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
             return where;
         }
 
         const cards = await prisma.card.findMany({
-            take:12,
+            take:20,
             skip: (page -1) * take,
             include: {
                 product: {
