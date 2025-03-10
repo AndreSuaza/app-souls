@@ -10,17 +10,14 @@ import { CardFinderLab } from "@/components/finders/CardFinderLab";
 import { CardDetail } from "../card-detail/CardDetail";
 import { useCardDetailStore } from "@/store";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
+import { Decklist } from "@/interfaces/decklist.interface";
 
 
 interface Props {
     cards: Card[];
     propertiesCards: any;
+    deck?: Decklist[];
     className?: string
-}
-
-interface Decklist {
-    count: number;
-    card: Card;
 }
 
 interface CardsDetail {
@@ -67,10 +64,9 @@ const dropCardDecklist = (deckListSelected:Decklist[], cardSeleted: Card) => {
 
 }
 
-export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
+export const DeckCreator = ({cards, deck, propertiesCards, className}: Props) => {
 
   const [mazoApoyo, setMazoApoyo] = useState(false);
-  const [positionFixed, setPositionFixed] = useState(false);
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
   const [deckListMainSideDeck, setDeckListMainSideDeck] = useState<Decklist[]>([]);
@@ -80,12 +76,12 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
 
   const addCard = (cardSeleted: Card) => {
 
+    if(cardSeleted.types.filter(type => type.name === "Alma").length > 0) { return }
+    if(cardSeleted.types.filter(type => type.name === "Ficha").length > 0) { return }
+
     if(cardSeleted.types.filter(type => type.name === "Limbo").length === 0) {
 
       if(deckListMain.reduce((acc, deck) => acc + deck.count, 0) > 39) return
-      if(cardSeleted.types.filter(type => type.name === "Alma").length > 0) { return }
-      if(cardSeleted.types.filter(type => type.name === "Ficha").length > 0) { return }
-
       const result = addCardDecklist(deckListMain, cardSeleted);
       if(result) { setDeckListMain(result); }
 
@@ -146,26 +142,34 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
     setDeckListLimbo([]);
   }
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if(window.scrollY > 180) {setPositionFixed(true);}
-      else {setPositionFixed(false);}
-    };
-
-    // Agregar el evento
-    window?.addEventListener('scroll', handleScroll);
-
-    // Limpiar el evento al desmontar el componente
-    return () => {
-      window?.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
   const cardDetailMain = (index: number) => {
-      const list = [...deckListMain];
-      setDetalDecklistCards({deckList: list.reverse().map(deck => deck.card), index: index});
+    const list = [...deckListMain];
+    setDetalDecklistCards({deckList: list.reverse().map(deck => deck.card), index: index});
   }
 
+  const importDeck = () => {
+    
+    if(deck) {
+      let test: Decklist[] = [];
+      let test2: Decklist[] = [];
+
+      deck.map(c => { if(c.card.types.filter(type => type.name === "Limbo").length === 0) { test.push(c) } else { test2.push(c)}})
+      console.log(test, test2);  
+      
+      if(test.reduce((acc, deck) => acc + deck.count, 0) <= 40) {
+        setDeckListMain([...test]);
+      }
+
+      if(test2.reduce((acc, deck) => acc + deck.count, 0) <= 6) {
+        setDeckListLimbo([...test2]);
+      }
+
+    }
+  }
+
+  useEffect(() => {
+    importDeck();
+  }, []);
 
   useEffect(() => {
      countCardsTypes()
@@ -178,11 +182,7 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
         <CardFinderLab propertiesCards={propertiesCards}/>
         <CardGrid cards={cards} addCard={addCard}/>
       </div>
-      <div className={
-            clsx("fixed bg-gray-200 right-0 transition-all w-1/2 md:px-4 py-2 h-screen lg:w-1/4",
-                            {
-                                "fixed -mt-[12rem] md:-mt-[180px]": positionFixed
-                            })}
+      <div className="fixed bg-gray-200 right-0 transition-all w-1/2 md:px-4 py-2 h-screen lg:w-1/4"
       >
         <OptionsDeckCreator deckListMain={deckListMain} deckListLimbo={deckListLimbo} clearDecklist={clearDecklist}/>
         <div className="overflow-auto h-cal-200">

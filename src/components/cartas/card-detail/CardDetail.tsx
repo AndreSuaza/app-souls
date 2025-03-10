@@ -31,7 +31,7 @@ export const CardDetail = ({ deckList, index }: Props) => {
     }
 
     const backCard = () => {
-        console.log(indexCard , deckList);
+
         if(indexCard > 0) {
             setIndexCard(indexCard-1);
             setCard(deckList[indexCard-1]);

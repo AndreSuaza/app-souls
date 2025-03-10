@@ -47,11 +47,11 @@ export const OptionsDeckCreator = ({
         let exportText = "";
         deckListMain.map(
             (deck) =>
-                (exportText = exportText + deck.card.id + "%2C" + deck.count + "%2C")
+                (exportText = exportText + deck.card.idd + "%2C" + deck.count + "%2C")
         );
         deckListLimbo.map(
             (deck) =>
-                (exportText = exportText + deck.card.id + "%2C" + deck.count + "%2C")
+                (exportText = exportText + deck.card.idd + "%2C" + deck.count + "%2C")
         );
         copyText(exportText);
     };

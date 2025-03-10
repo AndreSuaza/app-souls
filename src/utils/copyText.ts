@@ -10,7 +10,6 @@ export  const copyText = async (text: string) => {
 export const pasteText = async () => {
     try {
         const clipboardText = await navigator.clipboard.readText();
-        console.log(clipboardText);
         return (clipboardText);
 
     } catch (err) {

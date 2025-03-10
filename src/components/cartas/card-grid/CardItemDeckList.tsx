@@ -21,7 +21,6 @@ export const CardItemDeckList = ({card, count, index, dropCard, addCard, detailC
   const openDetail = () => {
       openCardDetail();
       detailCard(index);
-      console.log(index);
   }
 
   const truncateText = (text: string, maxLength: number): string => {

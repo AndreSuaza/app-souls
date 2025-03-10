@@ -35,7 +35,7 @@ export const getPaginatedCards = async({
     if( page < 1) page = 1;
 
     try {
-        console.log(defenses?.split(',').map(item => item.trim()));
+
         const whereConstruction = () => {
             const where:any = {};
             if(products) {
