@@ -4,13 +4,13 @@ import { create } from 'zustand'
 interface State {
 
     isCardDetailOpen: boolean;
-    openCardDetail: (card:Card) => void;
+    openCardDetail: () => void;
     closeCardDetail: () => void;
     
 }
 
 export const useCardDetailStore = create<State>()((set) => ({
     isCardDetailOpen: false,
-    openCardDetail: (card) => set({ isCardDetailOpen: true }),
+    openCardDetail: () => set({ isCardDetailOpen: true }),
     closeCardDetail: () => set({ isCardDetailOpen: false }),
 }));

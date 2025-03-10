@@ -9,6 +9,7 @@ import { IoDownloadOutline, IoImageOutline, IoLogoUsd, IoPushOutline, IoSwapHori
 import { CardFinderLab } from "@/components/finders/CardFinderLab";
 import { CardDetail } from "../card-detail/CardDetail";
 import { useCardDetailStore } from "@/store";
+import { OptionsDeckCreator } from "./OptionsDeckCreator";
 
 
 interface Props {
@@ -74,7 +75,7 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
   const [deckListMainSideDeck, setDeckListMainSideDeck] = useState<Decklist[]>([]);
   const [numCards, setNumCard] = useState({und: 0, arm: 0, con: 0, ent: 0}) 
-
+  const [detalDecklistCards, setDetalDecklistCards] = useState<CardsDetail>({deckList: [], index: 0})
   const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
 
   const addCard = (cardSeleted: Card) => {
@@ -140,13 +141,6 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
     return decklist.reduce((acc, deck) => acc + deck.count, 0)
   }
 
-  const priceDeck = () => {
-    const main = deckListMain.reduce((acc, deck) => acc + deck.card.price, 0);
-    const limbo = deckListMain.reduce((acc, deck) => acc + deck.card.price, 0);
-
-    return main+limbo;
-  }
-
   const clearDecklist = () => {
     setDeckListMain([]);
     setDeckListLimbo([]);
@@ -167,8 +161,9 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
     };
   }, []);
 
-  const cardDetal = (list: Card[], index: number) => {
-
+  const cardDetailMain = (index: number) => {
+      const list = [...deckListMain];
+      setDetalDecklistCards({deckList: list.reverse().map(deck => deck.card), index: index});
   }
 
 
@@ -189,24 +184,7 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
                                 "fixed -mt-[12rem] md:-mt-[180px]": positionFixed
                             })}
       >
-        <div className="grid grid-cols-3 md:grid-cols-8 gap-1 mb-1">
-            {/* <button className="btn-short" title="Mazo de apoyo">
-              <IoSwapHorizontalSharp className="text-indigo-600 w-6 h-6 -mb-0.5"/>
-            </button> */}
-            <button className="btn-short text-center" title="Importar Mazo">
-              <IoDownloadOutline className="w-6 h-6 -mt-0.5"/>
-            </button>
-            <button className="btn-short" title="Exportar Mazo">
-              <IoPushOutline className="w-6 h-6 -mb-0.5"/>
-            </button>
-            <button className="btn-short" title="Limpiar Mazo" onClick={clearDecklist}>
-              <IoTrashOutline className="w-6 h-6 -mb-0.5"/>
-            </button>
-            <button className="btn-short" title="Exportar Imagen">
-              <IoImageOutline className="w-6 h-6 -mb-0.5"/>          
-            </button>       
-            <span className="flex flex-row py-2 px-2 font-bold col-span-2"><IoLogoUsd className="w-6 h-6 -mb-0.5"/> { priceDeck() }</span>
-        </div>
+        <OptionsDeckCreator deckListMain={deckListMain} deckListLimbo={deckListLimbo} clearDecklist={clearDecklist}/>
         <div className="overflow-auto h-cal-200">
           
           <div className="border-b-2 bg-yellow-500 mx-1 px-1.5 py-1 rounded-lg">
@@ -217,8 +195,10 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
                     key={deck.card.id+index} 
                     card={deck.card} 
                     count={deck.count} 
-                    dropCard={() => dropCard(deck.card)} 
-                    addCard={() => addCard(deck.card)}
+                    index={index}
+                    dropCard={dropCard} 
+                    addCard={addCard}
+                    detailCard={cardDetailMain}
                   />
               ))
             }
@@ -237,8 +217,10 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
                   key={deck.card.id+index} 
                   card={deck.card} 
                   count={deck.count} 
-                  dropCard={() => dropCard(deck.card)} 
-                  addCard={() => addCard(deck.card)} 
+                  index={index}
+                  dropCard={dropCard} 
+                  addCard={addCard} 
+                  detailCard={cardDetailMain}
                 />
               ))
             }
@@ -246,9 +228,9 @@ export const DeckCreator = ({cards, className, propertiesCards}: Props) => {
         </div>
         
       </div>
-      {/* {isCardDetailOpen && (
-      <CardDetail {...deckDetail}/>
-      )}       */}
+      {isCardDetailOpen && (
+      <CardDetail {...detalDecklistCards}/>
+      )}      
     </div>
   )
 }

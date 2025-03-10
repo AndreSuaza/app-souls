@@ -20,7 +20,7 @@ export const CardDetail = ({ deckList, index }: Props) => {
     const closeCardDetail = useCardDetailStore( state => state.closeCardDetail );
 
     const forwardCard = () => {
-        
+
         if(indexCard < deckList.length-1) {
             setIndexCard(indexCard+1);
             setCard(deckList[indexCard+1]);
@@ -31,7 +31,7 @@ export const CardDetail = ({ deckList, index }: Props) => {
     }
 
     const backCard = () => {
-
+        console.log(indexCard , deckList);
         if(indexCard > 0) {
             setIndexCard(indexCard-1);
             setCard(deckList[indexCard-1]);

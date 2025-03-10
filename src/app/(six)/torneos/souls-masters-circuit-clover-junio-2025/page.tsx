@@ -21,8 +21,19 @@ export default function Tournaments() {
             <div className="col-span-2 my-10">
                 <p>El Souls Masters Circuit es más que un torneo, es una experiencia que pondrá a prueba la habilidad, la estrategia y la capacidad de los jugadores para adaptarse a las mecánicas únicas del juego. En este torneo, los participantes tendrán la oportunidad de demostrar su destreza con las cartas más poderosas, usando combinaciones letales y elaboradas para superar a sus oponentes.</p>
 
-                <h2 className="text-4xl font-bold uppercase my-10">Por participar recibes:</h2>
+                <h2 className="text-4xl font-bold uppercase mt-10 mb-6">Por participar recibes:</h2>
 
+                <div className="grid grid-cols-2">
+   
+                        <ul className="ml-4 p-2">
+                            <li className="mb-2">1 Sobre de Souls Masters Circuit</li>
+                            <li className="mb-2">1 Sobre de Expansión</li>
+                            <li className="mb-2">1 Sobre maestro</li>
+                            <li className="mb-2">1 Alma Ultra</li>
+                            <li className="mb-2">1 Alma Ultra</li>
+                        </ul>
+          
+                </div>
                 <h2 className="text-4xl font-bold uppercase my-10">Premiación del Evento</h2>
 
                 <div className="grid grid-cols-2">
@@ -40,8 +51,8 @@ export default function Tournaments() {
                     <div className="">
                         <h3 className="text-2xl uppercase font-bold mb-6">Segundo lugar</h3>
                         <ul className="ml-4">
-                            <li className="mb-2">2 caja Génesis del Caos</li>
-                            <li className="mb-2">2 caja Génesis del Caos</li>
+                            <li className="mb-2">2 cajas de Expansión</li>
+                            <li className="mb-2">2 cajas de Expansión</li>
                             <li className="mb-2">Tapete de juego Souls Masters Circuit</li>
                             <li className="mb-2">1 Purificador de Almas Gold Secret AA</li>
                             <li className="mb-2">1 Alma Gold Secret Souls Masters Circuit</li>
@@ -51,8 +62,8 @@ export default function Tournaments() {
                     <div className="">
                         <h3 className="text-2xl uppercase font-bold mb-6">Tercero y Cuarto lugar</h3>
                         <ul className="ml-4">
-                            <li className="mb-2">12 Sobres Génesis del Caos</li>
-                            <li className="mb-2">1 Caja leyendas peludas</li>
+                            <li className="mb-2">12 Sobres de Expansión</li>
+                            <li className="mb-2">2 Cajas Ecos del abismo</li>
                             <li className="mb-2">Tapete de juego Souls Masters Circuit</li>
                             <li className="mb-2">1 Purificador de Almas Gold Secret AA</li>
                             <li className="mb-2">1 Alma Gold Secret Souls Masters Circuit</li>
@@ -62,7 +73,7 @@ export default function Tournaments() {
                     <div className="">
                         <h3 className="text-2xl uppercase font-bold mb-6">Quinto al Octavo Lugar</h3>
                         <ul className="ml-4">
-                            <li className="mb-2">6 Sobres Génesis del Caos</li>
+                            <li className="mb-2">6 Sobres de Expansión</li>
                             <li className="mb-2">Tapete de juego Souls Masters Circuit</li>
                             <li className="mb-2">1 Alma Gold Secret Souls Masters Circuit</li>
                             <li className="mb-2">15 puntos Souls Master</li>

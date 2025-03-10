@@ -9,6 +9,7 @@ export * from './cartas/card-detail/CardDetail';
 export * from './cartas/card-grid/CardGridX';
 export * from './cartas/card-grid/CardItemDeckList';
 export * from './cartas/deck-creator/DeckCreator';
+export * from './cartas/deck-creator/OptionsDeckCreator';
 
 export * from './eventos/event-grid/TournamentGrid';
 export * from './eventos/event-grid/TournamentItem';
