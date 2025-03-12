@@ -8,7 +8,7 @@ export default function Tournaments() {
       <>
       <div className="bg-[url(/tournaments/SMCC-baner.jpg)] bg-cover h-[600px] w-full bg-left-top">
         <div className="grid grid-cols-1 md:grid-cols-2">
-            <div className="bg-black h-[600px] test bg-opacity-90 flex justify-center">
+            <div className="bg-black h-[600px] polygon bg-opacity-90 flex justify-center">
                 <div className="text-white font-bold my-auto ml-6 md:w-2/3 uppercase md:pb-24">
                     <h1 className="text-4xl md:text-6xl mb-2">Souls Masters Circuit</h1>
                     <p className="text-4xl mb-2">CLOVER TCG STORE</p>

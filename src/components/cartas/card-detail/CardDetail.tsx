@@ -15,7 +15,7 @@ interface Props {
 export const CardDetail = ({ deckList, index }: Props) => {
 
     const [card, setCard] = useState(deckList[index]);
-    const [indexCard, setIndexCard] = useState(0);
+    const [indexCard, setIndexCard] = useState(index);
     const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
     const closeCardDetail = useCardDetailStore( state => state.closeCardDetail );
 
@@ -62,21 +62,21 @@ export const CardDetail = ({ deckList, index }: Props) => {
     <div className="fixed top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all md:w-3/6 md:left-1/4 md:h-5/6 md:top-14">
          <IoCloseOutline 
             size={50}
-            className="absolute top-3 right-5 cursor-pointer text-gray-100 bg-indigo-500 hover:bg-indigo-600"
+            className="absolute top-3 right-5 cursor-pointer text-gray-100 bg-slate-950 hover:bg-indigo-600"
             onClick={ closeCardDetail }
         />
         <IoChevronForward 
             size={50}
-            className="bg-indigo-500 absolute cursor-pointer hover:bg-indigo-600 text-gray-100 top-[400px] right-0 md:-right-10"
+            className="bg-slate-950 absolute cursor-pointer hover:bg-slate-950 text-gray-100 top-[400px] right-0 md:-right-10"
             onClick={ forwardCard }
         />
         <IoChevronBack  
             size={50}
-            className="bg-indigo-500 absolute cursor-pointer hover:bg-indigo-600 text-gray-100 top-[400px] left-0 md:-left-10"
+            className="bg-slate-950 absolute cursor-pointer hover:bg-slate-950 text-gray-100 top-[400px] left-0 md:-left-10"
             onClick={ backCard }
         />
         <div className="overflow-auto scroll-smooth w-screen pb-4 xl:grid xl:grid-cols-2">
-            <div className="text-center text-gray-100 py-4 mb-4 col-span-3 bg-indigo-500"> 
+            <div className="text-center text-gray-100 py-4 mb-4 col-span-3 bg-slate-950"> 
                 <h1 className="font-bold text-4xl">{card.name}</h1>
             </div>
             <div className="px-4">
@@ -120,14 +120,14 @@ export const CardDetail = ({ deckList, index }: Props) => {
                         <tr className="border-b">
                         <td colSpan={4} className="pb-6 font-light">{card?.effect}</td>
                         </tr>
-                        <tr>
+                        {/* <tr>
                         <th className="pt-2" colSpan={4}>Productos donde puedes encontrar esta carta.</th>
                         </tr>
                         <tr>
                         <td className="w-full py-3 max-h-40" colSpan={4}>
-                            {/* <ProductsByCard productsByCard={card?.products}/> */}
+                            <ProductsByCard productsByCard={card?.products}/>
                         </td>
-                        </tr>
+                        </tr> */}
                     </tbody>
                 </table>
             </div>

@@ -159,15 +159,16 @@ h2 {
 }
 
 // Fin Animacion Cartas
-.test {
+.polygon {
   overflow: hidden;
   clip-path: polygon(80% 100%, 100% 0px, 0 0px, 0px 0,0 100%);
 }
 
-.h-cal-200 {
-  height: calc(100% - 200px);
+.polygon-l {
+  overflow: hidden;
+  clip-path: polygon(100% 100%, 100% 0px, 0 0px, 20% 100%,);
 }
 
-.cal-l{
-  left: calc((100% - 1080px)/2);
+.h-cal-200 {
+  height: calc(100% - 200px);
 }
