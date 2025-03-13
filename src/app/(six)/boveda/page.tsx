@@ -3,15 +3,6 @@ import { CardFinderPrices, Pagination, Title } from "@/components";
 import { Metadata } from "next";
 import Image from "next/image";
 
-interface Props {
-  searchParams: {
-    page?: string;
-    products?: string;
-    rarities?: string;
-    orden: string;
-  }
-}
-
 export const metadata: Metadata = {
   title: 'Boveda - Referencia precios de las cartas de souls in xtiction',
   description: 'Consulta una referencia de los precios actualizados de las cartas coleccionables de Souls In Xtinction TCG en un solo lugar. Encuentra el valor de cada carta, desde las más comunes hasta las más raras y codiciadas.',
@@ -33,7 +24,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function BovedaPage({ searchParams }: Props) {
+export default async function BovedaPage({ searchParams }: { searchParams: {[key: string]: string }}) {
 
   const { products,  page, rarities, orden } = searchParams;
   const page2 = page ? parseInt( page ) : 1 
