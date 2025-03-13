@@ -2,6 +2,17 @@
 
 import prisma from "@/lib/prisma";
 
+interface WhereClause {
+    product?: { code: { in: string[] } };
+    typeIds?: { hasEvery: string[] };
+    archetypesIds?: { hasEvery: string[] };
+    keywordsIds?: { hasEvery: string[] };
+    cost?: { in: number[] };
+    force?: { in: string[] };
+    defense?: { in: string[] };
+    OR?: Array<{ effect?: { contains: string }; idd?: string; name?: { contains: string } }>;
+}
+
 interface PaginationOptions {
     page?: number;
     take?: number;
@@ -35,7 +46,7 @@ export const getPaginatedCards = async({
     try {
 
         const whereConstruction = () => {
-            const where: Record<string, any> = {};
+            const where: WhereClause = {};
             if(products) {
                 where.product = {
                     code: {

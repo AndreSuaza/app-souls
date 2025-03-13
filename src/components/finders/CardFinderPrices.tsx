@@ -6,22 +6,19 @@ import { MultiSelect } from "../form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-
 interface Propertie {
     id: string,
     name: string,
-  }
+}
   
-  interface Properties {
-    products: Propertie[],
-    types: Propertie[],
-    archetypes: Propertie[],
-    keywords: Propertie[],
-    rarities: Propertie[],
-  }
+interface Properties {
+products: Propertie[],
+rarities: Propertie[],
+}
+
 
 interface Props {
-    propertiesCards: Properties;
+    propertiesCards: any;
 }
 
 interface SelectProps {
@@ -29,18 +26,23 @@ interface SelectProps {
     id: string;
 }
 
+interface SelectPropsPro {
+    name: string;
+    code: string;
+}
+
 export const CardFinderPrices = ({propertiesCards}: Props) => {
     console.log(propertiesCards)
     const [properties, setProperties] =  useState({
         others: [{label: "De mayor a menos", value: "desc"},{label: "De menor a mayor", value: "asc"}],
-        products: propertiesCards.products.map((prop: SelectProps) => {return {label: `${prop.name} [${prop.id}]`, value:prop.id }}),
+        products: propertiesCards.products.map((prop: SelectPropsPro) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
         rarities: propertiesCards.rarities.map((prop: SelectProps) => {return {label: prop.name, value:prop.id }}),
         });
 
     const router = useRouter();
     const {products, rarities} = properties;
     
-    const getFilterValues = (filter:  Record<string, any>[]) => {
+    const getFilterValues = (filter: Propertie[]) => {
         let values = "";
     
         filter.forEach((value, index) => {
@@ -50,8 +52,8 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
         return values;
     }
 
-    const searchCards = (filters:  Record<string, any>) => { 
-        console.log(filters)
+    const searchCards = (filters: Properties) => { 
+
         let query = "";
 
         if (filters.products.length > 0) query += '&products='+getFilterValues(filters.products);
@@ -61,8 +63,8 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
     
     };
 
-    const onSubmit = (filters:  Record<string, any>) => {
-        console.log('entra')
+    const onSubmit = (filters: Properties) => {
+
         router.push(`/boveda?${searchCards(filters)}`);
 
     }

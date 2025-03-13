@@ -3,7 +3,7 @@
 import { Decklist } from "@/interfaces/decklist.interface";
 import html2canvas from "html2canvas";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { DeckImage } from "./DeckImage";
 import { IoCloseOutline, IoDownloadOutline, IoLogoFacebook, IoLogoInstagram } from "react-icons/io5";
 

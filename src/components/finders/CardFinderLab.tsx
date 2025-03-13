@@ -13,11 +13,15 @@ interface Propertie {
   }
   
   interface Properties {
+    text: string,
     products: Propertie[],
     types: Propertie[],
     archetypes: Propertie[],
     keywords: Propertie[],
     rarities: Propertie[],
+    force: Propertie[],
+    defense: Propertie[],
+    cost: Propertie[],
   }
 
 interface Props {
@@ -43,7 +47,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
     const router = useRouter();
     const {types, others, archetypes, keywords, products} = properties;
     
-    const getFilterValues = (filter: any[]) => {
+    const getFilterValues = (filter: Propertie[]) => {
         let values = "";
     
         filter.forEach((value, index) => {
@@ -53,7 +57,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
         return values;
     }
 
-    const searchCards = (filters:  Record<string, any>) => { 
+    const searchCards = (filters: Properties) => { 
 
         let query = "";
 
@@ -70,7 +74,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
     
     };
 
-    const onSubmit = (filters:  Record<string, any>) => {
+    const onSubmit = (filters: Properties) => {
         
         router.push(`/laboratorio?${searchCards(filters)}`);
 

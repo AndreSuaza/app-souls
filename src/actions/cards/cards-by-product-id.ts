@@ -1,6 +1,5 @@
 'use server';
 
-import { Decklist } from "@/interfaces/decklist.interface";
 import prisma from "@/lib/prisma";
 
 
@@ -63,6 +62,6 @@ export const getCardsByProductId = async(id:string) => {
         }))
 
     } catch (error) {
-        throw new Error('No se pudo cargar las cartas ');
+        throw new Error(`No se pudo cargar las cartas ${error}`);
     }
 }

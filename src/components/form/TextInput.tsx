@@ -6,6 +6,7 @@ interface Props {
     placeholder?: string;
     id? : string;
     label? : string;
+    className?: string;
 }
 
 export const TextInput = ( { ...props } : Props ) => {

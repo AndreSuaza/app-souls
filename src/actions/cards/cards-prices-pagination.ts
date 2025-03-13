@@ -2,6 +2,12 @@
 
 import prisma from "@/lib/prisma";
 
+
+interface WhereClause {
+    product?: { code: { in: string[] } };
+    raritiesIds?: { hasEvery: string[] };
+}
+
 interface PaginationOptions {
     page?: number;
     take?: number;
@@ -16,7 +22,6 @@ export const getPaginatedPricesCards = async({
     take = 24,
     products,
     rarities,
-    orden = "desc",
 }: PaginationOptions) => {
     
     if( isNaN( Number(page))) page = 1;
@@ -25,7 +30,7 @@ export const getPaginatedPricesCards = async({
     try {
 
         const whereConstruction = () => {
-            const where: Record<string, any> = {};
+            const where: WhereClause = {};
             if(products) {
                 where.product = {
                     code: {
@@ -34,7 +39,6 @@ export const getPaginatedPricesCards = async({
                 }
             }
             if(rarities) { where.raritiesIds = {hasEvery: rarities.split(',').map(item => item.trim())}}
-            //if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
             return where;
         }
 

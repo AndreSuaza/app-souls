@@ -8,8 +8,6 @@ import Link from 'next/link';
 
 interface Props {
   tournament: Tournament;
-  imageShow?: Boolean;
-
 }
 
 export const TournamentItem = ({ tournament }: Props) => {

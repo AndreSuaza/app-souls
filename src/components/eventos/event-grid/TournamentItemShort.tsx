@@ -8,8 +8,6 @@ import { IoCalendarOutline } from 'react-icons/io5';
 
 interface Props {
   tournament: Tournament;
-  imageShow?: Boolean;
-
 }
 
 export const TournamentItemShort = ({ tournament }: Props) => {
