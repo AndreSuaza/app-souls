@@ -1,7 +1,6 @@
 
 import Image from 'next/image';
 import { Card } from '@/interfaces/cards.interface';
-import { useCardDetailStore } from '@/store';
 
 interface Props {
     card: Card;

@@ -4,8 +4,8 @@ interface Props {
     name: string;
     type?: 'text' | 'email' | 'password';
     placeholder?: string;
-    // @ts-ignore
-    [x:string]: any;
+    id? : string;
+    label? : string;
 }
 
 export const TextInput = ( { ...props } : Props ) => {

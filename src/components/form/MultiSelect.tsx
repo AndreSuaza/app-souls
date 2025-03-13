@@ -4,8 +4,8 @@ import CustomSelect from './CustomSelect';
 interface Props {
     name: string;
     placeholder?: string;
-    // @ts-ignore
-    [x:string]: any;
+    label?: string;
+    id?: string;
     multi?: boolean;
 }
 

@@ -16,7 +16,6 @@ export interface Archetype {
 export interface Rarity {
     name: string;
     id?: string;
-    createDate?: Date;
 }
 
 export interface Keyword {

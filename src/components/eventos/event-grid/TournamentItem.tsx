@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 interface Props {
   tournament: Tournament;
-  imageShow?: boolean;
+  imageShow?: Boolean;
 
 }
 

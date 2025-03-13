@@ -1,7 +1,6 @@
 'use server';
 
 import prisma from "@/lib/prisma";
-import { typeTournament } from "@/seed/seed";
 
 interface PaginationOptions {
     page?: number;
@@ -85,7 +84,7 @@ export const getTournamentsPagination = async({page = 1,take = 12, types}: Pagin
         }
         
     } catch (error) {
-        throw new Error(`No se pudo cargar los Torneos` );
+        throw new Error(`No se pudo cargar los Torneos ${error}` );
     }
     
 

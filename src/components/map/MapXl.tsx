@@ -12,7 +12,7 @@ interface Props {
 }
 
 
-export const MapXl = ({title, lat, lgn, className} : Props) => {
+export const MapXl = ({title, lat, lgn} : Props) => {
 
     const mapRef = useRef(null);
 

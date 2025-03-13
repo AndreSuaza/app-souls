@@ -7,8 +7,21 @@ import { useState } from "react";
 import { IoFilterSharp } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 
+interface Propertie {
+    id: string,
+    name: string,
+  }
+  
+  interface Properties {
+    products: Propertie[],
+    types: Propertie[],
+    archetypes: Propertie[],
+    keywords: Propertie[],
+    rarities: Propertie[],
+  }
+
 interface Props {
-    propertiesCards: any;
+    propertiesCards: Properties;
 }
 
 interface SelectProps {
@@ -16,20 +29,15 @@ interface SelectProps {
     id: string;
 }
 
-interface SelectPropsPro {
-    name: string;
-    code: string;
-}
-
 export const CardFinderLab = ({propertiesCards}: Props) => {
 
     const [showFilters, setShowFilters] = useState(false);
-    const [properties, setProperties] =  useState({
+    const [properties] =  useState({
         types: propertiesCards.types.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
         others: [{label: 0, value: 0},{label: 1, value: 1},{label: 2, value: 2},{label: 3, value: 3},{label: 4, value: 4},{label: 5, value: 5},{label: 6, value: 6},{label: 7, value: 7},{label: 8, value: 8},{label: 9, value: 9},{label: 10, value: 10}],
         archetypes: propertiesCards.archetypes.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
         keywords: propertiesCards.keywords.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
-        products: propertiesCards.products.map((prop:SelectPropsPro) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
+        products: propertiesCards.products.map((prop:SelectProps) => {return {label: `${prop.name} [${prop.id}]`, value:prop.id }}),
         });
 
     const router = useRouter();
@@ -45,7 +53,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
         return values;
     }
 
-    const searchCards = (filters: any) => { 
+    const searchCards = (filters:  Record<string, any>) => { 
 
         let query = "";
 
@@ -62,9 +70,8 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
     
     };
 
-    const onSubmit = (filters: any) => {
+    const onSubmit = (filters:  Record<string, any>) => {
         
-        const queryParams = searchCards(filters);
         router.push(`/laboratorio?${searchCards(filters)}`);
 
     }

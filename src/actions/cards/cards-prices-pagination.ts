@@ -25,7 +25,7 @@ export const getPaginatedPricesCards = async({
     try {
 
         const whereConstruction = () => {
-            const where:any = {};
+            const where: Record<string, any> = {};
             if(products) {
                 where.product = {
                     code: {
@@ -36,19 +36,6 @@ export const getPaginatedPricesCards = async({
             if(rarities) { where.raritiesIds = {hasEvery: rarities.split(',').map(item => item.trim())}}
             //if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
             return where;
-        }
-
-        const orderByornde = () => {
-            let price: any = {};
-            if (orden === 'asc')  {
-                price = {price: 'asc'}
-
-            } 
-            else {
-                price = {price: 'desc'}
-            }
-
-            return price;
         }
 
         const cards = await prisma.card.findMany({
@@ -85,7 +72,9 @@ export const getPaginatedPricesCards = async({
                     include: {
                         rarity: true
                     },
-                    orderBy: orderByornde()
+                    orderBy: {
+                        price: 'asc'
+                    }
                     ,
                     distinct: ["rarityId"]
                 }

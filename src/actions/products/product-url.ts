@@ -29,7 +29,7 @@ export const getProductUrl = async(url: string) => {
         };
         
     } catch (error) {
-        throw new Error(`No se pudo cargar el product con la URL: ${url}` );
+        throw new Error(`No se pudo cargar el product  ${error}` );
     }
 
     

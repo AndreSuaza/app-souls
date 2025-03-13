@@ -35,7 +35,7 @@ export const getPaginatedCards = async({
     try {
 
         const whereConstruction = () => {
-            const where:any = {};
+            const where: Record<string, any> = {};
             if(products) {
                 where.product = {
                     code: {

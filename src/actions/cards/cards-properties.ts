@@ -2,6 +2,19 @@
 
 import prisma from "@/lib/prisma";
 
+interface Propertie {
+    id: string,
+    name: string,
+  }
+  
+  interface Properties {
+    products: Propertie[],
+    types: Propertie[],
+    archetypes: Propertie[],
+    keywords: Propertie[],
+    rarities: Propertie[],
+  }
+
 export const getPropertiesCards = async() => {
 
     try {
@@ -70,13 +83,15 @@ export const getPropertiesCards = async() => {
             ],
         })
     
-        return {
-            products,
+        const props : Properties = {
+            products: products.length > 0 ? products.map(product => {return {id: product.code, name: product.name}}) : [],
             types,
             archetypes,
             keywords,
             rarities,
         }
+
+        return props;
         
     } catch (error) {
         throw new Error(`No se pudo cargar alguna de las propiedades de la carta ${error}` );    

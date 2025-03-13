@@ -18,13 +18,12 @@ interface Props {
     close: () => void
 }
 
-export const Decklistimage = ({maindeck, limbodeck = [], sidedeck, name = "", player = "" , position = "", close}: Props) => {
+export const Decklistimage = ({maindeck, limbodeck = [], name = "", player = "" , position = "", close}: Props) => {
     const divRef = useRef<HTMLDivElement>(null);
 
     const [nameDeck, setNameDeck] = useState(name)
     const [playerName, setPlayerName] = useState(player)
     const [top, setTop] = useState(position)
-    const [numCards, setNumCard] = useState({und: 0, arm: 0, con: 0, ent: 0}) 
 
     const captureDivAsImage = async () => {
       if (!divRef.current) return;
@@ -38,36 +37,6 @@ export const Decklistimage = ({maindeck, limbodeck = [], sidedeck, name = "", pl
       link.download = nameDeck+"-"+playerName;
       link.click();
     };
-
-    const countCardsTypes = () => {
-        const updatedNumCards = maindeck.reduce((acc, deck) => {
-          deck.card.types.forEach((type) => {
-            switch (type.name) {
-              case "Unidad":
-                acc.und += 1 * deck.count;
-                break;
-              case "Arma":
-                acc.arm += 1 * deck.count;
-                break;
-              case "Conjuro":
-                acc.con += 1 * deck.count;
-                break;
-              case "Ente":
-                acc.ent += 1 * deck.count;
-                break;
-              default:
-                break;
-            }
-          });
-          return acc;
-        }, {und: 0, arm: 0, con: 0, ent: 0}); // Copia inicial para mantener el estado previo
-      
-        setNumCard(updatedNumCards);
-      }
-  
-      useEffect(() => {
-        countCardsTypes()
-      }, [])
       
 
     return (
@@ -133,13 +102,6 @@ export const Decklistimage = ({maindeck, limbodeck = [], sidedeck, name = "", pl
                         <p className="font-bold uppercase text-xl">{playerName}</p>
                         <p className="font-bold uppercase"><i>{top}</i></p>
                         <p className="font-bold uppercase mb-4"><i>Mazo: {nameDeck}</i></p>
-                        {/* <div className="mt-10 leading-4">
-                        <p><span className="font-semibold"><i>Total: { maindeck.reduce((acc, deck) => acc + deck.count, 0)}</i></span> </p>
-                        <p><i><span className="font-semibold">Entes:</span> { numCards.ent }</i></p>
-                        <p><i><span className="font-semibold">Armas:</span> { numCards.arm }</i></p>
-                        <p><i><span className="font-semibold">Conjuros:</span> { numCards.con }</i></p>
-                        <p><i><span className="font-semibold">Unidades:</span> { numCards.und }</i></p>
-                        </div> */}
                     </div>
                     <div className="absolute bottom-0 mb-6" >
                         <p className="flex flex-row mb-2"><IoLogoInstagram className="w-6 h-6 mr-1 mb-1"/> /soulsinxtinction</p>

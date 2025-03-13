@@ -283,7 +283,7 @@ export default async function ComoJuagarPage() {
         <div className="bg-indigo-300 mx-4 rounded-lg p-4">
         <h2 className="text-white text-center uppercase font-bold mb-4">¿Dónde puedes jugar?</h2>
         <ul>
-        {stores.map( (store, index) => (
+        {stores.map( (store) => (
           <li key={ store.id }>
                     <StoreItemSimple                       
                       store={store}

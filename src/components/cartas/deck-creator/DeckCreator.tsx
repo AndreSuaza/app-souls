@@ -11,9 +11,22 @@ import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
 
 
+interface Propertie {
+  id: string,
+  name: string,
+}
+
+interface Properties {
+  products: Propertie[],
+  types: Propertie[],
+  archetypes: Propertie[],
+  keywords: Propertie[],
+  rarities: Propertie[],
+}
+
 interface Props {
     cards: Card[];
-    propertiesCards: any;
+    propertiesCards: Properties[];
     deck?: Decklist[];
     className?: string
 }

@@ -11,17 +11,6 @@ interface Props {
     className?: string,
 }
 
-
-interface MapProps {
-    center: {
-        lat: number;
-        lng: number;
-    };
-    zoom: number;
-    mapId: string;
-}
-
-
 export const Map = ({title, lat, lgn, className} : Props) => {
 
     const mapRef = useRef(null);

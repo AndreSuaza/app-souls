@@ -1,7 +1,6 @@
 'use client';
 
 import { Store } from '@prisma/client';
-import Image from 'next/image';
 import { IoStorefrontOutline } from 'react-icons/io5';
 
 

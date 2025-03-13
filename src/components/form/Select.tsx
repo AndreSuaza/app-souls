@@ -3,7 +3,7 @@ import { useField, ErrorMessage } from 'formik';
 interface Props {
     label: string;
     name: string;
-    [x:string]: any;
+    id?: string;
 }
 
 export const Select = ( { label, ...props } : Props ) => {
