@@ -4,12 +4,12 @@ import { Metadata } from "next";
 import Image from "next/image";
 
 interface Props {
-  params: {
+  searchParams: Promise<{
     page?: string;
     products?: string;
     rarities?: string;
     orden: string;
-  }
+  }>
 }
 
 export const metadata: Metadata = {
@@ -33,9 +33,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function BovedaPage({ params }: Props) {
+export default async function BovedaPage({ searchParams }: Props) {
 
-  const { products,  page, rarities, orden } = params;
+  const { products,  page, rarities, orden } = await searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
