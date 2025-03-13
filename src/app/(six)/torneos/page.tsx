@@ -4,9 +4,9 @@ import { Pagination, Title, TournamentGrid } from "@/components";
 import { Metadata } from "next";
 
 interface Props {
-  searchParams: {
+  searchParams: Promise< {
     page?: string;
-  }
+  }>
 }
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export default async function EventosPage({ searchParams }: Props) {
 
   const take = 5;
 
-  const { page } = searchParams;
+  const { page } = await searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
   const { tournaments, totalPage } = await getTournamentsPagination({ page: page2, take, types:["Tier 1","Tier 2","Tier 3"] });

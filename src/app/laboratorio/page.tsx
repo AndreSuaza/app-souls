@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 }
 
 interface Props {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     text?: string;
     products?: string;
@@ -37,12 +37,12 @@ interface Props {
     defenses?: string;
     raritys?: string;
     decklist?: string;
-  }
+  }>
 }
 
 export default async function Cards({ searchParams }: Props) {
 
-  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, decklist } = searchParams;
+  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, decklist } = await searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
