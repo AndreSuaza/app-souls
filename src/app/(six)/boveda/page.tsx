@@ -24,13 +24,18 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function BovedaPage({ searchParams }: { searchParams: {[key: string]: string }}) {
+export default async function BovedaPage({ searchParams }: { searchParams?: Record<string, string | undefined>}) {
 
-  const { products,  page, rarities, orden } = searchParams;
+
+
+  const products = searchParams?.products;
+  const page = searchParams?.products;
+  const rarities = searchParams?.products;
+
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
-  const { cards, totalPage } = await getPaginatedPricesCards({ page: page2, products, rarities, orden });
+  const { cards, totalPage } = await getPaginatedPricesCards({ page: page2, products, rarities });
 
   return (
     <>
