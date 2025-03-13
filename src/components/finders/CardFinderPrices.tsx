@@ -12,13 +12,13 @@ interface Propertie {
 }
   
 interface Properties {
-products: Propertie[],
-rarities: Propertie[],
+    products: Propertie[],
+    rarities: Propertie[],
 }
 
 
 interface Props {
-    propertiesCards: any;
+    propertiesCards: Properties;
 }
 
 interface SelectProps {
@@ -26,16 +26,12 @@ interface SelectProps {
     id: string;
 }
 
-interface SelectPropsPro {
-    name: string;
-    code: string;
-}
 
 export const CardFinderPrices = ({propertiesCards}: Props) => {
     console.log(propertiesCards)
-    const [properties, setProperties] =  useState({
+    const [properties] =  useState({
         others: [{label: "De mayor a menos", value: "desc"},{label: "De menor a mayor", value: "asc"}],
-        products: propertiesCards.products.map((prop: SelectPropsPro) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
+        products: propertiesCards.products.map((prop: SelectProps) => {return {label: `${prop.name} [${prop.id}]`, value:prop.id }}),
         rarities: propertiesCards.rarities.map((prop: SelectProps) => {return {label: prop.name, value:prop.id }}),
         });
 
