@@ -4,6 +4,7 @@ interface Props {
     name: string;
     type?: 'text' | 'email' | 'password';
     placeholder?: string;
+    // @ts-ignore
     [x:string]: any;
 }
 

@@ -107,13 +107,13 @@ export const CardDetail = ({ deckList, index }: Props) => {
                         </tr>
                         <tr className="border-b">
                         <th>Arqueotipo</th>
-                        <td className="py-3 text-gray-600">{card?.archetypes.map((archetype: Archetype, i: any) => {return i > 0 ? ', '+archetype.name : archetype.name})}</td>
+                        <td className="py-3 text-gray-600">{card?.archetypes.map((archetype: Archetype, i) => {return i > 0 ? ', '+archetype.name : archetype.name})}</td>
                         <th>Palabras Clave</th>
-                        <td className="py-3 text-gray-600">{card?.keywords.map((keyword: Keyword, i: any) => {return i > 0 ? ', '+keyword.name : keyword.name})}</td>
+                        <td className="py-3 text-gray-600">{card?.keywords.map((keyword: Keyword, i) => {return i > 0 ? ', '+keyword.name : keyword.name})}</td>
                         </tr>
                         <tr className="border-b">
                         <th>Rareza</th>
-                        <td className="py-3 text-gray-600">{card?.rarities.map((rarity: Rarity, i: any) => {return i > 0 ? ', '+rarity.name : rarity.name})}</td>
+                        <td className="py-3 text-gray-600">{card?.rarities.map((rarity: Rarity, i) => {return i > 0 ? ', '+rarity.name : rarity.name})}</td>
                         </tr>
                         <tr className="border-b">
                         <th>Precios</th>

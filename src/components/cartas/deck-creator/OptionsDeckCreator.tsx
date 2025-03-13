@@ -1,7 +1,6 @@
 'use client';
 
 import { Card } from "@/interfaces";
-import { copyText, pasteText } from "@/utils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -31,7 +30,6 @@ export const OptionsDeckCreator = ({
     clearDecklist,
 }: Props) => {
 
-    const router = useRouter();
     const [showDeckImage, setShowDeckImage] = useState(false);
     const [showSharedDeck, setSharedDeck] = useState(false);
     const [deckList, setDeckList] = useState("");
@@ -70,9 +68,6 @@ export const OptionsDeckCreator = ({
     return (
         <>
         <div className="grid grid-cols-3 md:grid-cols-8 gap-1 mb-1">
-            {/* <button className="btn-short" title="Mazo de apoyo">
-                <IoSwapHorizontalSharp className="text-indigo-600 w-6 h-6 -mb-0.5"/>
-            </button> */}
 
             <button
                 className="btn-short"

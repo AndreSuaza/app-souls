@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Loader } from "@googlemaps/js-api-loader"
 
 
@@ -9,6 +9,16 @@ interface Props {
     lgn: number,
     title: string,
     className?: string,
+}
+
+
+interface MapProps {
+    center: {
+        lat: number;
+        lng: number;
+    };
+    zoom: number;
+    mapId: string;
 }
 
 
@@ -37,13 +47,17 @@ export const Map = ({title, lat, lgn, className} : Props) => {
                 mapId: 'MY_NEXTJS_MAPID'
             }
 
-            const map = new Map(mapRef.current as any, mapOptions);
+            if(mapRef.current) {
+                const map = new Map(mapRef.current, mapOptions);
 
-            const marker = new google.maps.Marker({
-                map: map,
-                position: position,
-                label: title,                
-            })
+                new google.maps.Marker({
+                    map: map,
+                    position: position,
+                    label: title,                
+                })
+            }
+
+            
 
         }
 

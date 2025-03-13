@@ -7,7 +7,7 @@ interface Option {
 }
 
 interface CustomSelectProps extends FieldProps {
-  options: any;
+  options: Option[];
   isMulti?: boolean;
   className?: string;
   placeholder?: string;
@@ -33,10 +33,10 @@ export const CustomSelect = ({
   const getValue = () => {
     if (options) {
       return isMulti
-        ? options.filter((option: any) => field?.value?.indexOf(option.value) >= 0)
-        : options.find((option: any) => option.value === field.value);
+        ? options.filter((option: Option) => field?.value?.indexOf(option.value) >= 0)
+        : options.find((option: Option) => option.value === field.value);
     } else {
-      return isMulti ? [] : ("" as any);
+      return isMulti ? [] : ("");
     }
   };
 

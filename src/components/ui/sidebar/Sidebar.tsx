@@ -3,7 +3,7 @@
 import { useUIStore } from '@/store';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { IoBagHandleOutline, IoBagRemoveOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLogInOutline, IoLogOutOutline, IoPeopleOutline, IoPersonOutline, IoSearchOutline, IoShieldOutline, IoStorefrontOutline, IoTicketOutline, IoTrophyOutline } from 'react-icons/io5';
+import { IoBagRemoveOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoStorefrontOutline, IoTrophyOutline } from 'react-icons/io5';
 
 export const Sidebar = () => {
 

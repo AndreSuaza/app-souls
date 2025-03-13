@@ -1,5 +1,3 @@
-import { Sidebar, TopMenu } from "@/components";
-import { Footer } from "@/components/ui/footer/footer";
 import moment from 'moment';
 import 'moment/locale/es';
 import Link from "next/link";

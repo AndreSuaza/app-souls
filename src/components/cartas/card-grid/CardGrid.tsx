@@ -1,10 +1,7 @@
 'use client';
 
 import type { Card } from "@/interfaces";
-import { useCardDetailStore } from "@/store";
 import { CardItem } from "./CardItem";
-import { CardDetail } from '../card-detail/CardDetail';
-
 
 interface Props {
     cards: Card[];
@@ -12,8 +9,6 @@ interface Props {
 }
 
 export const CardGrid = ({cards, addCard}: Props) => {
-
-  const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
 
   return (
     <>
@@ -27,9 +22,7 @@ export const CardGrid = ({cards, addCard}: Props) => {
             }
         </ul>
     </div>
-    {/* {isCardDetailOpen && (
-      <CardDetail cards={cards}/>
-    )} */}
+
     </>
   )
 }

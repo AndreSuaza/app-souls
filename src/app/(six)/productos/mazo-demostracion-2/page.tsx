@@ -9,12 +9,6 @@ import { CompleteCollection } from '@/components/productos/complete-collection/C
 import '../style.css';
 import { Metadata } from 'next';
 
-interface Props {
-  params: {
-    slug: string;
-  }
-}
-
 export const metadata: Metadata = {
   title: 'Ecos del Abismos - TCG',
   description: 'Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.',
@@ -36,7 +30,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function getProductBySlug({ params }: Props) {
+export default async function getProductBySlug() {
 
   const product = await getProductUrl('mazo-demostracion-2')
   

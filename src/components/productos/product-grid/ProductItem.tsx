@@ -11,7 +11,7 @@ interface Props {
 
 export const ProductItem = ({ product }: Props) => {
 
-  const [displayImage, setDisplayImage] = useState(`${product.ProductImage[0].url}.webp`);
+  const [displayImage] = useState(`${product.ProductImage[0].url}.webp`);
 
   return (
     <div className='rounded-lg overflow-hidden fade-in'>

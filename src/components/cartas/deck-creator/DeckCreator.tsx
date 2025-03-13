@@ -2,10 +2,8 @@
 
 import type { Card } from "@/interfaces";
 import { useEffect, useState } from "react";
-import clsx from 'clsx';
 import { CardItemDeckList } from "@/components/cartas/card-grid/CardItemDeckList";
 import { CardGrid } from "../card-grid/CardGrid";
-import { IoDownloadOutline, IoImageOutline, IoLogoUsd, IoPushOutline, IoSwapHorizontalSharp, IoTrashOutline } from "react-icons/io5";
 import { CardFinderLab } from "@/components/finders/CardFinderLab";
 import { CardDetail } from "../card-detail/CardDetail";
 import { useCardDetailStore } from "@/store";
@@ -64,12 +62,11 @@ const dropCardDecklist = (deckListSelected:Decklist[], cardSeleted: Card) => {
 
 }
 
-export const DeckCreator = ({cards, deck, propertiesCards, className}: Props) => {
+export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
 
-  const [mazoApoyo, setMazoApoyo] = useState(false);
+
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
-  const [deckListMainSideDeck, setDeckListMainSideDeck] = useState<Decklist[]>([]);
   const [numCards, setNumCard] = useState({und: 0, arm: 0, con: 0, ent: 0}) 
   const [detalDecklistCards, setDetalDecklistCards] = useState<CardsDetail>({deckList: [], index: 0})
   const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
@@ -155,8 +152,8 @@ export const DeckCreator = ({cards, deck, propertiesCards, className}: Props) =>
   const importDeck = () => {
     
     if(deck) {
-      let test: Decklist[] = [];
-      let test2: Decklist[] = [];
+      const test: Decklist[] = [];
+      const test2: Decklist[] = [];
 
       deck.map(c => { if(c.card.types.filter(type => type.name === "Limbo").length === 0) { test.push(c) } else { test2.push(c)}})
       console.log(test, test2);  

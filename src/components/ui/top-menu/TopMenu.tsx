@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link"
-import { IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoMenuSharp, IoSearchOutline } from "react-icons/io5"
+import { IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoMenuSharp } from "react-icons/io5"
 import { titleFont } from "@/config/fonts"
 import { useUIStore } from "@/store";
 import Image from "next/image";

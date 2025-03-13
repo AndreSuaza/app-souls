@@ -79,7 +79,7 @@ export const getPropertiesCards = async() => {
         }
         
     } catch (error) {
-        throw new Error(`No se pudo cargar alguna de las propiedades de la carta` );    
+        throw new Error(`No se pudo cargar alguna de las propiedades de la carta ${error}` );    
     }
 
     

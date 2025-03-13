@@ -1,5 +1,5 @@
-export default function () {
+export default function noticias() {
   return (
-    <div>Noticia by ID</div>
+    <div><h1>Noticia by ID</h1></div>
   )
 }

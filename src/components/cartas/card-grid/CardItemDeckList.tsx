@@ -23,16 +23,10 @@ export const CardItemDeckList = ({card, count, index, dropCard, addCard, detailC
       detailCard(index);
   }
 
-  const truncateText = (text: string, maxLength: number): string => {
-    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-  };
-
   return (
     <div 
         className="shadow-sm mb-1 cursor-pointer overflow-hidden rounded-md"
     >
-        {/* <div className="pl-1 bg-black bg-opacity-50 absolute right-2 md:right-7 z-10 text-white flex flex-row h-10">
-          </div> */}
         <div 
           className="h-10 z-0 "
         >

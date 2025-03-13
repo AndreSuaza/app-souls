@@ -8,11 +8,6 @@ import Image from 'next/image';
 import { CompleteCollection } from '@/components/productos/complete-collection/CompleteCollection';
 import '../style.css';
 import { Metadata } from 'next';
-interface Props {
-  params: {
-    slug: string;
-  }
-}
 
 export const metadata: Metadata = {
   title: 'Producto Especial Leyendas Peludas - TCG',
@@ -35,9 +30,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function getProductBySlug({ params }: Props) {
+export default async function getProductBySlug() {
 
-  const { slug } = await params;
   const product = await getProductUrl('leyendas-peludas')
   
   if (!product) { notFound();}

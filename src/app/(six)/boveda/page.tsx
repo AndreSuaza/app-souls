@@ -39,7 +39,7 @@ export default async function BovedaPage({ searchParams }: Props) {
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
-  const { cards, currentPage, totalPage } = await getPaginatedPricesCards({ page: page2, products, rarities, orden });
+  const { cards, totalPage } = await getPaginatedPricesCards({ page: page2, products, rarities, orden });
 
   return (
     <>
@@ -64,8 +64,8 @@ export default async function BovedaPage({ searchParams }: Props) {
               <ul>
                 <p className="mt-2 text-gray-500 text-xs">{card.product.name}</p>
                 <p className="mb-4 text-gray-500 text-xs">{card.code}-{card.idd}</p>
-                {card.price.map(price => 
-                <li>
+                {card.price.map((price, index) => 
+                <li key={index}>
                   <p className=""><b>{price.rarity.name}:</b> <span className="text-green-600 font-semibold">${price.price}</span></p>
                 </li>)}
               </ul>

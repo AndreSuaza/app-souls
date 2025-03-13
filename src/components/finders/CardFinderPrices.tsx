@@ -2,26 +2,34 @@
 
 
 import { Form, Formik } from "formik";
-import { MultiSelect, TextInput } from "../form";
-import { useEffect, useState } from "react";
-import { IoFilterSharp, IoSearch } from "react-icons/io5";
-import Link from "next/link";
+import { MultiSelect } from "../form";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface Props {
     propertiesCards: any;
 }
 
+interface SelectProps {
+    name: string;
+    id: string;
+}
+
+interface SelectPropsPro {
+    name: string;
+    code: string;
+}
+
 export const CardFinderPrices = ({propertiesCards}: Props) => {
     console.log(propertiesCards)
     const [properties, setProperties] =  useState({
         others: [{label: "De mayor a menos", value: "desc"},{label: "De menor a mayor", value: "asc"}],
-        products: propertiesCards.products.map((prop: any) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
-        rarities: propertiesCards.rarities.map((prop: any) => {return {label: prop.name, value:prop.id }}),
+        products: propertiesCards.products.map((prop: SelectPropsPro) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
+        rarities: propertiesCards.rarities.map((prop: SelectProps) => {return {label: prop.name, value:prop.id }}),
         });
 
     const router = useRouter();
-    const {others, products, rarities} = properties;
+    const {products, rarities} = properties;
     
     const getFilterValues = (filter: any[]) => {
         let values = "";
@@ -59,7 +67,7 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
         onSubmit={ onSubmit }
     >
 
-        { formik => (
+        { () => (
         <Form>
             <div className="">
             

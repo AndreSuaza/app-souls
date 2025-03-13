@@ -1,8 +1,6 @@
 'use client';
 
 import { Store } from '@prisma/client';
-import Image from 'next/image';
-
 
 interface Props {
     store: Store;

@@ -7,7 +7,6 @@ export * from './productos/product-by-card/ProductByCard';
 export * from './cartas/card-grid/CardGrid';
 export * from './cartas/card-grid/CardItem';
 export * from './cartas/card-detail/CardDetail';
-export * from './cartas/card-grid/CardGridX';
 export * from './cartas/card-grid/CardItemDeckList';
 export * from './cartas/deck-creator/DeckCreator';
 export * from './cartas/deck-creator/OptionsDeckCreator';

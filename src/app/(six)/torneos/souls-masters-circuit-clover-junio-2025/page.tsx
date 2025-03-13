@@ -40,7 +40,7 @@ export default function Tournaments() {
                     <div className="">
                         <h3 className="text-2xl uppercase font-bold mb-6">Primer lugar</h3>
                         <ul className="ml-4 p-2">
-                            <li className="font-bold uppercase mb-2">$1'000.000 pesos en efectivo.</li>
+                            <li className="font-bold uppercase mb-2">$1&apos;000.000 pesos en efectivo.</li>
                             <li className="mb-2">Tapete de juego Souls Masters Circuit</li>
                             <li className="mb-2">Entrada VIP al Souls Masters Champions</li>
                             <li className="mb-2">1 Purificador de Almas Gold Secret AA</li>

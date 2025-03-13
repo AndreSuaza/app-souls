@@ -30,8 +30,8 @@ export const Footer = () => {
               <div className='mr-20'>
                 <p className='text-xl uppercase font-bold'>Menu</p>
                 <ul className='my-2'>
-                {Routes.map((route) => (
-                  <li className="mt-1">
+                {Routes.map((route, index) => (
+                  <li key={index} className="mt-1">
                     <Link
                       key={route.name}
                       href={route.path}

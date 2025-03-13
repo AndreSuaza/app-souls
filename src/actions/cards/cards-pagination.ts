@@ -13,7 +13,6 @@ interface PaginationOptions {
     costs?: string;
     forces?: string;
     defenses?: string;
-    raritys?: string;
 }
 
 
@@ -28,7 +27,6 @@ export const getPaginatedCards = async({
     costs,
     forces,
     defenses,
-    raritys,
 }: PaginationOptions) => {
     
     if( isNaN( Number(page))) page = 1;

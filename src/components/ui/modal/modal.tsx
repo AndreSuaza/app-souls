@@ -1,6 +1,5 @@
 'use client';
 
-import { useCardDetailStore } from "@/store";
 import { JSX } from "react";
 import { IoCloseOutline } from "react-icons/io5";
 

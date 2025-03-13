@@ -51,7 +51,7 @@ export const getTournamenttUrl = async(url: string) => {
         };
         
     } catch (error) {
-        throw new Error(`No se pudo cargar el torneo con la URL: ${url}` );
+        throw new Error(`No se pudo cargar el torneo: ${error}` );
     }
 
     

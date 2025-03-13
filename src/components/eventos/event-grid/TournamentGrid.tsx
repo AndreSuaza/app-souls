@@ -6,7 +6,7 @@ import { TournamentItemShort } from "./TournamentItemShort";
 
 interface Props {
   tournaments: Tournament[];
-  short?: Boolean;
+  short?: boolean;
 }
 
 export const TournamentGrid = ({tournaments, short = false}: Props) => {

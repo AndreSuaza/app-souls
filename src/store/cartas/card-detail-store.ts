@@ -1,4 +1,3 @@
-import { Card } from '@/interfaces';
 import { create } from 'zustand'
 
 interface State {

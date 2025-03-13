@@ -3,24 +3,33 @@
 
 import { Form, Formik } from "formik";
 import { MultiSelect, TextInput } from "../form";
-import { useEffect, useState } from "react";
-import { IoFilterSharp, IoSearch } from "react-icons/io5";
-import Link from "next/link";
+import { useState } from "react";
+import { IoFilterSharp } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 
 interface Props {
     propertiesCards: any;
 }
 
+interface SelectProps {
+    name: string;
+    id: string;
+}
+
+interface SelectPropsPro {
+    name: string;
+    code: string;
+}
+
 export const CardFinderLab = ({propertiesCards}: Props) => {
 
     const [showFilters, setShowFilters] = useState(false);
     const [properties, setProperties] =  useState({
-        types: propertiesCards.types.map((prop: any) => {return {label: prop.name, value:prop.id }}),
+        types: propertiesCards.types.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
         others: [{label: 0, value: 0},{label: 1, value: 1},{label: 2, value: 2},{label: 3, value: 3},{label: 4, value: 4},{label: 5, value: 5},{label: 6, value: 6},{label: 7, value: 7},{label: 8, value: 8},{label: 9, value: 9},{label: 10, value: 10}],
-        archetypes: propertiesCards.archetypes.map((prop: any) => {return {label: prop.name, value:prop.id }}),
-        keywords: propertiesCards.keywords.map((prop: any) => {return {label: prop.name, value:prop.id }}),
-        products: propertiesCards.products.map((prop: any) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
+        archetypes: propertiesCards.archetypes.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
+        keywords: propertiesCards.keywords.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
+        products: propertiesCards.products.map((prop:SelectPropsPro) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
         });
 
     const router = useRouter();
@@ -76,9 +85,9 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
         onSubmit={ onSubmit }
     >
 
-        { formik => (
+        { () => (
         <Form>
-            <div className="">
+            <div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mx-2 mt-2 md:mt-6 mb-1">
                 
@@ -93,7 +102,6 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                 name="products"
                 options={products}
                 placeholder="Productos"
-                className=""
                 multi={true}
             />
         
@@ -113,7 +121,6 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                   name="cost"
                   options={others}
                   placeholder="Costo"
-                  className=""
                   multi={true}
                 />
   
@@ -121,7 +128,6 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                     name="force"
                     options={others}
                     placeholder="Fuerza"
-                    className=""
                     multi={true}
                 />
   
@@ -129,7 +135,6 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                     name="defense"
                     options={others}
                     placeholder="Defensa"
-                    className=""
                     multi={true}
                 />
 
@@ -139,7 +144,6 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                     name="types"
                     options={types}
                     placeholder="Tipo"
-                    className=""
                     multi={true}
                 />
   
@@ -147,7 +151,6 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                     name="archetypes"
                     options={archetypes}
                     placeholder="Arquetipo"
-                    className=""
                     multi={true}
                 />
   
@@ -155,7 +158,6 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                     name="keywords"
                     options={keywords}
                     placeholder="Palabras Clave"
-                    className=""
                     multi={true}
                 />
   

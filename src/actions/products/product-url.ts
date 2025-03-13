@@ -1,8 +1,6 @@
 'use server';
 
 import prisma from "@/lib/prisma";
-import { ProductImage } from '../../interfaces/products.interface';
-
 
 export const getProductUrl = async(url: string) => {
 

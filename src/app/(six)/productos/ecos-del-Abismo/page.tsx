@@ -9,11 +9,6 @@ import { CompleteCollection } from '@/components/productos/complete-collection/C
 import '../style.css';
 import { Metadata } from 'next';
 
-interface Props {
-  params: {
-    slug: string;
-  }
-}
 
 export const metadata: Metadata = {
   title: 'Ecos del Abismos - TCG',
@@ -36,7 +31,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function getProductBySlug({ params }: Props) {
+export default async function getProductBySlug() {
 
   const product = await getProductUrl('ecos-del-abismo')
   

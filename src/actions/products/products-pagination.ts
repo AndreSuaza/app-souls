@@ -27,7 +27,7 @@ export const getProductsPagination = async() => {
         return products;
         
     } catch (error) {
-        throw new Error(`No se pudo cargar los productos` );
+        throw new Error(`No se pudo cargar los productos ${error}` );
     }
     
 

@@ -38,13 +38,17 @@ export const MapXl = ({title, lat, lgn, className} : Props) => {
                 
             }
 
-            const map = new Map(mapRef.current as any, mapOptions);
+            if(mapRef.current) {
+            const map = new Map(mapRef.current, mapOptions);
 
-            const marker = new google.maps.Marker({
+            new google.maps.Marker({
                 map: map,
                 position: position,
                 label: title,                
             })
+            }
+
+            
 
         }
 

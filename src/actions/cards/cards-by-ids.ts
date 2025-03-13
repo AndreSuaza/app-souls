@@ -89,6 +89,6 @@ export const getCardsByIds = async(ids: string | undefined) => {
         return deck;
 
     } catch (error) {
-        throw new Error('No se pudo cargar las cartas ');
+        throw new Error('No se pudo cargar las cartas '+error);
     }
 }

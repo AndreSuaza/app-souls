@@ -46,7 +46,7 @@ export default async function Cards({ searchParams }: Props) {
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
-  const { cards, currentPage, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses });
+  const { cards, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses });
 
   const deck = await getCardsByIds(decklist); 
 
