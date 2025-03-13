@@ -42,7 +42,7 @@ interface Props {
 
 export default async function Cards({ searchParams }: Props) {
 
-  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, decklist } = await searchParams;
+  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, decklist } = searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
