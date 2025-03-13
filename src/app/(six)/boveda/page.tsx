@@ -1,7 +1,7 @@
-import { getPaginatedPricesCards, getPropertiesCards } from "@/actions";
-import { CardFinderPrices, Pagination, Title } from "@/components";
+// import { getPaginatedPricesCards, getPropertiesCards } from "@/actions";
+// import { CardFinderPrices, Pagination, Title } from "@/components";
+// import Image from "next/image";
 import { Metadata } from "next";
-import Image from "next/image";
 
 export const metadata: Metadata = {
   title: 'Boveda - Referencia precios de las cartas de souls in xtiction',
@@ -24,25 +24,26 @@ export const metadata: Metadata = {
   },
 }
 
-interface Props {
-  searchParams: {
-    page?: string;
-    products?: string;
-    rarities?: string;
-  }
-}
+// interface Props {
+//   searchParams: {
+//     page?: string;
+//     products?: string;
+//     rarities?: string;
+//   }
+// }
 
-export default async function BovedaPage({ searchParams }: Props) {
+//{ searchParams }: Props
+export default async function BovedaPage() {
 
-  const { products, page, rarities } = await searchParams;
-  const page2 = page ? parseInt( page ) : 1 
+  // const { products, page, rarities } = await searchParams;
+  // const page2 = page ? parseInt( page ) : 1 
 
-  const propertiesCards = await getPropertiesCards();
-  const { cards, totalPage } = await getPaginatedPricesCards({ page: page2, products, rarities });
+  // const propertiesCards = await getPropertiesCards();
+  // const { cards, totalPage } = await getPaginatedPricesCards({ page: page2, products, rarities });
 
   return (
     <>
-     <Title 
+     {/* <Title 
         title="Boveda"
       />
       <CardFinderPrices propertiesCards={propertiesCards}/>
@@ -74,7 +75,7 @@ export default async function BovedaPage({ searchParams }: Props) {
         )}
         </ul>
 
-      <Pagination totalPages={totalPage}/>
+      <Pagination totalPages={totalPage}/> */}
     </>
   )
 }
