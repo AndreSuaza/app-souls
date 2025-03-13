@@ -5,30 +5,18 @@ import prisma from "@/lib/prisma";
 interface PaginationOptions {
     page?: number;
     take?: number;
-    text?: string;
     products?: string;
-    types?: string;
-    archetypes?: string;
-    keywords?: string;
-    costs?: string;
-    forces?: string;
-    defenses?: string;
-    raritys?: string;
+    rarities?: string;
+    orden?: string;
 }
 
 
-export const getPaginatedCards = async({
+export const getPaginatedPricesCards = async({
     page = 1,
-    take = 20,
-    text,
+    take = 24,
     products,
-    types,
-    archetypes,
-    keywords,
-    costs,
-    forces,
-    defenses,
-    raritys,
+    rarities,
+    orden = "desc",
 }: PaginationOptions) => {
     
     if( isNaN( Number(page))) page = 1;
@@ -45,26 +33,32 @@ export const getPaginatedCards = async({
                     }
                 }
             }
-            if(types) { where.typeIds = {hasEvery: types.split(',').map(item => item.trim())}}
-            if(archetypes) { where.archetypesIds = {hasEvery: archetypes.split(',').map(item => item.trim())}}
-            if(keywords) { where.keywordsIds = {hasEvery: keywords.split(',').map(item => item.trim())}}
-            if(costs) { where.cost = {in: costs.split(',').map(item => Number.parseInt(item.trim()))}}
-            if(forces) { where.force = {in: forces.split(',').map(item => item.trim())}}
-            if(defenses) { where.defense = {in: defenses.split(',').map(item => item.trim())}}
-            if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
+            if(rarities) { where.raritiesIds = {hasEvery: rarities.split(',').map(item => item.trim())}}
+            //if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
             return where;
         }
 
+        const orderByornde = () => {
+            let price: any = {};
+            if (orden === 'asc')  {
+                price = {price: 'asc'}
+
+            } 
+            else {
+                price = {price: 'desc'}
+            }
+
+            return price;
+        }
+
         const cards = await prisma.card.findMany({
-            take:20,
+            take: take,
             skip: (page -1) * take,
             include: {
                 product: {
                     select: {
                         name: true,
                         code: true,
-                        show: true,
-                        url: true,
                     }
                 },
                 types: {
@@ -91,9 +85,8 @@ export const getPaginatedCards = async({
                     include: {
                         rarity: true
                     },
-                    orderBy: {
-                        price: "asc",
-                    },
+                    orderBy: orderByornde()
+                    ,
                     distinct: ["rarityId"]
                 }
             },
@@ -101,7 +94,7 @@ export const getPaginatedCards = async({
             orderBy: [
                 {
                     id: 'desc',
-                },
+                }
             ],
         })
         
@@ -113,10 +106,8 @@ export const getPaginatedCards = async({
         return {
             currentPage: page,
             totalPage: totalPages,
-            cards: cards.map( card => ({
-                ...card,
-                price: card.price.map(p => {return {price: p.price, rarity: p.rarity.name}})
-            }))
+            cards: cards,
+
         }
 
     } catch (error) {

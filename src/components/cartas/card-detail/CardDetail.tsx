@@ -1,5 +1,6 @@
 'use client';
 
+import { ProductsByCard } from "@/components/productos/product-by-card/ProductByCard";
 import type { Archetype, Card, Keyword, Rarity, Type } from "@/interfaces";
 import { useCardDetailStore } from "@/store";
 import Image from "next/image";
@@ -90,44 +91,48 @@ export const CardDetail = ({ deckList, index }: Props) => {
                 />
             </div>
             <div className="px-4">
-                <table className="table-auto text-left w-full mt-6 ">
+                <table className="table-auto text-left w-full mt-6 font-semibold">
                     <tbody>
                         <tr className="border-b">
                         <th>Tipo</th>
-                        <td className="py-3">{card?.types.map((type: Type, i ) => {return i > 0 ? ', '+type.name : type.name})}</td>
+                        <td className="py-3 text-gray-600">{card?.types.map((type: Type, i ) => {return i > 0 ? ', '+type.name : type.name})}</td>
                         <th>Coste</th>
-                        <td className="py-3">{card?.cost}</td>
+                        <td className="py-3 text-gray-600">{card?.cost}</td>
                         </tr>
                         <tr className="border-b">
                         <th>Fuerza</th>
-                        <td className="py-3">{card?.force}</td>
+                        <td className="py-3 text-gray-600">{card?.force}</td>
                         <th>Defensa</th>
-                        <td className="py-3">{card?.defense}</td>
+                        <td className="py-3 text-gray-600">{card?.defense}</td>
                         </tr>
                         <tr className="border-b">
                         <th>Arqueotipo</th>
-                        <td className="py-3">{card?.archetypes.map((archetype: Archetype, i: any) => {return i > 0 ? ', '+archetype.name : archetype.name})}</td>
+                        <td className="py-3 text-gray-600">{card?.archetypes.map((archetype: Archetype, i: any) => {return i > 0 ? ', '+archetype.name : archetype.name})}</td>
                         <th>Palabras Clave</th>
-                        <td className="py-3">{card?.keywords.map((keyword: Keyword, i: any) => {return i > 0 ? ', '+keyword.name : keyword.name})}</td>
+                        <td className="py-3 text-gray-600">{card?.keywords.map((keyword: Keyword, i: any) => {return i > 0 ? ', '+keyword.name : keyword.name})}</td>
                         </tr>
                         <tr className="border-b">
                         <th>Rareza</th>
-                        <td className="py-3">{card?.rarities.map((rarity: Rarity, i: any) => {return i > 0 ? ', '+rarity.name : rarity.name})}</td>
+                        <td className="py-3 text-gray-600">{card?.rarities.map((rarity: Rarity, i: any) => {return i > 0 ? ', '+rarity.name : rarity.name})}</td>
+                        </tr>
+                        <tr className="border-b">
+                        <th>Precios</th>
+                        <td className="py-3 text-gray-600">{card?.price.map((p, i) => {return i > 0 ? ', '+`${p.rarity}: ${p.price}` : `${p.rarity}: ${p.price}`})}</td>
                         </tr>
                         <tr>
                         <th className="pt-2">Efecto</th>
                         </tr>
                         <tr className="border-b">
-                        <td colSpan={4} className="pb-6 font-light">{card?.effect}</td>
+                        <td colSpan={4} className="pb-6 text-gray-600">{card?.effect}</td>
                         </tr>
-                        {/* <tr>
+                        <tr>
                         <th className="pt-2" colSpan={4}>Productos donde puedes encontrar esta carta.</th>
                         </tr>
                         <tr>
-                        <td className="w-full py-3 max-h-40" colSpan={4}>
-                            <ProductsByCard productsByCard={card?.products}/>
+                        <td className="w-full py-3 text-gray-500 max-h-40" colSpan={4}>
+                            <ProductsByCard product={card.product}/>
                         </td>
-                        </tr> */}
+                        </tr>
                     </tbody>
                 </table>
             </div>

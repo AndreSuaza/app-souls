@@ -7,35 +7,33 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import Image from 'next/image';
 import { CompleteCollection } from '@/components/productos/complete-collection/CompleteCollection';
 import '../style.css';
+import { Metadata } from 'next';
 interface Props {
   params: {
     slug: string;
   }
 }
 
-// export async function generateMetadata(
-//   { params }: Props,
-//   parent: ResolvingMetadata
-// ): Promise<Metadata> {
-//   // read route params
-//   const slug = (await params).slug
- 
-//   // fetch data
-//   const product = await getProductUrl(slug);
- 
-//   // optionally access and extend (rather than replace) parent metadata
-//   //const previousImages = (await parent).openGraph?.images || []
- 
-//   return {
-//     title: product?.name,
-//     description: product?.descripcion,
-//     openGraph: {
-//       title: product?.name,
-//       description: product?.descripcion,
-//       images: [`/products/${product?.ProductImage[0].url}.webp`],
-//     },
-//   }
-// }
+export const metadata: Metadata = {
+  title: 'Mazo Espíritus - El Árbol de la Vida - TCG',
+  description: 'El Mazo El Árbol de la Vida de Souls In Xtinction TCG está basado en el arquetipo de Espíritus, los enigmáticos guardianes del bosque encantado. Este mazo te permite desatar el poder de criaturas raras y mágicas, que protegen los secretos más antiguos con habilidades fenomenales.',
+  openGraph: {
+      title: 'Mazo Espíritus - El Árbol de la Vida - TCG',
+      description: 'El Mazo El Árbol de la Vida de Souls In Xtinction TCG está basado en el arquetipo de Espíritus, los enigmáticos guardianes del bosque encantado. Este mazo te permite desatar el poder de criaturas raras y mágicas, que protegen los secretos más antiguos con habilidades fenomenales.',
+      url: 'https://soulsinxtinction.com/productos/mazo-espiritus',
+      siteName: 'El Árbol de la Vida Souls In Xtinction',
+      images: [
+          {
+          url: 'https://soulsinxtinction.com/products/ME3.webp',
+          width: 500,
+          height: 500,
+          alt: 'Mazo El Árbol de la Vida Souls In Xtinction TCG',
+          }
+      ],
+      locale: 'en_ES',
+      type: 'website',
+  },
+}
 
 export default async function getProductBySlug({ params }: Props) {
 

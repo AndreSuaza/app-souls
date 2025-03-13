@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { CompleteCollection } from '@/components/productos/complete-collection/CompleteCollection';
 import '../style.css';
 import { Metadata } from 'next';
+
 interface Props {
   params: {
     slug: string;
@@ -15,19 +16,19 @@ interface Props {
 }
 
 export const metadata: Metadata = {
-  title: 'Génesis del Caos, nueva expansión - TCG',
-  description: 'Génesis del Caos es la nueva expansión de Souls In Xtinction TCG, donde el equilibrio del mundo se tambalea y nuevas fuerzas emergen en la batalla. Esta edición introduce un poderoso soporte para Humanos, Ángeles y muchas otras facciones, permitiendo a los jugadores ampliar sus estrategias y dominar el juego.',
+  title: 'Ecos del Abismos - TCG',
+  description: 'Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.',
   openGraph: {
-      title: 'Génesis del Caos, nueva expansión - TCG',
-      description: 'Génesis del Caos es la nueva expansión de Souls In Xtinction TCG, donde el equilibrio del mundo se tambalea y nuevas fuerzas emergen en la batalla. Esta edición introduce un poderoso soporte para Humanos, Ángeles y muchas otras facciones, permitiendo a los jugadores ampliar sus estrategias y dominar el juego.',
-      url: 'https://soulsinxtinction.com/productos/genesis-del-caos',
-      siteName: 'Génesis del Caos',
+      title: 'Ecos del Abismos - TCG',
+      description: 'Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.',
+      url: 'https://soulsinxtinction.com/productos/ecos-del-abismo',
+      siteName: 'Ecos del Abismos',
       images: [
           {
-          url: 'https://soulsinxtinction.com/products/GNC.webp',
+          url: 'https://soulsinxtinction.com/products/EDA.webp',
           width: 500,
           height: 500,
-          alt: 'Génesis del Caos Souls In Xtinction TCG',
+          alt: 'Ecos del Abismos Souls In Xtinction TCG',
           }
       ],
       locale: 'en_ES',
@@ -35,11 +36,9 @@ export const metadata: Metadata = {
   },
 }
 
-
 export default async function getProductBySlug({ params }: Props) {
 
-  const { slug } = await params;
-  const product = await getProductUrl('genesis-del-caos')
+  const product = await getProductUrl('mazo-demostracion-2')
   
   if (!product) { notFound();}
 
@@ -48,11 +47,11 @@ export default async function getProductBySlug({ params }: Props) {
   return (
 
     <>
-    <section className={`bg-[url(/products/GNCBG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}>
+    <section className={`bg-[url(/products/MD2BG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}>
       <div className='flex flex-col items-center justify-center w-full p-12'>
           <Image
                   src={`/products/${product.code}S.webp`}
-                  alt={'logo ecos del abismo'}
+                  alt={'logo mazo demostracíon 2.0'}
                   className='my-auto'
                   width={400}
                   height={160}

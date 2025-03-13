@@ -7,35 +7,33 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import Image from 'next/image';
 import { CompleteCollection } from '@/components/productos/complete-collection/CompleteCollection';
 import '../style.css';
+import { Metadata } from 'next';
 interface Props {
   params: {
     slug: string;
   }
 }
 
-// export async function generateMetadata(
-//   { params }: Props,
-//   parent: ResolvingMetadata
-// ): Promise<Metadata> {
-//   // read route params
-//   const slug = (await params).slug
- 
-//   // fetch data
-//   const product = await getProductUrl(slug);
- 
-//   // optionally access and extend (rather than replace) parent metadata
-//   //const previousImages = (await parent).openGraph?.images || []
- 
-//   return {
-//     title: product?.name,
-//     description: product?.descripcion,
-//     openGraph: {
-//       title: product?.name,
-//       description: product?.descripcion,
-//       images: [`/products/${product?.ProductImage[0].url}.webp`],
-//     },
-//   }
-// }
+export const metadata: Metadata = {
+  title: 'Mazo De Demostración - Primer Estallido - TCG',
+  description: 'El Mazo de Demostración - Primer Estallido es la puerta de entrada perfecta al emocionante mundo de Souls In Xtinction TCG. Este mazo contiene una selección de cartas coleccionables que representan todos los tipos, mecánicas y la mayoría de los arquetipos de la primera temporada, ofreciéndote una experiencia completa desde el primer duelo.',
+  openGraph: {
+      title: 'Mazo De Demostración - Primer Estallido - TCG',
+      description: 'El Mazo de Demostración - Primer Estallido es la puerta de entrada perfecta al emocionante mundo de Souls In Xtinction TCG. Este mazo contiene una selección de cartas coleccionables que representan todos los tipos, mecánicas y la mayoría de los arquetipos de la primera temporada, ofreciéndote una experiencia completa desde el primer duelo.',
+      url: 'https://soulsinxtinction.com/productos/mazo-demostracion',
+      siteName: 'Mazo De Demostración Souls In Xtinction',
+      images: [
+          {
+          url: 'https://soulsinxtinction.com/products/MD1.webp',
+          width: 500,
+          height: 500,
+          alt: 'Mazo De Demostración Souls In Xtinction TCG',
+          }
+      ],
+      locale: 'en_ES',
+      type: 'website',
+  },
+}
 
 export default async function getProductBySlug({ params }: Props) {
 

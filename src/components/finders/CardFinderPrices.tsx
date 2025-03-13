@@ -1,0 +1,106 @@
+'use client';
+
+
+import { Form, Formik } from "formik";
+import { MultiSelect, TextInput } from "../form";
+import { useEffect, useState } from "react";
+import { IoFilterSharp, IoSearch } from "react-icons/io5";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+interface Props {
+    propertiesCards: any;
+}
+
+export const CardFinderPrices = ({propertiesCards}: Props) => {
+    console.log(propertiesCards)
+    const [properties, setProperties] =  useState({
+        others: [{label: "De mayor a menos", value: "desc"},{label: "De menor a mayor", value: "asc"}],
+        products: propertiesCards.products.map((prop: any) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
+        rarities: propertiesCards.rarities.map((prop: any) => {return {label: prop.name, value:prop.id }}),
+        });
+
+    const router = useRouter();
+    const {others, products, rarities} = properties;
+    
+    const getFilterValues = (filter: any[]) => {
+        let values = "";
+    
+        filter.forEach((value, index) => {
+          values += index < filter.length -1 ? value+"," : value
+        });
+    
+        return values;
+    }
+
+    const searchCards = (filters: any) => { 
+        console.log(filters)
+        let query = "";
+
+        if (filters.products.length > 0) query += '&products='+getFilterValues(filters.products);
+        if (filters.rarities.length > 0) query += '&rarities='+getFilterValues(filters.rarities);
+
+       return query;
+    
+    };
+
+    const onSubmit = (filters: any) => {
+        console.log('entra')
+        router.push(`/boveda?${searchCards(filters)}`);
+
+    }
+
+  return (
+    <Formik 
+        initialValues={{
+            products: [],
+            rarities: [],
+        }}
+        onSubmit={ onSubmit }
+    >
+
+        { formik => (
+        <Form>
+            <div className="">
+            
+            <div className="bg-gray-200 p-2 rounded-md grid grid-cols-1 md:grid-cols-3 gap-2 mx-2 mt-2 mb-1">
+
+            <MultiSelect
+                name="products"
+                options={products}
+                placeholder="Productos"
+                className=""
+                multi={true}
+            />
+
+            <MultiSelect
+                name="rarities"
+                options={rarities}
+                placeholder="Raresa"
+                className=""
+                multi={true}
+            />
+
+            {/* <MultiSelect
+                name="orden"
+                options={others}
+                placeholder="Por precio"
+                className=""
+            /> */}
+        
+            </div>
+           
+
+            
+            <div className="flex justify-center mx-2 mt-4 mb-10">
+                <button type="submit" className="btn-primary w-full md:w-[200px] ">Buscar</button>
+            </div>
+            </div>
+        </Form>
+            
+        )}
+
+
+        </Formik>
+  )
+}

@@ -2,6 +2,7 @@
 
 export * from './productos/product-grid/ProductGrid';
 export * from './productos/slideshow/cards-slideshow';
+export * from './productos/product-by-card/ProductByCard';
 
 export * from './cartas/card-grid/CardGrid';
 export * from './cartas/card-grid/CardItem';
@@ -29,4 +30,7 @@ export * from './map/Map';
 export * from './map/MapXl';
 
 export * from './finders/CardFinderLab';
+export * from './finders/CardFinderPrices';
+
+export * from './ui/modal/modal';
 

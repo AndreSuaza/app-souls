@@ -18,6 +18,8 @@ export const getCardsByProductId = async(id:string) => {
                     select: {
                         name: true,
                         code: true,
+                        show: true,
+                        url: true,
                     }
                 },
                 types: {
@@ -41,9 +43,13 @@ export const getCardsByProductId = async(id:string) => {
                     }
                 },
                 price: {
-                    select: {
-                        price: true,
-                    }
+                    include: {
+                        rarity: true
+                    },
+                    orderBy: {
+                        price: "asc",
+                    },
+                    distinct: ["rarityId"]
                 }
             },
             where: {
@@ -53,8 +59,7 @@ export const getCardsByProductId = async(id:string) => {
 
         return cards.map( card => ({
             ...card,
-            product: card.productId,
-            price: card.price[0].price
+            price: card.price.map(p => {return {price: p.price, rarity: p.rarity.name}})
         }))
 
     } catch (error) {

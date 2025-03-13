@@ -7,39 +7,38 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import Image from 'next/image';
 import { CompleteCollection } from '@/components/productos/complete-collection/CompleteCollection';
 import '../style.css';
+import { Metadata } from 'next';
+
 interface Props {
   params: {
     slug: string;
   }
 }
 
-// export async function generateMetadata(
-//   { params }: Props,
-//   parent: ResolvingMetadata
-// ): Promise<Metadata> {
-//   // read route params
-//   const slug = (await params).slug
- 
-//   // fetch data
-//   const product = await getProductUrl(slug);
- 
-//   // optionally access and extend (rather than replace) parent metadata
-//   //const previousImages = (await parent).openGraph?.images || []
- 
-//   return {
-//     title: product?.name,
-//     description: product?.descripcion,
-//     openGraph: {
-//       title: product?.name,
-//       description: product?.descripcion,
-//       images: [`/products/${product?.ProductImage[0].url}.webp`],
-//     },
-//   }
-// }
+export const metadata: Metadata = {
+  title: 'Ecos del Abismos - TCG',
+  description: 'Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.',
+  openGraph: {
+      title: 'Ecos del Abismos - TCG',
+      description: 'Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.',
+      url: 'https://soulsinxtinction.com/productos/ecos-del-abismo',
+      siteName: 'Ecos del Abismos',
+      images: [
+          {
+          url: 'https://soulsinxtinction.com/products/EDA.webp',
+          width: 500,
+          height: 500,
+          alt: 'Ecos del Abismos Souls In Xtinction TCG',
+          }
+      ],
+      locale: 'en_ES',
+      type: 'website',
+  },
+}
 
 export default async function getProductBySlug({ params }: Props) {
 
-  const product = await getProductUrl('ecos-del-Abismo')
+  const product = await getProductUrl('ecos-del-abismo')
   
   if (!product) { notFound();}
 

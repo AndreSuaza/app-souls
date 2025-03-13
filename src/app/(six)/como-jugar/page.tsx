@@ -1,8 +1,30 @@
 import { getStorePagination } from "@/actions";
 import { StoreItemSimple, Title } from "@/components";
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { IoDocumentAttachOutline } from "react-icons/io5";
+
+export const metadata: Metadata = {
+  title: 'Aprende a Jugar Souls In Xtinction TCG – Guía Completa para Principiantes',
+  description: 'Descubre las reglas básicas, mecánicas y estrategias para dominar Souls In Xtinction TCG. Esta guía te enseñará cómo construir tu mazo, entender las cartas y desarrollar tácticas para vencer a tus oponentes.',
+  openGraph: {
+    title: 'Aprende a Jugar Souls In Xtinction TCG – Guía Completa para Principiantes',
+      description: 'Descubre las reglas básicas, mecánicas y estrategias para dominar Souls In Xtinction TCG. Esta guía te enseñará cómo construir tu mazo, entender las cartas y desarrollar tácticas para vencer a tus oponentes.',
+      url: 'https://soulsinxtinction.com/como-jugar',
+      siteName: 'Aprende a jugar - Souls In Xtinction',
+      images: [
+          {
+          url: 'https://soulsinxtinction.com/souls-in-xtinction.webp',
+          width: 800,
+          height: 600,
+          alt: 'Aprende a jugar Souls In Xtinction TCG',
+          }
+      ],
+      locale: 'en_ES',
+      type: 'website',
+  },
+}
 
 export default async function ComoJuagarPage() {
 
@@ -260,12 +282,15 @@ export default async function ComoJuagarPage() {
       <div className="">
         <div className="bg-indigo-300 mx-4 rounded-lg p-4">
         <h2 className="text-white text-center uppercase font-bold mb-4">¿Dónde puedes jugar?</h2>
+        <ul>
         {stores.map( (store, index) => (
-                    <StoreItemSimple 
-                      key={ store.id }
+          <li key={ store.id }>
+                    <StoreItemSimple                       
                       store={store}
                     />
+          </li>
           ))}
+        </ul>
         </div>
       </div>
     </div>

@@ -21,6 +21,8 @@ export const getCardsByIds = async(ids: string | undefined) => {
                     select: {
                         name: true,
                         code: true,
+                        show: true,
+                        url: true,
                     }
                 },
                 types: {
@@ -44,9 +46,13 @@ export const getCardsByIds = async(ids: string | undefined) => {
                     }
                 },
                 price: {
-                    select: {
-                        price: true,
-                    }
+                    include: {
+                        rarity: true
+                    },
+                    orderBy: {
+                        price: "asc",
+                    },
+                    distinct: ["rarityId"]
                 }
             },
             where: {
@@ -73,8 +79,8 @@ export const getCardsByIds = async(ids: string | undefined) => {
                         keywords: card.keywords,
                         name: card.name,
                         effect: card.effect,
-                        product: card.productId,
-                        price: card.price[0].price,
+                        product: card.product,
+                        price:  card.price.map(p => {return {price: p.price, rarity: p.rarity.name}})
                     }
                 , count: Number.parseInt(idds[idds.indexOf(card.idd)+1])
             } ]

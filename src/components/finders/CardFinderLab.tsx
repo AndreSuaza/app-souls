@@ -20,7 +20,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
         others: [{label: 0, value: 0},{label: 1, value: 1},{label: 2, value: 2},{label: 3, value: 3},{label: 4, value: 4},{label: 5, value: 5},{label: 6, value: 6},{label: 7, value: 7},{label: 8, value: 8},{label: 9, value: 9},{label: 10, value: 10}],
         archetypes: propertiesCards.archetypes.map((prop: any) => {return {label: prop.name, value:prop.id }}),
         keywords: propertiesCards.keywords.map((prop: any) => {return {label: prop.name, value:prop.id }}),
-        products: propertiesCards.products.map((prop: any) => {return {label: prop.name, value:prop.code }}),
+        products: propertiesCards.products.map((prop: any) => {return {label: `${prop.name} [${prop.code}]`, value:prop.code }}),
         });
 
     const router = useRouter();

@@ -1,6 +1,28 @@
 import { getCardsByIds, getPaginatedCards, getPropertiesCards } from "@/actions";
 import { DeckCreator, Pagination, Sidebar, TopMenu } from "@/components";
-import { Archetype, Keyword, Product, Rarity, Type } from "@/interfaces";
+import { Metadata } from "next";
+
+
+export const metadata: Metadata = {
+  title: 'Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG',
+  description: 'Diseña el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. ¡Prepara tu mazo y domina el campo de batalla!',
+  openGraph: {
+    title: 'Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG',
+    description: 'Diseña el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. ¡Prepara tu mazo y domina el campo de batalla!',
+      url: 'https://soulsinxtinction.com/tiendas',
+      siteName: 'Laboratorio Souls In Xtinction TCG',
+      images: [
+          {
+          url: 'https://soulsinxtinction.com/souls-in-xtinction.webp',
+          width: 800,
+          height: 600,
+          alt: 'Souls In Xtinction TCG',
+          }
+      ],
+      locale: 'en_ES',
+      type: 'website',
+  },
+}
 
 interface Props {
   searchParams: {

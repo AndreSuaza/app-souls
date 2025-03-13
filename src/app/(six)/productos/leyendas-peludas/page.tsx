@@ -7,35 +7,33 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import Image from 'next/image';
 import { CompleteCollection } from '@/components/productos/complete-collection/CompleteCollection';
 import '../style.css';
+import { Metadata } from 'next';
 interface Props {
   params: {
     slug: string;
   }
 }
 
-// export async function generateMetadata(
-//   { params }: Props,
-//   parent: ResolvingMetadata
-// ): Promise<Metadata> {
-//   // read route params
-//   const slug = (await params).slug
- 
-//   // fetch data
-//   const product = await getProductUrl(slug);
- 
-//   // optionally access and extend (rather than replace) parent metadata
-//   //const previousImages = (await parent).openGraph?.images || []
- 
-//   return {
-//     title: product?.name,
-//     description: product?.descripcion,
-//     openGraph: {
-//       title: product?.name,
-//       description: product?.descripcion,
-//       images: [`/products/${product?.ProductImage[0].url}.webp`],
-//     },
-//   }
-// }
+export const metadata: Metadata = {
+  title: 'Producto Especial Leyendas Peludas - TCG',
+  description: 'Nuevas cartas coleccionables de "Leyendas Peludas", emergen en tiempos de caos para proteger el equilibrio entre los mundos.',
+  openGraph: {
+      title: 'Producto Especial Leyendas Peludas - TCG',
+      description: 'Nuevas cartas coleccionables de "Leyendas Peludas", emergen en tiempos de caos para proteger el equilibrio entre los mundos.',
+      url: 'https://soulsinxtinction.com/productos/leyendas-peludas',
+      siteName: 'Leyendas Peludas',
+      images: [
+          {
+          url: 'https://soulsinxtinction.com/products/LP.webp',
+          width: 500,
+          height: 500,
+          alt: 'Leyendas Peludas Souls In Xtinction TCG',
+          }
+      ],
+      locale: 'en_ES',
+      type: 'website',
+  },
+}
 
 export default async function getProductBySlug({ params }: Props) {
 

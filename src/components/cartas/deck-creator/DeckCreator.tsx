@@ -147,6 +147,11 @@ export const DeckCreator = ({cards, deck, propertiesCards, className}: Props) =>
     setDetalDecklistCards({deckList: list.reverse().map(deck => deck.card), index: index});
   }
 
+  const cardDetailLimbo = (index: number) => {
+    const list = [...deckListLimbo];
+    setDetalDecklistCards({deckList: list.reverse().map(deck => deck.card), index: index});
+  }
+
   const importDeck = () => {
     
     if(deck) {
@@ -202,7 +207,7 @@ export const DeckCreator = ({cards, deck, propertiesCards, className}: Props) =>
                     index={index}
                     dropCard={dropCard} 
                     addCard={addCard}
-                    detailCard={cardDetailMain}
+                    detailCard={cardDetailLimbo}
                   />
               ))
             }

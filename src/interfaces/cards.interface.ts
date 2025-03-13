@@ -28,7 +28,16 @@ export interface Keyword {
 interface Product {
     code: string;
     name: string;
+    show: boolean;
+    url: string;
 }
+
+interface Price {
+
+    price: number;
+    rarity: string;
+
+} 
 
 export interface Card {
     id: string;
@@ -44,7 +53,7 @@ export interface Card {
     keywords: Keyword[];
     name: string;
     effect: string;
-    product: string;
-    price: number;
+    product: Product;
+    price: Price[];
 }
 
