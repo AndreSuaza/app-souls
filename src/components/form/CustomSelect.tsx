@@ -1,5 +1,5 @@
 import { FieldProps } from "formik";
-import Select, { ActionMeta, MultiValue, PropsValue, SingleValue } from "react-select";
+import Select, { ActionMeta, MultiValue, SingleValue } from "react-select";
 
 interface Option {
   label: string;
@@ -22,21 +22,8 @@ export const CustomSelect = ({
   isMulti = false
 }: CustomSelectProps) => {
 
-//   const onChange = (
-//   newValue: MultiValue<Option> | SingleValue<Option>,
-//   actionMeta: ActionMeta<Option>
-// ) => {
-//   if (!newValue) return; // Manejar el caso en que sea null
 
-//   form.setFieldValue(
-//     field.name,
-//     Array.isArray(newValue)
-//       ? newValue.map((item) => item.value) // Manejo de múltiple selección
-//       : newValue.value // Manejo de selección única
-//   );
-// };
-
-  const onChange = (option:  MultiValue<Option> | SingleValue<Option> , actionMeta: ActionMeta<Option>) => {
+  const onChange = (option:  MultiValue<Option> | SingleValue<Option>) => {
     form.setFieldValue(
       field.name,
       isMulti
