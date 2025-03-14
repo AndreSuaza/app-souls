@@ -52,7 +52,7 @@ export const Decklistimage = ({maindeck, limbodeck = [], name = "", player = "" 
         />
 
         
-        <div className="text-white fixed w-full top-0 left-0 ml-2 z-20 md:top-10 md:left-20 overflow-auto">
+        <div className="text-white fixed top-0 left-0 ml-2 z-20 md:top-10 md:left-20 overflow-auto">
             <div className="mb-1 flex flex-row">
                 <button onClick={close} className="flex flex-row font-semibold bg-indigo-500 px-2 py-0.5 mr-2">
                     <IoCloseOutline className="w-6 h-6" />

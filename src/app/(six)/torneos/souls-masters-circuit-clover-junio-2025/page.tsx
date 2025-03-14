@@ -90,13 +90,13 @@ export default function Tournaments() {
                     
                     <h2 className="text-4xl font-bold uppercase mb-6">Detalles del evento</h2>
                     <div className="grid grid-cols-3">
-                        <div className="col-span-2">
+                        <div className="col-span-2 mt-2">
                             
-                            <p className="text-xl"><span className="font-bold">Fecha:</span> 1 Junio 2025</p>
-                            <p className="text-xl"><span className="font-bold">Hora:</span> 10:00 AM</p>
-                            <p className="text-xl"><span className="font-bold">Costo:</span> $48.000</p>
-                            <p className="text-xl"><span className="font-bold">Ciudad:</span> Cali, Colombia</p>
-                            <p className="text-xl"><span className="font-bold">Dirección:</span> Calle 14 # 69-78</p>
+                            <p className=""><span className="font-bold mr-1">Fecha:</span> 1 Junio 2025</p>
+                            <p className=""><span className="font-bold mr-1">Hora:</span> 10:00 AM</p>
+                            <p className=""><span className="font-bold mr-1">Costo:</span> $48.000</p>
+                            <p className=""><span className="font-bold mr-1">Ciudad:</span> Cali, Colombia</p>
+                            <p className=""><span className="font-bold mr-1">Dirección:</span> Calle 14 # 69-78</p>
                             
                         </div>
                         <div className='text-center'>
@@ -105,7 +105,7 @@ export default function Tournaments() {
                             <p className='font-semibold '>10:00 AM</p>
                         </div>
                     </div>
-                    <button className="btn-primary mt-3 w-full">Inscríbete</button>
+                    {/* <button className="btn-primary mt-3 w-full">Inscríbete</button> */}
                     <Map className="h-[300px] w-full rounded-lg mt-6" lat={3.393893585267408} lgn={-76.53260481349368} title="CLOVER TCG STORE"/>
             </div>
            

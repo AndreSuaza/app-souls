@@ -28,10 +28,10 @@ export const CardItemDeckList = ({card, count, index, dropCard, addCard, detailC
         className="shadow-sm mb-1 cursor-pointer overflow-hidden rounded-md"
     >
         <div 
-          className="h-10 z-0 "
+          className="h-9 z-0 "
         >
             
-            <div className="relative flex flex-row h-10 bg-black bg-opacity-40 uppercase font-bold text-white">
+            <div className="relative flex flex-row h-9 bg-black bg-opacity-40 uppercase font-bold text-white">
             <p className="w-8 bg-black bg-opacity-50 text-center pt-2">{count}</p>
             <p className="pt-2 ml-2 w-80 overflow-hidden" onClick={()=>dropCard(card)}>{card.name}</p>
             <div className="bg-black bg-opacity-50 flex flex-row px-1">

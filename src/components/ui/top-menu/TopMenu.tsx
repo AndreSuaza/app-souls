@@ -29,13 +29,13 @@ export const TopMenu = () => {
                 </div>
             </Link>
         </div>
-        <div className="hidden lg:block">
+        <div className="hidden lg:block lg:text-xs xl:text-base">
           {Routes.map((route) => (
   
               <Link
                 key={route.name}
                 href={route.path}
-                className="m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                className="m-2 xl:p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
               >
                 {route.name}
               </Link>
@@ -46,10 +46,18 @@ export const TopMenu = () => {
         {/*Search, Menu*/}
         <div className="items-center hidden lg:block">
           <div className="flex flex-row">
-            <IoLogoInstagram className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+            <Link href="https://www.instagram.com/soulsinxtinction" target="blank">
+              <IoLogoInstagram className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+            </Link>
+              <Link href="https://www.facebook.com/soulsinxtinction" target="blank">
             <IoLogoFacebook className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
-            <IoLogoYoutube className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
-            <IoLogoTiktok className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+              </Link>
+            <Link href="https://www.youtube.com/@SoulsInXtinction" target="blank">
+              <IoLogoYoutube className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+            </Link>
+            <Link href="https://www.tiktok.com/@soulsinxtinction" target="blank">
+              <IoLogoTiktok className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+            </Link>
           </div> 
         </div>
         <div className="block lg:hidden">

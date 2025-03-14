@@ -7,7 +7,7 @@ import Link from "next/link"
 export const Footer = () => {
   return (
     <footer className='bg-indigo-600 py-10 text-gray-100'>
-          <div className="mx-4 md:mx-40 grid md:grid-cols-3 grid-cols-1">
+          <div className="mx-4 md:mx-40 grid grid-cols-1 lg:grid-cols-3">
             <div className='items-center mt-6'>
             
             <Link href="/">
@@ -27,7 +27,7 @@ export const Footer = () => {
             </div>
             
             <div className='flex justify-center mt-6'>
-              <div className='mr-20'>
+              <div className='mr-10'>
                 <p className='text-xl uppercase font-bold'>Menu</p>
                 <ul className='my-2'>
                 {Routes.map((route, index) => (
@@ -43,7 +43,7 @@ export const Footer = () => {
                 </ul>
               </div>
               <div className=''>
-                <p className='text-xl uppercase font-bold'>Redes</p>
+                <p className='text-xl uppercase font-bold pr-2'>Redes</p>
                 <ul>
                   <li className='mt-1'><Link href={'https://www.facebook.com/soulsinxtinction'} target="_blank" title="Facebook Souls in Xtincion">Facebook</Link></li>
                   <li className='mt-1'><Link href={'https://www.tiktok.com/@soulsinxtinction'} target="_blank" title="Tik Tok Souls in Xtincion">Tik Tok</Link></li>

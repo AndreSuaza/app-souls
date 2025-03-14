@@ -14,7 +14,7 @@ export const TournamentItem = ({ tournament }: Props) => {
 
   return (
     <div className={
-      clsx("'bg-white shadow-md grid grid-cols-1 md:grid-cols-6 my-4 px-2 rounded-lg py-4'",
+      clsx("bg-white shadow-md grid grid-cols-1 md:grid-cols-6 my-4 px-2 rounded-lg py-4",
         {"opacity-70" : tournament.date < new Date()}
       )
     }>

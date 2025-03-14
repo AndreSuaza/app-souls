@@ -3,7 +3,7 @@
 import { useUIStore } from '@/store';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { IoBagRemoveOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoStorefrontOutline, IoTrophyOutline } from 'react-icons/io5';
+import { IoBagRemoveOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoStorefrontOutline, IoTrophyOutline } from 'react-icons/io5';
 
 export const Sidebar = () => {
 
@@ -85,6 +85,22 @@ export const Sidebar = () => {
                     <IoDiamondOutline className="w-6 h-6 mr-3"/>
                     Boveda
                 </Link>
+                
+                <div className="flex flex-row mt-6 border-t-2 pt-4">
+                    <Link href="https://www.instagram.com/soulsinxtinction" target="blank">
+                    <IoLogoInstagram className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+                    </Link>
+                    <Link href="https://www.facebook.com/soulsinxtinction" target="blank">
+                    <IoLogoFacebook className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+                    </Link>
+                    <Link href="https://www.youtube.com/@SoulsInXtinction" target="blank">
+                    <IoLogoYoutube className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+                    </Link>
+                    <Link href="https://www.tiktok.com/@soulsinxtinction" target="blank">
+                    <IoLogoTiktok className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+                    </Link>
+                </div> 
+                
             </div>
            
                 

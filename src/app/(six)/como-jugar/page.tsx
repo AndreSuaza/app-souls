@@ -34,9 +34,9 @@ export default async function ComoJuagarPage() {
     <>
     <Title title="Aprende a jugar" className="mb-3 lg:mb-10"/>
     <div className="grid grid-cols-1 md:grid-cols-4 lg:mx-40 mb-10 text-gray-800">
-      <article className="leading-7 text-xl col-span-3 lg:px-20 bg-slate-50 lg:p-10 p-3 mb-6">
+      <article className="leading-7 text-xl col-span-3 lg:px-20 bg-slate-50 lg:p-10 p-3 mb-6 mx-2">
 
-        <p className="mb-10 text-2xl"><b>Souls In Xtinction</b> es un juego de estrategia que prioriza la destreza del jugador, integrando nuevas mecánicas, efectos y sinergias que relegan la suerte a un segundo plano, premiando la habilidad y la planificación en cada enfrentamiento. </p>
+        <p className="mb-10 text-xl"><b>Souls In Xtinction</b> es un juego de estrategia que prioriza la destreza del jugador, integrando nuevas mecánicas, efectos y sinergias que relegan la suerte a un segundo plano, premiando la habilidad y la planificación en cada enfrentamiento. </p>
         <p className="text-4xl font-bold text-center mb-10">¡Aprendamos a jugar en solo 4 simples pasos!</p>
         <h3 className="text-4xl font-bold mb-10">1. Arma tu mazo</h3>
 
@@ -280,8 +280,8 @@ export default async function ComoJuagarPage() {
         </div>
       </article>
       <div className="">
-        <div className="bg-indigo-300 mx-4 rounded-lg p-4">
-        <h2 className="text-white text-center uppercase font-bold mb-4">¿Dónde puedes jugar?</h2>
+        <div className="bg-gray-200 mx-4 rounded-lg p-4">
+        <h2 className="text-center uppercase font-bold mb-4">¿Dónde puedes jugar?</h2>
         <ul>
         {stores.map( (store) => (
           <li key={ store.id }>

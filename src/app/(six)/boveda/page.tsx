@@ -2,6 +2,7 @@ import { getPaginatedPricesCards, getPropertiesCards } from "@/actions";
 import { CardFinderPrices, Pagination, Title } from "@/components";
 import { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Props {
   searchParams: Promise<{
@@ -62,8 +63,10 @@ export default async function BovedaPage({ searchParams }: Props) {
             <div className="mx-4 mb-4">
               <h4 className="font-bold h-12 my-2 overflow-hidden">{card.name}</h4>
               <ul>
+                <Link href={`/productos/${card.product.url}`} target="blank">
                 <p className="mt-2 text-gray-500 text-xs">{card.product.name}</p>
                 <p className="mb-4 text-gray-500 text-xs">{card.code}-{card.idd}</p>
+                </Link>
                 {card.price.map((price, index) => 
                 <li key={index}>
                   <p className=""><b>{price.rarity.name}:</b> <span className="text-green-600 font-semibold">${price.price}</span></p>

@@ -50,6 +50,7 @@ export const getPaginatedPricesCards = async({
                     select: {
                         name: true,
                         code: true,
+                        url: true,
                     }
                 },
                 types: {

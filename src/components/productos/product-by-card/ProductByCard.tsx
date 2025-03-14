@@ -16,7 +16,7 @@ interface Props {
 export const ProductsByCard = ({product}: Props) => {
 
   return (
-    <div className="grid grid-cols-2 gap-2 ml-2">
+    <div className="grid grid-cols-2 gap-1 ml-2 h-[300px] mb-6">
 
         { product.show ? 
         
