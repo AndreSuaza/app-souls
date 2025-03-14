@@ -1,5 +1,5 @@
 import { FieldProps } from "formik";
-import Select, { ActionMeta, MultiValue, SingleValue } from "react-select";
+import Select, { MultiValue, SingleValue } from "react-select";
 
 interface Option {
   label: string;
