@@ -97,7 +97,7 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
             <MultiSelect
                 name="rarities"
                 options={rarities}
-                placeholder="Raresa"
+                placeholder="Rareza"
                 multi={true}
             />
 

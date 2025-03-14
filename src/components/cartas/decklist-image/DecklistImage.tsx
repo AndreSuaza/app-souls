@@ -76,7 +76,7 @@ export const Decklistimage = ({maindeck, limbodeck = [], name = "", player = "" 
                 <input 
                     className="ml-2 px-2 text-black" 
                     type="text" 
-                    placeholder="Poposición" 
+                    placeholder="Posición" 
                     onChange={(e) => setTop(e.target.value)}
                     max={20}
                 /> 
