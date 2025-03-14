@@ -1,4 +1,4 @@
-import { useField, ErrorMessage, Field } from 'formik';
+import { useField, Field } from 'formik';
 import CustomSelect from './CustomSelect';
 
 interface Props {
