@@ -3,8 +3,6 @@
 import { Tournament } from '@/interfaces';
 import moment from 'moment';
 import Link from 'next/link';
-import { IoCalendarOutline } from 'react-icons/io5';
-
 
 interface Props {
   tournament: Tournament;
