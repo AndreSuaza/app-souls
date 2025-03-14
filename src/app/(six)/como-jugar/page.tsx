@@ -119,7 +119,7 @@ export default async function ComoJuagarPage() {
               <li className="mb-8"><b>Mazo Principal:</b> 40 cartas (Unidades, Conjuros, Armas o Entes).</li>
               <li className="mb-8"><b>Mazo de Almas:</b> 6 cartas de almas  (reverso azul).</li>
               <li className="mb-8"><b>Mazo de Limbo:</b> Hasta 6 cartas de limbo (con borde dorado y reverso rojo).</li>
-              <li className="mb-8"><b>Ficha de ataque:</b> Encarda de señarlar quien puede atacar en el turno.</li>
+              <li className="mb-8"><b>Ficha de ataque:</b> Encargada de señalar quien puede atacar en el turno.</li>
             </ul>
           </div>
           <div className="grid grid-cols-2 gap-3 md:mb-6 p-10">
