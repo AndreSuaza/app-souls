@@ -169,8 +169,7 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
       const test2: Decklist[] = [];
 
       deck.map(c => { if(c.card.types.filter(type => type.name === "Limbo").length === 0) { test.push(c) } else { test2.push(c)}})
-      console.log(test, test2);  
-      console.log(test.reduce((acc, deck) => acc + deck.count, 0));
+ 
       if(test.reduce((acc, deck) => acc + deck.count, 0) <= 40) {
         setDeckListMain([...test]);
       }

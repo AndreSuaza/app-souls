@@ -28,7 +28,7 @@ interface SelectProps {
 
 
 export const CardFinderPrices = ({propertiesCards}: Props) => {
-    console.log(propertiesCards)
+
     const [properties] =  useState({
         others: [{label: "De mayor a menos", value: "desc"},{label: "De menor a mayor", value: "asc"}],
         products: propertiesCards.products.map((prop: SelectProps) => {return {label: `${prop.name} [${prop.id}]`, value:prop.id }}),
