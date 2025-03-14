@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 
 export default async function getProductBySlug() {
 
-  const product = await getProductUrl('ecos-del-abismo')
+  const product = await getProductUrl('ecos-del-Abismo')
   
   if (!product) { notFound();}
 
