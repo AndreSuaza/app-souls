@@ -1,9 +1,7 @@
-import { Title } from "@/components";
+
 
 export default function NoticiasPage() {
   return (
-     <Title 
-        title="Noticias"
-      />
+    <h1>Noticias</h1>
   )
 }

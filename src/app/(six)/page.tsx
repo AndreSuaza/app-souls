@@ -1,5 +1,27 @@
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: 'Souls In Xtinction - El TCG Colombiano de Estrategia y Diversión',
+  description: 'Descubre Souls In Xtinction, el emocionante TCG colombiano que combina estrategia, unidades poderosas y un universo único. Construye tu mazo, desafía a tus amigos y demuestra tu dominio en este juego de cartas coleccionables lleno de acción y diversión',
+  openGraph: {
+      title: 'Souls In Xtinction - El TCG Colombiano de Estrategia y Batalla',
+      description: 'Descubre Souls In Xtinction, el emocionante TCG colombiano que combina estrategia, unidades poderosas y un universo único. Construye tu mazo, desafía a tus amigos y demuestra tu dominio en este juego de cartas coleccionables lleno de acción y diversión',
+      url: 'https://soulsinxtinction.com',
+      siteName: 'Souls In Xtinction - TCG',
+      images: [
+          {
+          url: 'https://soulsinxtinction.com/souls-in-xtinction.webp',
+          width: 800,
+          height: 600,
+          alt: 'Boveda Souls In Xtinction TCG',
+          }
+      ],
+      locale: 'en_ES',
+      type: 'website',
+  },
+}
 
 export default function Home() {
   return (
