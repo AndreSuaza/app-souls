@@ -45,10 +45,10 @@ export const Footer = () => {
               <div className=''>
                 <p className='text-xl uppercase font-bold pr-2'>Redes</p>
                 <ul>
-                  <li className='mt-1'><Link href={'https://www.facebook.com/soulsinxtinction'} target="_blank" title="Facebook Souls in Xtincion">Facebook</Link></li>
-                  <li className='mt-1'><Link href={'https://www.tiktok.com/@soulsinxtinction'} target="_blank" title="Tik Tok Souls in Xtincion">Tik Tok</Link></li>
                   <li className='mt-1'><Link href={'https://www.instagram.com/soulsinxtinction'} target="_blank" title="Instagram Souls in Xtincion">Instagram</Link></li>
                   <li className='mt-1'><Link href={'https://www.youtube.com/@SoulsInXtinction'} target="_blank" title="Youtube Souls in Xtincion">Youtube</Link></li>
+                  <li className='mt-1'><Link href={'https://www.facebook.com/soulsinxtinction'} target="_blank" title="Facebook Souls in Xtincion">Facebook</Link></li>
+                  <li className='mt-1'><Link href={'https://www.tiktok.com/@soulsinxtinction'} target="_blank" title="Tik Tok Souls in Xtincion">Tik Tok</Link></li>
                 </ul>
               </div>
             </div>

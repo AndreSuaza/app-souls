@@ -27,7 +27,7 @@ export const Routes = [
     },
     {
         path: "/boveda",
-        name: "boveda",
+        name: "Bóveda",
     },
 
 ]

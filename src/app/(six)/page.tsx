@@ -38,7 +38,9 @@ export default function Home() {
               blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
               placeholder="blur"
             />
-            <button className="btn-primary mt-10 md:mt-20 uppercase font-bold"> Juega Ahora </button>
+            <Link href={"/como-jugar"}>
+              <button className="btn-primary mt-10 md:mt-20 uppercase font-bold"> Juega Ahora </button>
+            </Link>
           </div>
         </div>
         
