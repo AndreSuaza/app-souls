@@ -9,7 +9,7 @@ interface Props {
     page?: string;
     products?: string;
     rarities?: string;
-    orden: string;
+    text?: string;
   }>
 }
 
@@ -36,11 +36,11 @@ export const metadata: Metadata = {
 
 export default async function BovedaPage({ searchParams }: Props) {
 
-  const { products,  page, rarities, orden } = await searchParams;
+  const { products,  page, rarities, text } = await searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
-  const { cards, totalPage } = await getPaginatedPricesCards({ page: page2, products, rarities, orden });
+  const { cards, totalPage } = await getPaginatedPricesCards({ page: page2, products, rarities, text });
 
   return (
     <>

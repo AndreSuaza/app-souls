@@ -13,15 +13,16 @@ interface PaginationOptions {
     take?: number;
     products?: string;
     rarities?: string;
-    orden?: string;
+    text?: string;
 }
 
 
 export const getPaginatedPricesCards = async({
     page = 1,
-    take = 24,
+    take = 25,
     products,
     rarities,
+    text,
 }: PaginationOptions) => {
     
     if( isNaN( Number(page))) page = 1;
@@ -39,6 +40,7 @@ export const getPaginatedPricesCards = async({
                 }
             }
             if(rarities) { where.raritiesIds = {hasEvery: rarities.split(',').map(item => item.trim())}}
+            if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
             return where;
         }
 

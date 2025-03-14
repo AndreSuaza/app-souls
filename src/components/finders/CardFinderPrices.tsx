@@ -2,7 +2,7 @@
 
 
 import { Form, Formik } from "formik";
-import { MultiSelect } from "../form";
+import { MultiSelect, TextInput } from "../form";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +12,7 @@ interface Propertie {
 }
   
 interface Properties {
+    text?: string,
     products: Propertie[],
     rarities: Propertie[],
 }
@@ -30,7 +31,6 @@ interface SelectProps {
 export const CardFinderPrices = ({propertiesCards}: Props) => {
 
     const [properties] =  useState({
-        others: [{label: "De mayor a menos", value: "desc"},{label: "De menor a mayor", value: "asc"}],
         products: propertiesCards.products.map((prop: SelectProps) => {return {label: `${prop.name} [${prop.id}]`, value:prop.id }}),
         rarities: propertiesCards.rarities.map((prop: SelectProps) => {return {label: prop.name, value:prop.id }}),
         });
@@ -51,7 +51,7 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
     const searchCards = (filters: Properties) => { 
 
         let query = "";
-
+        if (filters.text && filters.text !== "") query += '&text='+filters.text;
         if (filters.products.length > 0) query += '&products='+getFilterValues(filters.products);
         if (filters.rarities.length > 0) query += '&rarities='+getFilterValues(filters.rarities);
 
@@ -68,6 +68,7 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
   return (
     <Formik 
         initialValues={{
+            text: '',
             products: [],
             rarities: [],
         }}
@@ -79,6 +80,12 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
             <div className="">
             
             <div className="bg-gray-200 p-2 rounded-md grid grid-cols-1 md:grid-cols-3 gap-2 mx-2 mt-2 mb-1">
+
+            <TextInput 
+                            name="text"
+                            placeholder="Nombre, Codigo o Efecto de la carta"
+                            className="border-[1px] border-gray-300 rounded-md pl-2" 
+                        />
 
             <MultiSelect
                 name="products"
