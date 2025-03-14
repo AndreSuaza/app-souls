@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 interface WhereClause {
     product?: { code: { in: string[] } };
     raritiesIds?: { hasEvery: string[] };
+    OR?: Array<{ effect?: { contains: string }; idd?: string; name?: { contains: string } }>;
 }
 
 interface PaginationOptions {
