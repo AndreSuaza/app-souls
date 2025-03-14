@@ -6,10 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "seed": "ts-node src/seed/seed-database.ts",
-    "seed-store": "ts-node src/seed/seed-store-database.ts",
-    "seed-cargue": "ts-node src/seed/seed-cargue-db.ts"
+    "lint": "next lint"
   },
   "dependencies": {
     "@auth/core": "^0.38.0",
