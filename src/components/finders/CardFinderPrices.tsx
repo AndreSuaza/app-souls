@@ -84,7 +84,6 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
                 name="products"
                 options={products}
                 placeholder="Productos"
-                className=""
                 multi={true}
             />
 
@@ -92,7 +91,6 @@ export const CardFinderPrices = ({propertiesCards}: Props) => {
                 name="rarities"
                 options={rarities}
                 placeholder="Raresa"
-                className=""
                 multi={true}
             />
 
