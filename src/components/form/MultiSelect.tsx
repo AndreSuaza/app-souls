@@ -2,10 +2,9 @@ import { useField, ErrorMessage, Field } from 'formik';
 import CustomSelect from './CustomSelect';
 
 interface Props {
-    name: string;
+    name?: string;
     placeholder?: string;
-    label?: string;
-    id?: string;
+    options: { label: string | number; value: string | number}[] ;
     multi?: boolean;
 }
 
@@ -15,9 +14,8 @@ export const MultiSelect = ( { ...props } : Props ) => {
 
   return (
     <>
-        { props.label && <label htmlFor={ props.id }>{ props.label }</label>}
         <Field {...field} {...props} component={CustomSelect} isMulti={props.multi}/>
-        <ErrorMessage name={props.name} component="span"/>
+        {/* <ErrorMessage name={props.name} component="span"/> */}
     </>
   )
 }

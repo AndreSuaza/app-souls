@@ -1,13 +1,19 @@
 'use server';
 
+import { Card } from "@/interfaces";
 import prisma from "@/lib/prisma";
 
+
+export interface Decklist {
+    count: number;
+    card: Card;
+}
 
 export const getCardsByIds = async(ids: string | undefined) => {
 
 
     if(!ids) return [];
-
+    let deck: Decklist[] = [];
     const idds = ids.split(',');
 
     try {
@@ -61,7 +67,31 @@ export const getCardsByIds = async(ids: string | undefined) => {
             }
         })
 
-        return cards.map(card => {return {card: card, count: Number.parseInt(idds[idds.indexOf(card.idd)+1])}});
+        cards.map(card => {
+            deck = [...deck, 
+                {
+                    card: {
+                        id: card.id,
+                        idd: card.idd,
+                        code: card.code,
+                        types: card.types,
+                        limit: card.limit,
+                        rarities: card.rarities,
+                        cost: card.cost,
+                        force: card.force,
+                        defense: card.defense,
+                        archetypes: card.archetypes,
+                        keywords: card.keywords,
+                        name: card.name,
+                        effect: card.effect,
+                        product: card.product,
+                        price:  card.price.map(p => {return {price: p.price, rarity: p.rarity.name}})
+                    }
+                , count: Number.parseInt(idds[idds.indexOf(card.idd)+1])
+            } ]
+        })
+
+        return deck;
 
     } catch (error) {
         throw new Error(`No se pudo cargar las cartas ${error}`);

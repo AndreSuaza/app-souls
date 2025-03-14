@@ -12,7 +12,16 @@ interface Propertie {
     name: string,
   }
   
-  interface Properties {
+
+interface Properties {
+    products: Propertie[],
+    types: Propertie[],
+    archetypes: Propertie[],
+    keywords: Propertie[],
+    rarities: Propertie[],
+}
+
+interface PropertiesFiltersFinderLab {
     text: string,
     products: Propertie[],
     types: Propertie[],
@@ -22,7 +31,7 @@ interface Propertie {
     force: Propertie[],
     defense: Propertie[],
     cost: Propertie[],
-  }
+}
 
 interface Props {
     propertiesCards: Properties;
@@ -37,11 +46,11 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
 
     const [showFilters, setShowFilters] = useState(false);
     const [properties] =  useState({
-        types: propertiesCards.types.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
+        types: propertiesCards.types.map((prop:SelectProps) => {return {label: prop.name, value: prop.id }}),
         others: [{label: 0, value: 0},{label: 1, value: 1},{label: 2, value: 2},{label: 3, value: 3},{label: 4, value: 4},{label: 5, value: 5},{label: 6, value: 6},{label: 7, value: 7},{label: 8, value: 8},{label: 9, value: 9},{label: 10, value: 10}],
-        archetypes: propertiesCards.archetypes.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
-        keywords: propertiesCards.keywords.map((prop:SelectProps) => {return {label: prop.name, value:prop.id }}),
-        products: propertiesCards.products.map((prop:SelectProps) => {return {label: `${prop.name} [${prop.id}]`, value:prop.id }}),
+        archetypes: propertiesCards.archetypes.map((prop:SelectProps) => {return {label: prop.name, value: prop.id }}),
+        keywords: propertiesCards.keywords.map((prop:SelectProps) => {return {label: prop.name, value: prop.id }}),
+        products: propertiesCards.products.map((prop:SelectProps) => {return {label: `${prop.name} [${prop.id}]`, value: prop.id }}),
         });
 
     const router = useRouter();
@@ -57,7 +66,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
         return values;
     }
 
-    const searchCards = (filters: Properties) => { 
+    const searchCards = (filters: PropertiesFiltersFinderLab) => { 
 
         let query = "";
 
@@ -74,7 +83,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
     
     };
 
-    const onSubmit = (filters: Properties) => {
+    const onSubmit = (filters: PropertiesFiltersFinderLab) => {
         
         router.push(`/laboratorio?${searchCards(filters)}`);
 
@@ -106,7 +115,6 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                 name="text"
                 placeholder="Nombre, Codigo o Efecto de la carta"
                 className="border-[1px] border-gray-300 rounded-md pl-2" 
-                style={{paddingTop: '0.5rem', paddingBottom: '0.35rem'}}
             />
 
             <MultiSelect

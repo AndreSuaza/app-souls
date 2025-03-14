@@ -26,7 +26,7 @@ interface Properties {
 
 interface Props {
     cards: Card[];
-    propertiesCards: Properties[];
+    propertiesCards: Properties;
     deck?: Decklist[];
     className?: string
 }
