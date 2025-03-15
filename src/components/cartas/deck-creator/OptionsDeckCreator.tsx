@@ -98,12 +98,12 @@ export const OptionsDeckCreator = ({
         }
         { showSharedDeck && 
             <Modal 
-                className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all md:w-1/3 md:left-1/3 md:h-2/5 md:top-28"
+                className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:h-2/5 md:top-28"
                 close={() => setSharedDeck(false)}
             >
             <div className="overflow-auto w-full text-center">
                 <div className=" text-gray-100 py-4 bg-slate-950"> 
-                    <h1 className="font-bold text-4xl">Enlace de tu Mazo</h1>
+                    <h1 className="font-bold text-2xl md:text-4xl">Enlace de tu Mazo</h1>
                 </div>
                <p className="font-bold text-lg mt-4">Comparte el Link de tu mazo con tus amigos.</p>
                <div className="border-2 bg-slate-200 p-4 m-4 font-bold  text-indigo-600 text-center">

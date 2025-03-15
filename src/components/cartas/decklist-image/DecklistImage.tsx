@@ -52,7 +52,7 @@ export const Decklistimage = ({maindeck, limbodeck = [], name = "", player = "" 
         />
 
         
-        <div className="text-white fixed top-0 left-0 ml-2 z-20 md:top-10 md:left-20 overflow-auto">
+        <div className="text-white fixed top-0 left-0 ml-2 z-20 md:top-10 md:left-20 ">
             <div className="mb-1 flex flex-row">
                 <button onClick={close} className="flex flex-row font-semibold bg-indigo-500 px-2 py-0.5 mr-2">
                     <IoCloseOutline className="w-6 h-6" />
@@ -81,31 +81,33 @@ export const Decklistimage = ({maindeck, limbodeck = [], name = "", player = "" 
                     max={20}
                 /> 
             </div>
-            <div ref={divRef} className="w-[1080px] bg-[url(/bg-cardlist.webp)] bg-center bg-cover flex flex-row ">
-                <div className="w-full  min-h-[400px] p-4">
-                    <DeckImage decklist={maindeck} title="mazo principal" /> 
-                    <DeckImage decklist={limbodeck} title="mazo limbo"/>
-                </div> 
-                <div className="relative bg-black bg-opacity-40 text-sm w-1/4 ml-2 p-4">
-                    <div className="relative w-44 h-52 m-auto">
-                    <Image 
-                        fill
-                        src='/logo-six.webp' 
-                        alt="Logo Souls In Xtinction" 
-                        title="Souls In Xtinction"
-                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
-                        placeholder="blur"
-                        className="absolute"
-                    />
-                    </div>
-                    <div className="absolute top-1/3">
-                        <p className="font-bold uppercase text-xl">{playerName}</p>
-                        <p className="font-bold uppercase"><i>{top}</i></p>
-                        <p className="font-bold uppercase mb-4"><i>Mazo: {nameDeck}</i></p>
-                    </div>
-                    <div className="absolute bottom-0 mb-6" >
-                        <p className="flex flex-row mb-2"><IoLogoInstagram className="w-6 h-6 mr-1 mb-1"/> /soulsinxtinction</p>
-                        <p className="flex flex-row"><IoLogoFacebook className="w-6 h-6 mr-1 mb-1"/> /soulsinxtinction</p>
+            <div className="w-screen h-[600px] overflow-auto">
+                <div ref={divRef} className="w-[1080px] bg-[url(/bg-cardlist.webp)] bg-center bg-cover flex flex-row">
+                    <div className="p-4">
+                        <DeckImage decklist={maindeck} title="mazo principal" /> 
+                        <DeckImage decklist={limbodeck} title="mazo limbo"/>
+                    </div> 
+                    <div className="relative bg-black bg-opacity-40 text-sm w-1/4 ml-2 p-4">
+                        <div className="relative w-44 h-52 m-auto">
+                        <Image 
+                            fill
+                            src='/logo-six.webp' 
+                            alt="Logo Souls In Xtinction" 
+                            title="Souls In Xtinction"
+                            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
+                            placeholder="blur"
+                            className="absolute"
+                        />
+                        </div>
+                        <div className="absolute top-1/3">
+                            <p className="font-bold uppercase text-xl">{playerName}</p>
+                            <p className="font-bold uppercase"><i>{top}</i></p>
+                            <p className="font-bold uppercase mb-4"><i>Mazo: {nameDeck}</i></p>
+                        </div>
+                        <div className="absolute bottom-0 mb-6" >
+                            <p className="flex flex-row mb-2"><IoLogoInstagram className="w-6 h-6 mr-1 mb-1"/> /soulsinxtinction</p>
+                            <p className="flex flex-row"><IoLogoFacebook className="w-6 h-6 mr-1 mb-1"/> /soulsinxtinction</p>
+                        </div>
                     </div>
                 </div>
             </div>
