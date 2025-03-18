@@ -44,7 +44,7 @@ export const authConfig: NextAuthConfig = {
       return token;
     },
 
-    session({ session, token, user }) {
+    session({ session, token }) {
       const tes = token.data as Data;
       session.user = {
         id: tes.id,
@@ -93,11 +93,15 @@ export const authConfig: NextAuthConfig = {
           if (!isValidPassword) {
             throw new Error("Contraseña incorrecta");
           }
-
-
-          const { password: _, ...rest } = user
-
-          return rest;
+          
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            nickname: user.nickname,
+            createdDate: user.createdDate,
+            updatedDate: user.updatedDate
+        };
       }
     
     }),

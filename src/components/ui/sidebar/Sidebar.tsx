@@ -4,13 +4,12 @@ import { useUIStore } from '@/store';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { IoBagRemoveOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoStorefrontOutline, IoTrophyOutline } from 'react-icons/io5';
-import { useSession } from 'next-auth/react';
+
 
 export const Sidebar = () => {
 
   const isSideMenuOpen = useUIStore( state => state.isSideMenuOpen);
   const closeMenu = useUIStore( state => state.closeSideMenu );
-  const { data: session } = useSession();
 
   return (
     <div>
