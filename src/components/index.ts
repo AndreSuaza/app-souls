@@ -33,3 +33,4 @@ export * from './finders/CardFinderPrices';
 
 export * from './ui/modal/modal';
 
+export * from './ui/providers/Provider';

@@ -11,3 +11,6 @@ export * from './tournaments/tournaments-pagination';
 export * from './tournaments/tournament-url';
 
 export * from './stores/stores-pagination';
+
+export * from './auth/login';
+export * from './auth/logout';
