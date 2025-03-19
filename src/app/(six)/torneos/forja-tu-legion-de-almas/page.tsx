@@ -38,8 +38,8 @@ export default function Tournaments() {
             </div>
         </div>
       </div>
-      <article className="mx-40 grid grid-cols-3 gap-4">
-        <section className="col-span-2 my-10">
+      <article className="mx-4 lg:mx-40 grid md:grid-cols-3">
+        <section className="md:col-span-2 my-10">
           <p>Este torneo está diseñado para fortalecer la comunidad invitando a nuevos jugadores a unirse a la batalla.</p>
           <h3 className="text-3xl font-bold my-4">¿Cómo participar?</h3>
           <p className="mb-4">Los jugadores activos pueden invitar nuevos jugadores y recibir recompensas por cada persona que traigan:</p>
@@ -110,7 +110,7 @@ export default function Tournaments() {
       </div>
            
      
-    </article>
+      </article>
 
 
       </>

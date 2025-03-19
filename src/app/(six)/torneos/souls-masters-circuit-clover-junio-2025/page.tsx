@@ -17,13 +17,13 @@ export default function Tournaments() {
             </div>
         </div>
       </div>
-      <div className="mx-40 grid grid-cols-3 gap-4">
-            <div className="col-span-2 my-10">
+      <div className="grid mx-2 md:grid-cols-3 md:gap-4 lg:mx-40">
+            <div className="md:col-span-2 my-4 md:my-10">
                 <p>El Souls Masters Circuit es más que un torneo, es una experiencia que pondrá a prueba la habilidad, la estrategia y la capacidad de los jugadores para adaptarse a las mecánicas únicas del juego. En este torneo, los participantes tendrán la oportunidad de demostrar su destreza con las cartas más poderosas, usando combinaciones letales y elaboradas para superar a sus oponentes.</p>
 
                 <h2 className="text-4xl font-bold uppercase mt-10 mb-6">Por participar recibes:</h2>
 
-                <div className="grid grid-cols-2">
+                <div className="grid md:grid-cols-2">
    
                         <ul className="ml-4 p-2">
                             <li className="mb-2">1 Sobre de Souls Masters Circuit</li>
@@ -36,7 +36,7 @@ export default function Tournaments() {
                 </div>
                 <h2 className="text-4xl font-bold uppercase my-10">Premiación del Evento</h2>
 
-                <div className="grid grid-cols-2">
+                <div className="grid md:grid-cols-2">
                     <div className="">
                         <h3 className="text-2xl uppercase font-bold mb-6">Primer lugar</h3>
                         <ul className="ml-4 p-2">
@@ -86,7 +86,7 @@ export default function Tournaments() {
                 <p className="mb-6">¡Inscripciones abiertas ahora! No pierdas la oportunidad de ser parte de este histórico evento que definirá el futuro de los jugadores más legendarios.</p>
             </div>
             <div className="">
-                <div className="bg-gray-200 px-6 py-4 rounded-xl mt-10">
+                <div className="bg-gray-200 w-full md:px-6 py-4 rounded-xl md:mt-10">
                     
                     <h2 className="text-4xl font-bold uppercase mb-6">Detalles del evento</h2>
                     <div className="grid grid-cols-3">
@@ -107,7 +107,7 @@ export default function Tournaments() {
                     </div>
                     {/* <button className="btn-primary mt-3 w-full">Inscríbete</button> */}
                     <Map className="h-[300px] w-full rounded-lg mt-6" lat={3.393893585267408} lgn={-76.53260481349368} title="CLOVER TCG STORE"/>
-            </div>
+                </div>
            
             </div>    
       </div>
