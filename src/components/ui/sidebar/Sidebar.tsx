@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { IoBagRemoveOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoStorefrontOutline, IoTrophyOutline } from 'react-icons/io5';
 
+
 export const Sidebar = () => {
 
   const isSideMenuOpen = useUIStore( state => state.isSideMenuOpen);
