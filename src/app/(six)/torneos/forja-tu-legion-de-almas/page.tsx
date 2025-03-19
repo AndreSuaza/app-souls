@@ -1,6 +1,28 @@
 import { Map } from "@/components";
+import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: 'Forja tu Legión de Almas Torneo Souls In Xticition',
+  description: 'Vive la emoción de la competencia y el crecimiento de la comunidad en los torneos oficiales de Souls In Xtinction.',
+  openGraph: {
+      title: 'Forja tu Legión de Almas Torneo Souls In Xticition',
+      description: 'Vive la emoción de la competencia y el crecimiento de la comunidad en los torneos oficiales de Souls In Xtinction.',
+      url: 'https://soulsinxtinction.com/torneos/forja-tu-legion-de-almas',
+      siteName: 'Forja tu Legión Souls In Xticition',
+      images: [
+          {
+          url: 'https://soulsinxtinction.com/tournaments/forja-tu-legion-de-almas.webp',
+          width: 500,
+          height: 500,
+          alt: 'Forja tu Legión Souls In Xticition',
+          }
+      ],
+      locale: 'en_ES',
+      type: 'website',
+  },
+}
 
 export default function Tournaments() {
     return (
