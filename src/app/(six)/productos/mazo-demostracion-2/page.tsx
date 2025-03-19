@@ -10,19 +10,19 @@ import '../style.css';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Ecos del Abismos - TCG',
-  description: 'Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.',
+  title: 'Mazo de Demostracíon 2.0 - TCG',
+  description: 'El Mazo de Demostración **Alma Renacida** de Souls In Xtinction TCG es la puerta de entrada perfecta para nuevos jugadores y una herramienta esencial para quienes buscan perfeccionar su estrategia.',
   openGraph: {
-      title: 'Ecos del Abismos - TCG',
-      description: 'Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.',
-      url: 'https://soulsinxtinction.com/productos/ecos-del-abismo',
-      siteName: 'Ecos del Abismos',
+      title: 'Mazo de Demostracíon 2.0 - TCG',
+      description: 'El Mazo de Demostración **Alma Renacida** de Souls In Xtinction TCG es la puerta de entrada perfecta para nuevos jugadores y una herramienta esencial para quienes buscan perfeccionar su estrategia.',
+      url: 'https://soulsinxtinction.com/productos/mazo-demostracion-2',
+      siteName: 'Mazo de Demostracíon 2.0',
       images: [
           {
-          url: 'https://soulsinxtinction.com/products/EDA.webp',
+          url: 'https://soulsinxtinction.com/products/MD2.webp',
           width: 500,
           height: 500,
-          alt: 'Ecos del Abismos Souls In Xtinction TCG',
+          alt: 'El Mazo de Demostración Souls In Xtinction TCG',
           }
       ],
       locale: 'en_ES',
