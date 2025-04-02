@@ -97,7 +97,7 @@ export default function Tournaments() {
           <div className="grid grid-cols-3">
               <div className="col-span-2 mt-2">
                   
-                  <p className=""><span className="font-bold mr-1">Fecha:</span> 29 Marzo 2025</p>
+                  <p className=""><span className="font-bold mr-1">Fecha:</span> 12 Abril 2025</p>
                   <p className=""><span className="font-bold mr-1">Hora:</span> 02:00 PM</p>
                   <p className=""><span className="font-bold mr-1">Costo:</span> Gratis</p>
                   <p className=""><span className="font-bold mr-1">Ciudad:</span> Bogotá, Colombia</p>
