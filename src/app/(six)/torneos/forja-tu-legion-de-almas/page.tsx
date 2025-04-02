@@ -106,7 +106,7 @@ export default function Tournaments() {
               </div>
           </div>
           {/* <button className="btn-primary mt-3 w-full">Inscríbete</button> */}
-          <Map className="h-[300px] w-full rounded-lg mt-6" lat={4.641061151712014} lgn={-74.07435758650631} title="CLOVER TCG STORE"/>
+          <Map className="h-[300px] w-full rounded-lg mt-6" lat={4.641061151712014} lgn={-74.07435758650631} title="HIDDEN TCG STORE"/>
       </div>
            
      
