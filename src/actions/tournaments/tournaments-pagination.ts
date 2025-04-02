@@ -59,7 +59,7 @@ export const getTournamentsPagination = async({page = 1,take = 12, types}: Pagin
             },  
             orderBy: [
                 {
-                    createDate: 'desc',
+                    date: 'desc',
                 }
             ],
         })
