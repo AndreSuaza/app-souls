@@ -10,7 +10,9 @@ interface WhereClause {
     cost?: { in: number[] };
     force?: { in: string[] };
     defense?: { in: string[] };
+    raritiesIds?: { hasEvery: string[] };
     OR?: Array<{ effect?: { contains: string }; idd?: string; name?: { contains: string } }>;
+    
 }
 
 interface PaginationOptions {
@@ -24,6 +26,7 @@ interface PaginationOptions {
     costs?: string;
     forces?: string;
     defenses?: string;
+    rarities?: string;
 }
 
 
@@ -38,6 +41,7 @@ export const getPaginatedCards = async({
     costs,
     forces,
     defenses,
+    rarities,
 }: PaginationOptions) => {
     
     if( isNaN( Number(page))) page = 1;
@@ -61,6 +65,7 @@ export const getPaginatedCards = async({
             if(forces) { where.force = {in: forces.split(',').map(item => item.trim())}}
             if(defenses) { where.defense = {in: defenses.split(',').map(item => item.trim())}}
             if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
+            if(rarities) { where.raritiesIds = {hasEvery: rarities.split(',').map(item => item.trim())}}
             return where;
         }
 

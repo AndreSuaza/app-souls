@@ -51,10 +51,11 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
         archetypes: propertiesCards.archetypes.map((prop:SelectProps) => {return {label: prop.name, value: prop.id }}),
         keywords: propertiesCards.keywords.map((prop:SelectProps) => {return {label: prop.name, value: prop.id }}),
         products: propertiesCards.products.map((prop:SelectProps) => {return {label: `${prop.name} [${prop.id}]`, value: prop.id }}),
+        rarities: propertiesCards.rarities.map((prop:SelectProps) => {return {label: `${prop.name}`, value: prop.id }}),
         });
 
     const router = useRouter();
-    const {types, others, archetypes, keywords, products} = properties;
+    const {types, others, archetypes, keywords, products, rarities} = properties;
     
     const getFilterValues = (filter: Propertie[]) => {
         let values = "";
@@ -78,6 +79,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
         if (filters.cost.length > 0) query += '&costs='+getFilterValues(filters.cost);
         if (filters.defense.length > 0) query += '&defenses='+getFilterValues(filters.defense);
         if (filters.keywords.length > 0) query += '&keywords='+getFilterValues(filters.keywords);
+        if (filters.rarities.length > 0) query += '&rarities='+getFilterValues(filters.rarities);
         
        return query;
     
@@ -177,6 +179,13 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
                     name="keywords"
                     options={keywords}
                     placeholder="Palabras Clave"
+                    multi={true}
+                />
+
+                <MultiSelect
+                    name="rarities"
+                    options={rarities}
+                    placeholder="Rareza"
                     multi={true}
                 />
   
