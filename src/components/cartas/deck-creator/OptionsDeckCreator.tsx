@@ -151,7 +151,7 @@ export const OptionsDeckCreator = ({
                 </div>
 
                 <div className="grid lg:grid-cols-6 md:grid-cols-6 grid-cols-3 mt-12 mb-6 gap-1 mx-6">
-                {hand.map((card, i) => 
+                {hand.map((card) => 
                     <div key={card.id}>
                         <Image 
                             width={500} 
