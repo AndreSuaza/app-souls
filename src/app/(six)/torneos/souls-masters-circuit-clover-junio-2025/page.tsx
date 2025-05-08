@@ -11,7 +11,7 @@ export default function Tournaments() {
             <div className="bg-black h-[600px] polygon bg-opacity-90 flex justify-center">
                 <div className="text-white font-bold my-auto ml-6 md:w-2/3 uppercase md:pb-24">
                     <h1 className="text-4xl md:text-6xl mb-2">Souls Masters Circuit</h1>
-                    <p className="text-4xl mb-2">CLOVER TCG STORE</p>
+                    <p className="text-4xl mb-2">Dageon singles store</p>
                     <p className="mr-20 font-normal md:font-semibold">Estamos en la tercera edición del Souls Masters Circuit, esta vez en la vibrante ciudad de Cali, donde los mejores estrategas se enfrentarán en un torneo que desafiarán su destreza, creatividad y dominio del juego.</p>
                 </div>
             </div>
@@ -29,7 +29,6 @@ export default function Tournaments() {
                             <li className="mb-2">1 Sobre de Souls Masters Circuit</li>
                             <li className="mb-2">1 Sobre de Expansión</li>
                             <li className="mb-2">1 Sobre maestro</li>
-                            <li className="mb-2">1 Alma Ultra</li>
                             <li className="mb-2">1 Alma Ultra</li>
                         </ul>
           
@@ -95,8 +94,8 @@ export default function Tournaments() {
                             <p className=""><span className="font-bold mr-1">Fecha:</span> 1 Junio 2025</p>
                             <p className=""><span className="font-bold mr-1">Hora:</span> 10:00 AM</p>
                             <p className=""><span className="font-bold mr-1">Costo:</span> $48.000</p>
-                            <p className=""><span className="font-bold mr-1">Ciudad:</span> Cali, Colombia</p>
-                            <p className=""><span className="font-bold mr-1">Dirección:</span> Calle 14 # 69-78</p>
+                            <p className=""><span className="font-bold mr-1">Ciudad:</span> Cali, Valle del Cauca, Colombia</p>
+                            <p className=""><span className="font-bold mr-1">Dirección:</span> Cra. 36b #5b2-44, San Fernando</p>
                             
                         </div>
                         <div className='text-center'>
@@ -106,7 +105,7 @@ export default function Tournaments() {
                         </div>
                     </div>
                     {/* <button className="btn-primary mt-3 w-full">Inscríbete</button> */}
-                    <Map className="h-[300px] w-full rounded-lg mt-6" lat={3.393893585267408} lgn={-76.53260481349368} title="CLOVER TCG STORE"/>
+                    <Map className="h-[300px] w-full rounded-lg mt-6" lat={3.4284595119743866} lgn={-76.54209978650715} title="Dageon singles store"/>
                 </div>
            
             </div>    
