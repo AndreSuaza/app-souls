@@ -51,7 +51,7 @@ export default function Tournaments() {
                         <h3 className="text-2xl uppercase font-bold mb-6">Segundo lugar</h3>
                         <ul className="ml-4">
                             <li className="mb-2">2 cajas de Expansión</li>
-                            <li className="mb-2">2 cajas de Expansión</li>
+                            <li className="mb-2">2 cajas Ecos del abismo</li>
                             <li className="mb-2">Tapete de juego Souls Masters Circuit</li>
                             <li className="mb-2">1 Purificador de Almas Gold Secret AA</li>
                             <li className="mb-2">1 Alma Gold Secret Souls Masters Circuit</li>
