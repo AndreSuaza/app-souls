@@ -67,11 +67,22 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
         return values;
     }
 
+    function capitalizeWords(inputString: string): string {
+        const words = inputString.split(' ');
+        const capitalizedWords = words.map((word) => {
+            if (word.length > 0) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+            }
+            return word;
+        });
+        return capitalizedWords.join(' ');
+    }
+
     const searchCards = (filters: PropertiesFiltersFinderLab) => { 
 
         let query = "";
 
-        if (filters.text && filters.text !== "") query += '&text='+filters.text;
+        if (filters.text && filters.text !== "") query += '&text='+capitalizeWords(filters.text);
         if (filters.types.length > 0) query += '&types='+getFilterValues(filters.types);
         if (filters.force.length > 0) query += '&forces='+getFilterValues(filters.force);
         if (filters.archetypes.length > 0) query += '&archetypes='+getFilterValues(filters.archetypes);
