@@ -45,6 +45,7 @@ export const CardItem = ({ card, addCard, index, detailCard }: Props) => {
             className='w-full object-cover'
             width={500}
             height={718}
+            onClick={() => addCard && addCard(card)}
         />
       </div>
     </div>
