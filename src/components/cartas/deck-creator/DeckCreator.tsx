@@ -9,6 +9,8 @@ import { CardDetail } from "../card-detail/CardDetail";
 import { useCardDetailStore } from "@/store";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
+import { CardItemList } from "../card-grid/CardItemList";
+import clsx from "clsx";
 
 
 interface Propertie {
@@ -83,6 +85,7 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
   const [numCards, setNumCard] = useState({und: 0, arm: 0, con: 0, ent: 0}) 
   const [detalDecklistCards, setDetalDecklistCards] = useState<CardsDetail>({deckList: [], index: 0})
   const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
+  const [viewList, setViewList] = useState(false);
 
   const addCard = (cardSeleted: Card) => {
 
@@ -162,6 +165,10 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
     setDetalDecklistCards({deckList: list.reverse().map(deck => deck.card), index: index});
   }
 
+  const cardDetail = (index: number) => {
+    setDetalDecklistCards({deckList: cards, index: index});
+  }
+
   const importDeck = () => {
     
     if(deck) {
@@ -181,6 +188,10 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
     }
   }
 
+  const changeViewList = () => {
+    setViewList(!viewList)
+  }
+
   useEffect(() => {
     importDeck();
   }, []);
@@ -194,7 +205,7 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
     <div className="grid grid-cols-4 ">
       <div className="col-span-2 lg:col-span-3">
         <CardFinderLab propertiesCards={propertiesCards}/>
-        <CardGrid cards={cards} addCard={addCard}/>
+        <CardGrid cards={cards} addCard={addCard} detailCard={cardDetail}/>
       </div>
       <div className="fixed bg-gray-200 right-0 transition-all w-1/2 md:px-4 py-2 h-screen lg:w-1/4"
       >
@@ -202,7 +213,16 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
           deckListMain={deckListMain} 
           deckListLimbo={deckListLimbo} 
           clearDecklist={clearDecklist}
+          changeViewList={changeViewList}
+          viewList={viewList}
         />
+         <ul className="flex flex-row bg-gray-900 p-1 rounded-md mb-1 text-white">
+              <li className="mr-2"><span className="font-bold ml-2">T:</span> {countDecklist(deckListMain)}</li>
+              <li className="mr-2"><span className="font-bold text-red-600">U:</span> {numCards.und}</li>
+              <li className="mr-2"><span className="font-bold text-purple-700">C:</span> {numCards.con}</li>
+              <li className="mr-2"><span className="font-bold text-gray-400">A:</span> {numCards.arm}</li>
+              <li className="mr-2"><span className="font-bold text-yellow-500">E:</span> {numCards.ent}</li>
+            </ul>
         <div className="overflow-auto h-cal-200">
           
           <div className="border-b-2 bg-yellow-500 mx-1 px-1.5 py-1 rounded-lg">
@@ -222,16 +242,19 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
             }
           </div>
           <div className="px-1.5 rounded-lg">
-            <ul className="flex flex-row bg-gray-900 p-1 rounded-md mb-1 text-white">
-              <li className="mr-2"><span className="font-bold ml-2">T:</span> {countDecklist(deckListMain)}</li>
-              <li className="mr-2"><span className="font-bold text-red-600">U:</span> {numCards.und}</li>
-              <li className="mr-2"><span className="font-bold text-purple-700">C:</span> {numCards.con}</li>
-              <li className="mr-2"><span className="font-bold text-gray-400">A:</span> {numCards.arm}</li>
-              <li className="mr-2"><span className="font-bold text-yellow-500">E:</span> {numCards.ent}</li>
-            </ul>
+           
+            <div className={
+              clsx(
+                "grid grid-cols-1",
+                {
+                  'md:grid-cols-2 gap-2': !viewList
+                }
+              )
+            }>
             {
-              deckListMain.slice().reverse().map( (deck, index) => (
-                <CardItemDeckList 
+              deckListMain.slice().reverse().map( (deck, index) => 
+               !viewList ? 
+                <CardItemList 
                   key={deck.card.id+index} 
                   card={deck.card} 
                   count={deck.count} 
@@ -240,8 +263,20 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
                   addCard={addCard} 
                   detailCard={cardDetailMain}
                 />
-              ))
+                :
+                <CardItemDeckList
+                  key={deck.card.id+index} 
+                  card={deck.card} 
+                  count={deck.count} 
+                  index={index}
+                  dropCard={dropCard} 
+                  addCard={addCard} 
+                  detailCard={cardDetailMain}
+                />
+                
+              )
             }
+            </div>
           </div>              
         </div>
         

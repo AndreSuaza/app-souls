@@ -1,20 +1,44 @@
 
+'use client';
+
 import Image from 'next/image';
 import { Card } from '@/interfaces/cards.interface';
+import { IoAddCircleOutline, IoEyeOutline } from 'react-icons/io5';
+import { useCardDetailStore } from '@/store';
 
 interface Props {
     card: Card;
     addCard?: (c: Card) => void
+    index: number
+    detailCard: (i: number) => void
 }
 
-export const CardItem = ({ card, addCard }: Props) => {
+export const CardItem = ({ card, addCard, index, detailCard }: Props) => {
+
+  const openCardDetail = useCardDetailStore( state => state.openCardDetail);
+  
+  const openDetail = () => {
+      openCardDetail();
+      detailCard(index);
+  }
 
   return (
-    <div key={ card.id } className="flex flex-col transition-all hover:-mt-2 cursor-pointer drop-shadow-lg">
+    <div key={ card.id } className="flex flex-col transition-all hover:-mt-2 drop-shadow-lg">
       <div 
         className='rounded-xl overflow-hidden fade-in'
-        onClick={() => addCard && addCard(card)}
     >
+        <div className="absolute top-16 -right-1 z-10">
+            <IoEyeOutline 
+              className="w-8 h-8 bg-indigo-600 text-white p-1 rounded cursor-pointer"
+              onClick={()=>openDetail()}
+            />
+            { card.types.filter(type => type.name === "Alma").length === 0 &&
+              <IoAddCircleOutline 
+                className="w-8 h-8 mt-1 bg-indigo-600 text-white p-1 rounded select-none cursor-pointer"
+                onClick={() => addCard && addCard(card)}
+              />
+            }
+        </div>
         <Image
             src={`/cards/${card.code}-${card.idd}.webp`}
             alt={card.name}
