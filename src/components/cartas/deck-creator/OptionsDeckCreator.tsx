@@ -100,7 +100,7 @@ export const OptionsDeckCreator = ({
 
              <button
                 className="btn-short"
-                title="Exportar Mazo"
+                title="Cambiar Vista del Mazo"
                 onClick={changeViewList}
             >
                 {
