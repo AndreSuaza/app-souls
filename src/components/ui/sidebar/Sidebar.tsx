@@ -72,7 +72,7 @@ export const Sidebar = () => {
                 </Link>
                 <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/laboratorio"  onClick={ closeMenu }>
                     <IoFlaskOutline className="w-6 h-6 mr-3"/>
-                    Laboratorio
+                    Cartas
                 </Link>
                 <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/productos"  onClick={ closeMenu }>
                     <IoBagRemoveOutline className="w-6 h-6 mr-3"/>

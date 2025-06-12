@@ -45,10 +45,9 @@ export const OptionsDeckCreator = ({
     const [copyState, setCopyState] = useState(false);
     const [mazoTest, setMazoText] = useState<Card[]>([]); 
 
-    const link = "https://soulsinxtinction.com/laboratorio?decklist="+deckList;
     const copyToClipboard = () => {
         setCopyState(true);
-        navigator.clipboard.writeText(link);
+        navigator.clipboard.writeText(deckList);
     }
 
     // const priceDeck = () => {
