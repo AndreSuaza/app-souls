@@ -1,3 +1,6 @@
+
+
+import { YoutubeList } from "@/components";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -109,6 +112,24 @@ export default function Home() {
             <Link href={"/cartas?&types=Mana"} target="_blank" title="Mana Ente" rel="nofollow">
               <Image className="rounded-lg" width={270} height={287} src='/home/MD-022-0066.webp' alt="Carta Mana Ente" title="Mana Ente"/>
             </Link>
+        </div>
+      </section>
+      
+      <section className="grid grid-cols-1 gap-5 px-20 md:grid-cols-3 bg-gradient-to-b from-[#0e0e10] to-[#1a1a1f] text-white py-10">
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-5xl uppercase font-bold mb-2">SoulsCreators</h1>
+            <p className="text-2xl font-semibold uppercase text-indigo-600 mb-10">
+              ¡Mira cómo juegan, enseñan y hacen historia!
+            </p>
+            <p className="text-xl">
+              Jugadores apasionados, streamers y maestros del contenido que difunden la batalla por las almas en cada video, post y directo.
+            </p>
+          </div>
+        </div>
+        <div className="col-span-2 grid grid-cols-1 gap-5 md:grid-cols-2 mx-6">
+          <YoutubeList name="Herosbran" playlistId="PLBSLhQCb0owr3A8x_-Q0QTyJh4Z_wFXKa"/>
+          <YoutubeList name="Black Widow" playlistId="PLeZObnb91fKhclJrIj-JWuUYYpYhVx9Np"/>
         </div>
       </section>
     </div>
