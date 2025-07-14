@@ -23,7 +23,7 @@ export const Footer = () => {
                 </div>
             </Link>
             
-            <p>Para más información, consultas o colaboraciones, no dudes en escribirnos a: <b>contacto@soulsinxtinction.com</b>. ¡Estamos aquí para ayudarte!</p>
+            <p>Para más información, consultas o colaboraciones, no dudes en escribirnos a: <b>sixtcginfo@gmail.com</b>. ¡Estamos aquí para ayudarte!</p>
             </div>
             
             <div className='flex justify-center mt-6'>
