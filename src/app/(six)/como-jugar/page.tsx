@@ -207,10 +207,11 @@ export default async function ComoJuagarPage() {
           <ul className="bg-gray-200 md:mr-10 pt-8 pb-4 p-6 rounded-lg">
             <li className="mb-3"><b>Fase de Robo:</b> Cada jugador roba una carta del mazo principal.</li>
             <li className="mb-3"><b>Fase de Almas:</b> Cada jugador coloca una carta de alma desde su mazo de almas en la zona de almas.</li>
-            <li className="mb-3"><b>Fase Principal o de Acción:</b> El jugador con la ficha de ataque realiza una de <b>3 acciones:</b></li>
+            <li className="mb-3"><b>Fase Principal o de Acción:</b> Cada jugador puede realizar diferentes acciones en el turno:</li>
               <ul>
-                  <li className="ml-4 mb-3"><i>Jugar una carta pagando su coste o activar un efecto de una carta.</i></li>
-                  <li className="ml-4 mb-3"><i>Atacar si posee la ficha de ataque.</i></li>
+                  <li className="ml-4 mb-3"><i>Jugar una carta pagando su coste.</i></li>
+                  <li className="ml-4 mb-3"><i>Activar un efecto de una carta</i></li>
+                  <li className="ml-4 mb-3"><i>Atacar, si tienes la ficha de ataque.</i></li>
                   <li className="ml-4 mb-3"><i>Pasar la prioridad de hacer una acción al oponente.</i></li>
               </ul>
             <li className=""><b>Fase Final:</b> Si ambos jugadores pasan consecutivamente, el turno termina.</li>
