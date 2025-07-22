@@ -46,7 +46,7 @@ export default async function getProductBySlug() {
       <div className='flex flex-col items-center justify-center w-full p-12'>
           <Image
                   src={`/products/${product.code}S.webp`}
-                  alt={'logo ecos del abismo'}
+                  alt={'Génesis del Caos Expansión Souls'}
                   className='my-auto'
                   width={400}
                   height={160}

@@ -10,19 +10,19 @@ import '../style.css';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Mazo Espíritus - El Árbol de la Vida - TCG',
-  description: 'El Mazo El Árbol de la Vida de Souls In Xtinction TCG está basado en el arquetipo de Espíritus, los enigmáticos guardianes del bosque encantado. Este mazo te permite desatar el poder de criaturas raras y mágicas, que protegen los secretos más antiguos con habilidades fenomenales.',
+  title: 'Mazo Alíens - Protocolo K: Raptar y Adaptar TCG',
+  description: 'El Mazo Amanecer Celestial está diseñado para los jugadores de Souls In Xtinction TCG que buscan el máximo poder del arquetipo Ángeles. Estas cartas poseen algunas de las habilidades y conjuros más poderosos del juego, permitiéndote tomar el control del campo de batalla con estrategias implacables.',
   openGraph: {
-      title: 'Mazo Espíritus - El Árbol de la Vida - TCG',
-      description: 'El Mazo El Árbol de la Vida de Souls In Xtinction TCG está basado en el arquetipo de Espíritus, los enigmáticos guardianes del bosque encantado. Este mazo te permite desatar el poder de criaturas raras y mágicas, que protegen los secretos más antiguos con habilidades fenomenales.',
-      url: 'https://soulsinxtinction.com/productos/mazo-espiritus',
-      siteName: 'El Árbol de la Vida Souls In Xtinction',
+      title: 'Mazo Alíens - Protocolo K: Raptar y Adaptar TCG',
+      description: 'Protocolo K: Raptar y Adaptar está basado en un experimento alienígena, su objetivo es crear seres híbridos superiores mediante manipulación genética y tecnología avanzada. El resultado: unidades implacables, frías y eficientes que representan una nueva era de evolución forzada.',
+      url: 'https://soulsinxtinction.com/productos/mazo-aliens',
+      siteName: 'Mazo Alíens Souls In Xtinction',
       images: [
           {
-          url: 'https://soulsinxtinction.com/products/ME3.webp',
+          url: 'https://soulsinxtinction.com/products/ME5.webp',
           width: 500,
           height: 500,
-          alt: 'Mazo El Árbol de la Vida Souls In Xtinction TCG',
+          alt: 'Mazo Alíens Souls In Xtinction TCG',
           }
       ],
       locale: 'en_ES',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 
 export default async function getProductBySlug() {
 
-  const product = await getProductUrl('mazo-espiritus')
+  const product = await getProductUrl('mazo-aliens')
   
   if (!product) { notFound();}
 
@@ -41,11 +41,11 @@ export default async function getProductBySlug() {
   return (
 
     <>
-    <section className={`bg-[url(/products/ME3BG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}>
+    <section className={`bg-[url(/products/ME2BG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}>
       <div className='flex flex-col items-center justify-center w-full p-12'>
           <Image
                   src={`/products/${product.code}S.webp`}
-                  alt={'Mazo Espíritus El Árbol de la Vida'}
+                  alt={'Mazo Alíens Protocolo K: Raptar y Adaptar'}
                   className='my-auto'
                   width={400}
                   height={160}
