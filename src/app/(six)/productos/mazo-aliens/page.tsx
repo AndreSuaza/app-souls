@@ -41,7 +41,7 @@ export default async function getProductBySlug() {
   return (
 
     <>
-    <section className={`bg-[url(/products/ME2BG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}>
+    <section className={`bg-[url(/products/ME5BG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}>
       <div className='flex flex-col items-center justify-center w-full p-12'>
           <Image
                   src={`/products/${product.code}S.webp`}
@@ -53,7 +53,7 @@ export default async function getProductBySlug() {
       </div>
       <div className='bg-black bg-opacity-80 text-stone-300 flex justify-end py-10'>
           <div className='w-2/3 m-auto markdawon'>
-          <h1 className='text-5xl font-bold text-center mb-10 md:my-10 lg:mx-40'>{product.name}</h1>
+          <h1 className='text-5xl font-bold text-center mb-10 md:my-10'>{product.name}</h1>
 
           <MDXRemote source={product.description} />
           </div>
