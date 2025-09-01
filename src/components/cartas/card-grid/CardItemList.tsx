@@ -1,8 +1,6 @@
 import { Card } from "@/interfaces";
 import Image from "next/image";
-import { IoAddCircleOutline, IoCloseCircleOutline, IoEyeOutline } from "react-icons/io5";
-import { useCardDetailStore } from "@/store";
-import { CardDetail } from "../card-detail/CardDetail";
+import { IoAddCircleOutline, IoCloseCircleOutline } from "react-icons/io5";
 
 interface Props {
     count: number;
@@ -14,16 +12,15 @@ interface Props {
 }
 
 
-export const CardItemList = ({card, count, index, dropCard, addCard, detailCard}:Props) => {
+export const CardItemList = ({card, count, dropCard, addCard}:Props) => {
 
-  const openCardDetail = useCardDetailStore( state => state.openCardDetail);
-  const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
-  const isDeck = useCardDetailStore( state => state.isDeck);
+  // const openCardDetail = useCardDetailStore( state => state.openCardDetail);
+  // const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
 
-  const openDetail = () => {
-      openCardDetail();
-      detailCard(index);
-  }
+  // const openDetail = () => {
+  //     openCardDetail();
+  //     detailCard(index);
+  // }
 
   return (
     <div className="flex relative">
@@ -31,10 +28,10 @@ export const CardItemList = ({card, count, index, dropCard, addCard, detailCard}
         <div className="w-6 h-6 bg-lime-600 rounded text-white text-center font-bold">
           {count}
         </div>
-        <IoEyeOutline 
+        {/* <IoEyeOutline 
           className="w-6 h-6 mt-1 bg-indigo-600 p-0.5 text-white rounded cursor-pointer"
           onClick={()=>openDetail()}
-        />
+        /> */}
         <IoAddCircleOutline 
           className="w-6 h-6 mt-1 bg-indigo-600 text-white p-0.5 rounded select-none cursor-pointer"
           onClick={() => addCard && addCard(card)}
@@ -51,9 +48,6 @@ export const CardItemList = ({card, count, index, dropCard, addCard, detailCard}
       width={500}
       height={718}
     />
-    {isCardDetailOpen && (
-        <CardDetail cards={isDeck} indexList={index}/>
-    )} 
     </div>
   )
 }

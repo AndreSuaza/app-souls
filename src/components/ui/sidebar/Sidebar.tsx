@@ -3,7 +3,7 @@
 import { useUIStore } from '@/store';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { IoBagRemoveOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoStorefrontOutline, IoTrophyOutline } from 'react-icons/io5';
+import { IoBagRemoveOutline, IoBookOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoStorefrontOutline, IoTrophyOutline } from 'react-icons/io5';
 
 
 export const Sidebar = () => {
@@ -70,9 +70,13 @@ export const Sidebar = () => {
                     <IoTrophyOutline className="w-6 h-6 mr-3"/>
                     Torneos
                 </Link>
+                <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/cartas"  onClick={ closeMenu }>
+                    <IoBookOutline className="w-6 h-6 mr-3"/>
+                    Cartas
+                </Link>
                 <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/laboratorio"  onClick={ closeMenu }>
                     <IoFlaskOutline className="w-6 h-6 mr-3"/>
-                    Cartas
+                    Laboratorio
                 </Link>
                 <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/productos"  onClick={ closeMenu }>
                     <IoBagRemoveOutline className="w-6 h-6 mr-3"/>

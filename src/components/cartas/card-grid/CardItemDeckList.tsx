@@ -1,9 +1,7 @@
 import { Card } from "@/interfaces";
 import Image from "next/image";
-import { IoAddCircleOutline, IoEyeOutline } from "react-icons/io5";
+import { IoAddCircleOutline } from "react-icons/io5";
 import clsx from 'clsx';
-import { useCardDetailStore } from "@/store";
-import { CardDetail } from "../card-detail/CardDetail";
 
 interface Props {
     count: number;
@@ -15,16 +13,15 @@ interface Props {
 }
 
 
-export const CardItemDeckList = ({card, count, index, dropCard, addCard, detailCard}:Props) => {
+export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
 
-  const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
-  const openCardDetail = useCardDetailStore( state => state.openCardDetail);
-  const isDeck = useCardDetailStore( state => state.isDeck);
+  // const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
+  // const openCardDetail = useCardDetailStore( state => state.openCardDetail);
 
-  const openDetail = () => {
-      openCardDetail();
-      detailCard(index);
-  }
+  // const openDetail = () => {
+  //     openCardDetail();
+  //     detailCard(index);
+  // }
 
   return (
     <div 
@@ -38,10 +35,10 @@ export const CardItemDeckList = ({card, count, index, dropCard, addCard, detailC
             <p className="w-8 bg-black bg-opacity-50 text-center pt-2">{count}</p>
             <p className="pt-2 ml-2 w-80 overflow-hidden" onClick={()=>dropCard(card)}>{card.name}</p>
             <div className="bg-black bg-opacity-50 flex flex-row px-1">
-            <IoEyeOutline 
+            {/* <IoEyeOutline 
               className="w-6 h-6 mt-2"
               onClick={()=>openDetail()}
-            />
+            /> */}
             <IoAddCircleOutline 
               className={
                 clsx( "w-6 h-6 mt-2 ml-1", { "text-gray-500": count > 1  })
@@ -58,9 +55,6 @@ export const CardItemDeckList = ({card, count, index, dropCard, addCard, detailC
                     height={50}
                 />
         </div>
-        {isCardDetailOpen && (
-            <CardDetail cards={isDeck} indexList={index} />
-        )}  
     </div>
   )
 }

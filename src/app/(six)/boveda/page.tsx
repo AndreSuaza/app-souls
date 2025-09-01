@@ -48,6 +48,7 @@ export default async function BovedaPage({ searchParams }: Props) {
         title="Boveda"
       />
       <CardFinderPrices propertiesCards={propertiesCards}/>
+      <Pagination totalPages={totalPage}>
       <ul className="grid gap-4 mx-4 mt-6 mb-10 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {cards.map(card =>
           
@@ -76,9 +77,8 @@ export default async function BovedaPage({ searchParams }: Props) {
           
           </li>
         )}
-        </ul>
-
-      <Pagination totalPages={totalPage}/>
+      </ul>
+      </Pagination>
     </>
   )
 }

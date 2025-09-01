@@ -4,7 +4,7 @@ import type { Card } from "@/interfaces";
 import { CardItem } from "./CardItem";
 import { useCardDetailStore } from "@/store";
 import { CardDetail } from "../card-detail/CardDetail";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface Props {
     cards: Card[];
@@ -16,15 +16,9 @@ interface Props {
 export const CardGrid = ({cards, cols, addCard, addCardSidedeck}: Props) => {
 
     const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
-    const isListCards = useCardDetailStore( state => state.isListCards);
     const [indexDeck, setIndexDeck] = useState(0);
     const openCardDetail = useCardDetailStore( state => state.openCardDetail );
-    const setListDetail = useCardDetailStore( state => state.setListDetail );
     
-    useEffect(() => {
-      setListDetail(cards);
-    }, []);
-
     const detailCard = (index: number) => {
       setIndexDeck(index);
       openCardDetail();
@@ -56,7 +50,7 @@ export const CardGrid = ({cards, cols, addCard, addCardSidedeck}: Props) => {
         </ul>
     </div>
     {isCardDetailOpen && (
-          <CardDetail cards={isListCards} indexList={indexDeck} />
+          <CardDetail cards={cards} indexList={indexDeck} />
     )}          
     </>
   )

@@ -78,7 +78,8 @@ export const DeckCreator = ({cards, propertiesCards, totalPages, deck}: Props) =
   const [deckListApoyo, setDeckListApoyo] = useState<Decklist[]>([]);
   const [numCards, setNumCard] = useState({und: 0, arm: 0, con: 0, ent: 0}) 
   const [viewList, setViewList] = useState(false);
-  const setDeckDetail = useCardDetailStore( state => state.setDeckDetail );
+  const openCardDetail = useCardDetailStore( state => state.openCardDetail );
+
 
   const addCard = (cardSeleted: Card) => {
 
@@ -170,10 +171,11 @@ export const DeckCreator = ({cards, propertiesCards, totalPages, deck}: Props) =
     setDeckListLimbo([]);
   }
 
-  const cardDetailMain = () => {
+  const cardDetailMain = (index: number) => {
+    
     const list = [...deckListMain, ...deckListLimbo, ...deckListApoyo];
-    console.log(list);
-    setDeckDetail(list.reverse().map(deck => deck.card))
+    console.log(index, list);
+    openCardDetail();
   }
 
   const importDeck = () => {
@@ -247,7 +249,7 @@ export const DeckCreator = ({cards, propertiesCards, totalPages, deck}: Props) =
                   index={index}
                   dropCard={dropCard} 
                   addCard={addCard} 
-                  detailCard={cardDetailMain}
+                  detailCard={() => cardDetailMain(index)}
                 />
                 :
                 <CardItemDeckList
@@ -257,7 +259,7 @@ export const DeckCreator = ({cards, propertiesCards, totalPages, deck}: Props) =
                   index={index}
                   dropCard={dropCard} 
                   addCard={addCard} 
-                  detailCard={cardDetailMain}
+                  detailCard={() => cardDetailMain(index)}
                 />
                 
               )
@@ -277,7 +279,7 @@ export const DeckCreator = ({cards, propertiesCards, totalPages, deck}: Props) =
                   index={indexLimbo(index)}
                   dropCard={dropCard} 
                   addCard={addCard} 
-                  detailCard={cardDetailMain}
+                  detailCard={() => cardDetailMain(index)}
                 />
                 :
                 <CardItemDeckList
@@ -287,7 +289,7 @@ export const DeckCreator = ({cards, propertiesCards, totalPages, deck}: Props) =
                   index={indexLimbo(index)}
                   dropCard={dropCard} 
                   addCard={addCard} 
-                  detailCard={cardDetailMain}
+                  detailCard={() => cardDetailMain(index)}
                 />
                 
               )
@@ -324,7 +326,7 @@ export const DeckCreator = ({cards, propertiesCards, totalPages, deck}: Props) =
             }
             </div> */}
         </div>              
-      </div>    
+      </div>  
     </div>
   )
 }
