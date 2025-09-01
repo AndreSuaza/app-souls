@@ -13,8 +13,12 @@ export const Routes = [
         name: "torneos",
     },
     {
-        path: "/laboratorio",
+        path: "/cartas",
         name: "Cartas",
+    },
+    {
+        path: "/laboratorio",
+        name: "Laboratorio",
     },
     {
         path: "/productos",

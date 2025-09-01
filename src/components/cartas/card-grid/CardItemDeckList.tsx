@@ -3,6 +3,7 @@ import Image from "next/image";
 import { IoAddCircleOutline, IoEyeOutline } from "react-icons/io5";
 import clsx from 'clsx';
 import { useCardDetailStore } from "@/store";
+import { CardDetail } from "../card-detail/CardDetail";
 
 interface Props {
     count: number;
@@ -16,7 +17,9 @@ interface Props {
 
 export const CardItemDeckList = ({card, count, index, dropCard, addCard, detailCard}:Props) => {
 
+  const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
   const openCardDetail = useCardDetailStore( state => state.openCardDetail);
+  const isDeck = useCardDetailStore( state => state.isDeck);
 
   const openDetail = () => {
       openCardDetail();
@@ -55,6 +58,9 @@ export const CardItemDeckList = ({card, count, index, dropCard, addCard, detailC
                     height={50}
                 />
         </div>
+        {isCardDetailOpen && (
+            <CardDetail cards={isDeck} indexList={index} />
+        )}  
     </div>
   )
 }

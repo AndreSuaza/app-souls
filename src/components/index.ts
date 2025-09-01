@@ -36,3 +36,7 @@ export * from './ui/modal/modal';
 export * from './ui/providers/Provider';
 
 export * from './home/YoutubeList';
+
+export * from './cartas/card-finder/card-finder';
+
+export * from './ui/pagination/paginationLine';

@@ -8,15 +8,15 @@ import { useState } from "react";
 import { IoChevronBack, IoChevronForward, IoCloseOutline } from "react-icons/io5";
 
 interface Props {
-    deckList: Card[];
-    index: number;
+    cards: Card[];
+    indexList: number;
 }
 
+export const CardDetail = ({cards, indexList}: Props) => {
 
-export const CardDetail = ({ deckList, index }: Props) => {
-
-    const [card, setCard] = useState(deckList[index]);
-    const [indexCard, setIndexCard] = useState(index);
+    const [deckList] = useState(cards)
+    const [card, setCard] = useState(deckList[indexList]);
+    const [indexCard, setIndexCard] = useState(indexList);
     const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
     const closeCardDetail = useCardDetailStore( state => state.closeCardDetail );
 
@@ -116,10 +116,10 @@ export const CardDetail = ({ deckList, index }: Props) => {
                             <th>Rareza</th>
                             <td className="h-10 text-gray-600" colSpan={4}>{card?.rarities.map((rarity: Rarity, i) => {return i > 0 ? ', '+rarity.name : rarity.name})}</td>
                         </tr>
-                        <tr className="h-10 border-b">
+                        {/* <tr className="h-10 border-b">
                             <th>Precios</th>
                             <td className="h-10 text-gray-600" colSpan={4}>{card?.price.map((p, i) => {return i > 0 ? ', '+`${p.rarity}: ${p.price}` : `${p.rarity}: ${p.price}`})}</td>
-                        </tr>
+                        </tr> */}
                         <tr>
                             <th className="pt-2">Efecto</th>
                         </tr>

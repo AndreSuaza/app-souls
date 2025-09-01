@@ -1,8 +1,6 @@
-import { getCardsByIds, getPaginatedCards, getPropertiesCards } from "@/actions";
-import { DeckCreator, Sidebar, TopMenu } from "@/components";
-import { Footer } from "@/components/ui/footer/footer";
+import { getPaginatedCards, getPropertiesCards } from "@/actions";
+import { CardFinder } from "@/components";
 import { Metadata } from "next";
-
 
 export const metadata: Metadata = {
   title: 'Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG',
@@ -37,28 +35,22 @@ interface Props {
     forces?: string;
     defenses?: string;
     raritys?: string;
-    decklist?: string;
     rarities?: string;
   }>
 }
 
 export default async function Cards({ searchParams }: Props) {
 
-  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, decklist, rarities } = await searchParams;
+  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, rarities } = await searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
   const { cards, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses, rarities });
 
-  const deck = await getCardsByIds(decklist); 
-
   return (
-    <main>
-      <TopMenu/>
-      <Sidebar/>
-      <DeckCreator cards={cards} propertiesCards={propertiesCards} deck={deck} totalPages={totalPage}/> 
-      <Footer/>
-    </main>
+    <div className="md:mx-20">
+      <CardFinder cards={cards} propertiesCards={propertiesCards} totalPage={totalPage}/>
+    </div>
     
   )
 }

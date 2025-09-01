@@ -35,6 +35,7 @@ interface PropertiesFiltersFinderLab {
 
 interface Props {
     propertiesCards: Properties;
+    cols: number;
 }
 
 interface SelectProps {
@@ -42,7 +43,18 @@ interface SelectProps {
     id: string;
 }
 
-export const CardFinderLab = ({propertiesCards}: Props) => {
+export const CardFinderLab = ({propertiesCards, cols=6}: Props) => {
+
+    const colsGrid = () => {
+      switch (cols) {
+        case 6:
+          return 'grid grid-cols-1 md:grid-cols-6 gap-2 mx-4 transition-all bg-gray-200 p-2 rounded-lg mb-2 md:mb-6'
+        case 2:
+          return 'grid grid-cols-1 md:grid-cols-2 gap-2 mx-4 transition-all bg-gray-200 p-2 rounded-lg mb-2 md:mb-6'
+        default:
+          return 'grid grid-cols-1'
+      }
+    } 
 
     const [showFilters, setShowFilters] = useState(false);
     const [properties] =  useState({
@@ -98,7 +110,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
 
     const onSubmit = (filters: PropertiesFiltersFinderLab) => {
         
-        router.push(`/laboratorio?${searchCards(filters)}`);
+        router.push(`?${searchCards(filters)}`);
 
     }
 
@@ -147,7 +159,7 @@ export const CardFinderLab = ({propertiesCards}: Props) => {
             </div>
             
             { showFilters &&
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-2 mx-4 transition-all bg-gray-200 p-2 rounded-lg mb-2 md:mb-6">
+            <div className={colsGrid()}>
 
                 <MultiSelect
                   name="cost"

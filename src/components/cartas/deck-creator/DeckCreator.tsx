@@ -3,14 +3,11 @@
 import type { Card } from "@/interfaces";
 import { useEffect, useState } from "react";
 import { CardItemDeckList } from "@/components/cartas/card-grid/CardItemDeckList";
-import { CardGrid } from "../card-grid/CardGrid";
-import { CardFinderLab } from "@/components/finders/CardFinderLab";
-import { CardDetail } from "../card-detail/CardDetail";
 import { useCardDetailStore } from "@/store";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
 import { CardItemList } from "../card-grid/CardItemList";
-import clsx from "clsx";
+import { CardFinder } from "../card-finder/card-finder";
 
 
 interface Propertie {
@@ -29,13 +26,9 @@ interface Properties {
 interface Props {
     cards: Card[];
     propertiesCards: Properties;
+    totalPages: number;
     deck?: Decklist[];
     className?: string
-}
-
-interface CardsDetail {
-  deckList: Card[]; 
-  index: number;
 }
 
 const addCardLogic = (deckListSelected:Decklist[], cardfound: Decklist | undefined, cardSeleted: Card) => {
@@ -77,15 +70,15 @@ const dropCardDecklist = (deckListSelected:Decklist[], cardSeleted: Card) => {
 
 }
 
-export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
+export const DeckCreator = ({cards, propertiesCards, totalPages, deck}: Props) => {
 
 
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
+  const [deckListApoyo, setDeckListApoyo] = useState<Decklist[]>([]);
   const [numCards, setNumCard] = useState({und: 0, arm: 0, con: 0, ent: 0}) 
-  const [detalDecklistCards, setDetalDecklistCards] = useState<CardsDetail>({deckList: [], index: 0})
-  const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
   const [viewList, setViewList] = useState(false);
+  const setDeckDetail = useCardDetailStore( state => state.setDeckDetail );
 
   const addCard = (cardSeleted: Card) => {
 
@@ -118,6 +111,28 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
       if(result) { setDeckListLimbo(result); }
     }
 
+  }
+
+  // const dropCardSideDeck = (cardSeleted: Card) => {
+
+  //   const result = dropCardDecklist(deckListApoyo, cardSeleted);
+  //   if(result) { setDeckListApoyo(result); }
+    
+  // }
+
+  const addCardSideDeck = (cardSeleted: Card) => {
+
+    if(cardSeleted.types.filter(type => type.name === "Alma").length > 0) { return }
+    if(cardSeleted.types.filter(type => type.name === "Ficha").length > 0) { return }
+    if(deckListApoyo.reduce((acc, deck) => acc + deck.count, 0) > 9) return
+
+    const result = addCardDecklist(deckListApoyo, cardSeleted);
+    if(result) { setDeckListApoyo(result); }
+  }
+
+  const indexLimbo = (index: number) => {
+    console.log(deckListMain.length + index);
+    return deckListMain.length + index;
   }
 
   const countCardsTypes = () => {
@@ -155,18 +170,10 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
     setDeckListLimbo([]);
   }
 
-  const cardDetailMain = (index: number) => {
-    const list = [...deckListMain];
-    setDetalDecklistCards({deckList: list.reverse().map(deck => deck.card), index: index});
-  }
-
-  const cardDetailLimbo = (index: number) => {
-    const list = [...deckListLimbo];
-    setDetalDecklistCards({deckList: list.reverse().map(deck => deck.card), index: index});
-  }
-
-  const cardDetail = (index: number) => {
-    setDetalDecklistCards({deckList: cards, index: index});
+  const cardDetailMain = () => {
+    const list = [...deckListMain, ...deckListLimbo, ...deckListApoyo];
+    console.log(list);
+    setDeckDetail(list.reverse().map(deck => deck.card))
   }
 
   const importDeck = () => {
@@ -202,13 +209,13 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
   
 
   return (
-    <div className="grid grid-cols-4 ">
-      <div className="col-span-2 lg:col-span-3">
-        <CardFinderLab propertiesCards={propertiesCards}/>
-        <CardGrid cards={cards} addCard={addCard} detailCard={cardDetail}/>
+    <div className="grid grid-cols-2 lg:grid-cols-4 mb-6">
+      <div className="">
+       <CardFinder cards={cards} propertiesCards={propertiesCards} totalPage={totalPages} cols={2} addCard={addCard} addCardSidedeck={addCardSideDeck}/>
       </div>
-      <div className="fixed bg-gray-200 right-0 transition-all w-1/2 md:px-4 py-2 h-screen lg:w-1/4"
+      <div className="col-span-1 md:col-span-3 mt-6 mx-2"
       >
+        <div className="flex mb-4">  
         <OptionsDeckCreator 
           deckListMain={deckListMain} 
           deckListLimbo={deckListLimbo} 
@@ -216,41 +223,20 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
           changeViewList={changeViewList}
           viewList={viewList}
         />
-         <ul className="flex flex-row bg-gray-900 p-1 rounded-md mb-1 text-white">
+        </div>
+         
+        <div className="border-2 p-2 rounded-xl shadow-md bg-slate-100">
+            <div className="flex flex-col">
+            <h2 className="bg-gray-400 px-2 py-1 rounded text-sm md:text-2xl uppercase font-bold mb-2 pr-6">Mazo Principal</h2>
+            <ul className="flex flex-row bg-gray-900 p-1 rounded-md mb-1 text-white">
               <li className="mr-2"><span className="font-bold ml-2">T:</span> {countDecklist(deckListMain)}</li>
               <li className="mr-2"><span className="font-bold text-red-600">U:</span> {numCards.und}</li>
               <li className="mr-2"><span className="font-bold text-purple-700">C:</span> {numCards.con}</li>
               <li className="mr-2"><span className="font-bold text-gray-400">A:</span> {numCards.arm}</li>
               <li className="mr-2"><span className="font-bold text-yellow-500">E:</span> {numCards.ent}</li>
             </ul>
-        <div className="overflow-auto h-cal-200">
-          
-          <div className="border-b-2 bg-yellow-500 mx-1 px-1.5 py-1 rounded-lg">
-            <h3 className="font-bold ml-2 text-black">{`${countDecklist(deckListLimbo)} Mazo de Limbo`}</h3>
-            {
-              deckListLimbo.slice().reverse().map( (deck, index) => (
-                  <CardItemDeckList 
-                    key={deck.card.id+index} 
-                    card={deck.card} 
-                    count={deck.count} 
-                    index={index}
-                    dropCard={dropCard} 
-                    addCard={addCard}
-                    detailCard={cardDetailLimbo}
-                  />
-              ))
-            }
-          </div>
-          <div className="px-1.5 rounded-lg">
-           
-            <div className={
-              clsx(
-                "grid grid-cols-1",
-                {
-                  'md:grid-cols-2 gap-2': !viewList
-                }
-              )
-            }>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-2">
             {
               deckListMain.slice().reverse().map( (deck, index) => 
                !viewList ? 
@@ -277,13 +263,68 @@ export const DeckCreator = ({cards, deck, propertiesCards}: Props) => {
               )
             }
             </div>
-          </div>              
-        </div>
-        
-      </div>
-      {isCardDetailOpen && (
-      <CardDetail {...detalDecklistCards}/>
-      )}      
+
+            <h2 className="bg-yellow-500 py-1 px-2 rounded text-sm md:text-2xl uppercase font-bold my-2 text-white">Mazo Limbo</h2>
+      
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            {
+              deckListLimbo.slice().reverse().map( (deck, index) => 
+               !viewList ? 
+                <CardItemList 
+                  key={deck.card.id+index} 
+                  card={deck.card} 
+                  count={deck.count} 
+                  index={indexLimbo(index)}
+                  dropCard={dropCard} 
+                  addCard={addCard} 
+                  detailCard={cardDetailMain}
+                />
+                :
+                <CardItemDeckList
+                  key={deck.card.id+index} 
+                  card={deck.card} 
+                  count={deck.count} 
+                  index={indexLimbo(index)}
+                  dropCard={dropCard} 
+                  addCard={addCard} 
+                  detailCard={cardDetailMain}
+                />
+                
+              )
+            }
+            </div>
+
+            {/* <h2 className="bg-indigo-500 py-1 px-2 rounded text-sm md:text-2xl uppercase font-bold my-2 text-white">Mazo Apoyo</h2>
+      
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            {
+              deckListApoyo.slice().reverse().map( (deck, index) => 
+               !viewList ? 
+                <CardItemList 
+                  key={deck.card.id+index} 
+                  card={deck.card} 
+                  count={deck.count} 
+                  index={index}
+                  dropCard={dropCardSideDeck} 
+                  addCard={addCardSideDeck} 
+                  detailCard={cardDetailMain}
+                />
+                :
+                <CardItemDeckList
+                  key={deck.card.id+index} 
+                  card={deck.card} 
+                  count={deck.count} 
+                  index={index}
+                  dropCard={dropCardSideDeck} 
+                  addCard={addCardSideDeck} 
+                  detailCard={cardDetailMain}
+                />
+                
+              )
+            }
+            </div> */}
+        </div>              
+      </div>    
     </div>
   )
 }

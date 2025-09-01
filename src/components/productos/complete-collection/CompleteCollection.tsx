@@ -37,7 +37,7 @@ export const CompleteCollection = ({cards}: Props) => {
      </li>)}
     </ul>
     {isCardDetailOpen && (
-        <CardDetail deckList={cards} index={index}/>
+        <CardDetail cards={cards} indexList={index}/>
       )}
     </>
   )

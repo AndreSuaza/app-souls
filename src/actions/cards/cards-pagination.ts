@@ -32,7 +32,7 @@ interface PaginationOptions {
 
 export const getPaginatedCards = async({
     page = 1,
-    take = 20,
+    take = 30,
     text,
     products,
     types,
@@ -70,7 +70,7 @@ export const getPaginatedCards = async({
         }
 
         const cards = await prisma.card.findMany({
-            take:20,
+            take:30,
             skip: (page -1) * take,
             include: {
                 product: {

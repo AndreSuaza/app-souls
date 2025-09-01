@@ -2,6 +2,7 @@ import { Card } from "@/interfaces";
 import Image from "next/image";
 import { IoAddCircleOutline, IoCloseCircleOutline, IoEyeOutline } from "react-icons/io5";
 import { useCardDetailStore } from "@/store";
+import { CardDetail } from "../card-detail/CardDetail";
 
 interface Props {
     count: number;
@@ -16,6 +17,8 @@ interface Props {
 export const CardItemList = ({card, count, index, dropCard, addCard, detailCard}:Props) => {
 
   const openCardDetail = useCardDetailStore( state => state.openCardDetail);
+  const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
+  const isDeck = useCardDetailStore( state => state.isDeck);
 
   const openDetail = () => {
       openCardDetail();
@@ -48,6 +51,9 @@ export const CardItemList = ({card, count, index, dropCard, addCard, detailCard}
       width={500}
       height={718}
     />
+    {isCardDetailOpen && (
+        <CardDetail cards={isDeck} indexList={index}/>
+    )} 
     </div>
   )
 }
