@@ -1,6 +1,6 @@
 
 import { getTournamentsPagination } from "@/actions";
-import { Pagination, Title, TournamentGrid } from "@/components";
+import { Title, TournamentGrid } from "@/components";
 import { Metadata } from "next";
 
 interface Props {
@@ -51,10 +51,11 @@ export default async function EventosPage({ searchParams }: Props) {
       
       <div className="px-4 col-span-3">
         <h2 className="text-4xl font-bold my-6 uppercase ">Torneos élite</h2>
+
         <TournamentGrid
               tournaments={tournaments}
           />
-        <Pagination totalPages={totalPage}/>
+
       </div>
       
       <div className="md:ml-4">
