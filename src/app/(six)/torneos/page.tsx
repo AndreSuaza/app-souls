@@ -37,7 +37,7 @@ export default async function EventosPage({ searchParams }: Props) {
   const { page } = await searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
-  const { tournaments, totalPage } = await getTournamentsPagination({ page: page2, take, types:["Tier 1","Tier 2","Tier 3"] });
+  const { tournaments } = await getTournamentsPagination({ page: page2, take, types:["Tier 1","Tier 2","Tier 3"] });
   const { tournaments: tournamentsT1 } = await getTournamentsPagination({ types:["Tier 4"] });
 
   return (
