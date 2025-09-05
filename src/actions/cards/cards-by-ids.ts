@@ -9,7 +9,8 @@ export interface Decklist {
     card: Card;
 }
 
-export const getCardsByIds = async(ids: string | undefined) => {
+
+const getCardsByIds = async(ids: string) => {
 
 
     if(!ids) return [];
@@ -97,3 +98,20 @@ export const getCardsByIds = async(ids: string | undefined) => {
         throw new Error(`No se pudo cargar las cartas ${error}`);
     }
 }
+
+export const getDecksByIds = async (ids?: string) => {
+
+    
+  if (!ids) return { mainDeck: [], sideDeck: [] };
+
+  // Dividimos en [main, side]
+  const [mainIds = "", sideIds = ""] = ids.split("|");
+  
+  // Ejecutamos en paralelo
+  const [mainDeck, sideDeck] = await Promise.all([
+    getCardsByIds(mainIds),
+    getCardsByIds(sideIds)
+  ]);
+
+  return { mainDeck, sideDeck };
+};

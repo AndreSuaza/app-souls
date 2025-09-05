@@ -12,6 +12,7 @@ export * from './cartas/deck-creator/DeckCreator';
 export * from './cartas/deck-creator/OptionsDeckCreator';
 export * from './cartas/decklist-image/DecklistImage';
 export * from './cartas/decklist-image/DeckImage';
+export * from './cartas/deck-creator/ShowDeck';
 
 export * from './eventos/event-grid/TournamentGrid';
 export * from './eventos/event-grid/TournamentItem';
@@ -40,3 +41,5 @@ export * from './home/YoutubeList';
 export * from './cartas/card-finder/card-finder';
 
 export * from './ui/pagination/paginationLine';
+
+export * from './mazos/deck-detail/DeckDetail';

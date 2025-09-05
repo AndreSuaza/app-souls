@@ -29,16 +29,32 @@ export const Footer = () => {
             <div className='flex justify-center mt-6'>
               <div className='mr-10'>
                 <p className='text-xl uppercase font-bold'>Menu</p>
-                <ul className='my-2'>
-                {Routes.map((route, index) => (
-                  <li key={index} className="mt-1">
+                <ul className='my-2 uppercase'>
+                {Routes.map((route) => (
+                  <>
+                    { route.menu 
+                    ? 
+                     route.menu.map((menu) => (
+                      <li key={menu.name} className="mt-1">
+                        <Link
+                          key={menu.name}
+                          href={menu.path}
+                        >
+                          {menu.name}
+                        </Link>
+                       </li>
+                      ))
+                    :
+                    <li key={route.name} className="mt-1">
                     <Link
                       key={route.name}
                       href={route.path}
                     >
                       {route.name}
                     </Link>
-                  </li>
+                    </li>
+                    }
+                  </>
                   ))}
                 </ul>
               </div>

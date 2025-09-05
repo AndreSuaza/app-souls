@@ -13,12 +13,21 @@ export const Routes = [
         name: "torneos",
     },
     {
-        path: "/cartas",
         name: "Cartas",
-    },
-    {
-        path: "/laboratorio",
-        name: "Laboratorio",
+        menu: [
+            {
+                path: "/cartas",
+                name: "biblioteca",
+            },
+            // {
+            //     path: "/mazos",
+            //     name: "Mazos",
+            // },
+            {
+                path: "/laboratorio",
+                name: "Laboratorio",
+            },
+        ]
     },
     {
         path: "/productos",

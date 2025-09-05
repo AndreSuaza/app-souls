@@ -9,7 +9,6 @@ interface Props {
     index: number;
     dropCard: (c: Card) => void
     addCard: (c: Card) => void
-    detailCard: (i: number) => void
 }
 
 

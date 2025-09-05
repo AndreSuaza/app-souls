@@ -115,21 +115,22 @@ export default function Home() {
         </div>
       </section>
       
-      <section className="grid grid-cols-1 gap-5 px-6 md:px-20 md:grid-cols-3 bg-gradient-to-b from-[#0e0e10] to-[#1a1a1f] text-white py-10">
-        <div className="flex items-center justify-center">
-          <div className="text-center">
+      <section className="px-6 md:px-20 bg-gradient-to-b from-[#0e0e10] to-[#1a1a1f] text-white py-10">
+
+          <div className="text-center mb-6">
             <h1 className="text-4xl md:text-5xl uppercase font-bold mb-2">SoulsCreators</h1>
-            <p className="text-2xl font-semibold uppercase text-indigo-600 mb-10">
+            <p className="text-2xl font-semibold uppercase text-indigo-400 mb-6">
               ¡Mira cómo juegan, enseñan y hacen historia!
             </p>
-            <p className="text-xl">
+            <p className="text-xl lg:w-1/2 m-auto px-6">
               Jugadores apasionados, streamers y maestros del contenido que difunden la batalla por las almas en cada video, post y directo.
             </p>
           </div>
-        </div>
-        <div className="col-span-2 grid grid-cols-1 gap-5 md:grid-cols-2 md:mx-6">
+
+        <div className="col-span-3 grid grid-cols-1 gap-5 md:grid-cols-3 md:mx-6">
           <YoutubeList name="Herosbran" playlistId="PLBSLhQCb0owr3A8x_-Q0QTyJh4Z_wFXKa"/>
           <YoutubeList name="Black Widow" playlistId="PLeZObnb91fKhclJrIj-JWuUYYpYhVx9Np"/>
+          <YoutubeList name="Chris Cards" playlistId="PLOrS4jKwbHb6A3D4BlKuCTx0GRRxTaQS0"/>
         </div>
       </section>
     </div>

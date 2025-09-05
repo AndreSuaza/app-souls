@@ -25,6 +25,7 @@ interface Decklist {
 interface Props {
     deckListMain: Decklist[];
     deckListLimbo: Decklist[];
+    deckListSide: Decklist[];
     clearDecklist: () => void;
     changeViewList: () => void;
     viewList: boolean;
@@ -33,6 +34,7 @@ interface Props {
 export const OptionsDeckCreator = ({
     deckListMain,
     deckListLimbo,
+    deckListSide,
     clearDecklist,
     changeViewList,
     viewList
@@ -64,18 +66,23 @@ export const OptionsDeckCreator = ({
     // };
 
     const createCodeDeck = () => {
-        let exportText = "";
-        deckListMain.map(
-            (deck) =>
-                (exportText = exportText + deck.card.idd + "%2C" + deck.count + "%2C")
-        );
-        deckListLimbo.map(
-            (deck) =>
-                (exportText = exportText + deck.card.idd + "%2C" + deck.count + "%2C")
-        );
-        setDeckList('https://soulsinxtinction.com/laboratorio?decklist='+exportText);
+        // Función auxiliar para convertir una lista en string
+        const formatDeckList = (deckList: typeof deckListMain) =>
+            deckList.map(deck => `${deck.card.idd}%2C${deck.count}%2C`).join("");
+
+        // Construir cada sección
+        const exportText = formatDeckList(deckListMain) + formatDeckList(deckListLimbo);
+        const exportSide = formatDeckList(deckListSide);
+        console.log(exportSide);
+        // Construir URL final
+        const url = `https://soulsinxtinction.com/laboratorio?decklist=${exportText}|${exportSide}`;
+
+        // Actualizar estados
+        setDeckList(url);
         setCopyState(false);
         setSharedDeck(true);
+
+        console.log("Deck URL:", url);
     };
 
     const shuffleDeck = () => {

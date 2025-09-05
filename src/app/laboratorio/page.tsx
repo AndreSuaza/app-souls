@@ -1,4 +1,4 @@
-import { getCardsByIds, getPaginatedCards, getPropertiesCards } from "@/actions";
+import { getDecksByIds, getPaginatedCards, getPropertiesCards } from "@/actions";
 import { DeckCreator, Sidebar, TopMenu } from "@/components";
 import { Footer } from "@/components/ui/footer/footer";
 import { Metadata } from "next";
@@ -50,13 +50,13 @@ export default async function Cards({ searchParams }: Props) {
   const propertiesCards = await getPropertiesCards();
   const { cards, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses, rarities });
 
-  const deck = await getCardsByIds(decklist); 
+  const {mainDeck, sideDeck} = await getDecksByIds(decklist); 
 
   return (
     <main>
       <TopMenu/>
       <Sidebar/>
-      <DeckCreator cards={cards} propertiesCards={propertiesCards} deck={deck} totalPages={totalPage}/> 
+      <DeckCreator cards={cards} propertiesCards={propertiesCards} mainDeck={mainDeck} sideDeck={sideDeck} totalPages={totalPage}/> 
       <Footer/>
     </main>
     

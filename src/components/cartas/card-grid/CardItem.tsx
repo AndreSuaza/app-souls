@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import { Card } from '@/interfaces/cards.interface';
-import { IoAddCircleOutline, IoEyeOutline } from 'react-icons/io5';
+import { IoAddCircleOutline, IoEyeOutline, IoMedkitOutline } from 'react-icons/io5';
 import { useCardDetailStore } from '@/store';
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
     addCardSidedeck?: (c: Card) => void
 }
 
-export const CardItem = ({ card, index, detailCard, addCard}: Props) => {
+export const CardItem = ({ card, index, detailCard, addCard, addCardSidedeck}: Props) => {
 
   const openCardDetail = useCardDetailStore( state => state.openCardDetail);
   
@@ -30,19 +30,22 @@ export const CardItem = ({ card, index, detailCard, addCard}: Props) => {
     >
         <div className="absolute top-16 -right-1 z-10">
             <IoEyeOutline 
-              className="w-8 h-8 bg-indigo-600 text-white p-1 rounded cursor-pointer"
+              className="w-8 h-8 bg-slate-500 text-white p-1 rounded cursor-pointer"
+              title='Detalle de la carta'
               onClick={()=>openDetail()}
             />
             { addCard && card.types.filter(type => type.name === "Alma").length === 0 &&
               <>
               <IoAddCircleOutline 
-                className="w-8 h-8 mt-1 bg-indigo-600 text-white p-1 rounded select-none cursor-pointer"
+                className="w-8 h-8 mt-1 bg-indigo-500 text-white p-1 rounded select-none cursor-pointer"
+                title='Añadir carta '
                 onClick={() => addCard && addCard(card)}
               />
-              {/* <IoTrailSignOutline
-                className="w-8 h-8 mt-1 bg-indigo-600 text-white p-1 rounded select-none cursor-pointer"
+              <IoMedkitOutline 
+                className="w-8 h-8 mt-1 bg-blue-500 text-white p-1 rounded select-none cursor-pointer"
+                title='Añadir carta mazo apoyo'
                 onClick={() => addCardSidedeck && addCardSidedeck(card)}
-              />  */}
+              /> 
               </>
             }
         </div>

@@ -5,10 +5,8 @@ import { IoAddCircleOutline, IoCloseCircleOutline } from "react-icons/io5";
 interface Props {
     count: number;
     card: Card;
-    index: number;
-    dropCard: (c: Card) => void
-    addCard: (c: Card) => void
-    detailCard: (i: number) => void
+    dropCard?: (c: Card) => void
+    addCard?: (c: Card) => void
 }
 
 
@@ -28,18 +26,18 @@ export const CardItemList = ({card, count, dropCard, addCard}:Props) => {
         <div className="w-6 h-6 bg-lime-600 rounded text-white text-center font-bold">
           {count}
         </div>
-        {/* <IoEyeOutline 
-          className="w-6 h-6 mt-1 bg-indigo-600 p-0.5 text-white rounded cursor-pointer"
-          onClick={()=>openDetail()}
-        /> */}
+        { addCard && 
         <IoAddCircleOutline 
           className="w-6 h-6 mt-1 bg-indigo-600 text-white p-0.5 rounded select-none cursor-pointer"
-          onClick={() => addCard && addCard(card)}
+          onClick={() =>addCard(card)}
         />
+        }
+        { dropCard && 
         <IoCloseCircleOutline  
           className="w-6 h-6 mt-1 bg-orange-600 text-white p-0.5 rounded select-none cursor-pointer"
           onClick={()=>dropCard(card)}
         />
+        }
     </div>
     <Image
       src={`/cards/${card.code}-${card.idd}.webp`}
