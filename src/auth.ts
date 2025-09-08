@@ -1,111 +1,47 @@
-import NextAuth, { NextAuthConfig } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "./lib/prisma";
-import { z } from 'zod';
-import bcrypt from 'bcryptjs';
+import NextAuth from "next-auth"
+import authConfig from "@/auth.config";
+import Google from "next-auth/providers/google"
+import Discord from "next-auth/providers/discord"
+import { MongoDBAdapter } from "@auth/mongodb-adapter"
+import  db from "@/lib/db";
 
-interface Data {
-  id: string;
-  name: string;
-  email: string;
-  emailVerified?: Date;
-  role: string;
-  image?: string;
-}
 
-export const authConfig: NextAuthConfig = {
-  callbacks:{
-
-     authorized({ auth, request: { nextUrl } }) {
-
-      const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith('/perfil');
-
-      if ( isLoggedIn ) return true;
-      if ( isOnDashboard ) {
-        return Response.redirect(new URL('/auth/login', nextUrl));
-      }
-
-      
-      // if (isOnDashboard) {
-      //   if (isLoggedIn) return true;
-      //   return false; // Redirect unauthenticated users to login page
-      // } else if (isLoggedIn) {
-      //   return Response.redirect(new URL('/', nextUrl));
-      // }
-      return true;
-    },
-
+export const {  signIn, signOut, auth, handlers } = NextAuth({
+  adapter: MongoDBAdapter(db),
+  ...authConfig,
+  session: { strategy: "jwt" },
+  callbacks: {
+    // jwt() se ejecuta cada vez que se crea o actualiza un token JWT.
+    // Aquí es donde puedes agregar información adicional al token.
     jwt({ token, user }) {
-      if ( user ) {
-        token.data = user;
+      if (user) {
+        token.role = user.role;
       }
-
       return token;
     },
-
+    // session() se utiliza para agregar la información del token a la sesión del usuario,
+    // lo que hace que esté disponible en el cliente.
     session({ session, token }) {
-      const tes = token.data as Data;
-      session.user = {
-        id: tes.id,
-        name: tes.name,
-        email: tes.email,
-        emailVerified: tes.emailVerified ? tes.emailVerified : new Date(),
-        role: tes.role,
-        image: tes.image,
+      if (session.user) {
+        session.user.role = token.role;
       }
       return session;
     },
-
+  },
+  events: {
+    // El evento linkAccount se dispara cuando una cuenta (proveedor OAuth: GitHub, Google, Facebook, etc.)  se vincula a un usuario existente en tu base de datos.
+    // async linkAccount({ user }) {
+    //   await db.user.update({
+    //     where: { id: user.id },
+    //     data: {
+    //       emailVerified: new Date(),
+    //     },
+    //   });
+    // },
   },
   providers: [
-    CredentialsProvider({
-      credentials: {
-          email: {},
-          password: {},
-      },
-      authorize: async (credentials) => {
-
-        const parsedCredentials  = z
-          .object({email: z.string().email(), password: z.string().min(6)})
-          .safeParse(credentials);
-
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error("Email y contraseña requeridos");
-          }
-
-
-        if(!parsedCredentials.data) {
-            throw new Error("Email y contraseña requeridos 1");
-        }
-
-          const { email, password } = parsedCredentials.data;
-
-    
-          const user = await prisma.user.findUnique({ where: {email: email.toLowerCase()}});
-
-          if (!user) {
-            throw new Error("Usuario no encontrado");
-          }
-
-          const isValidPassword = bcrypt.compare(password, user.password);
-
-          if (!isValidPassword) {
-            throw new Error("Contraseña incorrecta");
-          }
-          
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            nickname: user.nickname,
-            createdDate: user.createdDate,
-            updatedDate: user.updatedDate
-        };
-      }
-    
-    }),
+    Google,
+    Discord,
   ],
-}
-
-export const {  signIn, signOut, auth, handlers } = NextAuth( authConfig );
+  
+});

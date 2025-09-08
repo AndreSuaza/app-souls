@@ -43,3 +43,7 @@ export * from './cartas/card-finder/card-finder';
 export * from './ui/pagination/paginationLine';
 
 export * from './mazos/deck-detail/DeckDetail';
+
+
+export * from './login/button-social';
+export * from './login/button-logout';

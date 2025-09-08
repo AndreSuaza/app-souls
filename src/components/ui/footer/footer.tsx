@@ -37,7 +37,6 @@ export const Footer = () => {
                      route.menu.map((menu) => (
                       <li key={menu.name} className="mt-1">
                         <Link
-                          key={menu.name}
                           href={menu.path}
                         >
                           {menu.name}
@@ -47,7 +46,6 @@ export const Footer = () => {
                     :
                     <li key={route.name} className="mt-1">
                     <Link
-                      key={route.name}
                       href={route.path}
                     >
                       {route.name}
