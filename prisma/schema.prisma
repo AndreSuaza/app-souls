@@ -89,10 +89,10 @@ model Card {
   code            String        @unique     
   limit           String
   cost            Int
-  force           String?
-  defense         String?  
+  force           String
+  defense         String 
   name            String
-  effect          String?
+  effect          String
   createDate      DateTime      @default(now()) 
 
   price           CardPrice[]
