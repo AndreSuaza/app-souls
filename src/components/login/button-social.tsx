@@ -6,16 +6,17 @@ import React from "react"
 interface Props {
   children: React.ReactNode;
   provider: string;
+  className: string;
 }
 
-export const ButtonSocial = ({children, provider}:Props) => {
+export const ButtonSocial = ({children, provider, className}:Props) => {
 
   const handleClick = async() => {
     await signIn(provider);
   }
 
   return (
-    <button onClick={handleClick}>
+    <button onClick={handleClick} className={className}>
       {children}
     </button>
   )

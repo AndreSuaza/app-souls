@@ -6,8 +6,9 @@ import { useUIStore } from "@/store";
 import Image from "next/image";
 import { Routes } from "@/models/routes.models";
 import { useEffect, useRef, useState } from "react";
-import { IoMenuSharp } from "react-icons/io5";
+import { IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoMenuSharp } from "react-icons/io5";
 import { useSession } from "next-auth/react";
+import { ButtonLogOut } from "@/components/login/button-logout";
 
 export const TopMenu = () => {
 
@@ -77,9 +78,7 @@ export const TopMenu = () => {
                   </ul>
                 )}
               </div>
-
             :
-
             <Link
                 href={route.path}
                 className="m-2 xl:p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
@@ -95,26 +94,34 @@ export const TopMenu = () => {
         {/*Search, Menu*/}
         { session?.user 
           ?
-          <Link
-            href="/perfil"
-            className="relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-          >
-          <Image
-              src={session?.user.image ? session?.user.image : `/souls-in-xtinction-logo-sm.png`}
-              alt="Imagen de perfil"
-              className='size-8 rounded-full'
-              width={8}
-              height={8}
-          />
-
-          </Link>
+          <ButtonLogOut className="flex bg-slate-800 pt-2 px-3 rounded-md pb-1 hover:bg-blue-800">
+            
+            <span className="capitalize mr-2 font-semibold">Cerrar sesion</span>
+            <Image
+                src={session?.user.image ? session?.user.image : `/souls-in-xtinction-logo-sm.png`}
+                alt="Imagen de perfil"
+                className='size-8 rounded-full -mt-1'
+                width={8}
+                height={8}
+            />
+          </ButtonLogOut>
           :
-          <Link
-            href="/auth/login"
-            className="bg-gray-900 font-bold uppercase rounded-md py-2 px-4"
-          >
-            Iniciar sesión
-          </Link>
+          <div className="items-center hidden lg:block">
+          <div className="flex flex-row">
+            <Link href="https://www.instagram.com/soulsinxtinction" target="blank">
+              <IoLogoInstagram className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+            </Link>
+              <Link href="https://www.facebook.com/soulsinxtinction" target="blank">
+            <IoLogoFacebook className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+              </Link>
+            <Link href="https://www.youtube.com/@SoulsInXtinction" target="blank">
+              <IoLogoYoutube className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+            </Link>
+            <Link href="https://www.tiktok.com/@soulsinxtinction" target="blank">
+              <IoLogoTiktok className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
+            </Link>
+          </div> 
+        </div>
         }
         
 

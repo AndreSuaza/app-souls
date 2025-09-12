@@ -47,3 +47,6 @@ export * from './mazos/deck-detail/DeckDetail';
 
 export * from './login/button-social';
 export * from './login/button-logout';
+
+export * from './tournaments-creator/Tournament'
+export * from './tournaments-creator/new-torunament'

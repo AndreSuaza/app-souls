@@ -73,7 +73,7 @@ export const OptionsDeckCreator = ({
         // Construir cada sección
         const exportText = formatDeckList(deckListMain) + formatDeckList(deckListLimbo);
         const exportSide = formatDeckList(deckListSide);
-        console.log(exportSide);
+
         // Construir URL final
         const url = `https://soulsinxtinction.com/laboratorio?decklist=${exportText}|${exportSide}`;
 
@@ -81,8 +81,6 @@ export const OptionsDeckCreator = ({
         setDeckList(url);
         setCopyState(false);
         setSharedDeck(true);
-
-        console.log("Deck URL:", url);
     };
 
     const shuffleDeck = () => {

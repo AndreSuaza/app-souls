@@ -4,7 +4,6 @@ import { ButtonLogOut } from "@/components";
 export default async function PerfilPage() {
 
   const session = await auth();
-  console.log(session?.user)
 
   return (
     <div className="md:mx-40 my-6">

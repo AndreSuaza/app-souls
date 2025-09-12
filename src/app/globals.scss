@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Bowlby+One+SC&family=Yatra+One&display=swap');
 
 :root {
   --primary: #274494;
@@ -31,6 +32,10 @@ body {
 
 h2 {
   font-size: 2rem;
+}
+
+.font-bebas {
+  font-family: "Bebas Neue", sans-serif;
 }
 
 @keyframes fadeIn {
