@@ -107,9 +107,25 @@ function swissPairingNoRepeat(origPlayers: Player[]): Pair[] {
   return pairs.concat(remainingPairs);
 }
 
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array]; // copiamos para no mutar el original
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1)); // índice aleatorio
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]]; // swap
+  }
+  return newArray;
+}
+
 export function generateSwissRound(players: Player[], rounds: Round[]): Round | null {
+
+  let playersS = players;
+
+  if( rounds.length === 0 ) {
+    playersS = shuffleArray(players);
+  }
+
  return {
     number: rounds.length + 1,
-    matches: swissPairingNoRepeat(players),
+    matches: swissPairingNoRepeat(playersS),
   };
 }

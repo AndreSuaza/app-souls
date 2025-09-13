@@ -48,7 +48,8 @@ export default function SwissRoundManager({ players, setPlayers, rounds, setRoun
   } 
 
   const handleGenerateRound = () => {
-
+    
+    setEnd(false);
     const newRound = generateSwissRound(scoreRound(), rounds);
 
     if (!newRound) {
