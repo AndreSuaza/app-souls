@@ -1,5 +1,5 @@
 'use client';
-// SwissRoundManager.tsx
+
 import { useState } from "react";
 import { generateSwissRound, Player, Round } from './swiss';
 import { saveToLocalStorage } from "@/lib/localStorage";

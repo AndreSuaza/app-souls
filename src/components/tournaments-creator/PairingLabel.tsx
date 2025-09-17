@@ -1,3 +1,5 @@
+'use client';
+
 import clsx from "clsx";
 import { IoTrophySharp } from "react-icons/io5";
 import { Pair } from "./swiss";
