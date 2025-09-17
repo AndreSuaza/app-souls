@@ -1,6 +1,5 @@
 import { getDecksByIds, getPaginatedCards, getPropertiesCards } from "@/actions";
-import { DeckCreator, Sidebar, TopMenu } from "@/components";
-import { Footer } from "@/components/ui/footer/Footer";
+import { DeckCreator, Sidebar, TopMenu, Footer } from "@/components";
 import { Metadata } from "next";
 
 

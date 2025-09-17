@@ -1,5 +1,4 @@
-import { PageNotFound, Sidebar, TopMenu } from "@/components";
-import { Footer } from "@/components/ui/footer/Footer";
+import { PageNotFound, Sidebar, TopMenu, Footer } from "@/components";
 
 export default function notFound() {
 
