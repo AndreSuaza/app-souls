@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { Player, Round } from "./swiss";
 import { loadFromLocalStorage, saveToLocalStorage } from "@/lib/localStorage";
 import { IoTrophySharp } from "react-icons/io5";
-import { PlayerList, SwissRoundManager, SwissHistoric, ConfirmationModal } from "@/components";
+import { ConfirmationModal } from "@/components";
 import { useAlertConfirmationStore } from "@/store";
+import { SwissHistoric } from "./SwissHistoric";
+import { PlayerList } from "./PlayerList";
+import { SwissRoundManager } from "./SwissRoundManager";
 
 
 export const Tournament = () => {
