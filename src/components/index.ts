@@ -18,16 +18,16 @@ export * from './cartas/card-finder/CardFinder';
 export * from './eventos/event-grid/TournamentGrid';
 export * from './eventos/event-grid/TournamentItem';
 
-export * from './ui/pagination/Pagination';
-export * from './ui/pagination/PaginationLine';
+export * from './ui/pagination/pagination';
+export * from './ui/pagination/paginationLine';
 export * from './ui/top-menu/TopMenu';
 export * from './ui/not-fount/PageNotFound';
 export * from './ui/title/Title';
 export * from './ui/sidebar/Sidebar';
 export * from './ui/providers/Provider';
-export * from './ui/modal/Modal';
+export * from './ui/modal/modal';
 export * from './ui/modal/ConfirmationModal';
-export * from './ui/footer/Footer';
+export * from './ui/footer/footer';
 
 export * from './stores/store-grid/StoreItem';
 export * from './stores/store-grid/StoreItemSimple';
