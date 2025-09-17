@@ -12,8 +12,7 @@ import {
     IoShareSocialOutline,
     IoTrashOutline,
 } from "react-icons/io5";
-import { Decklistimage } from "../decklist-image/DecklistImage";
-import { Modal } from "@/components/ui/modal/Modal";
+import { Modal, Decklistimage } from "@/components";
 import Link from "next/link";
 import Image from "next/image";
 
