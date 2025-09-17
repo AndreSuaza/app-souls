@@ -9,7 +9,7 @@ type Props = {
 };
 
 
-export default function PairingButtons ({pair, index, setResultRount}: Props) {
+export const PairingButtons = ({pair, index, setResultRount}: Props) => {
 
   return (
     <>

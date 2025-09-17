@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import { IoChevronDownSharp, IoChevronUp } from "react-icons/io5";
 import { Round } from "./swiss";
-import PairingLabel from "./PairingLabel";
+import { PairingLabel } from '@/components';
 
 
 type Props = {

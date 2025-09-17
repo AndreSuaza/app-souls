@@ -1,6 +1,5 @@
 'use client';
 
-// TournamentApp.tsx
 import { useEffect, useState } from "react";
 import { Player, Round } from "./swiss";
 import { loadFromLocalStorage, saveToLocalStorage } from "@/lib/localStorage";

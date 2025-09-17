@@ -7,7 +7,7 @@ type Props = {
 };
 
 
-export default function PairingLabel ({pair}: Props) {
+export const PairingLabel = ({pair}: Props) => {
 
   return (
     <>

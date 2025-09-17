@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { generateSwissRound, Player, Round } from './swiss';
 import { saveToLocalStorage } from "@/lib/localStorage";
-import PairingButtons from "./PairingButtons";
+import { PairingButtons } from "@/components";
 
 type Props = {
   players: Player[];
