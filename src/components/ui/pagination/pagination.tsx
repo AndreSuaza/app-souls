@@ -2,7 +2,7 @@
 
 import { redirect, usePathname, useSearchParams } from 'next/navigation';
 import { ReactNode } from 'react';
-import { PaginationLine } from '@/components';
+import { PaginationLine } from './PaginationLine';
 
 
 interface Props {
@@ -31,4 +31,4 @@ export const Pagination = ({ children, totalPages }: Props) => {
     </>
     
   );
-};
+}

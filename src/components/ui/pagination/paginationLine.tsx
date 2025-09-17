@@ -101,4 +101,4 @@ export const PaginationLine = ({ totalPages, currentPage, searchParams, pathname
       </nav>
     </div> 
   );
-};
+}

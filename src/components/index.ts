@@ -45,3 +45,4 @@ export * from './mazos/deck-detail/DeckDetail';
 export * from './login/ButtonSocial';
 export * from './login/ButtonLogOut';
 
+export * from './tournaments-creator/Tournament';
