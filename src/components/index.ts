@@ -17,7 +17,7 @@ export * from './cartas/deck-creator/ShowDeck';
 export * from './eventos/event-grid/TournamentGrid';
 export * from './eventos/event-grid/TournamentItem';
 
-export * from './ui/pagination/pagination';
+export * from './ui/pagination/Pagination';
 export * from './ui/top-menu/TopMenu';
 export * from './ui/not-fount/PageNotFound';
 export * from './ui/title/Title';
@@ -32,21 +32,27 @@ export * from './map/MapXl';
 export * from './finders/CardFinderLab';
 export * from './finders/CardFinderPrices';
 
-export * from './ui/modal/modal';
+export * from './ui/modal/Modal';
+export * from './ui/modal/ConfirmationModal';
 
 export * from './ui/providers/Provider';
 
 export * from './home/YoutubeList';
 
-export * from './cartas/card-finder/card-finder';
+export * from './cartas/card-finder/CardFinder';
 
-export * from './ui/pagination/paginationLine';
+export * from './ui/pagination/PaginationLine';
 
 export * from './mazos/deck-detail/DeckDetail';
 
 
-export * from './login/button-social';
-export * from './login/button-logout';
+export * from './login/ButtonSocial';
+export * from './login/ButtonLogOut';
 
-export * from './tournaments-creator/Tournament'
-export * from './tournaments-creator/new-torunament'
+export * from './tournaments-creator/Tournament';
+export * from './tournaments-creator/NewTournament';
+export * from './tournaments-creator/PairingButtons';
+export * from './tournaments-creator/PairingLabel';
+export * from './tournaments-creator/SwissHistoric';
+export * from './tournaments-creator/PlayerList';
+export * from './tournaments-creator/SwissRoundManager';

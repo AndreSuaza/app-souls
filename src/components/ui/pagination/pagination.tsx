@@ -2,7 +2,7 @@
 
 import { redirect, usePathname, useSearchParams } from 'next/navigation';
 import { ReactNode } from 'react';
-import { PaginationLine } from './paginationLine';
+import { PaginationLine } from './PaginationLine';
 
 
 interface Props {

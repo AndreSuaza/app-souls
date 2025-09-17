@@ -8,7 +8,7 @@ import { Routes } from "@/models/routes.models";
 import { useEffect, useRef, useState } from "react";
 import { IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoMenuSharp } from "react-icons/io5";
 import { useSession } from "next-auth/react";
-import { ButtonLogOut } from "@/components/login/button-logout";
+import { ButtonLogOut } from "@/components/login/ButtonLogOut";
 
 export const TopMenu = () => {
 

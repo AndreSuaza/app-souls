@@ -13,7 +13,7 @@ import {
     IoTrashOutline,
 } from "react-icons/io5";
 import { Decklistimage } from "../decklist-image/DecklistImage";
-import { Modal } from "@/components/ui/modal/modal";
+import { Modal } from "@/components/ui/modal/Modal";
 import Link from "next/link";
 import Image from "next/image";
 

@@ -1,17 +1,20 @@
-'use client'
+'use client';
 
 // TournamentApp.tsx
 import { useEffect, useState } from "react";
-import PlayerList from "./PlayerList";
-import SwissRoundManager from "./SwissRoundManager";
 import { Player, Round } from "./swiss";
 import { loadFromLocalStorage, saveToLocalStorage } from "@/lib/localStorage";
 import { IoTrophySharp } from "react-icons/io5";
+import { PlayerList, SwissRoundManager, SwissHistoric, ConfirmationModal } from "@/components";
+import { useAlertConfirmationStore } from "@/store";
+
 
 export const Tournament = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [currentRound, setCurrentRound] = useState<Round>();
+  
+  const isAlertConfirmation = useAlertConfirmationStore( state => state.isAlertConfirmation );
 
   const calculateBuchholz = (player: Player): number => {
     return player.rivals?.reduce((sum: number, oppName: string) => {
@@ -67,7 +70,7 @@ export const Tournament = () => {
         Nuevo Torneo
     </button>
     </div>
-    <div className="mx-auto px-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-2 ">
+    <div className="mx-auto px-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2 ">
       <div>
       <PlayerList players={players} setPlayers={setPlayers}/>
       </div>
@@ -79,9 +82,9 @@ export const Tournament = () => {
         currentRound={currentRound}
         setCurrentRound={setCurrentRound}
       />
-  
+      <SwissHistoric rounds={rounds}/>
       {players.length > 0 && (
-        <div className="p-4 border rounded-md bg-slate-50 border-gray-300 min-h-[600px] col-span-2">
+        <div className="p-4 border rounded-md bg-slate-50 border-gray-300 min-h-[600px]">
           <h2 className="text-xl text-center font-bold uppercase mb-2">Tabla de Posiciones</h2>
           <table className="w-full table-auto border">
             <thead>
@@ -106,11 +109,10 @@ export const Tournament = () => {
         </div>
       )}
     </div>
-    {/* <Modal
-      className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:h-2/5 md:top-28"
-      close={closeModal}>
-        <h2>hola</h2>
-    </Modal> */}
+    {isAlertConfirmation && <ConfirmationModal
+      text="¿Está seguro de eliminar a este jugador del torneo?"
+      className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:h-1/5 md:top-1/3 rounded-md border-2 border-gray-400"
+    />}
     </div>
   );
 }

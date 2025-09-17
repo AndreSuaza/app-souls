@@ -4,7 +4,7 @@ import { saveToLocalStorage } from "@/lib/localStorage";
 import { useRouter } from "next/navigation";
 import { IoTrophySharp } from "react-icons/io5";
 
-export const NewToubament = () => {
+export const NewTournament = () => {
     
     const router = useRouter();
 

@@ -1,9 +1,12 @@
+'use client';
+
 // PlayerList.tsx
 import { useState } from "react";
 import { Player } from "./swiss";
 import { saveToLocalStorage } from "@/lib/localStorage";
 import { IoChevronDownSharp, IoChevronUp, IoTrashOutline } from "react-icons/io5";
 import clsx from "clsx";
+import { useAlertConfirmationStore } from "@/store";
 
 
 type Props = {
@@ -11,16 +14,20 @@ type Props = {
   setPlayers: (players: Player[]) => void;
 };
 
-export default function PlayerList({ players, setPlayers }: Props) {
+export const PlayerList = ({ players, setPlayers }: Props) => {
   const [name, setName] = useState("");
   const [showPlayers, setShowPlayers] = useState(true);
+
+  const openAlertConfirmation = useAlertConfirmationStore( state => state.openAlertConfirmation );
+  const setAction = useAlertConfirmationStore( state => state.setAction );
 
   const showPlasyersButton = () => {
     setShowPlayers(!showPlayers);
   }
 
   const deletePlayer = (index: number) => {
-    setPlayers(players.filter(player => player.name !== players[index].name));
+    openAlertConfirmation();
+    setAction(() => setPlayers(players.filter(player => player.name !== players[index].name)));
   }
 
   const handleAdd = () => {

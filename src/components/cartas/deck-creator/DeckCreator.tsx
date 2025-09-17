@@ -4,7 +4,7 @@ import type { Card } from "@/interfaces";
 import { useEffect, useState } from "react";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
-import { CardFinder } from "../card-finder/card-finder";
+import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
 
 

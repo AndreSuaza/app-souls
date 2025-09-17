@@ -67,6 +67,9 @@ h2 {
   @apply bg-yellow-600 hover:bg-yellow-800 text-black py-2 px-4 rounded transition-all;
 }
 
+.btn-warning {
+  @apply bg-red-600 hover:bg-red-800 text-white py-2 px-4 rounded transition-all;
+}
 
 //Animacion cartas
 
