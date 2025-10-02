@@ -34,6 +34,7 @@ export const CardItem = ({ card, index, detailCard, addCard, addCardSidedeck}: P
               title='Detalle de la carta'
               onClick={()=>openDetail()}
             />
+            { card.limit === "1" && <div className="text-center text-2xl mt-1 bg-yellow-500 text-white rounded cursor-pointer">1</div>}
             { addCard && card.types.filter(type => type.name === "Alma").length === 0 &&
               <>
               <IoAddCircleOutline 
