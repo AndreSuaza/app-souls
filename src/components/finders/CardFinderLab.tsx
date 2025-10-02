@@ -31,6 +31,7 @@ interface PropertiesFiltersFinderLab {
     force: Propertie[],
     defense: Propertie[],
     cost: Propertie[],
+    limit: Propertie[],
 }
 
 interface Props {
@@ -103,6 +104,7 @@ export const CardFinderLab = ({propertiesCards, cols=6}: Props) => {
         if (filters.defense.length > 0) query += '&defenses='+getFilterValues(filters.defense);
         if (filters.keywords.length > 0) query += '&keywords='+getFilterValues(filters.keywords);
         if (filters.rarities.length > 0) query += '&rarities='+getFilterValues(filters.rarities);
+        if (filters.limit.length > 0) query += '&limit='+getFilterValues(filters.limit);
         
        return query;
     
@@ -126,6 +128,7 @@ export const CardFinderLab = ({propertiesCards, cols=6}: Props) => {
             keywords: [],
             products: [],
             rarities: [],
+            limit: [],
         }}
         onSubmit={ onSubmit }
     >
@@ -209,6 +212,13 @@ export const CardFinderLab = ({propertiesCards, cols=6}: Props) => {
                     name="rarities"
                     options={rarities}
                     placeholder="Rareza"
+                    multi={true}
+                />
+
+                <MultiSelect
+                    name="limit"
+                    options={[{label: "Legendaria", value: 1}]}
+                    placeholder="Legendarias"
                     multi={true}
                 />
   

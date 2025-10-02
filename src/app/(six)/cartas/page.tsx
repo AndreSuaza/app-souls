@@ -36,16 +36,17 @@ interface Props {
     defenses?: string;
     raritys?: string;
     rarities?: string;
+    limit?: string;
   }>
 }
 
 export default async function Cards({ searchParams }: Props) {
 
-  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, rarities } = await searchParams;
+  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, rarities, limit } = await searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
-  const { cards, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses, rarities });
+  const { cards, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses, rarities, limit });
 
   return (
     <div className="md:mx-20">
