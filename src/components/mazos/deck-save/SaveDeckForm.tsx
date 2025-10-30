@@ -31,11 +31,11 @@ export const SaveDeckForm = ({deck, imgDeck}: Props ) => {
 
     const resp = await saveDeck(data, deck, imgDeck); 
     
-    // if(!resp.success && resp.message) {
-    //   setError(resp.message);
-    // } else {
-    //   router.push("/perfil");
-    // }
+    if(resp && resp?.message) {
+      setError(resp.message);
+    } else {
+      router.push("/perfil");
+    }
       
     }
 

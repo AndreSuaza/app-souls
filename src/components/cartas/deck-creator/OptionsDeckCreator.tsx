@@ -4,20 +4,16 @@ import { Card } from "@/interfaces";
 import { useState } from "react";
 import {
     IoCopyOutline,
-    IoCreateOutline,
     IoGrid,
     IoHandRightOutline,
     IoImageOutline,
     IoListSharp,
-    IoSaveOutline,
-    // IoLogoUsd,
     IoShareSocialOutline,
     IoTrashOutline,
 } from "react-icons/io5";
 import { Modal, Decklistimage, SaveDeckForm } from "@/components";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
 
 interface Decklist {
     count: number;
@@ -41,8 +37,6 @@ export const OptionsDeckCreator = ({
     changeViewList,
     viewList
 }: Props) => {
-
-     const { data: session } = useSession();
 
     const [showDeckImage, setShowDeckImage] = useState(false);
     const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -110,10 +104,6 @@ export const OptionsDeckCreator = ({
     const handTest = () => {
         shuffleDeck();
         setShowHandTest(true);
-    };
-
-    const saveDeck = () => {
-        setShowSaveDeck(true);
     };
 
     const closeDeckImage = () => {

@@ -28,8 +28,6 @@ interface Props {
 
 export const DeckCard = ({mazo}:Props) => {
 
-  console.log(mazo);
-
   return (
     <div>
         <Link href={`/laboratorio?id=${mazo.id}`}>

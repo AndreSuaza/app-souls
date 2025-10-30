@@ -1,7 +1,5 @@
 import NextAuth from "next-auth"
 import authConfig from "@/auth.config";
-import Google from "next-auth/providers/google"
-import Discord from "next-auth/providers/discord"
 import { MongoDBAdapter } from "@auth/mongodb-adapter"
 import  db from "@/lib/db";
 
@@ -19,7 +17,7 @@ export const {  signIn, signOut, auth, handlers } = NextAuth({
         token.idd = user.id;
         token.role = user.role;
         token.nickname = user.nickname;
-        token.image = user.image;
+        token.image = user.image ? user.image : "player";
       }
       return token;
     },

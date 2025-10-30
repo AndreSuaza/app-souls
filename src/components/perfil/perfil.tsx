@@ -12,12 +12,12 @@ interface User {
     lastname?: string| null;
     email?: string| null;
     nickname?: string| null;
-    image: string;
+    image?: string| null;
 }
 
-interface Archetype {
-  name: string| null;
-}
+// interface Archetype {
+//   name: string| null;
+// }
 
 type Avatar = {
   id: string;
@@ -27,29 +27,26 @@ type Avatar = {
   isExclusive: boolean;
 };
 
-interface Deck {
-  id: string;
-  name: string;
-  imagen: string;
-  cards: string;
-  likesCount: number;
-  createdAt: Date;
-  user: User;
-  archetype: Archetype;
-}
-
-
+// interface Deck {
+//   id: string;
+//   name: string;
+//   imagen: string;
+//   cards: string;
+//   likesCount: number;
+//   createdAt: Date;
+//   user: User;
+//   archetype: Archetype;
+// }
 
 interface Props {
     user: User;
     avatars: Avatar[];
-    decks: Deck[]
 }
 
-export const Pefil = ({user, avatars, decks}: Props) => {
+export const Pefil = ({user, avatars}: Props) => {
   const [activeTab, setActiveTab] = useState("mazos");
   const [showAvatars, setShowAvatars] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(user.image);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>(user.image ? user.image : "");
 
   const handleSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar.imageUrl);
@@ -143,7 +140,7 @@ export const Pefil = ({user, avatars, decks}: Props) => {
             </div>
           )} */}
 
-          {activeTab === "mazos" && (
+          {/* {activeTab === "mazos" && (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {decks.map((m, i) => (
                 <div
@@ -158,7 +155,7 @@ export const Pefil = ({user, avatars, decks}: Props) => {
                 </div>
               ))}
             </div>
-          )}
+          )} */}
 
           {/* {activeTab === "torneos" && (
             <div className="overflow-x-auto">

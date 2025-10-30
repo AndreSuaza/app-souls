@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { userRegistration } from '@/actions/auth/register';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -21,7 +21,6 @@ type FormInputs = {
 export const RegisterForm = () => {
 
   const { register, handleSubmit, formState: {errors} } = useForm<FormInputs>();
-  const [ userError, setUserError] = useState(false);
   const [ error, setError ] = useState<string | null>(null);
   const router = useRouter();
 
@@ -36,14 +35,6 @@ export const RegisterForm = () => {
     }
       
     }
-
-  useEffect(() => {
-
-    setUserError(false);
-    
-
-  }, [errors.name || errors.lastname || errors.nickname || errors.email || errors.password])
-  
 
   return (
     <form onSubmit={ handleSubmit( onSubmit ) }  className="flex flex-col">
