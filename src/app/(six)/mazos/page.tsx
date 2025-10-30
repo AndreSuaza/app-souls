@@ -1,5 +1,5 @@
-import { getDecksByIds} from "@/actions";
-import { DeckDetail} from "@/components";
+import { getDecks} from "@/actions";
+import { DeckCard, Title} from "@/components";
 import { Metadata } from "next";
 
 
@@ -24,50 +24,24 @@ export const metadata: Metadata = {
   },
 }
 
-interface Props {
-  searchParams: Promise<{
-    page?: string;
-    text?: string;
-    products?: string;
-    types?: string;
-    archetypes?: string;
-    keywords?: string;
-    costs?: string;
-    forces?: string;
-    defenses?: string;
-    raritys?: string;
-    decklist?: string;
-    rarities?: string;
-  }>
-}
+export default async function Decks() {
 
-export default async function Cards({ searchParams }: Props) {
-
-  const { decklist } = await searchParams;
-
-  const {mainDeck, sideDeck} = await getDecksByIds(decklist); 
+  const decks = await getDecks();
 
   return (
-
-    <main className="grid grid-cols-2 lg:grid-cols-4 mb-6">
-      <div className="mx-2 mt-6">
-        <h1>Nombre del mazo</h1>
-        <h2>Jugador</h2>
-        <p>video</p>
-        <p>compartir</p>
-        <p>Editar</p>
-        <p>posicion</p>
-        <p>evento</p>
-        <p>fecha</p>
-        <p>publico</p>
-        <p>comentarios</p>
-        <p>Code</p>
-        <p>User</p>
-      </div>
-      <div className="col-span-1 md:col-span-3 mt-6 mx-2">
-        <DeckDetail mainDeck={mainDeck} sideDeck={sideDeck}/>
-      </div>  
-    </main>
-    
+    <>
+    <Title 
+      title="Biblioteca de Mazos"
+    />
+    <section className="px-6 md:px-20 my-6">
+      <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-16">
+      {decks.map(deck => 
+        <li key={deck.id}>
+        <DeckCard mazo={deck}/>
+        </li>
+      )}
+      </ul>
+    </section>  
+    </>
   )
 }

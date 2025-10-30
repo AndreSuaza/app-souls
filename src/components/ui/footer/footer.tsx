@@ -1,5 +1,4 @@
 import { titleFont } from "@/config/fonts"
-import { Routes } from "@/models/routes.models"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -29,7 +28,7 @@ export const Footer = () => {
             <div className='flex justify-center mt-6'>
               <div className='mr-10'>
                 <p className='text-xl uppercase font-bold'>Menu</p>
-                <ul className='my-2 uppercase'>
+                {/* <ul className='my-2 uppercase'>
                 {Routes.map((route) => (
                   <>
                     { route.menu 
@@ -38,6 +37,7 @@ export const Footer = () => {
                       <li key={menu.name} className="mt-1">
                         <Link
                           href={menu.path}
+                          key={menu.name}
                         >
                           {menu.name}
                         </Link>
@@ -47,6 +47,7 @@ export const Footer = () => {
                     <li key={route.name} className="mt-1">
                     <Link
                       href={route.path}
+                      
                     >
                       {route.name}
                     </Link>
@@ -54,7 +55,7 @@ export const Footer = () => {
                     }
                   </>
                   ))}
-                </ul>
+                </ul> */}
               </div>
               <div className=''>
                 <p className='text-xl uppercase font-bold pr-2'>Redes</p>

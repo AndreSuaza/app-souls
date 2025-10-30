@@ -6,17 +6,22 @@ import { useUIStore } from "@/store";
 import Image from "next/image";
 import { Routes } from "@/models/routes.models";
 import { useEffect, useRef, useState } from "react";
-import { IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoMenuSharp } from "react-icons/io5";
-import { useSession } from "next-auth/react";
-import { ButtonLogOut } from "@/components/login/ButtonLogOut";
+import { IoMenuSharp } from "react-icons/io5";
+import { signOut, useSession } from "next-auth/react";
 
 export const TopMenu = () => {
 
   const openMenu = useUIStore( state => state.openSideMenu );
   const [open, setOpen] = useState<boolean>(false);
+  const [openProfile, setOpenProfile] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const dropdownRefProfile = useRef<HTMLDivElement | null>(null);
   
   const { data: session } = useSession();
+
+  const handleClick = async() => {
+    await signOut();
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -26,6 +31,16 @@ export const TopMenu = () => {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutsideProfile(event: MouseEvent) {
+      if (dropdownRefProfile.current && !dropdownRefProfile.current.contains(event.target as Node)) {
+        setOpenProfile(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutsideProfile);
+    return () => document.removeEventListener("mousedown", handleClickOutsideProfile);
   }, []);
 
   return (
@@ -92,38 +107,64 @@ export const TopMenu = () => {
        </div>
         
         {/*Search, Menu*/}
-        { session?.user 
+        <div className="items-center hidden lg:block">
+        { session
           ?
-          <ButtonLogOut className="flex bg-slate-800 pt-2 px-3 rounded-md pb-1 hover:bg-blue-800">
-            
-            <span className="capitalize mr-2 font-semibold">Cerrar sesion</span>
-            <Image
-                src={session?.user.image ? session?.user.image : `/souls-in-xtinction-logo-sm.png`}
+          <div className="relative inline-block text-left" ref={dropdownRefProfile}>
+            {/* Botón */}
+            <a
+              onMouseEnter={() => setOpenProfile(!openProfile)}
+              className="flex flex-grow bg-slate-900 py-2 px-3 rounded hover:bg-slate-800 transition-all"
+            > 
+            {session?.user.image && 
+              <>
+              <Image
+                src={`/profile/${session?.user.image}.webp`}
                 alt="Imagen de perfil"
-                className='size-8 rounded-full -mt-1'
-                width={8}
-                height={8}
-            />
-          </ButtonLogOut>
+                className='w-8 rounded-full mr-2'
+                width={80}
+                height={80}
+              />
+              <p className="uppercase font-semibold mt-1">{session?.user.nickname}</p>
+              </>
+            
+            }
+              
+            </a>
+
+            {/* Menú */}
+            {openProfile && (
+              <ul 
+              onMouseLeave={() => setOpenProfile(!openProfile)}
+              className="absolute font-sem pt-2 pb-2 px-2 w-36 rounded-md bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50">
+                
+                  <li>
+                     <Link
+                        href="/perfil"
+                        className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                      >
+                        Tu perfil
+                      </Link>
+                          
+                  </li>
+                  <li>
+                      <button onClick={handleClick} className="block w-full h-full text-left mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform">
+                       Cerrar sesión
+                      </button>
+                  </li>
+              </ul>
+            )}
+          </div>
           :
-          <div className="items-center hidden lg:block">
-          <div className="flex flex-row">
-            <Link href="https://www.instagram.com/soulsinxtinction" target="blank">
-              <IoLogoInstagram className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
-            </Link>
-              <Link href="https://www.facebook.com/soulsinxtinction" target="blank">
-            <IoLogoFacebook className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
-              </Link>
-            <Link href="https://www.youtube.com/@SoulsInXtinction" target="blank">
-              <IoLogoYoutube className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
-            </Link>
-            <Link href="https://www.tiktok.com/@soulsinxtinction" target="blank">
-              <IoLogoTiktok className="w-6 h-6 ml-4 transition-all hover:text-yellow-600"/>
-            </Link>
-          </div> 
-        </div>
+          <></>
+          // <Link href={"/auth/login"} className="uppercase font-semibold bg-yellow-600 px-4 py-2 rounded text-sm hover:bg-yellow-700 transition-all">
+          //   iniciar sesión 
+          // </Link>
+          
+
+         
         }
-        
+         </div>
 
         <div className="block lg:hidden">
           <button 

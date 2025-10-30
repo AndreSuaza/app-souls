@@ -28,6 +28,7 @@ export * from './ui/providers/Provider';
 export * from './ui/modal/modal';
 export * from './ui/modal/ConfirmationModal';
 export * from './ui/footer/footer';
+export * from './ui/date/dateformat';
 
 export * from './stores/store-grid/StoreItem';
 export * from './stores/store-grid/StoreItemSimple';
@@ -41,6 +42,8 @@ export * from './finders/CardFinderPrices';
 export * from './home/YoutubeList';
 
 export * from './mazos/deck-detail/DeckDetail';
+export * from './mazos/deck-card/DeckCard';
+export * from './mazos/deck-save/SaveDeckForm';
 
 export * from './login/ButtonSocial';
 export * from './login/ButtonLogOut';

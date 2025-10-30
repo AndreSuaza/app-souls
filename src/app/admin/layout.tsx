@@ -1,6 +1,5 @@
 import { Footer, Sidebar, TopMenu } from "@/components";
 import moment from 'moment';
-import 'moment/locale/es';
 
 export default function SixLayout({
   children,

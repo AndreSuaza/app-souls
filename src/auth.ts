@@ -14,16 +14,24 @@ export const {  signIn, signOut, auth, handlers } = NextAuth({
     // jwt() se ejecuta cada vez que se crea o actualiza un token JWT.
     // Aquí es donde puedes agregar información adicional al token.
     jwt({ token, user }) {
+      
       if (user) {
+        token.idd = user.id;
         token.role = user.role;
+        token.nickname = user.nickname;
+        token.image = user.image;
       }
       return token;
     },
     // session() se utiliza para agregar la información del token a la sesión del usuario,
     // lo que hace que esté disponible en el cliente.
     session({ session, token }) {
+      
       if (session.user) {
+        session.user.idd = token.idd;
         session.user.role = token.role;
+        session.user.nickname = token.nickname;
+        session.user.image = token.image;
       }
       return session;
     },
@@ -39,9 +47,9 @@ export const {  signIn, signOut, auth, handlers } = NextAuth({
     //   });
     // },
   },
-  providers: [
-    Google,
-    Discord,
-  ],
+  // providers: [
+  //   Google,
+  //   Discord,
+  // ],
   
 });

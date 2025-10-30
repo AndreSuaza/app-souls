@@ -1,5 +1,5 @@
-import { getDecksByIds, getPaginatedCards, getPropertiesCards } from "@/actions";
-import { DeckCreator, Sidebar, TopMenu, Footer } from "@/components";
+import { getDeckById, getDecksByIds, getPaginatedCards, getPropertiesCards } from "@/actions";
+import { DeckCreator, Sidebar, TopMenu, Footer, Title } from "@/components";
 import { Metadata } from "next";
 
 
@@ -39,23 +39,39 @@ interface Props {
     decklist?: string;
     rarities?: string;
     limit?: string;
+    id?: string;
   }>
 }
 
 export default async function Cards({ searchParams }: Props) {
 
-  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, decklist, rarities, limit } = await searchParams;
+  const { text, products, types, archetypes, keywords, costs, forces, defenses, page, decklist, rarities, limit, id = "" } = await searchParams;
   const page2 = page ? parseInt( page ) : 1 
 
   const propertiesCards = await getPropertiesCards();
   const { cards, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses, rarities, limit });
 
-  const {mainDeck, sideDeck} = await getDecksByIds(decklist); 
+  let decklistCards = decklist;
+
+  let deckUser = null;
+
+  if(id) {
+    const getDeck = await getDeckById(id)
+    if(getDeck) {
+      deckUser = getDeck;
+      decklistCards =  deckUser.cards.replaceAll("%2C", ",");
+    }
+  }  
+
+  const {mainDeck, sideDeck} = await getDecksByIds(decklistCards); 
 
   return (
     <main>
       <TopMenu/>
       <Sidebar/>
+      <Title 
+        title="Laboratorio de mazos"
+      />
       <DeckCreator cards={cards} propertiesCards={propertiesCards} mainDeck={mainDeck} sideDeck={sideDeck} totalPages={totalPage}/> 
       <Footer/>
     </main>

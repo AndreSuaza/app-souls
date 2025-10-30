@@ -30,12 +30,14 @@ model Type {
 }
 
 model Archetype {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  name        String  
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String  
   createDate    DateTime      @default(now())
 
-  cardsIDs    String[]      @db.ObjectId
-  cards       Card[]        @relation(fields: [cardsIDs], references: [id])  
+  cardsIDs      String[]      @db.ObjectId
+  cards         Card[]        @relation(fields: [cardsIDs], references: [id])  
+
+  decks         Deck[]    
 }
 
 model Keyword {
@@ -185,12 +187,19 @@ model TypeTournament {
 model User {
   id            String          @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
+  lastname      String?
   email         String?         @unique
+  nickname      String          @unique
+  password      String?
   emailVerified DateTime?
-  image         String?
+  image         String          @default("player")
+  role          Role            @default(player)
   accounts      Account[]
   sessions      Session[]
- 
+  likes         Like[]
+  decks         Deck[]
+  userAvatar    UserAvatar[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -230,10 +239,83 @@ model Session {
  
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  identifier String
+  identifier String   @unique
   token      String
   expires    DateTime
- 
-  @@unique([identifier, token])
 }
- 
+
+model TypeLike {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String    
+  createDate    DateTime      @default(now())
+
+  likes         Like[]
+}
+
+model Like {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+
+  idLike        String
+
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+
+  typeLikeId    String        @db.ObjectId
+  typeLike      TypeLike      @relation(fields: [typeLikeId], references: [id])
+  
+
+  createdAt     DateTime      @default(now())
+}
+
+model Deck {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String?
+  imagen      String
+  cards       String
+  cardsNumber Int     @default(0)
+  visible     Boolean
+
+  likesCount  Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+
+  archetypeId    String      @db.ObjectId
+  archetype      Archetype   @relation(fields: [archetypeId], references: [id])
+}
+
+enum AvatarRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+  EVENT
+}
+
+model Avatar {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  imageUrl    String
+  rarity      AvatarRarity    @default(COMMON)
+  isExclusive Boolean         @default(false)
+  userAvatars UserAvatar[]
+
+  createdAt   DateTime  @default(now())
+}
+
+model UserAvatar {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  unlocked    Boolean   @default(false)
+  
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id])
+
+  avatarId    String    @db.ObjectId
+  avatar      Avatar    @relation(fields: [avatarId], references: [id])
+
+  createdAt   DateTime  @default(now())
+}

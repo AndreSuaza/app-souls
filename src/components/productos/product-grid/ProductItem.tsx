@@ -14,7 +14,7 @@ export const ProductItem = ({ product }: Props) => {
   const [displayImage] = useState(`${product.ProductImage[0].url}.webp`);
 
   return (
-    <div className='rounded-lg overflow-hidden fade-in'>
+    <div key={product.id} className='rounded-lg overflow-hidden fade-in'>
       <Link href={`/productos/${ product.url }`}>
           <Image
               src={`/products/${displayImage}`}

@@ -3,38 +3,61 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { authenticate } from '@/actions';
-
-
+import { useRouter } from "next/navigation";
+import { useSession } from 'next-auth/react';
 
 type FormInputs = {
   email: string;
   password: string;  
 }
 
+interface FormLoginProps {
+  isVerified: boolean;
+}
 
-
-export const LoginForm = () => {
+export const LoginForm = ({ isVerified }: FormLoginProps) => {
 
   const { register, handleSubmit, formState: {errors} } = useForm<FormInputs>();
-  const [ userError, setUserError] = useState(false);
-
+  const [ userError, setUserError ] = useState(false);
+  const [ isPending, startTransition ] = useTransition();
+  const [ error, setError ] = useState<string | null>(null);
+  const router = useRouter();
+  const { update } = useSession();
 
   const onSubmit: SubmitHandler<FormInputs> = async(data) => {
-    await authenticate(data); 
-    setUserError(true);     
+    startTransition(async () => {
+      const resp = await authenticate(data); 
+      if(!resp.success && resp.message) {
+        setError(resp.message);
+      } else {
+        await update();
+        router.push("/");
+      }
+    })
   }
 
   useEffect(() => {
 
     setUserError(false);
     
-
   }, [errors.email || errors.password])
   
 
   return (
+    <>
+    {isVerified && (
+      <p className="text-center text-green-500 mb-5 text-sm">
+        Email verified, you can now login
+      </p>
+    )}
+
+      <p className="text-center text-red-500 mb-5 text-sm">
+        {error}
+      </p>
+   
+
     <form onSubmit={ handleSubmit( onSubmit ) }  className="flex flex-col">
 
       {
@@ -82,7 +105,7 @@ export const LoginForm = () => {
             minLength: {value: 6, message: "La contraseña debe tener un mínimo de 6 caracteres" }} ) }
       />
 
-        <button className="btn-primary">Iniciar Sesión</button>
+        <button className="btn-primary" disabled={isPending}>Iniciar Sesión</button>
 
         {/* divisor l ine */ }
         <div className="flex items-center my-5">
@@ -93,9 +116,10 @@ export const LoginForm = () => {
 
         <Link
             href="/auth/new-account" 
-            className="btn-secondary text-center">
+            className="btn-secondary text-center text-white">
             Crear una nueva cuenta
         </Link>
     </form>
+    </>
   );
 };

@@ -27,8 +27,7 @@ export const Modal = ({ children, className, close }: Props) => {
 
     <div className={`fixed ${className}`}>
              <IoCloseOutline 
-                size={50}
-                className="absolute top-3 right-5 cursor-pointer text-gray-100 bg-slate-950 hover:bg-indigo-600"
+                className="text-3xl md:text-5xl absolute top-3 right-5 cursor-pointer text-gray-100 bg-slate-950 hover:bg-indigo-600"
                 onClick={ close }
             />
         {children}

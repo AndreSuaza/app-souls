@@ -1,6 +1,14 @@
+import { auth } from "@/auth";
 import { Title, Tournament } from "@/components";
+import { redirect } from "next/navigation";
 
-export default function Torneo() {
+const Torneo = async () => {
+  const session = await auth();
+  
+  if (session?.user?.role !== "admin") {
+      redirect( '/auth/login' );
+  }
+  
   return (
     <>
     <Title title="Creador de torneos"/>
@@ -8,3 +16,5 @@ export default function Torneo() {
     </>
   )
 }
+
+export default Torneo;

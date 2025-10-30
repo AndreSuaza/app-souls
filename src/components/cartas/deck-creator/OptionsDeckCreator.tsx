@@ -4,17 +4,20 @@ import { Card } from "@/interfaces";
 import { useState } from "react";
 import {
     IoCopyOutline,
+    IoCreateOutline,
     IoGrid,
     IoHandRightOutline,
     IoImageOutline,
     IoListSharp,
+    IoSaveOutline,
     // IoLogoUsd,
     IoShareSocialOutline,
     IoTrashOutline,
 } from "react-icons/io5";
-import { Modal, Decklistimage } from "@/components";
+import { Modal, Decklistimage, SaveDeckForm } from "@/components";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 interface Decklist {
     count: number;
@@ -39,7 +42,10 @@ export const OptionsDeckCreator = ({
     viewList
 }: Props) => {
 
+     const { data: session } = useSession();
+
     const [showDeckImage, setShowDeckImage] = useState(false);
+    const [showSaveDeck, setShowSaveDeck] = useState(false);
     const [showSharedDeck, setSharedDeck] = useState(false);
     const [showHandTest, setShowHandTest] = useState(false);
     const [deckList, setDeckList] = useState("");
@@ -64,7 +70,7 @@ export const OptionsDeckCreator = ({
     //     return main + limbo;
     // };
 
-    const createCodeDeck = () => {
+    const deckListText = () => {
         // Función auxiliar para convertir una lista en string
         const formatDeckList = (deckList: typeof deckListMain) =>
             deckList.map(deck => `${deck.card.idd}%2C${deck.count}%2C`).join("");
@@ -74,13 +80,27 @@ export const OptionsDeckCreator = ({
         const exportSide = formatDeckList(deckListSide);
 
         // Construir URL final
-        const url = `https://soulsinxtinction.com/laboratorio?decklist=${exportText}|${exportSide}`;
+        return `https://soulsinxtinction.com/laboratorio?decklist=${exportText}|${exportSide}`;
+    }
 
+    const deckImage = () => {
+
+       if(deckListMain.length > 0) {
+        return deckListMain[0].card.code+deckListMain[0].card.idd;
+       } 
+        
+       return "";
+       
+    }
+
+    const createCodeDeck = () => {
         // Actualizar estados
-        setDeckList(url);
+        setDeckList(deckListText);
         setCopyState(false);
         setSharedDeck(true);
     };
+
+    
 
     const shuffleDeck = () => {
         const cards = deckListMain.map(card =>  card.card)
@@ -92,14 +112,36 @@ export const OptionsDeckCreator = ({
         setShowHandTest(true);
     };
 
+    const saveDeck = () => {
+        setShowSaveDeck(true);
+    };
+
     const closeDeckImage = () => {
         setShowDeckImage(false);
     }
 
     return (
         <>
-        <div className="grid grid-cols-3 md:grid-cols-8 gap-1 mb-2">
+        <div className="grid grid-cols-4 md:grid-cols-8 gap-1 mb-2 -mt-2">
+            {/* {session?.user && 
+            <button
+                className="btn-short"
+                title="Nuevo Mazo"
+                onClick={saveDeck}
+            >
+                <IoCreateOutline className="w-6 h-6 -mb-0.5" />
+            </button>
+            }
 
+            {session?.user && 
+            <button
+                className="btn-short"
+                title="Guardar Mazo"
+                onClick={saveDeck}
+            >
+                <IoSaveOutline className="w-6 h-6 -mb-0.5" />
+            </button>
+            } */}
 
              <button
                 className="btn-short"
@@ -201,7 +243,19 @@ export const OptionsDeckCreator = ({
             </div>
             </Modal>
         }
-        
+        { showSaveDeck && 
+            <Modal 
+                className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:top-28"
+                close={() => setShowSaveDeck(false)}
+            >
+            <div className="overflow-auto w-full text-center">
+            <div className=" text-gray-100 py-4 bg-slate-950"> 
+                <h1 className="font-bold text-2xl md:text-2xl uppercase">Crear Mazo</h1>
+            </div>
+            <SaveDeckForm deck={deckListText()} imgDeck={deckImage()}/>
+            </div>
+            </Modal>
+        }
         </>
     );
 };

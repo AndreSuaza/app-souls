@@ -1,5 +1,5 @@
 import { getPaginatedCards, getPropertiesCards } from "@/actions";
-import { CardFinder } from "@/components";
+import { CardFinder, Title } from "@/components";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -49,7 +49,10 @@ export default async function Cards({ searchParams }: Props) {
   const { cards, totalPage } = await getPaginatedCards({ page: page2, text, products, types, archetypes, keywords, costs, forces, defenses, rarities, limit });
 
   return (
-    <div className="md:mx-20">
+    <div>
+      <Title 
+        title="Biblioteca de cartas"
+      />
       <CardFinder cards={cards} propertiesCards={propertiesCards} totalPage={totalPage}/>
     </div>
     

@@ -1,17 +1,26 @@
 
+import { getAvatars, getDecksByUser } from "@/actions";
+import { getUserById } from "@/actions/auth/find-user";
 import { auth } from "@/auth";
-import { ButtonLogOut } from "@/components";
+import { Pefil } from "@/components/perfil/perfil";
+import { redirect } from "next/navigation";
+
 export default async function PerfilPage() {
 
   const session = await auth();
+  
+  if (session?.user?.role !== "admin") {
+      redirect( '/auth/login' );
+  }
+
+  const user = await getUserById();
+  const avatars = await getAvatars();
+  const userDecks = await getDecksByUser();
+
+  console.log(userDecks);
 
   return (
-    <div className="md:mx-40 my-6">
-    <h1>Perfil</h1>
-    {JSON.stringify(session)}
-    <ButtonLogOut>
-      <span>Login con out</span>
-    </ButtonLogOut>
-    </div>
+    <>{user && <Pefil user={user} avatars={avatars} decks={userDecks}/>}</>
+    
   )
 }

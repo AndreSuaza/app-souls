@@ -8,10 +8,10 @@ export const Routes = [
         path: "/como-jugar",
         name: "Aprende a Jugar"
     },
-    {
-        path: "/torneos",
-        name: "torneos",
-    },
+    // {
+    //     path: "/torneos",
+    //     name: "torneos",
+    // },
     {
         name: "Cartas",
         menu: [
@@ -19,10 +19,10 @@ export const Routes = [
                 path: "/cartas",
                 name: "biblioteca",
             },
-            // {
-            //     path: "/mazos",
-            //     name: "Mazos",
-            // },
+            {
+                path: "/mazos",
+                name: "Mazos",
+            },
             {
                 path: "/laboratorio",
                 name: "Laboratorio",

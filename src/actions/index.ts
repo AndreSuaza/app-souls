@@ -15,3 +15,11 @@ export * from './stores/stores-pagination';
 
 export * from './auth/login';
 export * from './auth/logout';
+
+export * from './decks/saveDeck';
+export * from './decks/getDecks';
+export * from './decks/getDecksByUser';
+export * from './decks/getDeckById';
+
+export * from './profile/avatars';
+export * from './profile/edit-user-session';
