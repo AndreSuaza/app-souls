@@ -18,6 +18,18 @@ type FormInputs = {
   confirmPassword: string;
 }
 
+const getLabel = (field: string) => {
+  switch (field) {
+    case "name": return "El nombre";
+    case "lastname": return "El apellido";
+    case "nickname": return "El nickname";
+    case "email": return "El correo electrónico";
+    case "password": return "La contraseña";
+    case "confirmPassword": return "La confirmación de la contraseña";
+    default: return field;
+  }
+};
+
 export const RegisterForm = () => {
 
   const { register, handleSubmit, formState: {errors} } = useForm<FormInputs>();
@@ -40,19 +52,21 @@ export const RegisterForm = () => {
     <form onSubmit={ handleSubmit( onSubmit ) }  className="flex flex-col">
 
       {
-       errors.email || errors.password ? 
-          <span className="text-red-500 my-2">
-            <p>{errors.name?.message}</p>
-            <p>{errors.lastname?.message}</p>
-            <p>{errors.nickname?.message}</p>
-            <p>{errors.email?.message}</p>
-            <p>{errors.password?.message}</p>
-          </span>
-        :
+        
+        Object.keys(errors).length > 0 ? 
+        <span className="text-red-500 my-2">
+        {Object.entries(errors).map(([key, value]) => (
+          <p key={key}>{getLabel(key)} {value?.message}</p>
+        ))}
+        </span>
+
+        : 
+        
         error && 
         <span className="text-red-500 my-2">
-        <p><i>{error}</i></p>
+          <p><i>{error}</i></p>
         </span>
+       
       }
 
       <label htmlFor="name">Nombre</label>
@@ -67,25 +81,21 @@ export const RegisterForm = () => {
         }
         type="name"
         {...register("name", {
-        required: "El nombre es obligatorio.",
-        minLength: { value: 3, message: "Debe tener al menos 3 caracteres." },
-        maxLength: { value: 20, message: "Debe tener máximo 20 caracteres." },
-        pattern: {
-          value: /^[a-zA-Z0-9._]+$/,
-          message: "Solo se permiten letras, números, puntos y guiones bajos.",
-        },
+        required: "es requerido.",
+        minLength: { value: 3, message: "debe tener al menos 3 caracteres." },
+        maxLength: { value: 20, message: "debe tener máximo 20 caracteres." },
         validate: {
           noRepetidos: (value) =>
-            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "No repitas el mismo carácter muchas veces.",
+            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "no permite repetir el mismo carácter muchas veces.",
           noSoloNumeros: (value) =>
-            !/^\d+$/.test(value) || "El nombre no puede ser solo números.",
+            !/^\d+$/.test(value) || "no puede ser solo números.",
           noUrls: (value) =>
-            !/@|www\./.test(value) || "No se permiten correos o URLs.",
+            !/@|www\./.test(value) || "no permite correos o URLs.",
           noProhibidas: (value) => {
             const lower = value.toLowerCase();
             return (
               !palabrasProhibidas.some((p) => lower.includes(p)) ||
-              "El nombre contiene palabras restringidas."
+              "contiene palabras restringidas."
             );
           },
         },
@@ -104,62 +114,58 @@ export const RegisterForm = () => {
         }
         type="text"
         {...register("lastname", {
-        required: "El apellido es obligatorio.",
-        minLength: { value: 3, message: "Debe tener al menos 3 caracteres." },
-        maxLength: { value: 20, message: "Debe tener máximo 20 caracteres." },
-        pattern: {
-          value: /^[a-zA-Z0-9._]+$/,
-          message: "Solo se permiten letras, números, puntos y guiones bajos.",
-        },
+        required: "es requerido.",
+        minLength: { value: 3, message: "debe tener al menos 3 caracteres." },
+        maxLength: { value: 20, message: "debe tener máximo 20 caracteres." },
         validate: {
           noRepetidos: (value) =>
-            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "No repitas el mismo carácter muchas veces.",
+            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "no permite repetir el mismo carácter muchas veces",
           noSoloNumeros: (value) =>
-            !/^\d+$/.test(value) || "El apellido no puede ser solo números.",
+            !/^\d+$/.test(value) || "no puede ser solo números.",
           noUrls: (value) =>
-            !/@|www\./.test(value) || "No se permiten correos o URLs.",
+            !/@|www\./.test(value) || "no permite correos o URLs.",
           noProhibidas: (value) => {
             const lower = value.toLowerCase();
             return (
               !palabrasProhibidas.some((p) => lower.includes(p)) ||
-              "El apellido contiene palabras restringidas."
+              "contiene palabras restringidas."
             );
           },
         },
         })}
       />
 
-      <label htmlFor="nickname">Nickname</label>
+      <label htmlFor="text">Nickname</label>
       <input
         className={
           clsx(
             "px-5 py-2 border bg-gray-200 rounded mb-5",
             {
-              'border-red-500': errors.name
+              'border-red-500': errors.nickname
             }
           )
         }
-        type="nickname"
+        type="text"
         {...register("nickname", {
-        required: "El nickname es obligatorio.",
-        minLength: { value: 3, message: "Debe tener al menos 3 caracteres." },
-        maxLength: { value: 20, message: "Debe tener máximo 20 caracteres." },
+        required: "es requerido.",
+        minLength: { value: 3, message: "debe tener al menos 3 caracteres." },
+        maxLength: { value: 20, message: "debe tener máximo 20 caracteres." },
         pattern: {
           value: /^[a-zA-Z0-9._]+$/,
-          message: "Solo se permiten letras, números, puntos y guiones bajos.",
+          message: "solo permite letras, números, puntos y guiones bajos.",
         },
         validate: {
           noRepetidos: (value) =>
-            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "No repitas el mismo carácter muchas veces.",
+            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "no permite repetir el mismo carácter muchas veces",
           noSoloNumeros: (value) =>
-            !/^\d+$/.test(value) || "El nickname no puede ser solo números.",
+            !/^\d+$/.test(value) || "no puede ser solo números.",
           noUrls: (value) =>
-            !/@|www\./.test(value) || "No se permiten correos o URLs.",
+            !/@|www\./.test(value) || "no permite correos o URLs.",
           noProhibidas: (value) => {
             const lower = value.toLowerCase();
             return (
               !palabrasProhibidas.some((p) => lower.includes(p)) ||
-              "El nickname contiene palabras restringidas."
+              "contiene palabras restringidas."
             );
           },
         },
@@ -178,8 +184,8 @@ export const RegisterForm = () => {
         }
         type="email"
         { ...register('email', { 
-            required: {value: true, message: "El campo 'email' es requerido"}, 
-            pattern: {value: /^\S+@\S+$/i, message: "El correo ingresado no es válido. Verifica e inténtalo nuevamente." }}) }
+            required: {value: true, message: "es requerido"}, 
+            pattern: {value: /^\S+@\S+$/i, message: "ingresado no es válido. Verifica e inténtalo nuevamente." }}) }
       />
 
       <label htmlFor="password">Contraseña</label>
@@ -194,8 +200,8 @@ export const RegisterForm = () => {
         }
         type="password"
         { ...register('password', { 
-            required: {value: true, message: "El campo 'contraseña' es requerido."}, 
-            minLength: {value: 6, message: "La contraseña debe tener un mínimo de 6 caracteres" }} ) }
+            required: {value: true, message: "es requerido."}, 
+            minLength: {value: 6, message: "debe tener un mínimo de 6 caracteres" }} ) }
       />
 
       <label htmlFor="confirmPassword">Confirmar contraseña</label>
@@ -210,8 +216,8 @@ export const RegisterForm = () => {
         }
         type="password"
         { ...register('confirmPassword', { 
-            required: {value: true, message: "El campo 'Confirmar contraseña' es requerido."}, 
-            minLength: {value: 6, message: "La Confirmar contraseña debe tener un mínimo de 6 caracteres" }} ) }
+            required: {value: true, message: "es requerida."}, 
+            minLength: {value: 6, message: "debe tener un mínimo de 6 caracteres" }} ) }
       />
 
       <button className="mt-6 btn-primary">Registrarse</button>

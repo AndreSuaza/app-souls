@@ -4,7 +4,7 @@ import { useUIStore } from '@/store';
 import clsx from 'clsx';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { IoBagRemoveOutline, IoBookOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLayers, IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoStorefrontOutline } from 'react-icons/io5';
+import { IoBagRemoveOutline, IoBookOutline, IoCloseOutline, IoDiamondOutline, IoFlashOutline, IoFlaskOutline, IoLayers, IoLogoFacebook, IoLogoInstagram, IoLogoTiktok, IoLogoYoutube, IoStorefrontOutline, IoTrophyOutline } from 'react-icons/io5';
 
 
 export const Sidebar = () => {
@@ -55,11 +55,14 @@ export const Sidebar = () => {
             />
 
             <div className='flex flex-col mt-12'>
+                <Link className="flex m-2 p-2 transition-all uppercase text-yellow-400 font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/nacional"  onClick={ closeMenu }>
+                    <IoTrophyOutline className="w-6 h-6 mr-3"/>
+                    Torneo Nacional
+                </Link>
                 <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/como-jugar"  onClick={ closeMenu }>
                     <IoFlashOutline className="w-6 h-6 mr-3"/>
                     Como Jugar
                 </Link>
-                
                 {/* <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/torneos"  onClick={ closeMenu }>
                     <IoTrophyOutline className="w-6 h-6 mr-3"/>
                     Torneos
