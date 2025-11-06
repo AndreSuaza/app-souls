@@ -6,7 +6,6 @@ import { palabrasProhibidas } from "@/models/inappropriateWords.model";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { AuthError } from "next-auth";
-import { signIn } from "next-auth/react";
 
 type FormInputs = {
     name: string;
