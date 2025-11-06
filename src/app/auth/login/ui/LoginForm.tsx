@@ -49,7 +49,7 @@ export const LoginForm = ({ isVerified }: FormLoginProps) => {
     <>
     {isVerified && (
       <p className="text-center text-green-500 mb-5 text-sm">
-        Email verified, you can now login
+        Correo electrónico verificado, ahora puedes iniciar sesión.
       </p>
     )}
 

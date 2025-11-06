@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 const Torneo = async () => {
   const session = await auth();
   
-  if (session?.user?.role !== "admin") {
+  if (session?.user?.role !== "store") {
       redirect( '/auth/login' );
   }
   

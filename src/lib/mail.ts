@@ -28,7 +28,7 @@ export const sendEmailVerification = async (email: string, token: string) => {
                   
                   <!-- Header / Logo -->
                   <tr>
-                    <td style="padding:20px 24px;background:linear-gradient(90deg,#0b1220,#16203a);color:#fff;">
+                    <td style="padding:20px 24px;background:linear-gradient(90deg,#000000,#000000);color:#fff;">
                       <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                         <tr>
                           <td style="vertical-align:middle;">

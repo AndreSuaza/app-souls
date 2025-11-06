@@ -2,9 +2,8 @@
 
 import clsx from 'clsx';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { userRegistration } from '@/actions/auth/register';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { palabrasProhibidas } from '@/models/inappropriateWords.model';
 
@@ -34,23 +33,30 @@ export const RegisterForm = () => {
 
   const { register, handleSubmit, formState: {errors} } = useForm<FormInputs>();
   const [ error, setError ] = useState<string | null>(null);
-  const router = useRouter();
+  const [ success, setSuccess ] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const onSubmit: SubmitHandler<FormInputs> = async(data) => {
+    startTransition(async () => {
+      const resp = await userRegistration(data); 
 
-    const resp = await userRegistration(data); 
-
-    if(!resp.success && resp.message) {
-      setError(resp.message);
-    } else {
-      router.push("/perfil");
-    }
-      
+      if(!resp.success && resp.message) {
+        setError(resp.message);
+      } else {
+        setSuccess(true);
+      }
+    }) 
     }
 
   return (
     <form onSubmit={ handleSubmit( onSubmit ) }  className="flex flex-col">
-
+      {
+        success && (
+          <p className="text-center text-green-500 mb-5 text-sm">
+            Por favor verifica tu correo electrónico para completar tu registro.
+          </p>
+        )
+      }
       {
         
         Object.keys(errors).length > 0 ? 
@@ -220,7 +226,15 @@ export const RegisterForm = () => {
             minLength: {value: 6, message: "debe tener un mínimo de 6 caracteres" }} ) }
       />
 
-      <button className="mt-6 btn-primary">Registrarse</button>
+      <button className={
+        clsx(
+            " py-2 rounded",
+            {
+              'bg-indigo-500 text-white hover:bg-indigo-600 transition': !success,
+              'bg-gray-300': success,
+            }
+          )
+      } disabled={success || isPending}>Registrarse</button>
       
       <Link className='mt-6 font-bold text-center text-slate-500' href={"/auth/login"}> ¿Ya tienes una cuenta? </Link>
       

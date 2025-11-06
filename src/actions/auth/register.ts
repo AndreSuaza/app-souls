@@ -1,8 +1,10 @@
 "use server";
 
+import { sendEmailVerification } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { palabrasProhibidas } from "@/models/inappropriateWords.model";
 import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
 import { AuthError } from "next-auth";
 import { signIn } from "next-auth/react";
 
@@ -58,7 +60,7 @@ export async function userRegistration(formData: FormInputs) {
     }
 
     // crear el usuario
-    await prisma.user.create({
+    const userdb = await prisma.user.create({
       data: {
         name: formData.name,
         lastname: formData.lastname,
@@ -68,11 +70,21 @@ export async function userRegistration(formData: FormInputs) {
       },
     });
 
-    await signIn("credentials", {
-      email: formData.email,
-      password: formData.password,
-      redirect: false,
-    });
+    if(userdb && userdb.email) {
+      const token = nanoid();
+      
+        await prisma.verificationToken.create({
+          data: {
+            identifier: userdb.email,
+            token,
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+          },
+        });
+
+        // enviar email de verificación
+        await sendEmailVerification(userdb.email, token);
+    }
+
 
     return { success: true };
 

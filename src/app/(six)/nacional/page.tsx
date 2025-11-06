@@ -53,7 +53,7 @@ export default function TorneoNacional() {
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {[
-            { lugar: "1° Lugar", color: "text-yellow-400", premio: "$3.000.000 + Purificador Dorado + Tapete Nacional + Alma Dorada + Carta Mediana" },
+            { lugar: "1° Lugar", color: "text-yellow-400", premio: "$3.000.000 + Purificador Dorado + Tapete Nacional + Alma Dorada" },
             { lugar: "2° Lugar", color: "text-yellow-300", premio: "$1.000.000 + Purificador Dorado + Tapete Nacional + Alma Dorada" },
             { lugar: "3° - 4° Lugar", color: "text-yellow-200", premio: "$500.000 + Purificador Secreto + Tapete Nacional + Alma Dorada" },
             { lugar: "5° - 8° Lugar", color: "text-yellow-100", premio: "$250.000 + Tapete Nacional + Alma Dorada + Purificador Secreto" },
@@ -104,7 +104,7 @@ export default function TorneoNacional() {
         </div>
         <h2 className="capitalize text-yellow-400 mt-12 text-center ">promos exclusivas del nacional</h2>
         <div
-            className="grid grid-cols-1 md:grid-cols-3 md:px-20 mx-auto items-center justify-center mt-10"
+            className="grid grid-cols-1 gap-4 md:grid-cols-3 md:px-20 mx-auto items-center justify-center mt-10"
           >
             <img
                 src="/cards/GNC-044-6547.webp"
