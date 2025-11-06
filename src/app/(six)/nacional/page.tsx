@@ -162,7 +162,7 @@ export default function TorneoNacional() {
                 <li>📦 <span className="font-semibold text-yellow-400">1 Caja de expansión</span></li>
                 <li>🧙‍♂️ <span className="font-semibold text-yellow-400">1 Tapete exclusivo</span></li>
                 <li>🔥 <span className="font-semibold text-yellow-400">1 Carta Dorada</span> “Alma del Dragón”</li>
-                <li>✨ <span className="font-semibold text-yellow-400">1 Carta Mediana especial</span></li>
+                <li>✨ <span className="font-semibold text-yellow-400">1 Carta gigante especial</span></li>
             </ul>
             </motion.div>
         </div>

@@ -148,6 +148,15 @@ export const TopMenu = () => {
                           
                   </li>
                   <li>
+                     <Link
+                        href="/admin/creador-de-torneos"
+                        className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                      >
+                        Torneos
+                      </Link>
+                          
+                  </li>
+                  <li>
                       <button onClick={handleClick} className="block w-full h-full text-left mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform">
                        Cerrar sesión
                       </button>
