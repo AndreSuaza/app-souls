@@ -56,7 +56,7 @@ export const sendEmailVerification = async (email: string, token: string) => {
                       <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:20px 0;">
                         <tr>
                           <td align="center">
-                            <a href="${process.env.NEXTAUTH_URL}/api/verify-email?token=${token}" style="background:linear-gradient(90deg,#c59f0f,#f2d479);color:#081024;text-decoration:none;padding:12px 22px;border-radius:8px;display:inline-block;font-weight:600;">
+                            <a href="https://www.soulsinxtinction.com/api/verify-email?token=${token}" style="background:linear-gradient(90deg,#c59f0f,#f2d479);color:#081024;text-decoration:none;padding:12px 22px;border-radius:8px;display:inline-block;font-weight:600;">
                               Verificar mi cuenta
                             </a>
                           </td>
