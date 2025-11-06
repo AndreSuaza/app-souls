@@ -115,7 +115,7 @@ export const LoginForm = ({ isVerified }: FormLoginProps) => {
         </div>
 
         <Link
-            href="/auth/new-account" 
+            href="/auth/register" 
             className="btn-secondary text-center text-white">
             Crear una nueva cuenta
         </Link>

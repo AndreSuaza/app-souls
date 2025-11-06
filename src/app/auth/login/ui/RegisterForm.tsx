@@ -205,9 +205,22 @@ export const RegisterForm = () => {
           )
         }
         type="password"
-        { ...register('password', { 
-            required: {value: true, message: "es requerido."}, 
-            minLength: {value: 6, message: "debe tener un mínimo de 6 caracteres" }} ) }
+        {...register("password", {
+          required: "es obligatoria",
+          minLength: {
+            value: 8,
+            message: "Debe tener al menos 8 caracteres",
+          },
+          validate: {
+            hasUppercase: (value) =>
+              /[A-Z]/.test(value) || "bebe contener al menos una mayúscula",
+            hasNumber: (value) =>
+              /\d/.test(value) || "bebe contener al menos un número",
+            hasSpecialChar: (value) =>
+              /[!@#$%^&*(),.?":{}|<>]/.test(value) ||
+              "bebe contener al menos un carácter especial",
+          }
+        })}
       />
 
       <label htmlFor="confirmPassword">Confirmar contraseña</label>
