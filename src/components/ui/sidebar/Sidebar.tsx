@@ -116,6 +116,16 @@ export const Sidebar = () => {
                         Tu perfil
                     </Link>
                           
+                    {
+                        session.user.role === 'store' &&
+                        <Link
+                        href="/admin/creador-de-torneos"
+                        className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                        >
+                            Crear Torneo
+                        </Link>
+                    }
+
       
                  
                     <button onClick={handleClick} className="block w-full h-full text-left mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform">
