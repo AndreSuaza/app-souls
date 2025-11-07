@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export const HomeNational = () => {
   return (
-        <div className="bg-[url(/national/bg-national.png)] bg-fixed bg-cover bg-center text-gray-200 font-sans overflow-x-hidden">
+        <div className="bg-[url(/national/bg-national.png)] bg-fixed bg-black bg-cover bg-center text-gray-200 font-sans overflow-x-hidden">
       {/* HERO */}
       <section className="bg-[url(/national/bg-national-souls.webp)] bg-cover bg-top min-h-screen flex flex-col justify-center items-center text-center px-6 pt-6 pb-12">
         <motion.img
