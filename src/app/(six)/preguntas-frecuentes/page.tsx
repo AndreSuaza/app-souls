@@ -1,4 +1,3 @@
-import { getStorePagination } from "@/actions";
 import { PreguntasFrecuentes } from "@/components";
 import { Metadata } from "next";
 

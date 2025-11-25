@@ -108,15 +108,6 @@ export const PreguntasFrecuentes = () => {
 
   const toggle = (id: number) => setOpenId((prev) => (prev === id ? null : id));
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      alert("Texto copiado al portapapeles");
-    } catch {
-      alert("No fue posible copiar. Usa Ctrl+C");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-gray-100 p-6">
       <div className="max-w-4xl mx-auto bg-gray-800/60 rounded-2xl p-6 shadow-lg">
