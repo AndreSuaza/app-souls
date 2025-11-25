@@ -52,3 +52,5 @@ export * from './tournaments-creator/Tournament';
 
 export * from './national/homeNational';
 
+
+export * from './cartas/preguntas-frecuentes/preguntasFrecuentes';

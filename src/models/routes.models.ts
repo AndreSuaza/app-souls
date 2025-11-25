@@ -27,6 +27,10 @@ export const Routes = [
                 path: "/laboratorio",
                 name: "Laboratorio",
             },
+            {
+                path: "preguntas-frecuentes",
+                name: "Preguntas Frecuentes",
+            },
         ]
     },
     {

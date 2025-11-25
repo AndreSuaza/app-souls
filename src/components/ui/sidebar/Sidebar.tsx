@@ -67,6 +67,10 @@ export const Sidebar = () => {
                     <IoTrophyOutline className="w-6 h-6 mr-3"/>
                     Torneos
                 </Link> */}
+                <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/preguntas-frecuentes"  onClick={ closeMenu }>
+                    <IoFlashOutline className="w-6 h-6 mr-3"/>
+                    Preguntas Frecuentes 
+                </Link>
                 <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/cartas"  onClick={ closeMenu }>
                     <IoBookOutline className="w-6 h-6 mr-3"/>
                     Cartas
