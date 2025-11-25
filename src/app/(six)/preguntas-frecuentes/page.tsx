@@ -3,19 +3,19 @@ import { Metadata } from "next";
 
 
 export const metadata: Metadata = {
-  title: 'Aprende a Jugar Souls In Xtinction TCG – Guía Completa para Principiantes',
-  description: 'Descubre las reglas básicas, mecánicas y estrategias para dominar Souls In Xtinction TCG. Esta guía te enseñará cómo construir tu mazo, entender las cartas y desarrollar tácticas para vencer a tus oponentes.',
+  title: 'Centro Oficial de Preguntas Frecuentes Souls In Xtinction TCG',
+  description: 'Encuentra aquí las respuestas oficiales a las dudas más comunes sobre reglas, mecánicas y efectos dentro de Souls In Xtinction. Una guía rápida y clara para que cada duelo se juegue de forma correcta y sin confusiones.',
   openGraph: {
-    title: 'Aprende a Jugar Souls In Xtinction TCG – Guía Completa para Principiantes',
-      description: 'Descubre las reglas básicas, mecánicas y estrategias para dominar Souls In Xtinction TCG. Esta guía te enseñará cómo construir tu mazo, entender las cartas y desarrollar tácticas para vencer a tus oponentes.',
+    title: 'Centro Oficial de Preguntas Frecuentes Souls In Xtinction TCG',
+      description: 'Encuentra aquí las respuestas oficiales a las dudas más comunes sobre reglas, mecánicas y efectos dentro de Souls In Xtinction. Una guía rápida y clara para que cada duelo se juegue de forma correcta y sin confusiones.',
       url: 'https://soulsinxtinction.com/como-jugar',
-      siteName: 'Aprende a jugar - Souls In Xtinction',
+      siteName: 'Preguntas Frecuentes - Souls In Xtinction',
       images: [
           {
           url: 'https://soulsinxtinction.com/souls-in-xtinction.webp',
           width: 800,
           height: 600,
-          alt: 'Aprende a jugar Souls In Xtinction TCG',
+          alt: 'Preguntas Frecuentes Souls In Xtinction TCG',
           }
       ],
       locale: 'en_ES',
