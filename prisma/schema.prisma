@@ -21,179 +21,185 @@ enum Role {
 }
 
 model Type {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String    
-  createDate    DateTime      @default(now())
-  
-  cardsIDs      String[]      @db.ObjectId
-  cards         Card[]        @relation(fields: [cardsIDs], references: [id])  
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  createDate DateTime @default(now())
+
+  cardsIDs String[] @db.ObjectId
+  cards    Card[]   @relation(fields: [cardsIDs], references: [id])
 }
 
 model Archetype {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String  
-  createDate    DateTime      @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  createDate DateTime @default(now())
 
-  cardsIDs      String[]      @db.ObjectId
-  cards         Card[]        @relation(fields: [cardsIDs], references: [id])  
+  cardsIDs String[] @db.ObjectId
+  cards    Card[]   @relation(fields: [cardsIDs], references: [id])
 
-  decks         Deck[]    
+  decks Deck[]
 }
 
 model Keyword {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String  
-  createDate    DateTime      @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  createDate DateTime @default(now())
 
-  cardsIDs      String[]      @db.ObjectId
-  cards         Card[]        @relation(fields: [cardsIDs], references: [id])  
+  cardsIDs String[] @db.ObjectId
+  cards    Card[]   @relation(fields: [cardsIDs], references: [id])
 }
 
 model Rarity {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String  
-  createDate    DateTime      @default(now()) 
-  Card          CardPrice[]
-  
-  cardsIDs      String[]      @db.ObjectId
-  cards         Card[]        @relation(fields: [cardsIDs], references: [id])  
-  
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  createDate DateTime    @default(now())
+  Card       CardPrice[]
+
+  cardsIDs String[] @db.ObjectId
+  cards    Card[]   @relation(fields: [cardsIDs], references: [id])
 }
 
 model Product {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  index         Int
-  name          String        
-  code          String        @unique
-  releaseDate   String      
-  description   String
-  url           String        @unique
-  numberCards   Int   
-  show          Boolean 
-  createDate    DateTime      @default(now()) 
-  Card          Card[]
-  ProductImage  ProductImage[]
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  index        Int
+  name         String
+  code         String         @unique
+  releaseDate  String
+  description  String
+  url          String         @unique
+  numberCards  Int
+  show         Boolean
+  createDate   DateTime       @default(now())
+  Card         Card[]
+  ProductImage ProductImage[]
 }
 
 model ProductImage {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  url           String
-  alt           String
-  createDate    DateTime      @default(now()) 
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  url        String
+  alt        String
+  createDate DateTime @default(now())
 
-  product       Product       @relation(fields: [productId], references: [id])
-  productId     String        @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @db.ObjectId
 }
 
 model Card {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  idd             String
-  code            String        @unique     
-  limit           String
-  cost            Int
-  force           String
-  defense         String 
-  name            String
-  effect          String
-  createDate      DateTime      @default(now()) 
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  idd        String
+  code       String   @unique
+  limit      String
+  cost       Int
+  force      String
+  defense    String
+  name       String
+  effect     String
+  createDate DateTime @default(now())
 
-  price           CardPrice[]
+  price CardPrice[]
 
-  typeIds         String[]      @db.ObjectId
-  types           Type[]        @relation(fields: [typeIds], references: [id])
+  typeIds String[] @db.ObjectId
+  types   Type[]   @relation(fields: [typeIds], references: [id])
 
-  archetypesIds   String[]      @db.ObjectId
-  archetypes      Archetype[]   @relation(fields: [archetypesIds], references: [id])
+  archetypesIds String[]    @db.ObjectId
+  archetypes    Archetype[] @relation(fields: [archetypesIds], references: [id])
 
-  keywordsIds     String[]      @db.ObjectId
-  keywords        Keyword[]     @relation(fields: [keywordsIds], references: [id])
-  
-  raritiesIds     String[]      @db.ObjectId
-  rarities        Rarity[]      @relation(fields: [raritiesIds], references: [id])
+  keywordsIds String[]  @db.ObjectId
+  keywords    Keyword[] @relation(fields: [keywordsIds], references: [id])
 
-  product         Product       @relation(fields: [productId], references: [id])
-  productId       String        @db.ObjectId
+  raritiesIds String[] @db.ObjectId
+  rarities    Rarity[] @relation(fields: [raritiesIds], references: [id])
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @db.ObjectId
 
   @@index([cost, force, defense])
 }
 
 model CardPrice {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  price         Float         @default(0)
-  createDate    DateTime      @default(now()) 
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  price      Float    @default(0)
+  createDate DateTime @default(now())
 
-  rarityId      String        @db.ObjectId
-  rarity        Rarity        @relation(fields: [rarityId], references: [id])
+  rarityId String @db.ObjectId
+  rarity   Rarity @relation(fields: [rarityId], references: [id])
 
-  cardId        String        @db.ObjectId
-  card          Card          @relation(fields: [cardId], references: [id])
-} 
+  cardId String @db.ObjectId
+  card   Card   @relation(fields: [cardId], references: [id])
+}
 
 model Store {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String        
-  city          String
-  address       String
-  country       String
-  postalCode    String
-  phone         String
-  lat           Float
-  lgn           Float  
-  url           String 
-  createDate    DateTime      @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  city       String
+  address    String
+  country    String
+  postalCode String
+  phone      String
+  lat        Float
+  lgn        Float
+  url        String
+  createDate DateTime @default(now())
 
-  Tournament    Tournament[]
+  Tournament Tournament[]
 }
 
 model Tournament {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  title         String         
-  descripcion   String
-  url           String
-  lat           Float
-  lgn           Float 
-  price         Float
-  format        String
-  date          DateTime
-  createDate    DateTime      @default(now()) 
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  descripcion String
+  url         String
+  lat         Float
+  lgn         Float
+  price       Float
+  format      String
+  date        DateTime
+  createDate  DateTime @default(now())
 
-  storeId       String        @db.ObjectId
-  store         Store         @relation(fields: [storeId], references: [id])
+  storeId String @db.ObjectId
+  store   Store  @relation(fields: [storeId], references: [id])
 
-  typeTournamentId      String                @db.ObjectId
-  typeTournament        TypeTournament        @relation(fields: [typeTournamentId], references: [id])  
+  typeTournamentId String         @db.ObjectId
+  typeTournament   TypeTournament @relation(fields: [typeTournamentId], references: [id])
 
-  TournamentImage    TournamentImage[]
-} 
+  TournamentImage TournamentImage[]
+}
 
 model TournamentImage {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  url           String
-  alt           String
-  createDate    DateTime      @default(now()) 
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  url        String
+  alt        String
+  createDate DateTime @default(now())
 
-  tournament    Tournament    @relation(fields: [tournamentId], references: [id])
-  tournamentId  String        @db.ObjectId
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId String     @db.ObjectId
 }
 
 model TypeTournament {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String    
-  createDate    DateTime      @default(now())
-  
-  Tournament    Tournament[]
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  createDate DateTime @default(now())
+
+  Tournament Tournament[]
+}
+
+enum UserStatus {
+  active
+  inactive
+  banned
 }
 
 model User {
-  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  id            String       @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
   lastname      String?
-  email         String?         @unique
-  nickname      String          @unique
+  email         String?      @unique
+  nickname      String       @unique
   password      String?
   emailVerified DateTime?
-  image         String          @default("player")
-  role          Role            @default(player)
+  image         String       @default("player")
+  role          Role         @default(player)
+  status        UserStatus   @default(active)
   accounts      Account[]
   sessions      Session[]
   likes         Like[]
@@ -203,7 +209,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   userId            String  @db.ObjectId
@@ -217,26 +223,26 @@ model Account {
   scope             String?
   id_token          String? @db.String
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@unique([provider, providerAccountId])
 }
- 
+
 model Session {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
   userId       String   @db.ObjectId
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model VerificationToken {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   identifier String   @unique
@@ -245,30 +251,29 @@ model VerificationToken {
 }
 
 model TypeLike {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String    
-  createDate    DateTime      @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  createDate DateTime @default(now())
 
-  likes         Like[]
+  likes Like[]
 }
 
 model Like {
-  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  idLike        String
+  idLike String
 
-  userId        String        @db.ObjectId
-  user          User          @relation(fields: [userId], references: [id])
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
 
-  typeLikeId    String        @db.ObjectId
-  typeLike      TypeLike      @relation(fields: [typeLikeId], references: [id])
-  
+  typeLikeId String   @db.ObjectId
+  typeLike   TypeLike @relation(fields: [typeLikeId], references: [id])
 
-  createdAt     DateTime      @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Deck {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String?
   imagen      String
@@ -276,16 +281,16 @@ model Deck {
   cardsNumber Int     @default(0)
   visible     Boolean
 
-  likesCount  Int      @default(0)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  userId        String        @db.ObjectId
-  user          User          @relation(fields: [userId], references: [id])
+  likesCount Int @default(0)
 
-  archetypeId    String      @db.ObjectId
-  archetype      Archetype   @relation(fields: [archetypeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  archetypeId String    @db.ObjectId
+  archetype   Archetype @relation(fields: [archetypeId], references: [id])
 }
 
 enum AvatarRarity {
@@ -297,25 +302,25 @@ enum AvatarRarity {
 }
 
 model Avatar {
-  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   imageUrl    String
-  rarity      AvatarRarity    @default(COMMON)
-  isExclusive Boolean         @default(false)
+  rarity      AvatarRarity @default(COMMON)
+  isExclusive Boolean      @default(false)
   userAvatars UserAvatar[]
 
-  createdAt   DateTime  @default(now())
+  createdAt DateTime @default(now())
 }
 
 model UserAvatar {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  unlocked    Boolean   @default(false)
-  
-  userId      String    @db.ObjectId
-  user        User      @relation(fields: [userId], references: [id])
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  unlocked Boolean @default(false)
 
-  avatarId    String    @db.ObjectId
-  avatar      Avatar    @relation(fields: [avatarId], references: [id])
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
 
-  createdAt   DateTime  @default(now())
+  avatarId String @db.ObjectId
+  avatar   Avatar @relation(fields: [avatarId], references: [id])
+
+  createdAt DateTime @default(now())
 }
