@@ -1,11 +1,13 @@
 "use client";
 
-import clsx from 'clsx';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { useState, useTransition } from 'react';
-import { userRegistration } from '@/actions/auth/register';
-import Link from 'next/link';
-import { palabrasProhibidas } from '@/models/inappropriateWords.model';
+import clsx from "clsx";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { useState, useTransition } from "react";
+import { userRegistration } from "@/actions/auth/register";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { MdError, MdCheckCircle } from "react-icons/md";
+import Link from "next/link";
+import { palabrasProhibidas } from "@/models/inappropriateWords.model";
 
 type FormInputs = {
   name: string;
@@ -13,244 +15,334 @@ type FormInputs = {
   nickname: string;
   image: string;
   email: string;
-  password: string;  
+  password: string;
   confirmPassword: string;
-}
-
-const getLabel = (field: string) => {
-  switch (field) {
-    case "name": return "El nombre";
-    case "lastname": return "El apellido";
-    case "nickname": return "El nickname";
-    case "email": return "El correo electrónico";
-    case "password": return "La contraseña";
-    case "confirmPassword": return "La confirmación de la contraseña";
-    default: return field;
-  }
 };
 
 export const RegisterForm = () => {
-
-  const { register, handleSubmit, formState: {errors} } = useForm<FormInputs>();
-  const [ error, setError ] = useState<string | null>(null);
-  const [ success, setSuccess ] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormInputs>();
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  const onSubmit: SubmitHandler<FormInputs> = async(data) => {
+  const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     startTransition(async () => {
-      const resp = await userRegistration(data); 
+      const resp = await userRegistration(data);
 
-      if(!resp.success && resp.message) {
+      if (!resp.success && resp.message) {
         setError(resp.message);
       } else {
         setSuccess(true);
       }
-    }) 
-    }
+    });
+  };
 
   return (
-    <form onSubmit={ handleSubmit( onSubmit ) }  className="flex flex-col">
-      {
-        success && (
-          <p className="text-center text-green-500 mb-5 text-sm">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col mb-2 gap-3"
+    >
+      {error && (
+        <div className="flex items-center gap-2 text-red-500 text-sm my-2 px-2 py-2 bg-red-50 border border-red-200 rounded">
+          <MdError size={18} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {success && (
+        <div className="flex items-center gap-2 text-green-600 text-sm my-2 px-2 py-2 bg-green-50 border border-green-200 rounded">
+          <MdCheckCircle size={18} />
+          <span>
             Por favor verifica tu correo electrónico para completar tu registro.
-          </p>
-        )
-      }
-      {
-        
-        Object.keys(errors).length > 0 ? 
-        <span className="text-red-500 my-2">
-        {Object.entries(errors).map(([key, value]) => (
-          <p key={key}>{getLabel(key)} {value?.message}</p>
-        ))}
-        </span>
+          </span>
+        </div>
+      )}
 
-        : 
-        
-        error && 
-        <span className="text-red-500 my-2">
-          <p><i>{error}</i></p>
-        </span>
-       
-      }
+      <div className="flex flex-col">
+        <label htmlFor="name">Nombre</label>
+        <input
+          className={clsx("px-5 py-2 border bg-gray-200 rounded", {
+            "border-red-500": errors.name,
+          })}
+          type="name"
+          placeholder="Ingresa tu nombre"
+          {...register("name", {
+            required: "El campo 'nombre' es requerido.",
+            minLength: {
+              value: 3,
+              message: "Debe tener al menos 3 caracteres.",
+            },
+            maxLength: {
+              value: 20,
+              message: "Debe tener máximo 20 caracteres.",
+            },
+            validate: {
+              noRepetidos: (value) =>
+                !/([a-zA-Z0-9._])\1{3,}/.test(value) ||
+                "No permite repetir el mismo carácter muchas veces.",
+              noSoloNumeros: (value) =>
+                !/^\d+$/.test(value) || "No puede ser solo números.",
+              noUrls: (value) =>
+                !/@|www\./.test(value) || "No permite correos o URLs.",
+              noProhibidas: (value) => {
+                const lower = value.toLowerCase();
+                return (
+                  !palabrasProhibidas.some((p) => lower.includes(p)) ||
+                  "Contiene palabras restringidas."
+                );
+              },
+            },
+          })}
+        />
 
-      <label htmlFor="name">Nombre</label>
-      <input
-        className={
-          clsx(
-            "px-5 py-2 border bg-gray-200 rounded mb-5",
-            {
-              'border-red-500': errors.name
-            }
-          )
-        }
-        type="name"
-        {...register("name", {
-        required: "es requerido.",
-        minLength: { value: 3, message: "debe tener al menos 3 caracteres." },
-        maxLength: { value: 20, message: "debe tener máximo 20 caracteres." },
-        validate: {
-          noRepetidos: (value) =>
-            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "no permite repetir el mismo carácter muchas veces.",
-          noSoloNumeros: (value) =>
-            !/^\d+$/.test(value) || "no puede ser solo números.",
-          noUrls: (value) =>
-            !/@|www\./.test(value) || "no permite correos o URLs.",
-          noProhibidas: (value) => {
-            const lower = value.toLowerCase();
-            return (
-              !palabrasProhibidas.some((p) => lower.includes(p)) ||
-              "contiene palabras restringidas."
-            );
-          },
-        },
+        {errors.name && (
+          <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+            <MdError size={14} />
+            <span>{errors.name.message}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col">
+        <label htmlFor="text">Apellido</label>
+        <input
+          className={clsx("px-5 py-2 border bg-gray-200 rounded", {
+            "border-red-500": errors.name,
+          })}
+          type="text"
+          placeholder="Ingresa tu apellido"
+          {...register("lastname", {
+            required: "El campo 'apellido' es requerido.",
+            minLength: {
+              value: 3,
+              message: "Debe tener al menos 3 caracteres.",
+            },
+            maxLength: {
+              value: 20,
+              message: "Debe tener máximo 20 caracteres.",
+            },
+            validate: {
+              noRepetidos: (value) =>
+                !/([a-zA-Z0-9._])\1{3,}/.test(value) ||
+                "No permite repetir el mismo carácter muchas veces",
+              noSoloNumeros: (value) =>
+                !/^\d+$/.test(value) || "No puede ser solo números.",
+              noUrls: (value) =>
+                !/@|www\./.test(value) || "No permite correos o URLs.",
+              noProhibidas: (value) => {
+                const lower = value.toLowerCase();
+                return (
+                  !palabrasProhibidas.some((p) => lower.includes(p)) ||
+                  "Contiene palabras restringidas."
+                );
+              },
+            },
+          })}
+        />
+
+        {errors.lastname && (
+          <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+            <MdError size={14} />
+            <span>{errors.lastname.message}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col">
+        <label htmlFor="text">Nickname</label>
+        <input
+          className={clsx("px-5 py-2 border bg-gray-200 rounded", {
+            "border-red-500": errors.nickname,
+          })}
+          type="text"
+          placeholder="Crea tu nickname"
+          {...register("nickname", {
+            required: "El campo 'nickname' es requerido.",
+            minLength: {
+              value: 3,
+              message: "Debe tener al menos 3 caracteres.",
+            },
+            maxLength: {
+              value: 20,
+              message: "Debe tener máximo 20 caracteres.",
+            },
+            pattern: {
+              value: /^[a-zA-Z0-9._]+$/,
+              message: "Solo permite letras, números, puntos y guiones bajos.",
+            },
+            validate: {
+              noRepetidos: (value) =>
+                !/([a-zA-Z0-9._])\1{3,}/.test(value) ||
+                "No permite repetir el mismo carácter muchas veces",
+              noSoloNumeros: (value) =>
+                !/^\d+$/.test(value) || "No puede ser solo números.",
+              noUrls: (value) =>
+                !/@|www\./.test(value) || "No permite correos o URLs.",
+              noProhibidas: (value) => {
+                const lower = value.toLowerCase();
+                return (
+                  !palabrasProhibidas.some((p) => lower.includes(p)) ||
+                  "Contiene palabras restringidas."
+                );
+              },
+            },
+          })}
+        />
+
+        {errors.nickname && (
+          <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+            <MdError size={14} />
+            <span>{errors.nickname.message}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col">
+        <label htmlFor="email">Email</label>
+        <input
+          className={clsx("px-5 py-2 border bg-gray-200 rounded", {
+            "border-red-500": errors.email,
+          })}
+          type="email"
+          placeholder="Ingresa tu correo electrónico"
+          {...register("email", {
+            required: {
+              value: true,
+              message: "El campo 'email' es requerido.",
+            },
+            pattern: {
+              value: /^\S+@\S+$/i,
+              message:
+                "Ingresado no es válido. Verifica e inténtalo nuevamente.",
+            },
+          })}
+        />
+
+        {errors.email && (
+          <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+            <MdError size={14} />
+            <span>{errors.email.message}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col">
+        <label htmlFor="password">Contraseña</label>
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Crea una contraseña segura"
+            className={clsx(
+              "px-5 py-2 border bg-gray-200 rounded w-full pr-12",
+              {
+                "border-red-500": errors.password,
+              }
+            )}
+            {...register("password", {
+              required: "El campo 'contraseña' es requerido.",
+              minLength: {
+                value: 8,
+                message: "Debe tener al menos 8 caracteres",
+              },
+              validate: {
+                hasUppercase: (v) =>
+                  /[A-Z]/.test(v) || "Debe contener una mayúscula",
+                hasNumber: (v) => /\d/.test(v) || "Debe contener un número",
+                hasSpecialChar: (v) =>
+                  /[!@#$%^&*(),.?\":{}|<>]/.test(v) ||
+                  "Debe contener un carácter especial",
+              },
+            })}
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600"
+            tabIndex={-1}
+          >
+            {showPassword ? (
+              <AiOutlineEyeInvisible size={22} />
+            ) : (
+              <AiOutlineEye size={22} />
+            )}
+          </button>
+        </div>
+
+        {errors.password && (
+          <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+            <MdError size={14} />
+            <span>{errors.password.message}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col">
+        <label htmlFor="confirmPassword">Confirmar contraseña</label>
+        <div className="relative">
+          <input
+            type={showConfirm ? "text" : "password"}
+            placeholder="Repite tu contraseña"
+            className={clsx(
+              "px-5 py-2 border bg-gray-200 rounded w-full pr-12",
+              {
+                "border-red-500": errors.confirmPassword,
+              }
+            )}
+            {...register("confirmPassword", {
+              required: "El campo 'confirmar contraseña' es requerido.",
+              minLength: {
+                value: 6,
+                message: "Debe tener un mínimo de 6 caracteres",
+              },
+            })}
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowConfirm(!showConfirm)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600"
+            tabIndex={-1}
+          >
+            {showConfirm ? (
+              <AiOutlineEyeInvisible size={22} />
+            ) : (
+              <AiOutlineEye size={22} />
+            )}
+          </button>
+        </div>
+
+        {errors.confirmPassword && (
+          <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+            <MdError size={14} />
+            <span>{errors.confirmPassword.message}</span>
+          </div>
+        )}
+      </div>
+
+      <button
+        className={clsx("mt-2 py-2 rounded", {
+          "bg-indigo-500 text-white hover:bg-indigo-600 transition": !success,
+          "bg-gray-300": success,
         })}
-      />
+        disabled={success || isPending}
+      >
+        Registrarse
+      </button>
 
-      <label htmlFor="text">Apellido</label>
-      <input
-        className={
-          clsx(
-            "px-5 py-2 border bg-gray-200 rounded mb-5",
-            {
-              'border-red-500': errors.name
-            }
-          )
-        }
-        type="text"
-        {...register("lastname", {
-        required: "es requerido.",
-        minLength: { value: 3, message: "debe tener al menos 3 caracteres." },
-        maxLength: { value: 20, message: "debe tener máximo 20 caracteres." },
-        validate: {
-          noRepetidos: (value) =>
-            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "no permite repetir el mismo carácter muchas veces",
-          noSoloNumeros: (value) =>
-            !/^\d+$/.test(value) || "no puede ser solo números.",
-          noUrls: (value) =>
-            !/@|www\./.test(value) || "no permite correos o URLs.",
-          noProhibidas: (value) => {
-            const lower = value.toLowerCase();
-            return (
-              !palabrasProhibidas.some((p) => lower.includes(p)) ||
-              "contiene palabras restringidas."
-            );
-          },
-        },
-        })}
-      />
-
-      <label htmlFor="text">Nickname</label>
-      <input
-        className={
-          clsx(
-            "px-5 py-2 border bg-gray-200 rounded mb-5",
-            {
-              'border-red-500': errors.nickname
-            }
-          )
-        }
-        type="text"
-        {...register("nickname", {
-        required: "es requerido.",
-        minLength: { value: 3, message: "debe tener al menos 3 caracteres." },
-        maxLength: { value: 20, message: "debe tener máximo 20 caracteres." },
-        pattern: {
-          value: /^[a-zA-Z0-9._]+$/,
-          message: "solo permite letras, números, puntos y guiones bajos.",
-        },
-        validate: {
-          noRepetidos: (value) =>
-            !/([a-zA-Z0-9._])\1{3,}/.test(value) || "no permite repetir el mismo carácter muchas veces",
-          noSoloNumeros: (value) =>
-            !/^\d+$/.test(value) || "no puede ser solo números.",
-          noUrls: (value) =>
-            !/@|www\./.test(value) || "no permite correos o URLs.",
-          noProhibidas: (value) => {
-            const lower = value.toLowerCase();
-            return (
-              !palabrasProhibidas.some((p) => lower.includes(p)) ||
-              "contiene palabras restringidas."
-            );
-          },
-        },
-        })}
-      />      
-
-      <label htmlFor="email">Email</label>
-      <input
-        className={
-          clsx(
-            "px-5 py-2 border bg-gray-200 rounded mb-5",
-            {
-              'border-red-500': errors.email
-            }
-          )
-        }
-        type="email"
-        { ...register('email', { 
-            required: {value: true, message: "es requerido"}, 
-            pattern: {value: /^\S+@\S+$/i, message: "ingresado no es válido. Verifica e inténtalo nuevamente." }}) }
-      />
-
-      <label htmlFor="password">Contraseña</label>
-      <input
-        className={
-          clsx(
-            "px-5 py-2 border bg-gray-200 rounded mb-5",
-            {
-              'border-red-500': errors.password
-            }
-          )
-        }
-        type="password"
-        {...register("password", {
-          required: "es obligatoria",
-          minLength: {
-            value: 8,
-            message: "Debe tener al menos 8 caracteres",
-          },
-          validate: {
-            hasUppercase: (value) =>
-              /[A-Z]/.test(value) || "bebe contener al menos una mayúscula",
-            hasNumber: (value) =>
-              /\d/.test(value) || "bebe contener al menos un número",
-            hasSpecialChar: (value) =>
-              /[!@#$%^&*(),.?":{}|<>]/.test(value) ||
-              "bebe contener al menos un carácter especial",
-          }
-        })}
-      />
-
-      <label htmlFor="confirmPassword">Confirmar contraseña</label>
-      <input
-        className={
-          clsx(
-            "px-5 py-2 border bg-gray-200 rounded mb-5",
-            {
-              'border-red-500': errors.password
-            }
-          )
-        }
-        type="password"
-        { ...register('confirmPassword', { 
-            required: {value: true, message: "es requerida."}, 
-            minLength: {value: 6, message: "debe tener un mínimo de 6 caracteres" }} ) }
-      />
-
-      <button className={
-        clsx(
-            " py-2 rounded",
-            {
-              'bg-indigo-500 text-white hover:bg-indigo-600 transition': !success,
-              'bg-gray-300': success,
-            }
-          )
-      } disabled={success || isPending}>Registrarse</button>
-      
-      <Link className='mt-6 font-bold text-center text-slate-500' href={"/auth/login"}> ¿Ya tienes una cuenta? </Link>
-      
+      <Link
+        className="mt-2 font-bold text-center text-slate-500"
+        href={"/auth/login"}
+      >
+        {" "}
+        ¿Ya tienes una cuenta?{" "}
+      </Link>
     </form>
   );
 };
