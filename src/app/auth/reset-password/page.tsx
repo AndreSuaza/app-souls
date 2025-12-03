@@ -1,8 +1,17 @@
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { ResetPasswordForm } from "./ui/ResetPasswordForm";
 
-export default function ResetPasswordPage({ searchParams }: any) {
-  const token = searchParams.token;
+export default async function ResetPasswordPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>;
+}) {
+  const { token } = await searchParams;
+
+  if (!token) {
+    redirect("/auth/login");
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 bg-gray-800 min-h-screen bg-[url(/bg-registro.webp)] bg-cover bg-fixed">

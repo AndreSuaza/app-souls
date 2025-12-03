@@ -12,6 +12,11 @@ interface Props {
   token: string;
 }
 
+interface ResetPasswordFormValues {
+  password: string;
+  confirm: string;
+}
+
 export const ResetPasswordForm = ({ token }: Props) => {
   const router = useRouter();
 
@@ -19,7 +24,7 @@ export const ResetPasswordForm = ({ token }: Props) => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{ password: string; confirm: string }>();
+  } = useForm<ResetPasswordFormValues>();
 
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -27,7 +32,7 @@ export const ResetPasswordForm = ({ token }: Props) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const onSubmit = ({ password, confirm }: any) => {
+  const onSubmit = ({ password, confirm }: ResetPasswordFormValues) => {
     setErrorMsg(null);
 
     if (password !== confirm) {
