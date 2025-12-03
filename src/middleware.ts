@@ -1,41 +1,63 @@
-import NextAuth from "next-auth";
-import authConfig from "./auth.config";
+import NextAuth, { type NextAuthConfig } from "next-auth";
+// import authConfig from "./auth.config";
+// import { auth } from "./auth";
+import { NextResponse } from "next/server";
 
-export const { auth: middleware } = NextAuth(authConfig);
+const adminRoutes = ["/admin"];
+const protectedRoutes = ["/perfil"];
+const authRoutes = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+];
+const apiAuthPrefix = "/api/auth";
 
-// export default auth((req) => {
-//   const { nextUrl } = req;
-//   const isLoggedIn = !!req.auth;
+// Config especial para middleware: NADA de MongoDB, Prisma, bcrypt, etc.
+// Esto debido a que EDGE no soporta esas librerías (solo Node.js).
+// Por eso solo validamos el JWT y no hacemos nada más avanzado.
+const middlewareAuthConfig: NextAuthConfig = {
+  secret: process.env.NEXTAUTH_SECRET,
+  session: { strategy: "jwt" },
+  providers: [], // no hacen falta para validar el JWT
+};
 
-//   console.log({ isLoggedIn, path: nextUrl.pathname });
+const { auth: baseAuth } = NextAuth(middlewareAuthConfig);
 
-//   // Permitir todas las rutas de API de autenticación
-//   if (nextUrl.pathname.startsWith(apiAuthPrefix)) {
-//     return NextResponse.next();
-//   }
+export default baseAuth((req) => {
+  const { nextUrl } = req;
+  const path = nextUrl.pathname;
+  const isLoggedIn = !!req.auth;
 
-//   // Permitir acceso a rutas públicas sin importar el estado de autenticación
-//   if (!nextUrl.pathname.startsWith(adminRoutes)) {
-//     return NextResponse.next();
-//   }
+  console.log({ isLoggedIn, path: path });
 
-//   // Redirigir a /dashboard si el usuario está logueado y trata de acceder a rutas de autenticación
-//   if (isLoggedIn && authRoutes.includes(nextUrl.pathname)) {
-//     return NextResponse.redirect(new URL("/admin/creador-de-torneos", nextUrl));
-//   }
+  // Permitir todas las rutas de API de autenticación
+  if (path.startsWith(apiAuthPrefix)) {
+    return NextResponse.next();
+  }
 
-//   // Redirigir a /login si el usuario no está logueado y trata de acceder a una ruta protegida
-//   if (
-//     !isLoggedIn &&
-//     !authRoutes.includes(nextUrl.pathname) &&
-//     nextUrl.pathname.startsWith(adminRoutes)
-//   ) {
-//     return NextResponse.redirect(new URL("/auth/login", nextUrl));
-//   }
+  // Redirigir a /dashboard si el usuario está logueado y trata de acceder a rutas de autenticación
+  if (isLoggedIn && authRoutes.includes(path)) {
+    return NextResponse.redirect(new URL("/", nextUrl));
+  }
 
-//   return NextResponse.next();
-// });
- 
+  // Redirigir a /login si el usuario no está logueado y trata de acceder a una ruta protegida
+  if (adminRoutes.some((route) => path.startsWith(route))) {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL("/auth/login", nextUrl));
+    }
+  }
+
+  // Proteger rutas generales (como /perfil)
+  if (protectedRoutes.includes(path)) {
+    if (!isLoggedIn) {
+      return NextResponse.redirect(new URL("/auth/login", nextUrl));
+    }
+  }
+
+  return NextResponse.next();
+});
+
 export const config = {
-   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };

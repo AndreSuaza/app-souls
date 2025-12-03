@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { sendEmailVerification } from "./lib/mail";
 
+export const runtime = "nodejs";
+
 // Notice this is only an object, not a full Auth.js instance
 export default {
   providers: [
