@@ -145,16 +145,19 @@ model Store {
 }
 
 model Tournament {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  descripcion String
-  url         String
-  lat         Float
-  lgn         Float
-  price       Float
-  format      String
-  date        DateTime
-  createDate  DateTime @default(now())
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  descripcion        String
+  url                String
+  lat                Float
+  lgn                Float
+  format             TournamentFormat @default(default)
+  date               DateTime         @default(now())
+  image              String?
+  status             TournamentStatus @default(pending)
+  currentRoundNumber Int              @default(0)
+  maxRounds          Int
+  createDate         DateTime         @default(now())
 
   storeId String @db.ObjectId
   store   Store  @relation(fields: [storeId], references: [id])
@@ -162,17 +165,8 @@ model Tournament {
   typeTournamentId String         @db.ObjectId
   typeTournament   TypeTournament @relation(fields: [typeTournamentId], references: [id])
 
-  TournamentImage TournamentImage[]
-}
-
-model TournamentImage {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  url        String
-  alt        String
-  createDate DateTime @default(now())
-
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
-  tournamentId String     @db.ObjectId
+  tournamentPlayers TournamentPlayer[]
+  tournamentRounds  Round[]
 }
 
 model TypeTournament {
@@ -183,6 +177,67 @@ model TypeTournament {
   Tournament Tournament[]
 }
 
+enum TournamentFormat {
+  default
+  constructed
+  sealed
+  draft
+  commander
+  Masters
+}
+
+enum TournamentStatus {
+  pending
+  in_progress
+  finished
+}
+
+enum MatchResult {
+  P1
+  P2
+  DRAW
+}
+
+model TournamentPlayer {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  tournamentId   String   @db.ObjectId
+  userId         String   @db.ObjectId
+  playerNickname String
+  points         Int      @default(0)
+  pointsInitial  Int      @default(0)
+  hadBye         Boolean  @default(false)
+  rivals         String[] @default([]) // IDs de rivales
+  buchholz       Int      @default(0)
+  createDate     DateTime @default(now())
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+}
+
+model Round {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  roundNumber  Int
+  tournamentId String   @db.ObjectId
+  matches      Match[]
+  createDate   DateTime @default(now())
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+}
+
+model Match {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  roundId         String       @db.ObjectId
+  player1Id       String       @db.ObjectId
+  player1Nickname String
+  player2Id       String?      @db.ObjectId
+  player2Nickname String?
+  player1Score    Int          @default(0)
+  player2Score    Int?         @default(0)
+  result          MatchResult? @default(P1)
+  createdAt       DateTime     @default(now())
+
+  round Round @relation(fields: [roundId], references: [id])
+}
+
 enum UserStatus {
   active
   inactive
@@ -190,21 +245,24 @@ enum UserStatus {
 }
 
 model User {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  lastname      String?
-  email         String?      @unique
-  nickname      String       @unique
-  password      String?
-  emailVerified DateTime?
-  image         String       @default("player")
-  role          Role         @default(player)
-  status        UserStatus   @default(active)
-  accounts      Account[]
-  sessions      Session[]
-  likes         Like[]
-  decks         Deck[]
-  userAvatar    UserAvatar[]
+  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  name              String?
+  lastname          String?
+  email             String?      @unique
+  nickname          String       @unique
+  country           String?
+  city              String?
+  tournamentsPlayed Int          @default(0)
+  password          String?
+  emailVerified     DateTime?
+  image             String       @default("player")
+  role              Role         @default(player)
+  status            UserStatus   @default(active)
+  accounts          Account[]
+  sessions          Session[]
+  likes             Like[]
+  decks             Deck[]
+  userAvatar        UserAvatar[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -285,6 +343,8 @@ model Deck {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  tournamentId String? @db.ObjectId
 
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
