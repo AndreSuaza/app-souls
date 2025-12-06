@@ -156,7 +156,8 @@ model Tournament {
   image              String?
   status             TournamentStatus @default(pending)
   currentRoundNumber Int              @default(0)
-  maxRounds          Int
+  maxRounds          Int              @default(1)
+  finalRankingIds    String[]         @default([])
   createDate         DateTime         @default(now())
 
   storeId String @db.ObjectId
@@ -189,6 +190,19 @@ enum TournamentFormat {
 enum TournamentStatus {
   pending
   in_progress
+  pending_finalization
+  finished
+}
+
+enum RoundStatus {
+  pending
+  in_progress
+  finished
+}
+
+enum MatchStatus {
+  pending
+  in_progress
   finished
 }
 
@@ -208,17 +222,19 @@ model TournamentPlayer {
   hadBye         Boolean  @default(false)
   rivals         String[] @default([]) // IDs de rivales
   buchholz       Int      @default(0)
+  finalRanking   Int?
   createDate     DateTime @default(now())
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
 }
 
 model Round {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
   roundNumber  Int
-  tournamentId String   @db.ObjectId
+  tournamentId String      @db.ObjectId
+  status       RoundStatus @default(pending)
   matches      Match[]
-  createDate   DateTime @default(now())
+  createDate   DateTime    @default(now())
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
 }
@@ -232,7 +248,8 @@ model Match {
   player2Nickname String?
   player1Score    Int          @default(0)
   player2Score    Int?         @default(0)
-  result          MatchResult? @default(P1)
+  status          MatchStatus  @default(pending)
+  result          MatchResult?
   createdAt       DateTime     @default(now())
 
   round Round @relation(fields: [roundId], references: [id])
