@@ -14,7 +14,6 @@ export const TournamentFormatEnum = z.enum([
 export const CreateTournamentSchema = z.object({
   title: z.string().min(1),
   descripcion: z.string().min(1),
-  url: z.string().min(1),
   lat: z.number(),
   lgn: z.number(),
   format: TournamentFormatEnum,

@@ -1,0 +1,57 @@
+"use client";
+
+import { PairingButtons } from "./PairingButtons";
+import { Round } from "@/store";
+
+type Props = {
+  currentRound: Round | undefined;
+  roundIsFinished: boolean;
+  setResultRount: (matchId: string, result: "P1" | "P2" | "DRAW") => void;
+};
+
+export const RoundDisplay = ({
+  currentRound,
+  roundIsFinished,
+  setResultRount,
+}: Props) => {
+  if (!currentRound) {
+    return (
+      <div className="p-4 border rounded bg-slate-50 text-center">
+        Aún no se ha generado ninguna ronda.
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-2 px-4 border rounded-md bg-slate-50 border-gray-300">
+      <h3 className="text-lg font-semibold uppercase text-gray-700 mb-2">
+        Ronda {currentRound.roundNumber}
+      </h3>
+
+      <ul>
+        {currentRound.matches.map((match, idx) => (
+          <li
+            key={match.id}
+            className="grid grid-cols-6 gap-2 text-center p-1 border rounded mb-2"
+          >
+            <PairingButtons
+              index={idx}
+              match={{
+                id: match.id,
+                player1Nickname: match.player1Nickname,
+                player2Nickname: match.player2Nickname,
+                result: match.result,
+              }}
+              setResultRount={setResultRount}
+              disabled={
+                match.status === "finished" ||
+                match.player2Id === null ||
+                roundIsFinished
+              }
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};

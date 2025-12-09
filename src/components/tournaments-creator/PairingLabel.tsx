@@ -2,15 +2,10 @@
 
 import clsx from "clsx";
 import { IoTrophySharp } from "react-icons/io5";
-// import { Pair } from "./swiss";
-
-// type Props = {
-//   pair: Pair;
-// };
 
 type MatchUI = {
   id: string;
-  player1Nickname: string;
+  player1Nickname: string | null;
   player2Nickname: string | null;
   result: "P1" | "P2" | "DRAW" | null;
 };

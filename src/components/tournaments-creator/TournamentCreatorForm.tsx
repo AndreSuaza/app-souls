@@ -2,38 +2,42 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createTournament_action } from "@/actions";
+import { createTournament } from "@/actions";
 
 export const TournamentCreator = () => {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [url, setUrl] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(() => {
+    // Fecha y hora actual en formato ISO local sin segundos
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  });
 
-  // se usa estos valores provisionales mientras se hace la lógica para obtenerlos.
+  // Valores temporales
   const storeId = "67c4bb4b15d333fa8987403e";
   const typeTournamentId = "67c4e30b4177fdb03545c48a";
   const format = "default";
 
   const create = async () => {
     if (!title.trim()) return alert("El torneo debe tener un título");
+    if (!descripcion.trim()) return alert("La descripción es obligatoria");
+    if (!date) return alert("La fecha es obligatoria");
 
-    const result = await createTournament_action({
+    const result = await createTournament({
       title,
       descripcion,
       format,
-      url,
       lat: 0,
       lgn: 0,
       maxRounds: 1,
       storeId,
       typeTournamentId,
-      date: new Date(date),
+      date, // se envía string ISO (compatible)
     });
 
-    // Redirección a la página dinámica del torneo
     router.push(`/admin/torneos/${result.id}`);
   };
 
@@ -59,16 +63,6 @@ export const TournamentCreator = () => {
           onChange={(e) => setDescripcion(e.target.value)}
           placeholder="Descripción breve del torneo..."
           rows={3}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-semibold">URL del evento</label>
-        <input
-          className="w-full border px-3 py-2 rounded"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://midominio.com/evento"
         />
       </div>
 

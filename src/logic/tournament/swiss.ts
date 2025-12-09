@@ -107,7 +107,7 @@ function assignBye(players: SwissPlayer[]): {
 }
 
 /**
- * Mezcla aleatoria (idéntico a tu shuffleArray original)
+ * Mezcla aleatoria (idéntico a shuffleArray original)
  */
 function shufflePlayers(players: SwissPlayer[]): SwissPlayer[] {
   const arr = [...players]; // no mutar original

@@ -10,15 +10,15 @@ export * from "./products/product-url";
 
 export * from "./tournaments/tournaments-pagination";
 export * from "./tournaments/tournament-url";
-export * from "./tournaments/addPlayer";
-export * from "./tournaments/createTournament";
-export * from "./tournaments/finalizeRound";
-export * from "./tournaments/finalizeTournament";
-export * from "./tournaments/generateRound";
-export * from "./tournaments/getTournament";
-export * from "./tournaments/saveMatchResult";
-export * from "./tournaments/searchUserByNickname";
-export * from "./tournaments/deletePlayer";
+export * from "./tournaments/add-player.action";
+export * from "./tournaments/create-tournament.action";
+export * from "./tournaments/finalize-round.action";
+export * from "./tournaments/finalize-tournament.action";
+export * from "./tournaments/generate-round.action";
+export * from "./tournaments/get-tournament.action";
+export * from "./tournaments/save-match-result.action";
+export * from "./tournaments/search-user-by-nickname.action";
+export * from "./tournaments/delete-player.action";
 
 export * from "./stores/stores-pagination";
 

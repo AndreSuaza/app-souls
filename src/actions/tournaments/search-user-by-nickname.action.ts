@@ -2,8 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 
-export async function searchUserByNickname_action(nickname: string) {
-  if (!nickname.trim()) return [];
+export async function searchUserByNickname(nickname: string) {
+  const search = nickname.trim();
+  if (!search) return [];
 
   return prisma.user.findMany({
     where: {

@@ -1,13 +1,12 @@
 "use client";
 
-// import { IoTrophySharp } from "react-icons/io5";
 import { useEffect, useMemo } from "react";
 import { ConfirmationModal } from "@/components";
-import { useAlertConfirmationStore } from "@/store";
+import { useAlertConfirmationStore, useTournamentStore } from "@/store";
 import { PlayerList } from "./PlayerList";
 import { SwissRoundManager } from "./SwissRoundManager";
 import { SwissHistoric } from "./SwissHistoric";
-import { useTournamentStore } from "@/store";
+import { StandingsTable } from "./StandingsTable";
 
 type TournamentProps = {
   tournamentId: string;
@@ -18,8 +17,7 @@ export const Tournament = ({ tournamentId }: TournamentProps) => {
     (state) => state.isAlertConfirmation
   );
 
-  const { setTournamentId, fetchTournament, tournament, loading, error } =
-    useTournamentStore();
+  const { setTournamentId, fetchTournament, players } = useTournamentStore();
 
   // hidratar desde DB
   useEffect(() => {
@@ -27,63 +25,16 @@ export const Tournament = ({ tournamentId }: TournamentProps) => {
     fetchTournament(tournamentId);
   }, [tournamentId, setTournamentId, fetchTournament]);
 
-  const players = tournament?.tournamentPlayers ?? [];
-  const rounds = tournament?.tournamentRounds ?? [];
-
-  // standings con buchholz calculado en el back
-  const standings = useMemo(() => {
-    return [...players].sort((a, b) => {
-      if (b.points !== a.points) return b.points - a.points;
-      return b.buchholz - a.buchholz;
-    });
-  }, [players]);
-
   return (
     <div className="mb-4">
-      <div className="px-6 my-2">
-        {/* <button
-          onClick={newTournament}
-          className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-700 flex"
-        >
-          <IoTrophySharp className="w-6 h-6 -mt-0.5 mr-3 font-semibold" />
-          Nuevo Torneo
-        </button> */}
-      </div>
       <div className="mx-auto px-6 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2 min-h-80">
         <PlayerList />
 
         <SwissRoundManager />
 
         <SwissHistoric />
-        {players.length > 0 && (
-          <div className="p-4 border rounded-md bg-slate-50 border-gray-300 min-h-[600px]">
-            <h2 className="text-xl text-center font-bold uppercase mb-2">
-              Tabla de Posiciones
-            </h2>
-            <table className="w-full table-auto border">
-              <thead>
-                <tr>
-                  <th className="border px-2 py-1">#</th>
-                  <th className="border px-2 py-1">Jugador</th>
-                  <th className="border px-2 py-1">Puntos</th>
-                  <th className="border px-2 py-1">DE</th>
-                </tr>
-              </thead>
-              <tbody>
-                {standings.map((player, i) => (
-                  <tr key={player.playerNickname} className="text-center">
-                    <td className="border px-2 py-1">{i + 1}</td>
-                    <td className="border px-2 py-1">
-                      {player.playerNickname}
-                    </td>
-                    <td className="border px-2 py-1">{player.points}</td>
-                    <td className="border px-2 py-1">{player.buchholz}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+
+        <StandingsTable players={players} />
       </div>
 
       {isAlertConfirmation && (

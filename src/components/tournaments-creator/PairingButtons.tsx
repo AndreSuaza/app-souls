@@ -5,7 +5,7 @@ import { IoTrophySharp } from "react-icons/io5";
 
 type MatchUI = {
   id: string;
-  player1Nickname: string;
+  player1Nickname: string | null;
   player2Nickname: string | null;
   result: "P1" | "P2" | "DRAW" | null;
 };
@@ -17,12 +17,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export const PairingButtons = ({
-  match,
-  index,
-  setResultRount,
-  disabled,
-}: Props) => {
+export const PairingButtons = ({ match, setResultRount, disabled }: Props) => {
   return (
     <>
       <button

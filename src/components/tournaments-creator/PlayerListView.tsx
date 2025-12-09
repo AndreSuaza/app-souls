@@ -1,0 +1,46 @@
+"use client";
+
+import clsx from "clsx";
+import { IoTrashOutline } from "react-icons/io5";
+import { Player } from "@/store";
+
+type PlayerListViewProps = {
+  players: Player[];
+  isFinished?: boolean;
+  onDelete?: (playerId: string) => void;
+};
+
+export const PlayerListView = ({
+  players,
+  isFinished = false,
+  onDelete,
+}: PlayerListViewProps) => {
+  return (
+    <ul>
+      {players.map((p, idx) => (
+        <li key={p.id} className="border-b px-2 py-4 font-semibold">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400">{idx + 1}</span>
+
+            <span>{p.playerNickname}</span>
+
+            {/* Mostrar ícono de eliminar solo si hay callback */}
+            {onDelete && (
+              <IoTrashOutline
+                className={clsx(
+                  "w-6 h-6",
+                  isFinished
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-400 hover:text-red-600 cursor-pointer"
+                )}
+                onClick={() => {
+                  if (!isFinished && onDelete) onDelete(p.id);
+                }}
+              />
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+};

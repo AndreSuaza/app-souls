@@ -1,9 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { TournamentPlayerSchema } from "@/schemas";
+import { TournamentPlayerSchema, TournamentPlayerInput } from "@/schemas";
 
-export async function addPlayer_action(input: unknown) {
+export async function addPlayer(input: TournamentPlayerInput) {
   const data = TournamentPlayerSchema.parse(input);
 
   const exists = await prisma.tournamentPlayer.findFirst({
@@ -11,6 +11,7 @@ export async function addPlayer_action(input: unknown) {
       tournamentId: data.tournamentId,
       userId: data.userId,
     },
+    select: { id: true },
   });
 
   if (exists) {
@@ -24,6 +25,13 @@ export async function addPlayer_action(input: unknown) {
       userId: data.userId,
       points: data.pointsInitial ?? 0,
       pointsInitial: data.pointsInitial ?? 0,
+    },
+    select: {
+      id: true,
+      userId: true,
+      playerNickname: true,
+      points: true,
+      buchholz: true,
     },
   });
 

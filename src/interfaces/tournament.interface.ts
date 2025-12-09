@@ -56,7 +56,7 @@ export interface SwissRoundHistory {
   matches: SwissMatchMinimal[];
 }
 
-// Match minimal para procesar resultados en finalizeRound_action
+// Match minimal para procesar resultados en finalizeRound
 export interface TournamentMatchForProcessing {
   id: string;
   player1Id: string;
@@ -83,16 +83,17 @@ export interface TournamentDetail {
   format: string;
   date: Date;
   image?: string | null;
+  status: "pending" | "in_progress" | "pending_finalization" | "finished";
+  currentRoundNumber: number;
+  maxRounds: number;
+  finalRankingIds?: string[];
   createDate: Date;
   storeId: string;
   typeTournamentId: string;
-  currentRoundNumber: number;
-  maxRounds: number;
-  status: "pending" | "in_progress" | "pending_finalization" | "finished";
-  finalRankingIds?: string[];
 
   tournamentPlayers: {
     id: string;
+    tournamentId: string;
     userId: string;
     playerNickname: string;
     points: number;
@@ -100,13 +101,16 @@ export interface TournamentDetail {
     hadBye: boolean;
     rivals: string[];
     buchholz: number;
+    // createDate: Date;
     finalRanking?: number;
   }[];
 
   tournamentRounds: {
     id: string;
     roundNumber: number;
+    tournamentId: string;
     status: "pending" | "in_progress" | "finished";
+    // createDate: Date;
     matches: {
       id: string;
       player1Id: string;
