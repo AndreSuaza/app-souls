@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createTournament } from "@/actions";
+import { createTournamentAction } from "@/actions";
 
 export const TournamentCreator = () => {
   const router = useRouter();
@@ -26,7 +26,7 @@ export const TournamentCreator = () => {
     if (!descripcion.trim()) return alert("La descripción es obligatoria");
     if (!date) return alert("La fecha es obligatoria");
 
-    const result = await createTournament({
+    const result = await createTournamentAction({
       title,
       descripcion,
       format,

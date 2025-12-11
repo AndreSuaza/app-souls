@@ -9,10 +9,9 @@ import { PlayerSearchInput } from "./PlayerSearchInput";
 import { PlayerListView } from "./PlayerListView";
 
 export const PlayerList = () => {
-  const { players, rounds, tournament, addPlayerByUserId, deletePlayer } =
+  const { players, tournament, addPlayerByUserId, deletePlayer } =
     useTournamentStore();
 
-  const currentRound = rounds.length; // número real de ronda actual
   const isFinished = tournament?.status === "finished";
 
   const [showPlayers, setShowPlayers] = useState(true);
@@ -25,7 +24,7 @@ export const PlayerList = () => {
 
   // Cuando se selecciona un usuario desde PlayerSearchInput
   const handleSelect = async (user: any) => {
-    if (currentRound > 0) {
+    if (tournament?.currentRoundNumber && tournament?.currentRoundNumber > 0) {
       setSelectedUserForInitialPoints(user);
       setShowInitialModal(true);
       return;

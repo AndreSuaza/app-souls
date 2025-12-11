@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CreateTournamentSchema, CreateTournamentInput } from "@/schemas";
 
-export async function createTournament(input: CreateTournamentInput) {
+export async function createTournamentAction(input: CreateTournamentInput) {
   const data = CreateTournamentSchema.parse(input);
 
   // Crear torneo sin URL

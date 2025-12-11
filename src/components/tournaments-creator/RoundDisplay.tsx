@@ -1,19 +1,18 @@
 "use client";
 
 import { PairingButtons } from "./PairingButtons";
-import { Round } from "@/store";
+import { RoundInterface } from "@/interfaces";
 
 type Props = {
-  currentRound: Round | undefined;
-  roundIsFinished: boolean;
-  setResultRount: (matchId: string, result: "P1" | "P2" | "DRAW") => void;
+  currentRound: RoundInterface | undefined;
+  setResultRount: (
+    matchId: string,
+    result: "P1" | "P2" | "DRAW",
+    player2Nickname: string | null
+  ) => void;
 };
 
-export const RoundDisplay = ({
-  currentRound,
-  roundIsFinished,
-  setResultRount,
-}: Props) => {
+export const RoundDisplay = ({ currentRound, setResultRount }: Props) => {
   if (!currentRound) {
     return (
       <div className="p-4 border rounded bg-slate-50 text-center">
@@ -43,11 +42,6 @@ export const RoundDisplay = ({
                 result: match.result,
               }}
               setResultRount={setResultRount}
-              disabled={
-                match.status === "finished" ||
-                match.player2Id === null ||
-                roundIsFinished
-              }
             />
           </li>
         ))}

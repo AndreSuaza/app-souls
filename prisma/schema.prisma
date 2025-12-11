@@ -151,13 +151,12 @@ model Tournament {
   url                String
   lat                Float
   lgn                Float
-  format             TournamentFormat @default(default)
+  format             TournamentFormat @default(Masters)
   date               DateTime         @default(now())
   image              String?
   status             TournamentStatus @default(pending)
   currentRoundNumber Int              @default(0)
   maxRounds          Int              @default(1)
-  finalRankingIds    String[]         @default([])
   createDate         DateTime         @default(now())
 
   storeId String @db.ObjectId
@@ -180,27 +179,10 @@ model TypeTournament {
 
 enum TournamentFormat {
   default
-  constructed
-  sealed
-  draft
-  commander
   Masters
 }
 
 enum TournamentStatus {
-  pending
-  in_progress
-  pending_finalization
-  finished
-}
-
-enum RoundStatus {
-  pending
-  in_progress
-  finished
-}
-
-enum MatchStatus {
   pending
   in_progress
   finished
@@ -220,21 +202,19 @@ model TournamentPlayer {
   points         Int      @default(0)
   pointsInitial  Int      @default(0)
   hadBye         Boolean  @default(false)
-  rivals         String[] @default([]) // IDs de rivales
   buchholz       Int      @default(0)
-  finalRanking   Int?
+  rivals         String[] @default([]) @db.ObjectId
   createDate     DateTime @default(now())
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
 }
 
 model Round {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   roundNumber  Int
-  tournamentId String      @db.ObjectId
-  status       RoundStatus @default(pending)
+  tournamentId String   @db.ObjectId
   matches      Match[]
-  createDate   DateTime    @default(now())
+  createDate   DateTime @default(now())
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
 }
@@ -246,9 +226,6 @@ model Match {
   player1Nickname String
   player2Id       String?      @db.ObjectId
   player2Nickname String?
-  player1Score    Int          @default(0)
-  player2Score    Int?         @default(0)
-  status          MatchStatus  @default(pending)
   result          MatchResult?
   createdAt       DateTime     @default(now())
 

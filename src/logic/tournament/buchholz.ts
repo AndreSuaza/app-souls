@@ -1,18 +1,18 @@
+import { TournamentPlayerInterface } from "@/interfaces";
+
 // Cálculo de Buchholz para jugadores Swiss.
 // Suma de los puntos de todos los rivales registrados.
 // Esta función se usa tanto al finalizar rondas como al finalizar el torneo.
 export function calculateBuchholzForPlayers(
-  players: {
-    id: string;
-    points: number;
-    rivals: string[];
-  }[]
-) {
-  return players.map((p) => {
-    const buchholz = p.rivals
-      .map((r) => players.find((x) => x.id === r)?.points || 0)
-      .reduce((a, b) => a + b, 0);
+  players: TournamentPlayerInterface[]
+): TournamentPlayerInterface[] {
+  const pointsMap = new Map(players.map((p) => [p.id, p.points]));
 
-    return { ...p, buchholz };
-  });
+  return players.map((p) => ({
+    ...p,
+    buchholz: p.rivals.reduce(
+      (acc, rivalId) => acc + (pointsMap.get(rivalId) ?? 0),
+      0
+    ),
+  }));
 }

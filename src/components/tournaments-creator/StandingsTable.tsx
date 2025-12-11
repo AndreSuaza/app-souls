@@ -1,13 +1,13 @@
 "use client";
 
-import { Player } from "@/store";
 import { useMemo } from "react";
+import { TournamentPlayerInterface } from "@/interfaces";
 
-type StandingsTableProps = {
-  players: Player[];
-};
-
-export const StandingsTable = ({ players }: StandingsTableProps) => {
+export const StandingsTable = ({
+  players,
+}: {
+  players: TournamentPlayerInterface[];
+}) => {
   const standings = useMemo(() => {
     return [...players].sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;

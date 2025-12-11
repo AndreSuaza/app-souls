@@ -2,10 +2,9 @@
 
 import clsx from "clsx";
 import { IoTrashOutline } from "react-icons/io5";
-import { Player } from "@/store";
 
 type PlayerListViewProps = {
-  players: Player[];
+  players: { id: string; playerNickname: string }[];
   isFinished?: boolean;
   onDelete?: (playerId: string) => void;
 };

@@ -13,7 +13,11 @@ type MatchUI = {
 type Props = {
   match: MatchUI;
   index: number;
-  setResultRount: (matchId: string, result: "P1" | "P2" | "DRAW") => void;
+  setResultRount: (
+    matchId: string,
+    result: "P1" | "P2" | "DRAW",
+    player2Nickname: string | null
+  ) => void;
   disabled?: boolean;
 };
 
@@ -21,7 +25,9 @@ export const PairingButtons = ({ match, setResultRount, disabled }: Props) => {
   return (
     <>
       <button
-        onClick={() => !disabled && setResultRount(match.id, "P1")}
+        onClick={() =>
+          !disabled && setResultRount(match.id, "P1", match.player2Nickname)
+        }
         disabled={disabled}
         className={clsx(
           "text-center capitalize col-span-2 bg-blue-100 text-black hover:bg-blue-500 transition-all relative",
@@ -44,7 +50,9 @@ export const PairingButtons = ({ match, setResultRount, disabled }: Props) => {
       </div>
 
       <button
-        onClick={() => !disabled && setResultRount(match.id, "P2")}
+        onClick={() =>
+          !disabled && setResultRount(match.id, "P2", match.player2Nickname)
+        }
         disabled={disabled}
         className={clsx(
           "text-center capitalize col-span-2 bg-red-100 text-black hover:bg-red-500 transition-all relative",
@@ -63,7 +71,9 @@ export const PairingButtons = ({ match, setResultRount, disabled }: Props) => {
       </button>
 
       <button
-        onClick={() => !disabled && setResultRount(match.id, "DRAW")}
+        onClick={() =>
+          !disabled && setResultRount(match.id, "DRAW", match.player2Nickname)
+        }
         disabled={disabled}
         title="Partida Empatad"
         className={"text-center bg-indigo-500 text-white rounded"}

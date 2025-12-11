@@ -1,14 +1,8 @@
-export type SwissPlayer = {
-  id: string;
-  nickname: string;
-  points: number;
-  rivals: string[];
-  hadBye: boolean;
-};
+import { TournamentPlayerInterface } from "@/interfaces";
 
 export type SwissMatch = {
-  player1: SwissPlayer;
-  player2: SwissPlayer | null; // BYE
+  player1: TournamentPlayerInterface;
+  player2: TournamentPlayerInterface | null; // BYE
   result?: "P1" | "P2" | "DRAW";
 };
 

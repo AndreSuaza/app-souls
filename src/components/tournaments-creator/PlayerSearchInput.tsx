@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
-import { searchUserByNickname } from "@/actions";
+import { searchUserByNicknameAction } from "@/actions";
 
 export type PlayerSearchInputProps = {
   existingPlayersIds: string[]; // IDs de jugadores ya inscritos
@@ -34,7 +34,7 @@ export const PlayerSearchInput = ({
 
       setLoading(true);
 
-      const results = await searchUserByNickname(query);
+      const results = await searchUserByNicknameAction(query);
 
       // filtrar usuarios que ya están inscritos en el torneo
       const filtered = results.filter(

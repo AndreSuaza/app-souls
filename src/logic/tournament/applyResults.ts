@@ -1,37 +1,24 @@
-import {
-  TournamentRoundForProcessing,
-  TournamentPlayerForSwiss,
-} from "@/interfaces";
+import { RoundInterface, TournamentPlayerInterface } from "@/interfaces";
 
 export function applySwissResults(
-  round: TournamentRoundForProcessing,
-  players: TournamentPlayerForSwiss[]
-) {
-  const updates: {
-    id: string;
-    points: number;
-    rivals: string[];
-    hadBye?: boolean;
-  }[] = [];
+  round: RoundInterface,
+  players: TournamentPlayerInterface[]
+): TournamentPlayerInterface[] {
+  // Usamos un Map para acceso O(1)
+  const map = new Map(players.map((p) => [p.id, p]));
 
   for (const match of round.matches) {
-    const p1 = players.find((p) => p.id === match.player1Id);
-    const p2 = players.find((p) => p.id === match.player2Id);
+    const p1 = match.player1Id ? map.get(match.player1Id) : undefined;
+    const p2 = match.player2Id ? map.get(match.player2Id) : undefined;
 
     if (!p1) continue;
 
-    // BYE
-    if (!match.player2Id || match.player2Nickname === "BYE") {
-      updates.push({
-        id: p1.id,
-        points: p1.points + 3,
-        rivals: [...p1.rivals],
-        hadBye: true,
-      });
+    // Caso BYE: player2 no existe o es "BYE"
+    if (!p2 || match.player2Nickname === "BYE") {
+      p1.points += 3;
+      p1.hadBye = true;
       continue;
     }
-
-    if (!p2) continue;
 
     // Ambos agregan rival
     p1.rivals.push(p2.id);
@@ -48,5 +35,6 @@ export function applySwissResults(
     }
   }
 
-  return players; // con puntos y rivales actualizados
+  // devolvemos el mismo arreglo, ya mutado
+  return players;
 }

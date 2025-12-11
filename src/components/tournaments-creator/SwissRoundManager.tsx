@@ -31,41 +31,29 @@ export const SwissRoundManager = () => {
     (m) => m.result !== null
   );
 
-  const roundIsFinished = currentRound?.status === "finished";
-
   // Mostrar botón "Generar ronda"
-  const showNewRound = () => {
-    if (!tournament) return false;
-    if (isFinished) return false;
-    if (playersCount <= 3) return false;
-
-    if (rounds.length >= maxRounds) return false;
-
-    if (!currentRound) return true;
-
-    if (currentRound.status !== "finished") return false;
-
-    return true;
-  };
+  const showNewRound = () =>
+    tournament && !isFinished && playersCount > 3 && rounds.length === 0;
 
   // Mostrar botón "Finalizar ronda"
-  const showEndRound = () => {
-    if (!tournament || !currentRound) return false;
-    if (isFinished) return false;
-    if (roundIsFinished) return false;
-    if (!allMatchesResolved) return false;
-    return true;
-  };
+  const showEndRound = () =>
+    tournament &&
+    currentRound &&
+    !isFinished &&
+    allMatchesResolved &&
+    tournament.currentRoundNumber < tournament.maxRounds;
 
   // Mostrar botón "Finalizar torneo"
-  const showFinalizeTournament = () => {
-    return tournament?.status === "pending_finalization";
-  };
+  const showFinalizeTournament = () =>
+    tournament &&
+    !isFinished &&
+    tournament.maxRounds > 0 &&
+    tournament.currentRoundNumber === tournament.maxRounds;
 
   const finalizeCurrentRound = async () => {
     if (!currentRound) return;
     setEnd(true);
-    await finalizeRound(currentRound.id);
+    await finalizeRound();
   };
 
   const finalizeEntireTournament = async () => {
@@ -79,10 +67,11 @@ export const SwissRoundManager = () => {
 
   const setResultRount = async (
     matchId: string,
-    result: "P1" | "P2" | "DRAW"
+    result: "P1" | "P2" | "DRAW",
+    player2Nickname: string | null
   ) => {
-    if (!currentRound || roundIsFinished) return;
-    await saveMatchResult(matchId, result);
+    if (!currentRound) return;
+    await saveMatchResult(matchId, result, player2Nickname);
   };
 
   return (
@@ -120,7 +109,6 @@ export const SwissRoundManager = () => {
 
       <RoundDisplay
         currentRound={currentRound}
-        roundIsFinished={roundIsFinished}
         setResultRount={setResultRount}
       />
     </div>

@@ -2,77 +2,47 @@
 
 import { prisma } from "@/lib/prisma";
 import { generateSwissRoundBackend } from "@/logic";
+import { TournamentPlayerInterface } from "@/interfaces";
 
-export async function generateRound(tournamentId: string) {
-  // Obtener solo lo necesario
-  const tournament = await prisma.tournament.findUnique({
-    where: { id: tournamentId },
-    select: {
-      id: true,
-      maxRounds: true,
+type GenerateRoundInput = {
+  tournamentId: string;
+  players: TournamentPlayerInterface[];
+  currentRoundNumber: number;
+  maxRounds: number;
+};
 
-      tournamentPlayers: {
-        select: {
-          id: true,
-          playerNickname: true,
-          points: true,
-          rivals: true,
-          hadBye: true,
-        },
-      },
-      tournamentRounds: {
-        select: {
-          id: true,
-          roundNumber: true,
-          matches: {
-            select: {
-              id: true,
-              player1Id: true,
-              player2Id: true,
-              player1Nickname: true,
-              player2Nickname: true,
-            },
-          },
-        },
-      },
-    },
-  });
+export async function generateRoundAction(input: GenerateRoundInput) {
+  const { tournamentId, players, currentRoundNumber, maxRounds } = input;
 
-  if (!tournament) throw new Error("Torneo no encontrado");
-
-  const players = tournament.tournamentPlayers;
+  // validar jugadores
   if (players.length === 0) {
     throw new Error("No hay jugadores inscritos");
   }
 
-  // Calcular maxRounds automáticamente solo en ronda 1
-  let maxRounds = tournament.maxRounds;
-  const currentRounds = tournament.tournamentRounds.length;
+  // calcular nuevas rondas si es primera
+  let finalMaxRounds = maxRounds;
 
-  if (currentRounds === 0) {
-    // fórmula Swiss estándar
-    maxRounds = players.length > 3 ? Math.ceil(Math.log2(players.length)) : 1;
+  if (currentRoundNumber === 0) {
+    finalMaxRounds =
+      players.length > 3 ? Math.ceil(Math.log2(players.length)) : 1;
 
     await prisma.tournament.update({
-      where: { id: tournament.id },
+      where: { id: tournamentId },
       data: {
-        maxRounds,
+        maxRounds: finalMaxRounds,
         status: "in_progress",
       },
     });
   }
 
-  if (currentRounds >= maxRounds) {
+  if (currentRoundNumber >= finalMaxRounds) {
     throw new Error("Ya se alcanzó el número máximo de rondas");
   }
 
-  // Generar emparejamientos Swiss usando lógica externa
-  const swissRound = generateSwissRoundBackend(
-    players,
-    tournament.tournamentRounds
-  );
+  // generar pairing suizo
+  const swissRound = generateSwissRoundBackend(players, currentRoundNumber);
 
-  // Crear ronda y matches
+  // guardar ronda
   const createdRound = await prisma.round.create({
     data: {
       tournamentId,
@@ -83,34 +53,24 @@ export async function generateRound(tournamentId: string) {
 
           return {
             player1Id: m.player1.id,
-            player1Nickname: m.player1.nickname,
+            player1Nickname: m.player1.playerNickname,
             player2Id: isBye ? null : m.player2!.id,
-            player2Nickname: isBye ? "BYE" : m.player2!.nickname,
-
+            player2Nickname: isBye ? "BYE" : m.player2!.playerNickname,
             result: isBye ? "P1" : null,
-            status: isBye ? "finished" : "pending",
-
-            player1Score: isBye ? 3 : 0,
-            player2Score: isBye ? 0 : 0,
           };
         }),
       },
     },
     select: {
       id: true,
-      roundNumber: true,
-      status: true,
-      matches: {
-        select: {
-          id: true,
-          player1Id: true,
-          player2Id: true,
-          result: true,
-          status: true,
-        },
-      },
+      matches: { select: { id: true } },
     },
   });
 
-  return createdRound;
+  return {
+    roundId: createdRound.id,
+    matchIds: createdRound.matches.map((m) => m.id),
+    swissRound,
+    maxRounds: finalMaxRounds,
+  };
 }

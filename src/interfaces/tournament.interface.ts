@@ -34,46 +34,7 @@ export interface StoreTournament {
   lgn: number;
 }
 
-// Jugador necesario para calcular rondas Swiss.
-export interface TournamentPlayerForSwiss {
-  id: string;
-  playerNickname: string;
-  points: number;
-  rivals: string[];
-  hadBye: boolean;
-}
-
-// Match previo usado SOLO para saber cuántas rondas existen.
-// No requiere más campos para Swiss en backend.
-export interface SwissMatchMinimal {
-  id: string;
-}
-
-// Ronda previa Swiss
-export interface SwissRoundHistory {
-  id: string;
-  roundNumber: number;
-  matches: SwissMatchMinimal[];
-}
-
-// Match minimal para procesar resultados en finalizeRound
-export interface TournamentMatchForProcessing {
-  id: string;
-  player1Id: string;
-  player2Id: string | null;
-  player1Nickname: string;
-  player2Nickname: string | null;
-  result: "P1" | "P2" | "DRAW" | null;
-}
-
-// Ronda usada al procesar resultados
-export interface TournamentRoundForProcessing {
-  id: string;
-  matches: TournamentMatchForProcessing[];
-}
-
-// DTO usado en acciones (getTournament) y store para enviar datos al front.
-export interface TournamentDetail {
+export interface TournamentInterface {
   id: string;
   title: string;
   descripcion: string;
@@ -82,45 +43,51 @@ export interface TournamentDetail {
   lgn: number;
   format: string;
   date: Date;
-  image?: string | null;
-  status: "pending" | "in_progress" | "pending_finalization" | "finished";
+  image: string;
   currentRoundNumber: number;
   maxRounds: number;
-  finalRankingIds?: string[];
   createDate: Date;
   storeId: string;
   typeTournamentId: string;
+  tournamentPlayers: TournamentPlayerInterface[];
+  tournamentRounds: RoundInterface[];
+}
 
-  tournamentPlayers: {
-    id: string;
-    tournamentId: string;
-    userId: string;
-    playerNickname: string;
-    points: number;
-    pointsInitial: number;
-    hadBye: boolean;
-    rivals: string[];
-    buchholz: number;
-    // createDate: Date;
-    finalRanking?: number;
-  }[];
+export interface TournamentPlayerInterface {
+  id: string;
+  userId: string;
+  playerNickname: string;
+  points: number;
+  pointsInitial: number;
+  hadBye: boolean;
+  buchholz: number;
+  rivals: string[];
+}
 
-  tournamentRounds: {
-    id: string;
-    roundNumber: number;
-    tournamentId: string;
-    status: "pending" | "in_progress" | "finished";
-    // createDate: Date;
-    matches: {
-      id: string;
-      player1Id: string;
-      player1Nickname: string;
-      player2Id: string | null;
-      player2Nickname: string | null;
-      result: "P1" | "P2" | "DRAW" | null;
-      status: "pending" | "in_progress" | "finished";
-      player1Score: number;
-      player2Score: number | null;
-    }[];
-  }[];
+export interface MatchInterface {
+  id: string;
+  player1Id: string;
+  player1Nickname: string;
+  player2Id: string | null;
+  player2Nickname: string | null;
+  result: "P1" | "P2" | "DRAW" | null;
+}
+
+export interface RoundInterface {
+  id: string;
+  roundNumber: number;
+  matches: MatchInterface[];
+}
+
+// Match previo usado SOLO para saber cuántas rondas existen.
+// No requiere más campos para Swiss en backend.
+export interface SwissMatchMinimal {
+  id: string;
+}
+
+export interface GenerateRoundInterface {
+  tournamentId: string;
+  players: TournamentPlayerInterface[];
+  currentRoundNumber: number;
+  maxRounds: number;
 }

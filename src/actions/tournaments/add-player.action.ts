@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { TournamentPlayerSchema, TournamentPlayerInput } from "@/schemas";
 
-export async function addPlayer(input: TournamentPlayerInput) {
+export async function addPlayerAction(input: TournamentPlayerInput) {
   const data = TournamentPlayerSchema.parse(input);
 
   const exists = await prisma.tournamentPlayer.findFirst({
@@ -21,17 +21,13 @@ export async function addPlayer(input: TournamentPlayerInput) {
   const player = await prisma.tournamentPlayer.create({
     data: {
       tournamentId: data.tournamentId,
-      playerNickname: data.nickname,
+      playerNickname: data.playerNickname,
       userId: data.userId,
       points: data.pointsInitial ?? 0,
       pointsInitial: data.pointsInitial ?? 0,
     },
     select: {
       id: true,
-      userId: true,
-      playerNickname: true,
-      points: true,
-      buchholz: true,
     },
   });
 

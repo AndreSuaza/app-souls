@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { ConfirmationModal } from "@/components";
 import { useAlertConfirmationStore, useTournamentStore } from "@/store";
 import { PlayerList } from "./PlayerList";

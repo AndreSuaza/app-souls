@@ -1,10 +1,12 @@
-import { SwissMatch, SwissPlayer, SwissRound } from "./types";
-import { TournamentPlayerForSwiss, SwissRoundHistory } from "@/interfaces";
+import { SwissMatch, SwissRound } from "./types";
+import { TournamentPlayerInterface } from "@/interfaces";
 
 /**
  * Clona jugadores para manipular sin mutar los originales.
  */
-function clonePlayers(players: SwissPlayer[]): SwissPlayer[] {
+function clonePlayers(
+  players: TournamentPlayerInterface[]
+): TournamentPlayerInterface[] {
   return players.map((p) => ({
     ...p,
     rivals: [...p.rivals],
@@ -15,7 +17,10 @@ function clonePlayers(players: SwissPlayer[]): SwissPlayer[] {
 /**
  * Evita emparejar jugadores que ya fueron rivales.
  */
-function alreadyPlayed(a: SwissPlayer, b: SwissPlayer) {
+function alreadyPlayed(
+  a: TournamentPlayerInterface,
+  b: TournamentPlayerInterface
+) {
   return a.rivals.includes(b.id) || b.rivals.includes(a.id);
 }
 
@@ -33,7 +38,7 @@ function alreadyPlayed(a: SwissPlayer, b: SwissPlayer) {
     *
     * Si no encuentra emparejamiento válido, retorna null.
  */
-function tryPair(pool: SwissPlayer[]): SwissMatch[] | null {
+function tryPair(pool: TournamentPlayerInterface[]): SwissMatch[] | null {
   if (pool.length === 0) return [];
 
   const first = pool[0];
@@ -79,8 +84,8 @@ function tryPair(pool: SwissPlayer[]): SwissMatch[] | null {
  *
  * player2 = null representa BYE (equivalente a tu {name:"BYE"})
  */
-function assignBye(players: SwissPlayer[]): {
-  updatedPlayers: SwissPlayer[];
+function assignBye(players: TournamentPlayerInterface[]): {
+  updatedPlayers: TournamentPlayerInterface[];
   byeMatch: SwissMatch | null;
 } {
   if (players.length % 2 === 0) {
@@ -109,7 +114,9 @@ function assignBye(players: SwissPlayer[]): {
 /**
  * Mezcla aleatoria (idéntico a shuffleArray original)
  */
-function shufflePlayers(players: SwissPlayer[]): SwissPlayer[] {
+function shufflePlayers(
+  players: TournamentPlayerInterface[]
+): TournamentPlayerInterface[] {
   const arr = [...players]; // no mutar original
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1)); // índice aleatorio
@@ -124,28 +131,19 @@ function shufflePlayers(players: SwissPlayer[]): SwissPlayer[] {
  * Cambia "name" por "id" para trabajar con BD (sin romper la lógica)
  */
 export function generateSwissRoundBackend(
-  dbPlayers: TournamentPlayerForSwiss[],
-  dbRounds: SwissRoundHistory[]
+  dbPlayers: TournamentPlayerInterface[],
+  dbCurrentRounds: number
 ): SwissRound {
   /**
    * Convertimos los jugadores de Prisma a SwissPlayer
    * y luego CLONAMOS profundamente (igual que en deepClonePlayers original)
    * para no modificar las referencias de la BD en memoria.
    */
-  let players: SwissPlayer[] = clonePlayers(
-    dbPlayers.map((p) => ({
-      id: p.id,
-      nickname: p.playerNickname,
-      points: p.points,
-      rivals: p.rivals,
-      hadBye: p.hadBye,
-    }))
-  );
-
+  let players: TournamentPlayerInterface[] = clonePlayers(dbPlayers);
   /**
    * PRIMERA RONDA: mezcla aleatoria
    */
-  if (dbRounds.length === 0) {
+  if (dbCurrentRounds === 0) {
     players = shufflePlayers(players);
   } else {
     // Rondas siguientes: ordenar por puntos (Swiss estándar)
@@ -163,7 +161,7 @@ export function generateSwissRoundBackend(
   const finalMatches = byeMatch ? [byeMatch, ...matches] : matches;
 
   return {
-    number: dbRounds.length + 1,
+    number: dbCurrentRounds + 1,
     matches: finalMatches,
   };
 }
