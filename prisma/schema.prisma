@@ -66,7 +66,7 @@ model Product {
   code         String         @unique
   releaseDate  String
   description  String
-  url          String         @unique
+  url          String
   numberCards  Int
   show         Boolean
   createDate   DateTime       @default(now())
@@ -87,7 +87,7 @@ model ProductImage {
 model Card {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   idd        String
-  code       String   @unique
+  code       String
   limit      String
   cost       Int
   force      String
@@ -167,6 +167,9 @@ model Tournament {
 
   tournamentPlayers TournamentPlayer[]
   tournamentRounds  Round[]
+
+  @@index([status])
+  @@index([storeId])
 }
 
 model TypeTournament {
@@ -207,6 +210,10 @@ model TournamentPlayer {
   createDate     DateTime @default(now())
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
+
+  @@index([tournamentId])
+  @@index([tournamentId, userId])
+  @@index([points])
 }
 
 model Round {
@@ -217,6 +224,8 @@ model Round {
   createDate   DateTime @default(now())
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
+
+  @@index([tournamentId])
 }
 
 model Match {
@@ -230,6 +239,8 @@ model Match {
   createdAt       DateTime     @default(now())
 
   round Round @relation(fields: [roundId], references: [id])
+
+  @@index([roundId])
 }
 
 enum UserStatus {

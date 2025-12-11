@@ -1,7 +1,6 @@
-import { Provider } from "@/components";
 import "./globals.scss";
-import {titleFont, geistMono} from "@/config/fonts";
-
+import { titleFont, geistMono } from "@/config/fonts";
+import { Provider, LoadingOverlay, ToastContainer } from "@/components";
 
 export default function RootLayout({
   children,
@@ -14,8 +13,11 @@ export default function RootLayout({
         className={`${titleFont.variable} ${geistMono.variable} antialiased`}
       >
         <Provider>
-        {children}
-        </Provider>  
+          <LoadingOverlay />
+          <ToastContainer />
+
+          {children}
+        </Provider>
       </body>
     </html>
   );

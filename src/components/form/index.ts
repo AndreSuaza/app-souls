@@ -1,5 +1,4 @@
-export { MultiSelect } from "./MultiSelect";
-export { Select } from "./Select";
-export { TextInput } from "./TextInput";
-
-
+export * from "./CustomSelect";
+export * from "./MultiSelect";
+export * from "./Select";
+export * from "./TextInput";

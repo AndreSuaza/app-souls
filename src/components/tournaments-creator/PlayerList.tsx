@@ -3,12 +3,18 @@
 import { useState } from "react";
 import { IoChevronDownSharp, IoChevronUp } from "react-icons/io5";
 import clsx from "clsx";
-import { useAlertConfirmationStore, useTournamentStore } from "@/store";
+import {
+  useAlertConfirmationStore,
+  useTournamentStore,
+  useToastStore,
+} from "@/store";
 import { InitialPointsModal } from "./InitialPointsModal";
 import { PlayerSearchInput } from "./PlayerSearchInput";
 import { PlayerListView } from "./PlayerListView";
 
 export const PlayerList = () => {
+  const showToast = useToastStore((state) => state.showToast);
+
   const { players, tournament, addPlayerByUserId, deletePlayer } =
     useTournamentStore();
 
@@ -30,20 +36,31 @@ export const PlayerList = () => {
       return;
     }
 
-    await addPlayerByUserId(user.id, user.nickname, 0);
+    try {
+      await addPlayerByUserId(user.id, user.nickname, 0);
+      showToast("Jugador agregado al torneo", "success");
+    } catch {
+      showToast("Error al agregar el jugador", "error");
+    }
   };
 
   const confirmInitialPoints = async (points: number) => {
     if (!selectedUserForInitialPoints) return;
 
-    await addPlayerByUserId(
-      selectedUserForInitialPoints.id,
-      selectedUserForInitialPoints.nickname,
-      points
-    );
+    try {
+      await addPlayerByUserId(
+        selectedUserForInitialPoints.id,
+        selectedUserForInitialPoints.nickname,
+        points
+      );
 
-    setShowInitialModal(false);
-    setSelectedUserForInitialPoints(null);
+      setShowInitialModal(false);
+      setSelectedUserForInitialPoints(null);
+
+      showToast("Jugador agregado al torneo", "success");
+    } catch {
+      showToast("Error al agregar el jugador", "error");
+    }
   };
 
   const cancelInitialPoints = () => {
@@ -87,7 +104,7 @@ export const PlayerList = () => {
           players={players}
           isFinished={isFinished}
           onDelete={(id) => {
-            setAction(() => () => deletePlayer(id));
+            setAction(() => deletePlayer(id));
             openAlert();
           }}
         />

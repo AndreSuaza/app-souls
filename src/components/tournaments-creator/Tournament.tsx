@@ -40,7 +40,7 @@ export const Tournament = ({ tournamentId }: TournamentProps) => {
       {isAlertConfirmation && (
         <ConfirmationModal
           text="¿Está seguro de eliminar a este jugador del torneo?"
-          className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:h-1/5 md:top-1/3 rounded-md border-2 border-gray-400"
+          className="bg-white"
         />
       )}
     </div>

@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useTournamentStore } from "@/store";
+import { useTournamentStore, useUIStore, useToastStore } from "@/store";
 import { RoundDisplay } from "./RoundDisplay";
 
 export const SwissRoundManager = () => {
+  const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
+  const showToast = useToastStore((state) => state.showToast);
+
   const {
     tournament,
     players,
@@ -50,19 +54,44 @@ export const SwissRoundManager = () => {
     tournament.maxRounds > 0 &&
     tournament.currentRoundNumber === tournament.maxRounds;
 
+  const handleGenerateRound = async () => {
+    setEnd(false);
+    showLoading();
+
+    try {
+      await generateRound();
+    } catch {
+      showToast("Error al generar la ronda", "error");
+    } finally {
+      hideLoading();
+    }
+  };
+
   const finalizeCurrentRound = async () => {
     if (!currentRound) return;
     setEnd(true);
-    await finalizeRound();
+    showLoading();
+
+    try {
+      await finalizeRound();
+    } catch {
+      showToast("Error al finalizar la ronda", "error");
+    } finally {
+      hideLoading();
+    }
   };
 
   const finalizeEntireTournament = async () => {
-    await finalizeTournament();
-  };
+    showLoading();
 
-  const handleGenerateRound = async () => {
-    setEnd(false);
-    await generateRound();
+    try {
+      await finalizeTournament();
+      showToast("Torneo finalizado", "info");
+    } catch {
+      showToast("Error al finalizar el torneo", "error");
+    } finally {
+      hideLoading();
+    }
   };
 
   const setResultRount = async (
@@ -71,7 +100,12 @@ export const SwissRoundManager = () => {
     player2Nickname: string | null
   ) => {
     if (!currentRound) return;
-    await saveMatchResult(matchId, result, player2Nickname);
+
+    try {
+      await saveMatchResult(matchId, result, player2Nickname);
+    } catch {
+      showToast("Error al guardar el resultado", "error");
+    }
   };
 
   return (

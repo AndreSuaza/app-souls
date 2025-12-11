@@ -47,7 +47,7 @@ type TournamentStoreState = {
   ) => Promise<void>;
   finalizeRound: () => Promise<void>;
   finalizeTournament: () => Promise<void>;
-  deletePlayer: (playerId: string) => Promise<void>;
+  deletePlayer: (playerId: string) => Promise<boolean>;
 };
 
 export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
@@ -304,16 +304,16 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
 
   deletePlayer: async (playerId: string) => {
     const { tournamentId } = get();
-    if (!tournamentId) return;
+    if (!tournamentId) return false;
 
     try {
-      const previousPlayers = get().players;
+      await deletePlayerAction(playerId);
 
       set({
-        players: previousPlayers.filter((p) => p.id !== playerId),
+        players: get().players.filter((p) => p.id !== playerId),
       });
 
-      await deletePlayerAction(playerId);
+      return true;
     } catch (error) {
       console.error(error);
 
@@ -321,6 +321,8 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         players: get().players,
         error: "Error eliminando jugador",
       });
+
+      return false;
     }
   },
 }));

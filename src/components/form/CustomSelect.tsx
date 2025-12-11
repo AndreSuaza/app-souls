@@ -1,3 +1,5 @@
+"use client";
+
 import { FieldProps } from "formik";
 import Select, { MultiValue, SingleValue } from "react-select";
 
@@ -19,11 +21,9 @@ export const CustomSelect = ({
   field,
   form,
   options,
-  isMulti = false
+  isMulti = false,
 }: CustomSelectProps) => {
-
-
-  const onChange = (option:  MultiValue<Option> | SingleValue<Option>) => {
+  const onChange = (option: MultiValue<Option> | SingleValue<Option>) => {
     form.setFieldValue(
       field.name,
       isMulti
@@ -35,10 +35,12 @@ export const CustomSelect = ({
   const getValue = () => {
     if (options) {
       return isMulti
-        ? options.filter((option: Option) => field?.value?.indexOf(option.value) >= 0)
+        ? options.filter(
+            (option: Option) => field?.value?.indexOf(option.value) >= 0
+          )
         : options.find((option: Option) => option.value === field.value);
     } else {
-      return  [];
+      return [];
     }
   };
 
