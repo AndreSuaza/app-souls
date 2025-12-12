@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useTournamentStore, useUIStore, useToastStore } from "@/store";
 import { RoundDisplay } from "./RoundDisplay";
 
@@ -22,8 +22,6 @@ export const SwissRoundManager = () => {
   const playersCount = players.length;
   const maxRounds = tournament?.maxRounds ?? 0;
   const isFinished = tournament?.status === "finished";
-
-  const [end, setEnd] = useState(false);
 
   // Ronda actual
   const currentRound = useMemo(() => {
@@ -55,8 +53,7 @@ export const SwissRoundManager = () => {
     tournament.currentRoundNumber === tournament.maxRounds;
 
   const handleGenerateRound = async () => {
-    setEnd(false);
-    showLoading();
+    showLoading("Generando ronda…");
 
     try {
       await generateRound();
@@ -69,8 +66,8 @@ export const SwissRoundManager = () => {
 
   const finalizeCurrentRound = async () => {
     if (!currentRound) return;
-    setEnd(true);
-    showLoading();
+
+    showLoading("Procesando ronda…");
 
     try {
       await finalizeRound();
@@ -82,7 +79,7 @@ export const SwissRoundManager = () => {
   };
 
   const finalizeEntireTournament = async () => {
-    showLoading();
+    showLoading("Finalizando torneo…");
 
     try {
       await finalizeTournament();

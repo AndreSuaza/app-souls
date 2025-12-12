@@ -22,6 +22,9 @@ export async function addPlayerAction(input: TournamentPlayerInput) {
     data: {
       tournamentId: data.tournamentId,
       playerNickname: data.playerNickname,
+      name: data.name,
+      lastname: data.lastname,
+      image: data.image,
       userId: data.userId,
       points: data.pointsInitial ?? 0,
       pointsInitial: data.pointsInitial ?? 0,

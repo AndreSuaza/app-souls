@@ -8,6 +8,7 @@ import {
   useTournamentStore,
   useToastStore,
 } from "@/store";
+import { UserSummaryInterface } from "@/interfaces";
 import { InitialPointsModal } from "./InitialPointsModal";
 import { PlayerSearchInput } from "./PlayerSearchInput";
 import { PlayerListView } from "./PlayerListView";
@@ -29,7 +30,7 @@ export const PlayerList = () => {
   const setAction = useAlertConfirmationStore((s) => s.setAction);
 
   // Cuando se selecciona un usuario desde PlayerSearchInput
-  const handleSelect = async (user: any) => {
+  const handleSelect = async (user: UserSummaryInterface) => {
     if (tournament?.currentRoundNumber && tournament?.currentRoundNumber > 0) {
       setSelectedUserForInitialPoints(user);
       setShowInitialModal(true);
@@ -37,7 +38,14 @@ export const PlayerList = () => {
     }
 
     try {
-      await addPlayerByUserId(user.id, user.nickname, 0);
+      await addPlayerByUserId(
+        user.id,
+        user.nickname,
+        user.name,
+        user.lastname,
+        user.image,
+        0
+      );
       showToast("Jugador agregado al torneo", "success");
     } catch {
       showToast("Error al agregar el jugador", "error");
@@ -51,6 +59,9 @@ export const PlayerList = () => {
       await addPlayerByUserId(
         selectedUserForInitialPoints.id,
         selectedUserForInitialPoints.nickname,
+        selectedUserForInitialPoints.name,
+        selectedUserForInitialPoints.lastname,
+        selectedUserForInitialPoints.image,
         points
       );
 

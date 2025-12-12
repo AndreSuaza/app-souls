@@ -4,7 +4,12 @@ import clsx from "clsx";
 import { IoTrashOutline } from "react-icons/io5";
 
 type PlayerListViewProps = {
-  players: { id: string; playerNickname: string }[];
+  players: {
+    id: string;
+    playerNickname: string;
+    name?: string | null;
+    lastname?: string | null;
+  }[];
   isFinished?: boolean;
   onDelete?: (playerId: string) => void;
 };
@@ -19,9 +24,17 @@ export const PlayerListView = ({
       {players.map((p, idx) => (
         <li key={p.id} className="border-b px-2 py-4 font-semibold">
           <div className="flex justify-between items-center">
-            <span className="text-gray-400">{idx + 1}</span>
+            <span className="w-6 text-left text-gray-400">{idx + 1}</span>
 
-            <span>{p.playerNickname}</span>
+            <div className="ml-4 flex flex-col flex-1 text-left">
+              <span>{p.playerNickname}</span>
+
+              {(p.name || p.lastname) && (
+                <span className="text-xs text-gray-400">
+                  {[p.name, p.lastname].filter(Boolean).join(" ")}
+                </span>
+              )}
+            </div>
 
             {/* Mostrar ícono de eliminar solo si hay callback */}
             {onDelete && (

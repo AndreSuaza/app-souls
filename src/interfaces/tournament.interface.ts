@@ -57,6 +57,9 @@ export interface TournamentPlayerInterface {
   id: string;
   userId: string;
   playerNickname: string;
+  name?: string;
+  lastname?: string;
+  image?: string;
   points: number;
   pointsInitial: number;
   hadBye: boolean;
@@ -80,7 +83,6 @@ export interface RoundInterface {
 }
 
 // Match previo usado SOLO para saber cuántas rondas existen.
-// No requiere más campos para Swiss en backend.
 export interface SwissMatchMinimal {
   id: string;
 }
@@ -90,4 +92,12 @@ export interface GenerateRoundInterface {
   players: TournamentPlayerInterface[];
   currentRoundNumber: number;
   maxRounds: number;
+}
+
+export interface UserSummaryInterface {
+  id: string;
+  nickname: string;
+  name?: string | null;
+  lastname?: string | null;
+  image?: string | null;
 }

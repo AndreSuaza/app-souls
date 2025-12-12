@@ -36,7 +36,10 @@ type TournamentStoreState = {
   addPlayerByUserId: (
     userId: string,
     nickname: string,
-    pointsInitial: number
+    name?: string | null,
+    lastname?: string | null,
+    image?: string | null,
+    pointsInitial?: number
   ) => Promise<void>;
 
   generateRound: () => Promise<void>;
@@ -90,6 +93,9 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           id: p.id,
           userId: p.userId,
           playerNickname: p.playerNickname,
+          name: p.name ?? undefined,
+          lastname: p.lastname ?? undefined,
+          image: p.image ?? undefined,
           points: p.points,
           pointsInitial: p.pointsInitial,
           buchholz: p.buchholz,
@@ -123,6 +129,9 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
   addPlayerByUserId: async (
     userId: string,
     playerNickname: string,
+    name: string | null | undefined,
+    lastname: string | null | undefined,
+    image: string | null | undefined,
     pointsInitial: number = 0
   ) => {
     const { tournamentId } = get();
@@ -132,6 +141,9 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       tournamentId,
       userId,
       playerNickname,
+      name: name ?? undefined,
+      lastname: lastname ?? undefined,
+      image: image ?? undefined,
       pointsInitial,
     });
 
@@ -142,6 +154,9 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           id: newPlayer.id,
           userId,
           playerNickname,
+          name: name ?? undefined,
+          lastname: lastname ?? undefined,
+          image: image ?? undefined,
           points: pointsInitial,
           pointsInitial,
           hadBye: false,

@@ -202,6 +202,9 @@ model TournamentPlayer {
   tournamentId   String   @db.ObjectId
   userId         String   @db.ObjectId
   playerNickname String
+  name           String?
+  lastname       String?
+  image          String?
   points         Int      @default(0)
   pointsInitial  Int      @default(0)
   hadBye         Boolean  @default(false)

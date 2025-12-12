@@ -1,11 +1,12 @@
 "use client";
 
 import React from "react";
-import { useUIStore } from "@/store/ui/ui-store";
 import Image from "next/image";
+import { useUIStore } from "@/store";
 
 export const LoadingOverlay: React.FC = () => {
   const isLoading = useUIStore((state) => state.isLoading);
+  const loadingMessage = useUIStore((state) => state.loadingMessage);
 
   if (!isLoading) return null;
 
@@ -33,7 +34,9 @@ export const LoadingOverlay: React.FC = () => {
         </div>
 
         {/* texto */}
-        <p className="text-black/80 text-sm tracking-wide">Procesando ronda…</p>
+        <p className="text-black/80 text-sm tracking-wide">
+          {loadingMessage ?? "Cargando…"}
+        </p>
       </div>
     </div>
   );

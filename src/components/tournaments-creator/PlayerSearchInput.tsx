@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
-import { searchUserByNicknameAction } from "@/actions";
+import { searchUsersAction } from "@/actions";
+import { UserSummaryInterface } from "@/interfaces";
 
 export type PlayerSearchInputProps = {
   existingPlayersIds: string[]; // IDs de jugadores ya inscritos
-  onSelectUser: (user: { id: string; nickname: string }) => void;
+  onSelectUser: (user: UserSummaryInterface) => void;
 };
 
 export const PlayerSearchInput = ({
@@ -14,36 +15,17 @@ export const PlayerSearchInput = ({
   onSelectUser,
 }: PlayerSearchInputProps) => {
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<
-    { id: string; nickname: string }[]
-  >([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [suggestions, setSuggestions] = useState<UserSummaryInterface[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Debounce para búsqueda 300ms
   useEffect(() => {
-    const timeout = setTimeout(async () => {
-      if (query.trim().length < 1) {
-        setSuggestions([]);
-        setShowDropdown(false);
-        return;
-      }
-
-      setLoading(true);
-
-      const results = await searchUserByNicknameAction(query);
-
-      // filtrar usuarios que ya están inscritos en el torneo
-      const filtered = results.filter(
-        (u) => !existingPlayersIds.includes(u.id)
-      );
-
-      setSuggestions(filtered);
-      setLoading(false);
-      setShowDropdown(true);
+    const timeout = setTimeout(() => {
+      runSearch(query);
     }, 300);
 
     return () => clearTimeout(timeout);
@@ -67,7 +49,6 @@ export const PlayerSearchInput = ({
   // Cuando se selecciona un usuario
   function handleSelect(user: { id: string; nickname: string }) {
     onSelectUser(user);
-    setQuery("");
     setSuggestions([]);
     setShowDropdown(false);
   }
@@ -98,6 +79,25 @@ export const PlayerSearchInput = ({
     }
   }
 
+  const runSearch = async (value: string) => {
+    const search = value.trim();
+    if (search.length < 1) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    setLoading(true);
+
+    const results = await searchUsersAction({ search });
+
+    const filtered = results.filter((u) => !existingPlayersIds.includes(u.id));
+
+    setSuggestions(filtered);
+    setLoading(false);
+    setShowDropdown(true);
+  };
+
   return (
     <div ref={containerRef} className="relative mb-4">
       {/* Input */}
@@ -107,8 +107,12 @@ export const PlayerSearchInput = ({
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
         className="border px-2 w-full py-1 rounded pr-8"
-        placeholder="Buscar jugador por nickname"
-        onFocus={() => query.length >= 2 && setShowDropdown(true)}
+        placeholder="Escribe el nombre o nickname"
+        onFocus={() => {
+          if (query.trim().length > 0) {
+            runSearch(query);
+          }
+        }}
       />
 
       {/* Botón limpiar */}
@@ -153,7 +157,13 @@ export const PlayerSearchInput = ({
                     : "hover:bg-indigo-100"
                 )}
               >
-                {user.nickname}
+                <p className="font-semibold">{user.nickname}</p>
+
+                {(user.name || user.lastname) && (
+                  <p className="text-xs text-gray-500">
+                    {[user.name, user.lastname].filter(Boolean).join(" ")}
+                  </p>
+                )}
               </div>
             ))}
         </div>

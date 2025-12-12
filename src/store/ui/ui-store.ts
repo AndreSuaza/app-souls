@@ -7,7 +7,8 @@ interface State {
 
   // Loading global
   isLoading: boolean;
-  showLoading: () => void;
+  loadingMessage?: string;
+  showLoading: (message?: string) => void;
   hideLoading: () => void;
 }
 
@@ -18,6 +19,17 @@ export const useUIStore = create<State>()((set) => ({
 
   // Loading global
   isLoading: false,
-  showLoading: () => set({ isLoading: true }),
-  hideLoading: () => set({ isLoading: false }),
+  loadingMessage: undefined,
+
+  showLoading: (message?: string) =>
+    set({
+      isLoading: true,
+      loadingMessage: message,
+    }),
+
+  hideLoading: () =>
+    set({
+      isLoading: false,
+      loadingMessage: undefined,
+    }),
 }));
