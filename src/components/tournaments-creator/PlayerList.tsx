@@ -24,7 +24,7 @@ export const PlayerList = () => {
   const [showPlayers, setShowPlayers] = useState(true);
   const [showInitialModal, setShowInitialModal] = useState(false);
   const [selectedUserForInitialPoints, setSelectedUserForInitialPoints] =
-    useState<any>(null);
+    useState<UserSummaryInterface | null>(null);
 
   const openAlert = useAlertConfirmationStore((s) => s.openAlertConfirmation);
   const setAction = useAlertConfirmationStore((s) => s.setAction);
@@ -52,8 +52,13 @@ export const PlayerList = () => {
     }
   };
 
-  const confirmInitialPoints = async (points: number) => {
-    if (!selectedUserForInitialPoints) return;
+  const confirmInitialRoundsWon = async (roundsWon: number) => {
+    if (!selectedUserForInitialPoints || !tournament) return;
+
+    const maxRounds = tournament.currentRoundNumber + 1;
+    const safeRoundsWon = Math.min(roundsWon, maxRounds);
+
+    const points = safeRoundsWon * 3;
 
     try {
       await addPlayerByUserId(
@@ -121,10 +126,15 @@ export const PlayerList = () => {
         />
       </div>
 
-      {showInitialModal && (
+      {showInitialModal && selectedUserForInitialPoints && (
         <InitialPointsModal
           user={selectedUserForInitialPoints}
-          onConfirm={confirmInitialPoints}
+          maxRounds={
+            tournament?.currentRoundNumber
+              ? tournament?.currentRoundNumber + 1
+              : 0
+          }
+          onConfirm={confirmInitialRoundsWon}
           onCancel={cancelInitialPoints}
         />
       )}

@@ -7,9 +7,14 @@ import {
   finalizeRoundAction,
   finalizeTournamentAction,
   deletePlayerAction,
+  editRoundResultsAction,
 } from "@/actions";
 import { applySwissResults, calculateBuchholzForPlayers } from "@/logic";
-import { TournamentPlayerInterface, RoundInterface } from "@/interfaces";
+import {
+  TournamentPlayerInterface,
+  RoundInterface,
+  MatchInterface,
+} from "@/interfaces";
 
 // Types locales
 export type BasicTournament = {
@@ -51,6 +56,10 @@ type TournamentStoreState = {
   finalizeRound: () => Promise<void>;
   finalizeTournament: () => Promise<void>;
   deletePlayer: (playerId: string) => Promise<boolean>;
+  editRoundResults: (
+    roundNumber: number,
+    updatedMatches: MatchInterface[]
+  ) => Promise<void>;
 };
 
 export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
@@ -338,6 +347,93 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       });
 
       return false;
+    }
+  },
+
+  editRoundResults: async (
+    roundNumber: number,
+    updatedMatches: MatchInterface[]
+  ) => {
+    const state = get();
+    const { tournamentId } = state;
+    if (!tournamentId) return;
+
+    // Encontrar la ronda
+    const roundIndex = state.rounds.findIndex(
+      (round) => round.roundNumber === roundNumber
+    );
+    if (roundIndex === -1) return;
+
+    const currentRound = state.rounds[roundIndex];
+
+    // Copia mutable de players para aplicar cambios incrementales
+    const playersMap = new Map(state.players.map((p) => [p.id, { ...p }]));
+
+    // Recorrer SOLO los matchs editados
+    updatedMatches.forEach((updatedMatch) => {
+      if (updatedMatch.player2Id === null) return;
+
+      const oldMatch = currentRound.matches.find(
+        (m) => m.id === updatedMatch.id
+      );
+
+      if (!oldMatch || oldMatch.result === updatedMatch.result) return;
+
+      const player1 = playersMap.get(oldMatch.player1Id);
+      const player2 =
+        oldMatch.player2Id !== null ? playersMap.get(oldMatch.player2Id) : null;
+
+      if (!player1) return;
+
+      // Revertir puntos anteriores
+      switch (oldMatch.result) {
+        case "P1":
+          player1.points -= 3;
+          break;
+        case "P2":
+          if (player2) player2.points -= 3;
+          break;
+        case "DRAW":
+          player1.points -= 1;
+          if (player2) player2.points -= 1;
+          break;
+      }
+
+      // Aplicar puntos nuevos
+      switch (updatedMatch.result) {
+        case "P1":
+          player1.points += 3;
+          break;
+        case "P2":
+          if (player2) player2.points += 3;
+          break;
+        case "DRAW":
+          player1.points += 1;
+          if (player2) player2.points += 1;
+          break;
+      }
+    });
+
+    // Resultado final
+    const updatedPlayers = Array.from(playersMap.values());
+
+    // Actualizar store optimistamente
+    set((state) => ({
+      players: updatedPlayers,
+      rounds: state.rounds.map((round, idx) =>
+        idx === roundIndex ? { ...round, matches: updatedMatches } : round
+      ),
+    }));
+
+    // Persistir en DB
+    try {
+      await editRoundResultsAction({
+        matches: updatedMatches,
+        players: updatedPlayers,
+      });
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error guardando edición de ronda" });
     }
   },
 }));

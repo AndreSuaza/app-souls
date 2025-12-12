@@ -120,6 +120,7 @@ export const SwissRoundManager = () => {
             Generar Ronda
           </button>
         )}
+
         {showEndRound() && (
           <button
             onClick={finalizeCurrentRound}
@@ -128,6 +129,7 @@ export const SwissRoundManager = () => {
             Finalizar Ronda
           </button>
         )}
+
         {showFinalizeTournament() && (
           <button
             onClick={finalizeEntireTournament}

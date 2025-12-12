@@ -8,17 +8,18 @@ export * from "./cards/cards-and-prices";
 export * from "./products/products-pagination";
 export * from "./products/product-url";
 
-export * from "./tournaments/tournaments-pagination";
-export * from "./tournaments/tournament-url";
 export * from "./tournaments/add-player.action";
 export * from "./tournaments/create-tournament.action";
+export * from "./tournaments/delete-player.action";
+export * from "./tournaments/edit-round-results.action";
 export * from "./tournaments/finalize-round.action";
 export * from "./tournaments/finalize-tournament.action";
 export * from "./tournaments/generate-round.action";
 export * from "./tournaments/get-tournament.action";
 export * from "./tournaments/save-match-result.action";
 export * from "./tournaments/search-users-action.action";
-export * from "./tournaments/delete-player.action";
+export * from "./tournaments/tournament-url";
+export * from "./tournaments/tournaments-pagination";
 
 export * from "./stores/stores-pagination";
 

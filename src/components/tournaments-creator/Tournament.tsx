@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { ConfirmationModal } from "@/components";
+import { useState, useEffect } from "react";
 import { useAlertConfirmationStore, useTournamentStore } from "@/store";
+import { RoundInterface } from "@/interfaces";
+import { ConfirmationModal } from "@/components";
 import { PlayerList } from "./PlayerList";
 import { SwissRoundManager } from "./SwissRoundManager";
 import { SwissHistoric } from "./SwissHistoric";
@@ -19,11 +20,21 @@ export const Tournament = ({ tournamentId }: TournamentProps) => {
 
   const { setTournamentId, fetchTournament, players } = useTournamentStore();
 
+  const [editingRoundNumber, setEditingRoundNumber] = useState<number | null>(
+    null
+  );
+
   // hidratar desde DB
   useEffect(() => {
     setTournamentId(tournamentId);
     fetchTournament(tournamentId);
   }, [tournamentId, setTournamentId, fetchTournament]);
+
+  const clearEditRound = () => setEditingRoundNumber(null);
+
+  const handleEditRound = (roundNumber: number) => {
+    setEditingRoundNumber(roundNumber);
+  };
 
   return (
     <div className="mb-4">
@@ -32,7 +43,11 @@ export const Tournament = ({ tournamentId }: TournamentProps) => {
 
         <SwissRoundManager />
 
-        <SwissHistoric />
+        <SwissHistoric
+          onEditRound={handleEditRound}
+          editingRoundNumber={editingRoundNumber}
+          onCancelEdit={clearEditRound}
+        />
 
         <StandingsTable players={players} />
       </div>

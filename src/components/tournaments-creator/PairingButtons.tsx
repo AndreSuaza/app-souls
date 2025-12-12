@@ -75,7 +75,7 @@ export const PairingButtons = ({ match, setResultRount, disabled }: Props) => {
           !disabled && setResultRount(match.id, "DRAW", match.player2Nickname)
         }
         disabled={disabled}
-        title="Partida Empatad"
+        title="Partida Empatada"
         className={"text-center bg-indigo-500 text-white rounded"}
       >
         PE

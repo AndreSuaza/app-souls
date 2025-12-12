@@ -35,13 +35,9 @@ export const RoundDisplay = ({ currentRound, setResultRount }: Props) => {
           >
             <PairingButtons
               index={idx}
-              match={{
-                id: match.id,
-                player1Nickname: match.player1Nickname,
-                player2Nickname: match.player2Nickname,
-                result: match.result,
-              }}
+              match={match}
               setResultRount={setResultRount}
+              disabled={!currentRound}
             />
           </li>
         ))}
