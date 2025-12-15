@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAlertConfirmationStore, useTournamentStore } from "@/store";
 import { ConfirmationModal } from "@/components";
-import { PlayerList } from "./PlayerList";
+import { PlayerList } from "../tournaments/tournament/players/PlayerList";
 import { SwissRoundManager } from "./SwissRoundManager";
 import { SwissHistoric } from "./SwissHistoric";
 import { StandingsTable } from "./StandingsTable";

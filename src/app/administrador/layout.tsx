@@ -23,7 +23,7 @@ export default function TournamentLayout({
         <ToastContainer />
         <TournamentSidebar />
 
-        <div className="flex-1 p-4 md:p-8">{children}</div>
+        <div className="flex-1 px-4 py-2 md:px-8 md:py-3">{children}</div>
       </div>
 
       <ConfirmationModalHost />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
+import { IoSearch } from "react-icons/io5";
 import { searchUsersAction } from "@/actions";
 import { UserSummaryInterface } from "@/interfaces";
 
@@ -100,20 +101,25 @@ export const PlayerSearchInput = ({
 
   return (
     <div ref={containerRef} className="relative mb-4">
-      {/* Input */}
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="border px-2 w-full py-1 rounded pr-8"
-        placeholder="Escribe el nombre o nickname"
-        onFocus={() => {
-          if (query.trim().length > 0) {
-            runSearch(query);
-          }
-        }}
-      />
+      <div className="relative">
+        {/* Ícono buscar */}
+        <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+
+        {/* Input */}
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="border w-full py-1 rounded pl-8 pr-8"
+          placeholder="Escribe el nombre o nickname"
+          onFocus={() => {
+            if (query.trim().length > 0) {
+              runSearch(query);
+            }
+          }}
+        />
+      </div>
 
       {/* Botón limpiar */}
       {query.length > 0 && (
@@ -151,19 +157,31 @@ export const PlayerSearchInput = ({
                 onMouseEnter={() => setHighlightedIndex(index)}
                 onClick={() => handleSelect(user)}
                 className={clsx(
-                  "px-3 py-2 cursor-pointer",
+                  "px-3 py-2 cursor-pointer flex items-center gap-3",
                   highlightedIndex === index
                     ? "bg-indigo-200"
                     : "hover:bg-indigo-100"
                 )}
               >
-                <p className="font-semibold">{user.nickname}</p>
+                {/* Avatar */}
+                <img
+                  src={`/profile/${user.image ?? "player"}.webp`}
+                  alt={user.nickname}
+                  className="w-8 h-8 rounded-full object-cover border"
+                />
 
-                {(user.name || user.lastname) && (
-                  <p className="text-xs text-gray-500">
-                    {[user.name, user.lastname].filter(Boolean).join(" ")}
-                  </p>
-                )}
+                {/* Info */}
+                <div className="flex flex-col">
+                  <span className="font-semibold leading-tight">
+                    {user.nickname}
+                  </span>
+
+                  {(user.name || user.lastname) && (
+                    <span className="text-xs text-gray-500">
+                      {[user.name, user.lastname].filter(Boolean).join(" ")}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
         </div>

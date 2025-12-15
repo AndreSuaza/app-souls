@@ -9,6 +9,7 @@ type PlayerListViewProps = {
     playerNickname: string;
     name?: string | null;
     lastname?: string | null;
+    image?: string;
   }[];
   isFinished?: boolean;
   onDelete?: (playerId: string) => void;
@@ -26,14 +27,24 @@ export const PlayerListView = ({
           <div className="flex justify-between items-center">
             <span className="w-6 text-left text-gray-400">{idx + 1}</span>
 
-            <div className="ml-4 flex flex-col flex-1 text-left">
-              <span>{p.playerNickname}</span>
+            <div className="ml-4 flex items-center gap-3 flex-1 text-left">
+              {/* Avatar */}
+              <img
+                src={`/profile/${p.image ?? "player"}.webp`}
+                alt={p.playerNickname}
+                className="w-9 h-9 rounded-full object-cover border"
+              />
 
-              {(p.name || p.lastname) && (
-                <span className="text-xs text-gray-400">
-                  {[p.name, p.lastname].filter(Boolean).join(" ")}
-                </span>
-              )}
+              {/* Texto */}
+              <div className="flex flex-col">
+                <span>{p.playerNickname}</span>
+
+                {(p.name || p.lastname) && (
+                  <span className="text-xs text-gray-400">
+                    {[p.name, p.lastname].filter(Boolean).join(" ")}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Mostrar ícono de eliminar solo si hay callback */}
