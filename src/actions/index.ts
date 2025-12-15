@@ -15,6 +15,7 @@ export * from "./tournaments/edit-round-results.action";
 export * from "./tournaments/finalize-round.action";
 export * from "./tournaments/finalize-tournament.action";
 export * from "./tournaments/generate-round.action";
+export * from "./tournaments/get-tournament-types.action";
 export * from "./tournaments/get-tournament.action";
 export * from "./tournaments/save-match-result.action";
 export * from "./tournaments/search-users-action.action";

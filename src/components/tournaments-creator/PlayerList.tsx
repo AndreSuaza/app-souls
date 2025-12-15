@@ -18,16 +18,15 @@ export const PlayerList = () => {
 
   const { players, tournament, addPlayerByUserId, deletePlayer } =
     useTournamentStore();
-
+  const openAlertConfirmation = useAlertConfirmationStore(
+    (s) => s.openAlertConfirmation
+  );
   const isFinished = tournament?.status === "finished";
 
   const [showPlayers, setShowPlayers] = useState(true);
   const [showInitialModal, setShowInitialModal] = useState(false);
   const [selectedUserForInitialPoints, setSelectedUserForInitialPoints] =
     useState<UserSummaryInterface | null>(null);
-
-  const openAlert = useAlertConfirmationStore((s) => s.openAlertConfirmation);
-  const setAction = useAlertConfirmationStore((s) => s.setAction);
 
   // Cuando se selecciona un usuario desde PlayerSearchInput
   const handleSelect = async (user: UserSummaryInterface) => {
@@ -120,8 +119,13 @@ export const PlayerList = () => {
           players={players}
           isFinished={isFinished}
           onDelete={(id) => {
-            setAction(() => deletePlayer(id));
-            openAlert();
+            openAlertConfirmation({
+              text: "¿Deseas eliminar este jugador del torneo?",
+              action: async () => {
+                const success = await deletePlayer(id);
+                return success;
+              },
+            });
           }}
         />
       </div>

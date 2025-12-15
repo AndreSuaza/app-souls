@@ -3,22 +3,22 @@
 import { useAlertConfirmationStore, useToastStore } from "@/store";
 
 interface Props {
-  text: string;
   className?: string;
 }
 
-export const ConfirmationModal = ({ text, className = "" }: Props) => {
-  const closeAlert = useAlertConfirmationStore((s) => s.closeAlertConfirmation);
-  const runAction = useAlertConfirmationStore((s) => s.runAction);
+export const ConfirmationModal = ({ className = "" }: Props) => {
+  const { text, closeAlertConfirmation, runAction } =
+    useAlertConfirmationStore();
+
   const showToast = useToastStore((s) => s.showToast);
 
   const handleConfirm = async () => {
     const success = await runAction();
 
     if (success) {
-      showToast("Jugador eliminado correctamente", "warning");
+      showToast("Acción realizada correctamente", "success");
     } else {
-      showToast("Error eliminando jugador", "error");
+      showToast("Ocurrió un error", "error");
     }
   };
 
@@ -26,7 +26,7 @@ export const ConfirmationModal = ({ text, className = "" }: Props) => {
     <div className="fixed inset-0 z-[9998] flex items-center justify-center">
       {/* Overlay */}
       <div
-        onClick={closeAlert}
+        onClick={closeAlertConfirmation}
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
       />
 
@@ -44,17 +44,17 @@ export const ConfirmationModal = ({ text, className = "" }: Props) => {
 
         <div className="flex justify-center gap-4">
           <button
-            onClick={handleConfirm}
-            className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm transition"
-          >
-            Sí, confirmar
-          </button>
-
-          <button
-            onClick={closeAlert}
+            onClick={closeAlertConfirmation}
             className="px-5 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white font-medium shadow-sm transition"
           >
             Cancelar
+          </button>
+
+          <button
+            onClick={handleConfirm}
+            className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm transition"
+          >
+            Confirmar
           </button>
         </div>
       </div>

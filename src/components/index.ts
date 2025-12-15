@@ -25,6 +25,7 @@ export * from "./ui/sidebar/Sidebar";
 export * from "./ui/providers/Provider";
 export * from "./ui/modal/modal";
 export * from "./ui/modal/ConfirmationModal";
+export * from "./ui/modal/ConfirmationModalHost";
 export * from "./ui/footer/footer";
 export * from "./ui/date/dateformat";
 export * from "./ui/loading/LoadingOverlay";
@@ -61,6 +62,11 @@ export * from "./tournaments-creator/InitialPointsModal";
 export * from "./national/homeNational";
 
 export * from "./cartas/preguntas-frecuentes/preguntasFrecuentes";
+
+export * from "./tournaments/crear-torneo/CreateTournamentForm";
+export * from "./tournaments/crear-torneo/DateTimeFields";
+export * from "./tournaments/crear-torneo/TournamentTypeSelect";
+export * from "./tournaments/sidebar/TournamentSidebar";
 
 // export * from "./cartas/index";
 // export * from "./eventos/index";

@@ -1,12 +1,6 @@
 import { z } from "zod";
 
-export const TournamentFormatEnum = z.enum([
-  "default",
-  "constructed",
-  "sealed",
-  "draft",
-  "commander",
-]);
+export const TournamentFormatEnum = z.enum(["default", "Masters"]);
 
 // Schema usado para agregar jugadores a un torneo.
 // - "pointsInitial" representa los puntos otorgados a un jugador que entra tarde

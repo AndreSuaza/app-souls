@@ -38,7 +38,7 @@ export const TournamentCreator = () => {
       date, // se envía string ISO (compatible)
     });
 
-    router.push(`/admin/torneos/${result.id}`);
+    router.push(`/admin/torneos/${result}`);
   };
 
   return (

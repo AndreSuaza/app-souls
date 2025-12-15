@@ -148,7 +148,6 @@ model Tournament {
   id                 String           @id @default(auto()) @map("_id") @db.ObjectId
   title              String
   descripcion        String
-  url                String
   lat                Float
   lgn                Float
   format             TournamentFormat @default(Masters)

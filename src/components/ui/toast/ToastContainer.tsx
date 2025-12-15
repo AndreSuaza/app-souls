@@ -1,6 +1,6 @@
 "use client";
 
-import { useToastStore } from "@/store/ui/toast-store";
+import { useToastStore } from "@/store/ui/toast.store";
 import { FiCheckCircle, FiAlertCircle, FiInfo, FiX } from "react-icons/fi";
 
 const typeStyles = {

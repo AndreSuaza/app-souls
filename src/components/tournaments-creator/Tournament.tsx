@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useAlertConfirmationStore, useTournamentStore } from "@/store";
-import { RoundInterface } from "@/interfaces";
 import { ConfirmationModal } from "@/components";
 import { PlayerList } from "./PlayerList";
 import { SwissRoundManager } from "./SwissRoundManager";
@@ -52,12 +51,7 @@ export const Tournament = ({ tournamentId }: TournamentProps) => {
         <StandingsTable players={players} />
       </div>
 
-      {isAlertConfirmation && (
-        <ConfirmationModal
-          text="¿Está seguro de eliminar a este jugador del torneo?"
-          className="bg-white"
-        />
-      )}
+      {isAlertConfirmation && <ConfirmationModal />}
     </div>
   );
 };
