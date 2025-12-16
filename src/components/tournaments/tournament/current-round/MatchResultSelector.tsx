@@ -3,41 +3,57 @@
 import { MatchInterface } from "@/interfaces";
 import { useTournamentStore } from "@/store";
 
-/**
- * Selector visual del resultado del match
- * 1 / Empate / 2 con colores por hover/activo
- */
-export const MatchResultSelector = ({ match }: { match: MatchInterface }) => {
+export const MatchResultSelector = ({
+  match,
+  layout = "row",
+}: {
+  match: MatchInterface;
+  layout?: "row" | "mobileGrid";
+}) => {
   const { saveMatchResult } = useTournamentStore();
 
   const isBye =
     match.player2Nickname === null || match.player2Nickname === "BYE";
 
   return (
-    <div className="flex items-center justify-center gap-2">
-      <ResultButton
-        label="Victoria"
-        variant="p1"
-        active={match.result === "P1"}
-        disabled={isBye}
-        onClick={() => saveMatchResult(match.id, "P1", match.player2Nickname)}
-      />
+    <div
+      className={
+        layout === "mobileGrid"
+          ? "grid grid-cols-3 gap-2 w-full md:flex md:items-center md:justify-center"
+          : "flex items-center justify-center gap-2"
+      }
+    >
+      <div className={layout === "mobileGrid" ? "flex justify-end" : ""}>
+        <ResultButton
+          label="Victoria"
+          variant="p1"
+          active={match.result === "P1"}
+          disabled={isBye}
+          onClick={() => saveMatchResult(match.id, "P1", match.player2Nickname)}
+        />
+      </div>
 
-      <ResultButton
-        label="Empate"
-        variant="draw"
-        active={match.result === "DRAW"}
-        disabled={isBye}
-        onClick={() => saveMatchResult(match.id, "DRAW", match.player2Nickname)}
-      />
+      <div className={layout === "mobileGrid" ? "flex justify-center" : ""}>
+        <ResultButton
+          label="Empate"
+          variant="draw"
+          active={match.result === "DRAW"}
+          disabled={isBye}
+          onClick={() =>
+            saveMatchResult(match.id, "DRAW", match.player2Nickname)
+          }
+        />
+      </div>
 
-      <ResultButton
-        label="Victoria"
-        variant="p2"
-        active={match.result === "P2"}
-        disabled={isBye}
-        onClick={() => saveMatchResult(match.id, "P2", match.player2Nickname)}
-      />
+      <div className={layout === "mobileGrid" ? "flex justify-start" : ""}>
+        <ResultButton
+          label="Victoria"
+          variant="p2"
+          active={match.result === "P2"}
+          disabled={isBye}
+          onClick={() => saveMatchResult(match.id, "P2", match.player2Nickname)}
+        />
+      </div>
     </div>
   );
 };
@@ -64,8 +80,8 @@ const ResultButton = ({
 
   const stylesByVariant: Record<Variant, { active: string; idle: string }> = {
     p1: {
-      active: "bg-blue-600 text-white",
-      idle: "bg-gray-100 hover:bg-blue-100 hover:text-blue-700",
+      active: "bg-indigo-600 text-white",
+      idle: "bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700",
     },
     draw: {
       active: "bg-yellow-500 text-white",

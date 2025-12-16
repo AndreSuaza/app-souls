@@ -24,7 +24,7 @@ export default function TournamentLayout({
         <ToastContainer />
         <TournamentSidebar />
 
-        <div className="flex-1 px-4 py-2 md:px-8 md:py-3 overflow-visible mb-4">
+        <div className="flex-1 px-4 py-2 lg:px-8 lg:py-3 overflow-visible mb-4">
           {children}
         </div>
       </div>

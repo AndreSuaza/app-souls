@@ -70,9 +70,9 @@ export const RoundActionButton = () => {
     return (
       <button
         onClick={handleGenerateRound}
-        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+        className="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
       >
-        <FaPlay size={16} />
+        <FaPlay className="hidden sm:flex" size={16} />
         Generar ronda
       </button>
     );
@@ -84,14 +84,14 @@ export const RoundActionButton = () => {
       <button
         onClick={handleFinalizeTournament}
         disabled={!allMatchesResolved}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white
+        className={`flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg font-semibold text-white
           ${
             allMatchesResolved
               ? "bg-red-600 hover:bg-red-700"
               : "bg-red-300 cursor-not-allowed"
           }`}
       >
-        <FaCheckCircle size={18} />
+        <FaCheckCircle className="hidden sm:flex" size={18} />
         Finalizar torneo
       </button>
     );
@@ -103,14 +103,14 @@ export const RoundActionButton = () => {
       <button
         onClick={handleFinalizeRound}
         disabled={!allMatchesResolved}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white
+        className={`flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg font-semibold text-white
           ${
             allMatchesResolved
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-blue-300 cursor-not-allowed"
+              ? "bg-indigo-600 hover:bg-indigo-700"
+              : "bg-indigo-300 cursor-not-allowed"
           }`}
       >
-        <FaStopCircle size={18} />
+        <FaStopCircle className="hidden sm:flex" size={18} />
         Finalizar ronda
       </button>
     );

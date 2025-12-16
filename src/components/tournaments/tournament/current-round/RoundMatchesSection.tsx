@@ -22,7 +22,7 @@ export const RoundMatchesSection = () => {
       <h3 className="text-lg font-semibold">Emparejamientos</h3>
 
       {/* Encabezados */}
-      <div className="grid grid-cols-[72px_1fr_220px_1fr_72px] text-xs font-semibold text-gray-500 px-4">
+      <div className="hidden md:grid grid-cols-[72px_1fr_220px_1fr_72px] text-xs font-semibold text-gray-500 px-4">
         <span className="text-left">Mesa</span>
         <span className="text-left">Jugador 1</span>
         <span className="text-center">Resultado</span>

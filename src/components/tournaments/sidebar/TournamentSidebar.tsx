@@ -36,14 +36,14 @@ export const TournamentSidebar = () => {
       {/* Overlay mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-20 md:hidden"
+          className="fixed inset-0 bg-black/30 z-20 lg:hidden"
           onClick={close}
         />
       )}
 
       {/* Sidebar spacer (reserva espacio en el layout) */}
       <div
-        className={clsx("md:hidden transition-all duration-200", {
+        className={clsx("lg:hidden transition-all duration-200", {
           "w-14": true, // Siempre reserva el espacio colapsado
         })}
       />
@@ -51,14 +51,14 @@ export const TournamentSidebar = () => {
       {/* Sidebar */}
       <aside
         className={clsx(
-          "absolute md:relative min-h-screen md:h-auto z-30 bg-white border-r shadow-sm transition-all duration-200 flex flex-col",
+          "absolute lg:relative min-h-screen lg:h-auto z-30 bg-white border-r shadow-sm transition-all duration-200 flex flex-col",
           {
             // MOBILE
             "w-14": !isOpen,
             "w-64": isOpen,
 
             // DESKTOP
-            "md:w-64": true,
+            "lg:w-64": true,
           }
         )}
       >
@@ -70,13 +70,13 @@ export const TournamentSidebar = () => {
                 "opacity-0 w-0 overflow-hidden": !isOpen,
                 "opacity-100 w-auto": isOpen,
               },
-              "md:opacity-100 md:w-auto"
+              "lg:opacity-100 lg:w-auto"
             )}
           >
             Gestor de Torneos
           </span>
 
-          <button onClick={isOpen ? close : open} className="md:hidden">
+          <button onClick={isOpen ? close : open} className="lg:hidden">
             {isOpen ? (
               <IoCloseOutline size={22} />
             ) : (
@@ -104,7 +104,7 @@ export const TournamentSidebar = () => {
                     "gap-3 px-4 py-3 justify-start": isOpen,
 
                     // Desktop siempre alineado a la izquierda
-                    "md:justify-start md:px-4 md:py-3 md:gap-3": true,
+                    "lg:justify-start lg:px-4 lg:py-3 lg:gap-3": true,
 
                     "bg-indigo-100 text-indigo-600": isActive,
                     "text-gray-600 hover:bg-gray-100 hover:text-gray-900":
@@ -124,7 +124,7 @@ export const TournamentSidebar = () => {
                       // Mobile open + Desktop
                       "opacity-100 w-auto": isOpen,
                     },
-                    "md:opacity-100 md:w-auto"
+                    "lg:opacity-100 lg:w-auto"
                   )}
                 >
                   {label}

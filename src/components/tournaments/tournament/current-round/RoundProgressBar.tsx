@@ -22,15 +22,15 @@ export const RoundProgressBar = ({
     totalMatches === 0 ? 0 : (completedMatches / totalMatches) * 100;
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="w-1/4 h-2 bg-gray-200 rounded-full overflow-hidden">
+    <div className="flex items-center gap-2 w-full justify-between md:justify-normal">
+      <div className="w-full md:w-1/3 lg:w-1/4 h-2 bg-gray-200 rounded-full overflow-hidden">
         <div
-          className="h-full bg-blue-600 transition-all duration-500"
+          className="h-full bg-indigo-600 transition-all duration-500"
           style={{ width: `${percentage}%` }}
         />
       </div>
 
-      <span className="text-sm text-gray-600">
+      <span className="text-sm text-gray-600 text-right md:text-start">
         {completedMatches}/{totalMatches} Partidas completadas
       </span>
     </div>
