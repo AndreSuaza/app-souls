@@ -22,7 +22,7 @@ export default function TournamentAdminPage() {
     fetchTournament(id);
   }, [id, fetchTournament]);
 
-  // 🔹 Si no hay mínimo de jugadores, forzar vista jugadores
+  // Si no hay mínimo de jugadores, forzar vista jugadores
   useEffect(() => {
     if (players.length < 2) {
       setActiveTab("players");

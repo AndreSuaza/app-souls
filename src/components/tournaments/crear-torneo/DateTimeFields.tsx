@@ -18,6 +18,8 @@ export const DateTimeFields = ({
   onTimeChange,
 }: Props) => {
   const maxDate = new Date();
+
+  // Fecha máxima permitida (1 año en el futuro)
   maxDate.setFullYear(maxDate.getFullYear() + 1);
 
   return (

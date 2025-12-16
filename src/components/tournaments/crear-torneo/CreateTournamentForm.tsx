@@ -26,7 +26,7 @@ export const CreateTournamentForm = () => {
     (s) => s.openAlertConfirmation
   );
 
-  // inicializar form
+  // inicializar formulario con validaciones tipadas
   const {
     register,
     handleSubmit,
@@ -51,21 +51,25 @@ export const CreateTournamentForm = () => {
     }
   }, [tournamentTypes, setValue]);
 
+  // Fecha base inmutable
   const now = useMemo(() => new Date(), []);
 
   const [date, setDate] = useState<string>(now.toISOString().split("T")[0]);
   const [time, setTime] = useState<string>(now.toTimeString().slice(0, 5));
 
+  // Hora mínima permitida
   const minTime = useMemo(() => {
     const today = now.toISOString().split("T")[0];
     return date === today ? now.toTimeString().slice(0, 5) : "00:00";
   }, [date, now]);
 
+  // Construye la fecha final en formato ISO para backend
   const buildISODate = () => {
     const iso = new Date(`${date}T${time}:00`);
     return iso.toISOString();
   };
 
+  // Crear el torneo
   const onSubmit = handleSubmit((data) => {
     openConfirmation({
       text: "¿Deseas crear este torneo?",
@@ -82,7 +86,7 @@ export const CreateTournamentForm = () => {
           date: buildISODate(),
         });
 
-        router.push(`/admin/torneos/${tournamentId}`);
+        router.push(`/administrador/torneos/${tournamentId}`);
         return true;
       },
     });

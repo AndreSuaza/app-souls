@@ -5,6 +5,7 @@ import {
   ToastContainer,
   TournamentSidebar,
   ConfirmationModalHost,
+  Footer,
 } from "@/components";
 import moment from "moment";
 
@@ -23,9 +24,11 @@ export default function TournamentLayout({
         <ToastContainer />
         <TournamentSidebar />
 
-        <div className="flex-1 px-4 py-2 md:px-8 md:py-3">{children}</div>
+        <div className="flex-1 px-4 py-2 md:px-8 md:py-3 overflow-visible">
+          {children}
+        </div>
       </div>
-
+      <Footer />
       <ConfirmationModalHost />
     </>
   );

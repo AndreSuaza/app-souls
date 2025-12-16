@@ -1,6 +1,7 @@
 "use client";
 
-import { PlayerList } from "@/components/tournaments-creator";
+import { PlayerList } from "./PlayerList";
+import { TournamentRanking } from "./TournamentRanking";
 
 export const TournamentPlayersView = () => {
   return (
@@ -11,8 +12,8 @@ export const TournamentPlayersView = () => {
       </div>
 
       {/* RANKING */}
-      <div className="lg:col-span-3 bg-white border rounded-md p-4 text-center text-gray-400">
-        Ranking (próximamente)
+      <div className="lg:col-span-3 flex">
+        <TournamentRanking />
       </div>
     </div>
   );

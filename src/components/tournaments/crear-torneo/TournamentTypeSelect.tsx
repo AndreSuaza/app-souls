@@ -9,10 +9,11 @@ import {
   Path,
 } from "react-hook-form";
 
+// Permite usar el componente con cualquier formulario (tipado para react-hook-form)
 type Props<T extends FieldValues> = {
   register: UseFormRegister<T>;
   errors: FieldErrors<T>;
-  name: Path<T>;
+  name: Path<T>; // Garantiza que name sea una key válida
   tournamentTypes: { id: string; name: string }[];
 };
 
