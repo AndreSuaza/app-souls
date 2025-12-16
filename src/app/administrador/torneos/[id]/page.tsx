@@ -22,12 +22,23 @@ export default function TournamentAdminPage() {
     fetchTournament(id);
   }, [id, fetchTournament]);
 
-  // Si no hay mínimo de jugadores, forzar vista jugadores
+  // Validación de pestaña activa según estado del torneo y jugadores
   useEffect(() => {
-    if (players.length < 2) {
-      setActiveTab("players");
+    // Esperar a que el torneo esté cargado
+    if (!tournament) return;
+
+    // Si el torneo ya finalizó, forzar vista de jugadores
+    if (tournament.status === "finished") {
+      if (activeTab !== "players") setActiveTab("players");
+      return;
     }
-  }, [players.length]);
+
+    // Si no hay mínimo de jugadores, solo forzar si NO estás ya en players
+    if (players.length < 3) {
+      if (activeTab !== "players") setActiveTab("players");
+      return;
+    }
+  }, [tournament, players.length, activeTab]);
 
   return (
     <div className="space-y-6">

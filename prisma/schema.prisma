@@ -158,6 +158,8 @@ model Tournament {
   maxRounds          Int              @default(1)
   createDate         DateTime         @default(now())
 
+  startedAt DateTime?
+
   storeId String @db.ObjectId
   store   Store  @relation(fields: [storeId], references: [id])
 

@@ -9,10 +9,12 @@ type GenerateRoundInput = {
   players: TournamentPlayerInterface[];
   currentRoundNumber: number;
   maxRounds: number;
+  startedAt: Date;
 };
 
 export async function generateRoundAction(input: GenerateRoundInput) {
-  const { tournamentId, players, currentRoundNumber, maxRounds } = input;
+  const { tournamentId, players, currentRoundNumber, maxRounds, startedAt } =
+    input;
 
   // validar jugadores
   if (players.length === 0) {
@@ -31,6 +33,7 @@ export async function generateRoundAction(input: GenerateRoundInput) {
       data: {
         maxRounds: finalMaxRounds,
         status: "in_progress",
+        startedAt: startedAt,
       },
     });
   }
