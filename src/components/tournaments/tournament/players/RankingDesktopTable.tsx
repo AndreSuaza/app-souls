@@ -3,7 +3,8 @@
 import { TournamentPlayerInterface } from "@/interfaces";
 import { RankBadge } from "./RankBadge";
 import { PlayerCell } from "./PlayerCell";
-import { getRecordPlaceholder } from "@/utils/ranking";
+import { calculatePlayerRecord, formatRecord } from "@/utils/ranking";
+import { useTournamentStore } from "@/store";
 
 interface Props {
   players: TournamentPlayerInterface[];
@@ -16,6 +17,8 @@ export const RankingDesktopTable = ({
   currentPage,
   pageSize,
 }: Props) => {
+  const rounds = useTournamentStore((s) => s.rounds);
+
   return (
     <div className="hidden md:block">
       <table className="w-full border-collapse">
@@ -47,7 +50,9 @@ export const RankingDesktopTable = ({
 
                 <td className="py-3 text-center">{player.buchholz}</td>
 
-                <td className="py-3 text-center">{getRecordPlaceholder()}</td>
+                <td className="py-3 text-center">
+                  {formatRecord(calculatePlayerRecord(player.id, rounds))}
+                </td>
               </tr>
             );
           })}

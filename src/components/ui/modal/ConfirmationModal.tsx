@@ -1,6 +1,6 @@
 "use client";
 
-import { useAlertConfirmationStore, useToastStore } from "@/store";
+import { useAlertConfirmationStore } from "@/store";
 
 interface Props {
   className?: string;
@@ -10,16 +10,8 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
   const { text, closeAlertConfirmation, runAction } =
     useAlertConfirmationStore();
 
-  const showToast = useToastStore((s) => s.showToast);
-
   const handleConfirm = async () => {
-    const success = await runAction();
-
-    if (success) {
-      showToast("Acción realizada correctamente", "success");
-    } else {
-      showToast("Ocurrió un error", "error");
-    }
+    await runAction();
   };
 
   return (

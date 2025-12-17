@@ -127,8 +127,13 @@ export const PlayerList = () => {
             openAlertConfirmation({
               text: "¿Deseas eliminar este jugador del torneo?",
               action: async () => {
-                const success = await deletePlayer(id);
-                return success;
+                return await deletePlayer(id);
+              },
+              onSuccess: () => {
+                showToast("Jugador eliminado del torneo", "warning");
+              },
+              onError: () => {
+                showToast("No se pudo eliminar el jugador", "error");
               },
             });
           }}

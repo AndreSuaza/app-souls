@@ -15,7 +15,7 @@ export const PlayerCell = ({ player, reverse = false, highlight }: Props) => {
 
   const highlightText =
     highlight === "blue"
-      ? "text-indigo-600"
+      ? "text-blue-600"
       : highlight === "red"
       ? "text-red-600"
       : highlight === "yellow"
@@ -24,7 +24,7 @@ export const PlayerCell = ({ player, reverse = false, highlight }: Props) => {
 
   const highlightBorder =
     highlight === "blue"
-      ? "border-indigo-600 border-2"
+      ? "border-blue-600 border-2"
       : highlight === "red"
       ? "border-red-600 border-2"
       : highlight === "yellow"
@@ -51,7 +51,7 @@ export const PlayerCell = ({ player, reverse = false, highlight }: Props) => {
         </p>
 
         {(player.name || player.lastname) && (
-          <p className="text-xs text-gray-500 line-clamp-2">
+          <p className="text-xs text-gray-500 line-clamp-2 max-w-20 sm:max-w-32 md:max-w-full">
             {player.name} {player.lastname}
           </p>
         )}

@@ -34,7 +34,7 @@ export default function TournamentAdminPage() {
     }
 
     // Si no hay mínimo de jugadores, solo forzar si NO estás ya en players
-    if (players.length < 3) {
+    if (players.length < 4) {
       if (activeTab !== "players") setActiveTab("players");
       return;
     }
@@ -46,6 +46,8 @@ export default function TournamentAdminPage() {
         active={activeTab}
         onChange={setActiveTab}
         tournamentTitle={tournament?.title ?? "Torneo"}
+        playersCount={players.length}
+        tournamentStatus={tournament?.status}
       />
 
       {activeTab === "players" && <TournamentPlayersView />}

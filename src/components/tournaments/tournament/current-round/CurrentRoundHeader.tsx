@@ -43,6 +43,8 @@ export const CurrentRoundHeader = () => {
           {/* Número de ronda */}
           <h2 className="order-1 md:order-2 text-xl font-bold">
             Ronda {currentRound?.roundNumber ?? tournament.currentRoundNumber}
+            {/* Mostrar "de X" solo si se ha generado al menos la priemra ronda*/}
+            {tournament.maxRounds > 1 && ` de ${tournament.maxRounds}`}
           </h2>
         </div>
 

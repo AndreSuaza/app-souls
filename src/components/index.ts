@@ -71,7 +71,7 @@ export * from "./tournaments/tournament/TournamentTabs";
 export * from "./tournaments/tournament/current-round/TournamentCurrentRound";
 export * from "./tournaments/tournament/players/TournamentPlayersView";
 export * from "./tournaments/tournament/players/TournamentRanking";
-export * from "./tournaments/tournament/rounds/TournamentRoundsHistory";
+export * from "./tournaments/tournament/hisotry/TournamentRoundsHistory";
 
 // export * from "./cartas/index";
 // export * from "./eventos/index";

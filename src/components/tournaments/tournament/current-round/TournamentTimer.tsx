@@ -4,10 +4,11 @@ import { useTournamentStore } from "@/store";
 import { useTournamentTimer } from "@/hooks";
 
 export const TournamentTimer = () => {
-  const { tournament } = useTournamentStore();
+  const { tournament, rounds } = useTournamentStore();
+  const currentRound = rounds.length > 0 ? rounds[rounds.length - 1] : null;
 
   const { hours, minutes, seconds } = useTournamentTimer(
-    tournament?.startedAt ?? null,
+    currentRound?.startedAt ?? null,
     tournament?.status ?? "pending"
   );
 

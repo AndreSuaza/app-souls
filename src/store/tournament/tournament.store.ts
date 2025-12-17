@@ -25,7 +25,6 @@ export type BasicTournament = {
   status: "pending" | "in_progress" | "finished";
   currentRoundNumber: number;
   maxRounds: number;
-  startedAt: string | null;
 };
 
 type TournamentStoreState = {
@@ -98,7 +97,6 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           status: data.status,
           currentRoundNumber: data.currentRoundNumber,
           maxRounds: data.maxRounds,
-          startedAt: data.startedAt ? data.startedAt.toISOString() : null,
         },
         players: data.tournamentPlayers.map((p) => ({
           id: p.id,
@@ -117,6 +115,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         rounds: data.tournamentRounds.map((r) => ({
           id: r.id,
           roundNumber: r.roundNumber,
+          startedAt: r.startedAt ? r.startedAt.toISOString() : null,
           matches: r.matches.map((m) => ({
             id: m.id,
             player1Id: m.player1Id,
@@ -184,32 +183,19 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     if (!tournamentId || !state.tournament) return;
 
     try {
-      // Si no tiene `startedAt`, lo asignamos en el frontend
-      const startedAt: Date = state.tournament.startedAt
-        ? new Date(state.tournament.startedAt)
-        : new Date();
-
-      if (!state.tournament.startedAt) {
-        set((state) => ({
-          tournament: state.tournament
-            ? { ...state.tournament, startedAt: startedAt.toISOString() }
-            : null,
-        }));
-      }
-
       // Llamada al action
       const apiRound = await generateRoundAction({
         tournamentId,
         players: state.players,
         currentRoundNumber: state.tournament.currentRoundNumber,
         maxRounds: state.tournament.maxRounds,
-        startedAt,
       });
 
       // Construir la ronda usando swissRound + matchIds
       const newRound: RoundInterface = {
         id: apiRound.roundId,
         roundNumber: apiRound.swissRound.number,
+        startedAt: apiRound.startedAt ? apiRound.startedAt.toISOString() : null,
         matches: apiRound.swissRound.matches.map((m, index) => {
           const matchId = apiRound.matchIds[index];
 

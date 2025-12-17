@@ -142,6 +142,7 @@ model Store {
   createDate DateTime @default(now())
 
   Tournament Tournament[]
+  users      User[]
 }
 
 model Tournament {
@@ -157,8 +158,6 @@ model Tournament {
   currentRoundNumber Int              @default(0)
   maxRounds          Int              @default(1)
   createDate         DateTime         @default(now())
-
-  startedAt DateTime?
 
   storeId String @db.ObjectId
   store   Store  @relation(fields: [storeId], references: [id])
@@ -227,6 +226,8 @@ model Round {
   matches      Match[]
   createDate   DateTime @default(now())
 
+  startedAt DateTime?
+
   tournament Tournament @relation(fields: [tournamentId], references: [id])
 
   @@index([tournamentId])
@@ -275,6 +276,9 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  storeId String? @db.ObjectId
+  store   Store?  @relation(fields: [storeId], references: [id])
 }
 
 model Account {

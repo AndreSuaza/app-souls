@@ -7,7 +7,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MdError } from "react-icons/md";
 import { createTournamentAction } from "@/actions";
-import { useCatalogStore, useAlertConfirmationStore } from "@/store";
+import {
+  useCatalogStore,
+  useAlertConfirmationStore,
+  useToastStore,
+} from "@/store";
 import { DateTimeFields } from "./DateTimeFields";
 import { TournamentTypeSelect } from "./TournamentTypeSelect";
 import { TournamentFormatSelect } from "./TournamentFormatSelect";
@@ -25,6 +29,7 @@ export const CreateTournamentForm = () => {
   const openConfirmation = useAlertConfirmationStore(
     (s) => s.openAlertConfirmation
   );
+  const showToast = useToastStore((s) => s.showToast);
 
   // inicializar formulario con validaciones tipadas
   const {
@@ -55,13 +60,15 @@ export const CreateTournamentForm = () => {
   const now = useMemo(() => new Date(), []);
 
   const [date, setDate] = useState<string>(now.toISOString().split("T")[0]);
-  const [time, setTime] = useState<string>(now.toTimeString().slice(0, 5));
 
-  // Hora mínima permitida
-  const minTime = useMemo(() => {
-    const today = now.toISOString().split("T")[0];
-    return date === today ? now.toTimeString().slice(0, 5) : "00:00";
-  }, [date, now]);
+  // Definir hora inicial
+  const getInitialTime = () => {
+    const h = now.getHours().toString().padStart(2, "0");
+    const m = Math.ceil(now.getMinutes() / 15) * 15;
+    return `${h}:${m === 60 ? "00" : m.toString().padStart(2, "0")}`;
+  };
+
+  const [time, setTime] = useState<string>(getInitialTime());
 
   // Construye la fecha final en formato ISO para backend
   const buildISODate = () => {
@@ -88,6 +95,12 @@ export const CreateTournamentForm = () => {
 
         router.push(`/administrador/torneos/${tournamentId}`);
         return true;
+      },
+      onSuccess: () => {
+        showToast("Torneo creado correctamente", "success");
+      },
+      onError: () => {
+        showToast("No se pudo crear el torneo", "error");
       },
     });
   });
@@ -159,7 +172,7 @@ export const CreateTournamentForm = () => {
         date={date}
         time={time}
         minDate={now.toISOString().split("T")[0]}
-        minTime={minTime}
+        minTime={time}
         onDateChange={setDate}
         onTimeChange={setTime}
       />

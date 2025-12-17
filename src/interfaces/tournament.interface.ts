@@ -79,6 +79,7 @@ export interface MatchInterface {
 export interface RoundInterface {
   id: string;
   roundNumber: number;
+  startedAt: string | null;
   matches: MatchInterface[];
 }
 

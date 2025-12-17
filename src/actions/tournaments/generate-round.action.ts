@@ -9,12 +9,10 @@ type GenerateRoundInput = {
   players: TournamentPlayerInterface[];
   currentRoundNumber: number;
   maxRounds: number;
-  startedAt: Date;
 };
 
 export async function generateRoundAction(input: GenerateRoundInput) {
-  const { tournamentId, players, currentRoundNumber, maxRounds, startedAt } =
-    input;
+  const { tournamentId, players, currentRoundNumber, maxRounds } = input;
 
   // validar jugadores
   if (players.length === 0) {
@@ -33,7 +31,6 @@ export async function generateRoundAction(input: GenerateRoundInput) {
       data: {
         maxRounds: finalMaxRounds,
         status: "in_progress",
-        startedAt: startedAt,
       },
     });
   }
@@ -50,6 +47,7 @@ export async function generateRoundAction(input: GenerateRoundInput) {
     data: {
       tournamentId,
       roundNumber: swissRound.number,
+      startedAt: new Date(),
       matches: {
         create: swissRound.matches.map((m) => {
           const isBye = !m.player2;
@@ -66,12 +64,14 @@ export async function generateRoundAction(input: GenerateRoundInput) {
     },
     select: {
       id: true,
+      startedAt: true,
       matches: { select: { id: true } },
     },
   });
 
   return {
     roundId: createdRound.id,
+    startedAt: createdRound.startedAt,
     matchIds: createdRound.matches.map((m) => m.id),
     swissRound,
     maxRounds: finalMaxRounds,

@@ -3,7 +3,8 @@
 import { TournamentPlayerInterface } from "@/interfaces";
 import { RankBadge } from "./RankBadge";
 import { PlayerCell } from "./PlayerCell";
-import { getRecordPlaceholder } from "@/utils/ranking";
+import { calculatePlayerRecord, formatRecord } from "@/utils/ranking";
+import { useTournamentStore } from "@/store";
 
 interface Props {
   players: TournamentPlayerInterface[];
@@ -16,6 +17,8 @@ export const RankingMobileList = ({
   currentPage,
   pageSize,
 }: Props) => {
+  const rounds = useTournamentStore((s) => s.rounds);
+
   return (
     <div className="md:hidden space-y-3">
       {players.map((player, index) => {
@@ -34,7 +37,7 @@ export const RankingMobileList = ({
             <div className="text-right text-sm">
               <p className="font-bold">{player.points} pts</p>
               <p className="text-gray-500">DE {player.buchholz}</p>
-              <p>{getRecordPlaceholder()}</p>
+              <p>{formatRecord(calculatePlayerRecord(player.id, rounds))}</p>
             </div>
           </div>
         );

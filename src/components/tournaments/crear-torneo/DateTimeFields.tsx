@@ -9,6 +9,8 @@ interface Props {
   onTimeChange: (value: string) => void;
 }
 
+const MINUTES = ["00", "15", "30", "45"];
+
 export const DateTimeFields = ({
   date,
   time,
@@ -21,6 +23,15 @@ export const DateTimeFields = ({
 
   // Fecha máxima permitida (1 año en el futuro)
   maxDate.setFullYear(maxDate.getFullYear() + 1);
+
+  const now = new Date();
+  const today = now.toISOString().split("T")[0];
+
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  // Minutos mínimos permitidos para la hora actual
+  const minAllowedMinute = Math.ceil(currentMinute / 15) * 15;
 
   return (
     <div className="grid md:grid-cols-2 gap-4">
@@ -38,13 +49,58 @@ export const DateTimeFields = ({
 
       <div>
         <label className="block text-sm font-medium">Hora</label>
-        <input
-          type="time"
-          min={minTime}
-          value={time}
-          onChange={(e) => onTimeChange(e.target.value)}
-          className="w-full border rounded p-2"
-        />
+
+        <div className="flex gap-2">
+          {/* Horas */}
+          <select
+            value={time.split(":")[0]}
+            onChange={(e) =>
+              onTimeChange(`${e.target.value}:${time.split(":")[1]}`)
+            }
+            className="w-full border rounded p-2"
+          >
+            {Array.from({ length: 24 }).map((_, h) => {
+              const hour = String(h).padStart(2, "0");
+
+              // Bloquear horas pasadas si es hoy
+              if (date === today && h < currentHour) return null;
+
+              return (
+                <option key={hour} value={hour}>
+                  {hour}
+                </option>
+              );
+            })}
+          </select>
+
+          {/* Minutos (15 en 15) */}
+          <select
+            value={time.split(":")[1]}
+            onChange={(e) =>
+              onTimeChange(`${time.split(":")[0]}:${e.target.value}`)
+            }
+            className="w-full border rounded p-2"
+          >
+            {MINUTES.map((m) => {
+              const selectedHour = Number(time.split(":")[0]);
+
+              // Si es hoy y es la hora actual, bloquear minutos pasados
+              if (
+                date === today &&
+                selectedHour === currentHour &&
+                Number(m) < minAllowedMinute
+              ) {
+                return null;
+              }
+
+              return (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              );
+            })}
+          </select>
+        </div>
       </div>
     </div>
   );
