@@ -4,15 +4,19 @@ import { MatchInterface } from "@/interfaces";
 import { useTournamentStore } from "@/store";
 import { ResultButton } from "./ResultButton";
 
+interface MatchResultSelectorProps {
+  match: MatchInterface;
+  layout?: "row" | "mobileGrid";
+  readOnly?: boolean;
+  onChangeResult?: (result: "P1" | "P2" | "DRAW") => void;
+}
+
 export const MatchResultSelector = ({
   match,
   layout = "row",
-  readOnly = false,
-}: {
-  match: MatchInterface;
-  layout?: "row" | "mobileGrid";
-  readOnly?: boolean; // Solo lectura
-}) => {
+  readOnly = false, // solo lectura
+  onChangeResult,
+}: MatchResultSelectorProps) => {
   const { saveMatchResult } = useTournamentStore();
 
   const isBye =
@@ -21,6 +25,14 @@ export const MatchResultSelector = ({
   // En readonly o BYE, no se puede interactuar
   const noInteraction = readOnly || isBye;
 
+  // Decide si usar edición local o store
+  const handleResult = (result: "P1" | "P2" | "DRAW") => {
+    if (onChangeResult) {
+      onChangeResult(result); // edición local
+    } else {
+      saveMatchResult(match.id, result, match.player2Nickname); // normal
+    }
+  };
   return (
     <div
       className={
@@ -35,7 +47,7 @@ export const MatchResultSelector = ({
           variant="p1"
           active={match.result === "P1"}
           readOnly={noInteraction}
-          onClick={() => saveMatchResult(match.id, "P1", match.player2Nickname)}
+          onClick={() => handleResult("P1")}
         />
       </div>
 
@@ -45,9 +57,7 @@ export const MatchResultSelector = ({
           variant="draw"
           active={match.result === "DRAW"}
           readOnly={noInteraction}
-          onClick={() =>
-            saveMatchResult(match.id, "DRAW", match.player2Nickname)
-          }
+          onClick={() => handleResult("DRAW")}
         />
       </div>
 
@@ -57,7 +67,7 @@ export const MatchResultSelector = ({
           variant="p2"
           active={match.result === "P2"}
           readOnly={noInteraction}
-          onClick={() => saveMatchResult(match.id, "P2", match.player2Nickname)}
+          onClick={() => handleResult("P2")}
         />
       </div>
     </div>

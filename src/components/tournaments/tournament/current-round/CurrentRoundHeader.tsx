@@ -27,7 +27,7 @@ export const CurrentRoundHeader = () => {
             className={`order-2 md:order-1 w-fit px-3 py-1 rounded-full text-xs font-semibold
             ${
               tournament.status === "in_progress"
-                ? "bg-green-100 text-green-700"
+                ? "bg-blue-100 text-blue-700"
                 : tournament.status === "finished"
                 ? "bg-gray-200 text-gray-700"
                 : "bg-yellow-100 text-yellow-700"

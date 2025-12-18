@@ -12,6 +12,7 @@ interface MatchCardProps {
   players: TournamentPlayerInterface[];
   readOnly?: boolean; // indica si el resultado es editable
   decorated?: boolean; // controla borde, sombra y redondeo
+  onChangeResult?: (matchId: string, result: "P1" | "P2" | "DRAW") => void;
 }
 
 export const MatchCard = ({
@@ -20,6 +21,7 @@ export const MatchCard = ({
   players,
   readOnly = false, // por defecto editable
   decorated = true, // ← por defecto con estilos visuales
+  onChangeResult,
 }: MatchCardProps) => {
   const player1 = players.find((p) => p.id === match.player1Id);
   const player2 = players.find((p) => p.id === match.player2Id);
@@ -106,6 +108,11 @@ export const MatchCard = ({
           match={match}
           layout="mobileGrid"
           readOnly={readOnly}
+          onChangeResult={
+            onChangeResult
+              ? (result) => onChangeResult(match.id, result)
+              : undefined
+          }
         />
       </div>
 
