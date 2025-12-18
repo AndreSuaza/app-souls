@@ -38,6 +38,7 @@ export const RoundMatchesSection = () => {
             match={match}
             tableNumber={index + 1}
             players={players}
+            readOnly={!currentRound.startedAt}
           />
         ))}
       </div>

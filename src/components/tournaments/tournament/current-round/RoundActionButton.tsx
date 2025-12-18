@@ -9,6 +9,7 @@ export const RoundActionButton = () => {
     rounds,
     players,
     generateRound,
+    startCurrentRound,
     finalizeRound,
     finalizeTournament,
   } = useTournamentStore();
@@ -22,6 +23,7 @@ export const RoundActionButton = () => {
   const hasRounds = rounds.length > 0;
   const currentRound = hasRounds ? rounds[rounds.length - 1] : null;
 
+  const isRoundStarted = !!currentRound?.startedAt;
   const allMatchesResolved =
     currentRound?.matches.every((m) => m.result !== null) ?? false;
 
@@ -78,27 +80,40 @@ export const RoundActionButton = () => {
     );
   }
 
-  // Finalizar torneo
-  if (tournament.status !== "finished" && hasRounds && isLastRound) {
+  if (
+    tournament.status !== "finished" &&
+    hasRounds &&
+    currentRound &&
+    !isRoundStarted
+  ) {
     return (
       <button
-        onClick={handleFinalizeTournament}
-        disabled={!allMatchesResolved}
-        className={`flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg font-semibold text-white
-          ${
-            allMatchesResolved
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-red-300 cursor-not-allowed"
-          }`}
+        onClick={async () => {
+          showLoading("Iniciando ronda…");
+          try {
+            await startCurrentRound();
+          } catch {
+            showToast("Error al iniciar la ronda", "error");
+          } finally {
+            hideLoading();
+          }
+        }}
+        className="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700"
       >
-        <FaCheckCircle className="hidden sm:flex" size={18} />
-        Finalizar torneo
+        <FaPlay className="hidden sm:flex" size={16} />
+        Iniciar ronda
       </button>
     );
   }
 
   // Siguiente ronda
-  if (tournament.status !== "finished" && hasRounds) {
+  if (
+    tournament.status !== "finished" &&
+    hasRounds &&
+    currentRound &&
+    isRoundStarted &&
+    !isLastRound
+  ) {
     return (
       <button
         onClick={handleFinalizeRound}
@@ -112,6 +127,30 @@ export const RoundActionButton = () => {
       >
         <FaStopCircle className="hidden sm:flex" size={18} />
         Finalizar ronda
+      </button>
+    );
+  }
+
+  // Finalizar torneo
+  if (
+    tournament.status !== "finished" &&
+    hasRounds &&
+    isLastRound &&
+    isRoundStarted
+  ) {
+    return (
+      <button
+        onClick={handleFinalizeTournament}
+        disabled={!allMatchesResolved}
+        className={`flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg font-semibold text-white
+          ${
+            allMatchesResolved
+              ? "bg-red-600 hover:bg-red-700"
+              : "bg-red-300 cursor-not-allowed"
+          }`}
+      >
+        <FaCheckCircle className="hidden sm:flex" size={18} />
+        Finalizar torneo
       </button>
     );
   }

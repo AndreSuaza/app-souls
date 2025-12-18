@@ -8,6 +8,7 @@ import {
   finalizeTournamentAction,
   deletePlayerAction,
   editRoundResultsAction,
+  startRoundAction,
 } from "@/actions";
 import { applySwissResults, calculateBuchholzForPlayers } from "@/logic";
 import {
@@ -60,6 +61,7 @@ type TournamentStoreState = {
     roundNumber: number,
     updatedMatches: MatchInterface[]
   ) => Promise<void>;
+  startCurrentRound: () => Promise<void>;
 };
 
 export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
@@ -195,7 +197,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       const newRound: RoundInterface = {
         id: apiRound.roundId,
         roundNumber: apiRound.swissRound.number,
-        startedAt: apiRound.startedAt ? apiRound.startedAt.toISOString() : null,
+        startedAt: null, // NO iniciar automáticamente
         matches: apiRound.swissRound.matches.map((m, index) => {
           const matchId = apiRound.matchIds[index];
 
@@ -229,6 +231,10 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
 
   saveMatchResult: async (matchId, result, player2Nickname) => {
     if (!matchId) return;
+
+    const currentRound = get().rounds[get().rounds.length - 1];
+
+    if (!currentRound.startedAt) return; // ronda no iniciada
 
     const state = get();
     if (
@@ -436,6 +442,35 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     } catch (error) {
       console.error(error);
       set({ error: "Error guardando edición de ronda" });
+    }
+  },
+
+  startCurrentRound: async () => {
+    const state = get();
+    const currentRound = state.rounds[state.rounds.length - 1];
+    if (!currentRound || currentRound.startedAt) return;
+
+    const startedAt = new Date().toISOString();
+
+    // Actualización optimista
+    set((state) => ({
+      rounds: [
+        ...state.rounds.slice(0, -1),
+        {
+          ...currentRound,
+          startedAt,
+        },
+      ],
+    }));
+
+    try {
+      await startRoundAction({
+        roundId: currentRound.id,
+        startedAt: new Date(startedAt),
+      });
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error iniciando la ronda" });
     }
   },
 }));

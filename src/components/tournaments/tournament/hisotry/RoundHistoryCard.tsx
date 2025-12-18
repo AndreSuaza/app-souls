@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IoChevronDown, IoChevronUp } from "react-icons/io5";
 import { RoundInterface, TournamentPlayerInterface } from "@/interfaces";
 import { BasicTournament } from "@/store";
@@ -16,14 +16,26 @@ interface Props {
 export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
   const [showAll, setShowAll] = useState(false);
 
-  // Estado de la ronda calculado inline (simplificado)
-  const isCurrentRound =
-    round.roundNumber === tournament.currentRoundNumber + 1 &&
-    tournament.status === "in_progress";
+  // Estado de la ronda calculado inline
+  const lastRoundNumber =
+    tournament.status === "finished"
+      ? tournament.currentRoundNumber
+      : tournament.currentRoundNumber + 1;
 
-  const [expanded, setExpanded] = useState<boolean>(isCurrentRound);
+  const isLastRound = round.roundNumber === lastRoundNumber;
 
-  const status = isCurrentRound ? "IN_PROGRESS" : "FINISHED";
+  const [expanded, setExpanded] = useState<boolean>(isLastRound);
+
+  useEffect(() => {
+    if (isLastRound) {
+      setExpanded(true); // la última ronda siempre expandida
+    }
+  }, [isLastRound]);
+
+  const status =
+    tournament.status === "in_progress" && isLastRound
+      ? "IN_PROGRESS"
+      : "FINISHED";
 
   const totalMatches = round.matches.length;
   const completedMatches = round.matches.filter(

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useTournamentStore } from "@/store";
+import { useTournamentStore, useUIStore } from "@/store";
 import {
   TournamentTabs,
   TournamentPlayersView,
@@ -15,6 +15,11 @@ export type TournamentTab = "players" | "currentRound" | "rounds";
 export default function TournamentAdminPage() {
   const { id } = useParams<{ id: string }>();
   const { tournament, fetchTournament, players } = useTournamentStore();
+  const hideLoading = useUIStore((s) => s.hideLoading);
+
+  useEffect(() => {
+    hideLoading(); // La navegación terminó
+  }, [hideLoading]);
 
   const [activeTab, setActiveTab] = useState<TournamentTab>("currentRound");
 

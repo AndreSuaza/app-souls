@@ -11,6 +11,7 @@ import { createTournamentAction } from "@/actions";
 import {
   useCatalogStore,
   useAlertConfirmationStore,
+  useUIStore,
   useToastStore,
 } from "@/store";
 import { DateTimeFields } from "./DateTimeFields";
@@ -35,6 +36,8 @@ export const CreateTournamentForm = () => {
     (s) => s.openAlertConfirmation
   );
   const showToast = useToastStore((s) => s.showToast);
+  const showLoading = useUIStore((s) => s.showLoading);
+  const hideLoading = useUIStore((s) => s.hideLoading);
 
   // inicializar formulario con validaciones tipadas
   const {
@@ -86,24 +89,31 @@ export const CreateTournamentForm = () => {
     openConfirmation({
       text: "¿Deseas crear este torneo?",
       action: async () => {
-        const tournamentId = await createTournamentAction({
-          title: data.title,
-          descripcion: data.descripcion,
-          format,
-          lat: 0,
-          lgn: 0,
-          maxRounds: 1,
-          // Si tiene role store, usar su storeId; si no, usar el default
-          storeId:
-            role === "store" && userStoreId
-              ? userStoreId
-              : "67c4bb4b15d333fa8987403e",
-          typeTournamentId: data.typeTournamentId,
-          date: buildISODate(),
-        });
+        try {
+          showLoading("Creando torneo...");
 
-        router.push(`/administrador/torneos/${tournamentId}`);
-        return true;
+          const tournamentId = await createTournamentAction({
+            title: data.title,
+            descripcion: data.descripcion,
+            format,
+            lat: 0,
+            lgn: 0,
+            maxRounds: 1,
+            storeId:
+              role === "store" && userStoreId
+                ? userStoreId
+                : "67c4bb4b15d333fa8987403e",
+            typeTournamentId: data.typeTournamentId,
+            date: buildISODate(),
+          });
+
+          router.push(`/administrador/torneos/${tournamentId}`);
+
+          return true;
+        } catch (error) {
+          hideLoading(); // Si falla, se desbloquea la UI
+          throw error;
+        }
       },
       onSuccess: () => {
         showToast("Torneo creado correctamente", "success");

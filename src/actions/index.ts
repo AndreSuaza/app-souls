@@ -18,7 +18,8 @@ export * from "./tournaments/generate-round.action";
 export * from "./tournaments/get-tournament-types.action";
 export * from "./tournaments/get-tournament.action";
 export * from "./tournaments/save-match-result.action";
-export * from "./tournaments/search-users-action.action";
+export * from "./tournaments/search-users.action";
+export * from "./tournaments/start-round.action";
 export * from "./tournaments/tournament-url";
 export * from "./tournaments/tournaments-pagination";
 

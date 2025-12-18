@@ -9,6 +9,7 @@ type TimerValues = {
 };
 
 export function useTournamentTimer(
+  roundId: string | null,
   startedAt: string | null,
   status: "pending" | "in_progress" | "finished"
 ): TimerValues {
@@ -17,6 +18,15 @@ export function useTournamentTimer(
     minutes: "00",
     seconds: "00",
   });
+
+  useEffect(() => {
+    // Reset visual del timer al cambiar de ronda
+    setTime({
+      hours: "00",
+      minutes: "00",
+      seconds: "00",
+    });
+  }, [roundId]);
 
   useEffect(() => {
     // Si no ha iniciado o ya terminó, no correr timer

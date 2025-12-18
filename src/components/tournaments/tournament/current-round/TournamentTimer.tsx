@@ -8,6 +8,7 @@ export const TournamentTimer = () => {
   const currentRound = rounds.length > 0 ? rounds[rounds.length - 1] : null;
 
   const { hours, minutes, seconds } = useTournamentTimer(
+    currentRound?.id ?? null,
     currentRound?.startedAt ?? null,
     tournament?.status ?? "pending"
   );

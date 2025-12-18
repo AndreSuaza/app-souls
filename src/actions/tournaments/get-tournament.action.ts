@@ -6,39 +6,54 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 export async function getTournamentAction(tournamentId: string) {
-  const id = IdSchema.parse(tournamentId);
+  try {
+    const id = IdSchema.parse(tournamentId);
 
-  const session = await auth();
+    const session = await auth();
 
-  // Validar sesión para poder mostrar el torneo
-  if (!session?.user) {
-    throw new Error("No autorizado");
-  }
+    // Validar sesión para poder mostrar el torneo
+    if (!session?.user) {
+      throw new Error("No autorizado");
+    }
 
-  const tournament = await prisma.tournament.findUnique({
-    include: {
-      tournamentPlayers: true,
-      tournamentRounds: {
-        include: {
-          matches: true,
+    const tournament = await prisma.tournament.findUnique({
+      include: {
+        tournamentPlayers: true,
+        tournamentRounds: {
+          include: {
+            matches: true,
+          },
         },
       },
-    },
-    where: {
-      id,
-    },
-  });
+      where: {
+        id,
+      },
+    });
 
-  if (!tournament) {
-    throw new Error("Torneo no encontrado");
-  }
-
-  // Si el user tiene role store, validar si el torneo le pertenece
-  if (session.user.role === "store") {
-    if (!session.user.storeId || tournament.storeId !== session.user.storeId) {
-      redirect("/administrador/torneos");
+    if (!tournament) {
+      throw new Error("Torneo no encontrado");
     }
-  }
 
-  return tournament;
+    // Si el user tiene role store, validar si el torneo le pertenece
+    if (session.user.role === "store") {
+      if (
+        !session.user.storeId ||
+        tournament.storeId !== session.user.storeId
+      ) {
+        redirect("/administrador/torneos");
+      }
+    }
+
+    return tournament;
+  } catch (error) {
+    // Log interno para debugging (server only)
+    console.error("[getTournamentAction]", error);
+
+    // Error controlado hacia el cliente
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : "Error al traer los datos del torneo"
+    );
+  }
 }

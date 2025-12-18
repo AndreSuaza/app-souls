@@ -7,7 +7,7 @@ interface Props {
 }
 
 export const ConfirmationModal = ({ className = "" }: Props) => {
-  const { text, closeAlertConfirmation, runAction } =
+  const { text, description, closeAlertConfirmation, runAction } =
     useAlertConfirmationStore();
 
   const handleConfirm = async () => {
@@ -30,9 +30,15 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
           ${className}
         `}
       >
-        <p className="text-center text-gray-800 font-semibold text-lg mb-6 leading-snug">
+        <p className="text-center text-gray-800 font-semibold text-lg mb-4 leading-snug">
           {text}
         </p>
+
+        {description && (
+          <p className="text-center text-sm text-gray-600 mb-6 leading-relaxed">
+            {description}
+          </p>
+        )}
 
         <div className="flex justify-center gap-4">
           <button

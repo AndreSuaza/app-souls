@@ -3,12 +3,14 @@ import { create } from "zustand";
 interface State {
   isAlertConfirmation: boolean;
   text: string;
+  description?: string;
   action: (() => Promise<boolean>) | null;
   onSuccess?: () => void; // callback éxito
   onError?: () => void; // callback error
 
   openAlertConfirmation: (params: {
     text: string;
+    description?: string;
     action: () => Promise<boolean>;
     onSuccess?: () => void;
     onError?: () => void;
@@ -21,14 +23,16 @@ interface State {
 export const useAlertConfirmationStore = create<State>()((set, get) => ({
   isAlertConfirmation: false,
   text: "",
+  description: undefined,
   action: null,
   onSuccess: undefined,
   onError: undefined,
 
-  openAlertConfirmation: ({ text, action, onSuccess, onError }) =>
+  openAlertConfirmation: ({ text, description, action, onSuccess, onError }) =>
     set({
       isAlertConfirmation: true,
       text,
+      description,
       action,
       onSuccess,
       onError,
@@ -39,6 +43,7 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
       isAlertConfirmation: false,
       action: null,
       text: "",
+      description: undefined,
       onSuccess: undefined,
       onError: undefined,
     }),
@@ -52,6 +57,7 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
       isAlertConfirmation: false,
       action: null,
       text: "",
+      description: undefined,
     });
 
     try {
