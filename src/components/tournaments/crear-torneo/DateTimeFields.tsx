@@ -31,7 +31,9 @@ export const DateTimeFields = ({
   const currentMinute = now.getMinutes();
 
   // Minutos mínimos permitidos para la hora actual
-  const minAllowedMinute = Math.ceil(currentMinute / 15) * 15;
+  const roundedMinute = Math.ceil(currentMinute / 15) * 15;
+  // Si el redondeo da 60, los minutos arrancan en 00 de la siguiente hora
+  const minAllowedMinute = roundedMinute === 60 ? 0 : roundedMinute;
 
   return (
     <div className="grid md:grid-cols-2 gap-4">
@@ -63,7 +65,13 @@ export const DateTimeFields = ({
               const hour = String(h).padStart(2, "0");
 
               // Bloquear horas pasadas si es hoy
-              if (date === today && h < currentHour) return null;
+              // Si la hora actual ya no tiene minutos válidos, se bloquea completamente
+              if (
+                date === today &&
+                (h < currentHour || (h === currentHour && roundedMinute === 60))
+              ) {
+                return null;
+              }
 
               return (
                 <option key={hour} value={hour}>

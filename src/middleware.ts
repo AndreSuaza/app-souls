@@ -1,9 +1,9 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
-// import authConfig from "./auth.config";
-// import { auth } from "./auth";
 import { NextResponse } from "next/server";
 
-const adminRoutes = ["/admin"];
+const adminRoutes = ["/admin", "/administrador"];
+// rutas a las que el usuario con role store puede acceder
+const storeAllowedAdminRoutes = ["/admin/torneos", "/administrador/torneos"];
 const protectedRoutes = ["/perfil"];
 const authRoutes = [
   "/auth/login",
@@ -45,6 +45,20 @@ export default baseAuth((req) => {
   if (adminRoutes.some((route) => path.startsWith(route))) {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/auth/login", nextUrl));
+    }
+
+    const role = req.auth?.user.role;
+
+    // Restricción específica para usuarios con role store
+    if (role === "store") {
+      const isAllowed = storeAllowedAdminRoutes.some((allowedRoute) =>
+        path.startsWith(allowedRoute)
+      );
+
+      // Si intenta acceder a cualquier otra ruta admin → bloquear
+      if (!isAllowed) {
+        return NextResponse.redirect(new URL("/", nextUrl));
+      }
     }
   }
 

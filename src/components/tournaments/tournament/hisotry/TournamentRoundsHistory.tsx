@@ -34,6 +34,7 @@ export const TournamentRoundsHistory = () => {
           {/* Card */}
           <div className="flex-1">
             <RoundHistoryCard
+              key={index}
               round={round}
               tournament={tournament}
               players={players}

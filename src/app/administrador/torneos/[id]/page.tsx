@@ -27,9 +27,13 @@ export default function TournamentAdminPage() {
     // Esperar a que el torneo esté cargado
     if (!tournament) return;
 
-    // Si el torneo ya finalizó, forzar vista de jugadores
+    // Si el torneo finalizó:
+    // - se permite "players" y "rounds"
+    // - se bloquea "currentRound"
     if (tournament.status === "finished") {
-      if (activeTab !== "players") setActiveTab("players");
+      if (activeTab === "currentRound") {
+        setActiveTab("players");
+      }
       return;
     }
 

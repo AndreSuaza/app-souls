@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { RoundInterface, TournamentPlayerInterface } from "@/interfaces";
-import { RoundStatusBadge } from "./RoundStatusBadge";
-import { RoundHistoryMatchRow } from "./RoundHistoryMatchRow";
-import { BasicTournament } from "@/store";
 import { IoChevronDown, IoChevronUp } from "react-icons/io5";
+import { RoundInterface, TournamentPlayerInterface } from "@/interfaces";
+import { BasicTournament } from "@/store";
+import { RoundStatusBadge } from "./RoundStatusBadge";
+import { MatchCard } from "../current-round/MarchCard";
 
 interface Props {
   round: RoundInterface;
@@ -76,11 +76,13 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
           <div>
             {visibleMatches.map((match, index) => (
               <>
-                <RoundHistoryMatchRow
+                <MatchCard
                   key={match.id}
                   match={match}
                   tableNumber={index + 1}
                   players={players}
+                  readOnly={true}
+                  decorated={false}
                 />
 
                 <hr className=" border-gray-200" />

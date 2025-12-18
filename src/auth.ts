@@ -16,6 +16,11 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
         token.role = user.role;
         token.nickname = user.nickname;
         token.image = user.image ? user.image : "player";
+
+        // guardar storeId solo si existe
+        if (user.role === "store") {
+          token.storeId = user.storeId ?? null;
+        }
       }
       return token;
     },
@@ -27,6 +32,11 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
         session.user.role = token.role;
         session.user.nickname = token.nickname;
         session.user.image = token.image;
+
+        // exponer storeId en sesión
+        if (token.role === "store") {
+          session.user.storeId = token.storeId ?? null;
+        }
       }
       return session;
     },

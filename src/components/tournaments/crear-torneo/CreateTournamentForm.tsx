@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import clsx from "clsx";
 import Link from "next/link";
@@ -23,6 +24,10 @@ type CreateTournamentInputs = {
 };
 
 export const CreateTournamentForm = () => {
+  const { data: session } = useSession();
+  const role = session?.user?.role;
+  const userStoreId = session?.user?.storeId;
+
   const router = useRouter();
 
   const { tournamentTypes, fetchTournamentTypes } = useCatalogStore();
@@ -88,7 +93,11 @@ export const CreateTournamentForm = () => {
           lat: 0,
           lgn: 0,
           maxRounds: 1,
-          storeId: "67c4bb4b15d333fa8987403e",
+          // Si tiene role store, usar su storeId; si no, usar el default
+          storeId:
+            role === "store" && userStoreId
+              ? userStoreId
+              : "67c4bb4b15d333fa8987403e",
           typeTournamentId: data.typeTournamentId,
           date: buildISODate(),
         });
@@ -178,12 +187,14 @@ export const CreateTournamentForm = () => {
       />
 
       <div className="grid md:grid-cols-2 gap-4">
-        <TournamentTypeSelect<CreateTournamentInputs>
-          register={register}
-          errors={errors}
-          name="typeTournamentId"
-          tournamentTypes={tournamentTypes}
-        />
+        {role === "admin" && (
+          <TournamentTypeSelect<CreateTournamentInputs>
+            register={register}
+            errors={errors}
+            name="typeTournamentId"
+            tournamentTypes={tournamentTypes}
+          />
+        )}
 
         <TournamentFormatSelect value={format} onChange={setFormat} />
       </div>

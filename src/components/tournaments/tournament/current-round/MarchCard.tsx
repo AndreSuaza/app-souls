@@ -1,19 +1,26 @@
 "use client";
 
+import clsx from "clsx";
 import { MatchInterface, TournamentPlayerInterface } from "@/interfaces";
 import { PlayerCell } from "../players/PlayerCell";
 import { MatchResultSelector } from "./MatchResultSelector";
 import { MatchStatusIcon } from "./MatchStatusIcon";
 
+interface MatchCardProps {
+  match: MatchInterface;
+  tableNumber: number;
+  players: TournamentPlayerInterface[];
+  readOnly?: boolean; // indica si el resultado es editable
+  decorated?: boolean; // controla borde, sombra y redondeo
+}
+
 export const MatchCard = ({
   match,
   tableNumber,
   players,
-}: {
-  match: MatchInterface;
-  tableNumber: number;
-  players: TournamentPlayerInterface[];
-}) => {
+  readOnly = false, // por defecto editable
+  decorated = true, // ← por defecto con estilos visuales
+}: MatchCardProps) => {
   const player1 = players.find((p) => p.id === match.player1Id);
   const player2 = players.find((p) => p.id === match.player2Id);
 
@@ -33,7 +40,14 @@ export const MatchCard = ({
       : undefined;
 
   return (
-    <div className="grid gap-y-3 md:grid-cols-[72px_1fr_220px_1fr_72px] md:grid-rows-1 md:gap-y-0 items-center bg-white border rounded-xl px-2 py-4 md:p-4 shadow-sm w-full">
+    <div
+      className={clsx(
+        "grid gap-y-3 md:grid-cols-[72px_1fr_220px_1fr_72px] md:grid-rows-1 md:gap-y-0 items-center bg-white px-2 py-4 md:p-4 w-full",
+        {
+          "border rounded-xl shadow-sm": decorated,
+        }
+      )}
+    >
       {/* Mesa */}
       <div className="flex items-center gap-2 justify-center md:col-auto md:row-auto md:justify-start">
         {/* Desktop */}
@@ -88,7 +102,11 @@ export const MatchCard = ({
 
       {/* Resultado */}
       <div className="flex justify-center md:col-auto md:row-auto">
-        <MatchResultSelector match={match} layout="mobileGrid" />
+        <MatchResultSelector
+          match={match}
+          layout="mobileGrid"
+          readOnly={readOnly}
+        />
       </div>
 
       {/* Jugador 2 (nickname/nombre a la derecha + avatar a la derecha) */}
