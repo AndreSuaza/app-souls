@@ -209,7 +209,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
           <div>
             {(isEditing ? editableMatches : visibleMatches).map(
               (match, index) => (
-                <>
+                <div key={match.id}>
                   <MatchCard
                     key={match.id}
                     match={match}
@@ -223,7 +223,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
                   />
 
                   <hr className=" border-gray-200" />
-                </>
+                </div>
               )
             )}
 

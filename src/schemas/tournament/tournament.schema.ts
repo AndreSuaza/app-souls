@@ -7,7 +7,7 @@ export const TournamentFormatEnum = z.enum(["default", "Masters"]);
 //   (late join), solamente si el torneo ya tiene rondas generadas.
 export const CreateTournamentSchema = z.object({
   title: z.string().min(1),
-  descripcion: z.string().min(1),
+  description: z.string().min(1),
   lat: z.number(),
   lgn: z.number(),
   format: TournamentFormatEnum,
@@ -21,3 +21,29 @@ export const CreateTournamentSchema = z.object({
 });
 
 export type CreateTournamentInput = z.infer<typeof CreateTournamentSchema>;
+
+/**
+ * Schema para actualizar información básica del torneo
+ * - No incluye campos que no son editables
+ */
+export const UpdateTournamentInfoSchema = z.object({
+  tournamentId: z.string().min(1),
+
+  title: z
+    .string()
+    .min(3, "El título debe tener al menos 3 caracteres")
+    .max(50, "El título no puede superar los 50 caracteres"),
+
+  description: z
+    .string()
+    .min(10, "La descripción debe tener al menos 10 caracteres")
+    .max(300, "La descripción no puede superar los 300 caracteres")
+    .optional(),
+
+  date: z.date(),
+  status: z.string(),
+});
+
+export type UpdateTournamentInfoInput = z.infer<
+  typeof UpdateTournamentInfoSchema
+>;

@@ -12,7 +12,7 @@ export async function createTournamentAction(input: CreateTournamentInput) {
     const tournament = await prisma.tournament.create({
       data: {
         title: data.title,
-        descripcion: data.descripcion,
+        description: data.description,
         lat: data.lat,
         lgn: data.lgn,
         image: data.image,

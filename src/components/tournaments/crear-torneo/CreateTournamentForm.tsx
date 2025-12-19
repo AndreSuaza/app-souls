@@ -20,7 +20,7 @@ import { TournamentFormatSelect } from "./TournamentFormatSelect";
 
 type CreateTournamentInputs = {
   title: string;
-  descripcion: string;
+  description: string;
   typeTournamentId: string;
 };
 
@@ -94,7 +94,7 @@ export const CreateTournamentForm = () => {
 
           const tournamentId = await createTournamentAction({
             title: data.title,
-            descripcion: data.descripcion,
+            description: data.description,
             format,
             lat: 0,
             lgn: 0,
@@ -163,10 +163,10 @@ export const CreateTournamentForm = () => {
         <textarea
           maxLength={300}
           className={clsx("w-full border rounded p-2", {
-            "border-red-500": errors.descripcion,
+            "border-red-500": errors.description,
           })}
           rows={3}
-          {...register("descripcion", {
+          {...register("description", {
             required: "La descripción es obligatoria",
             minLength: {
               value: 10,
@@ -179,10 +179,10 @@ export const CreateTournamentForm = () => {
           })}
         />
 
-        {errors.descripcion && (
+        {errors.description && (
           <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
             <MdError size={14} />
-            <span>{errors.descripcion.message}</span>
+            <span>{errors.description.message}</span>
           </div>
         )}
       </div>

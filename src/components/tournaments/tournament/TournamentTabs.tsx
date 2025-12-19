@@ -15,6 +15,7 @@ const tabs: { id: TournamentTab; label: string }[] = [
   { id: "players", label: "Jugadores" },
   { id: "currentRound", label: "Ronda actual" },
   { id: "rounds", label: "Rondas" },
+  { id: "information", label: "Información" },
 ];
 
 const MIN_PLAYERS_FOR_ROUND = 4;

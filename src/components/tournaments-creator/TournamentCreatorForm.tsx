@@ -8,7 +8,7 @@ export const TournamentCreator = () => {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
-  const [descripcion, setDescripcion] = useState("");
+  const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => {
     // Fecha y hora actual en formato ISO local sin segundos
     const now = new Date();
@@ -23,12 +23,12 @@ export const TournamentCreator = () => {
 
   const create = async () => {
     if (!title.trim()) return alert("El torneo debe tener un título");
-    if (!descripcion.trim()) return alert("La descripción es obligatoria");
+    if (!description.trim()) return alert("La descripción es obligatoria");
     if (!date) return alert("La fecha es obligatoria");
 
     const result = await createTournamentAction({
       title,
-      descripcion,
+      description,
       format,
       lat: 0,
       lgn: 0,
@@ -59,8 +59,8 @@ export const TournamentCreator = () => {
         <label className="text-sm font-semibold">Descripción</label>
         <textarea
           className="w-full border px-3 py-2 rounded"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           placeholder="Descripción breve del torneo..."
           rows={3}
         />

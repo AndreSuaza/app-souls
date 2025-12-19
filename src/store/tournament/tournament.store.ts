@@ -9,6 +9,8 @@ import {
   deletePlayerAction,
   editRoundResultsAction,
   startRoundAction,
+  deleteTournamentAction,
+  updateTournamentInfoAction,
 } from "@/actions";
 import { applySwissResults, calculateBuchholzForPlayers } from "@/logic";
 import {
@@ -21,11 +23,12 @@ import {
 export type BasicTournament = {
   id: string;
   title: string;
-  descripcion?: string | null;
+  description?: string | null;
   date: string;
   status: "pending" | "in_progress" | "finished";
   currentRoundNumber: number;
   maxRounds: number;
+  format?: string;
 };
 
 type TournamentStoreState = {
@@ -62,6 +65,12 @@ type TournamentStoreState = {
     updatedMatches: MatchInterface[]
   ) => Promise<void>;
   startCurrentRound: () => Promise<void>;
+  deleteTournament: () => Promise<boolean>;
+  updateTournamentInfo: (data: {
+    title: string;
+    description?: string | null;
+    date: Date;
+  }) => Promise<boolean>;
 };
 
 export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
@@ -78,27 +87,34 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     const tournamentId = id ?? get().tournamentId;
     if (!tournamentId) return;
 
+    set({ loading: true, error: null });
+
     try {
-      set({ loading: true, error: null });
-      console.log("Cargando torneo...", new Date());
       const data = await getTournamentAction(tournamentId);
 
-      console.log("Torneo cargado.", new Date());
       if (!data) {
-        set({ loading: false, error: "Torneo no encontrado" });
+        set({
+          loading: false,
+          error: "Torneo no encontrado",
+          tournament: null,
+          players: [],
+          rounds: [],
+        });
         return;
       }
 
       set({
         tournamentId,
+        error: null,
         tournament: {
           id: data.id,
           title: data.title,
-          descripcion: data.descripcion,
+          description: data.description,
           date: data.date.toISOString(),
           status: data.status,
           currentRoundNumber: data.currentRoundNumber,
           maxRounds: data.maxRounds,
+          format: data.format ?? undefined,
         },
         players: data.tournamentPlayers.map((p) => ({
           id: p.id,
@@ -130,11 +146,16 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
 
         loading: false,
       });
-
-      console.log("Torneo almacenado en store.", new Date());
     } catch (error) {
       console.error(error);
-      set({ loading: false, error: "Error cargando el torneo" });
+      set({
+        error: "Error cargando el torneo",
+        tournament: null,
+        players: [],
+        rounds: [],
+      });
+    } finally {
+      set({ loading: false });
     }
   },
 
@@ -471,6 +492,71 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     } catch (error) {
       console.error(error);
       set({ error: "Error iniciando la ronda" });
+    }
+  },
+
+  deleteTournament: async () => {
+    const { tournamentId, tournament } = get();
+    if (!tournamentId) return false;
+
+    if (tournament?.status === "finished") {
+      return false;
+    }
+
+    try {
+      await deleteTournamentAction(
+        tournamentId,
+        tournament?.status ?? "pending"
+      );
+
+      // Limpia el estado local
+      set({
+        tournament: null,
+        players: [],
+        rounds: [],
+        tournamentId: null,
+      });
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error cancelando el torneo" });
+      return false;
+    }
+  },
+
+  updateTournamentInfo: async (data) => {
+    const { tournamentId, tournament } = get();
+    if (!tournamentId || !tournament) return false;
+
+    if (tournament?.status === "finished") {
+      return false;
+    }
+
+    try {
+      await updateTournamentInfoAction({
+        tournamentId,
+        title: data.title,
+        description: data.description ?? undefined,
+        date: data.date,
+        status: tournament.status ?? "pending",
+      });
+
+      // Actualización del store
+      set({
+        tournament: {
+          ...tournament,
+          title: data.title,
+          description: data.description ?? null,
+          date: data.date.toISOString(),
+        },
+      });
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error actualizando información del torneo" });
+      return false;
     }
   },
 }));

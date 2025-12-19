@@ -1,20 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, notFound } from "next/navigation";
 import { useTournamentStore, useUIStore } from "@/store";
 import {
   TournamentTabs,
   TournamentPlayersView,
   TournamentCurrentRound,
   TournamentRoundsHistory,
+  TournamentInformation,
 } from "@/components";
 
-export type TournamentTab = "players" | "currentRound" | "rounds";
+export type TournamentTab =
+  | "players"
+  | "currentRound"
+  | "rounds"
+  | "information";
 
 export default function TournamentAdminPage() {
   const { id } = useParams<{ id: string }>();
-  const { tournament, fetchTournament, players } = useTournamentStore();
+  const { tournament, fetchTournament, players, error } = useTournamentStore();
   const hideLoading = useUIStore((s) => s.hideLoading);
 
   useEffect(() => {
@@ -49,6 +54,12 @@ export default function TournamentAdminPage() {
     }
   }, [tournament, players.length, activeTab]);
 
+  if (error === "Torneo no encontrado") {
+    notFound();
+  }
+
+  if (!tournament) return null;
+
   return (
     <div className="space-y-6">
       <TournamentTabs
@@ -64,6 +75,8 @@ export default function TournamentAdminPage() {
       {activeTab === "currentRound" && <TournamentCurrentRound />}
 
       {activeTab === "rounds" && <TournamentRoundsHistory />}
+
+      {activeTab === "information" && <TournamentInformation />}
     </div>
   );
 }

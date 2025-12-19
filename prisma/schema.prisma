@@ -148,7 +148,7 @@ model Store {
 model Tournament {
   id                 String           @id @default(auto()) @map("_id") @db.ObjectId
   title              String
-  descripcion        String
+  description        String
   lat                Float
   lgn                Float
   format             TournamentFormat @default(Masters)

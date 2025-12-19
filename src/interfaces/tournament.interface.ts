@@ -3,7 +3,7 @@ import { Store } from "./store.interface";
 export interface Tournament {
   id: string;
   title: string;
-  descripcion: string;
+  description: string;
   url: string;
   lat: number;
   lgn: number;
@@ -37,7 +37,7 @@ export interface StoreTournament {
 export interface TournamentInterface {
   id: string;
   title: string;
-  descripcion: string;
+  description: string;
   url: string;
   lat: number;
   lgn: number;

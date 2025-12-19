@@ -11,6 +11,7 @@ export * from "./products/product-url";
 export * from "./tournaments/add-player.action";
 export * from "./tournaments/create-tournament.action";
 export * from "./tournaments/delete-player.action";
+export * from "./tournaments/delete-tournament.action";
 export * from "./tournaments/edit-round-results.action";
 export * from "./tournaments/finalize-round.action";
 export * from "./tournaments/finalize-tournament.action";
@@ -22,6 +23,7 @@ export * from "./tournaments/search-users.action";
 export * from "./tournaments/start-round.action";
 export * from "./tournaments/tournament-url";
 export * from "./tournaments/tournaments-pagination";
+export * from "./tournaments/update-tournament-info.action";
 
 export * from "./stores/stores-pagination";
 

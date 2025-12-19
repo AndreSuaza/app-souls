@@ -6,17 +6,21 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 export async function getTournamentAction(tournamentId: string) {
+  // Validar ID
+  const id = IdSchema.parse(tournamentId);
+
+  // Obtener sesión
+  const session = await auth();
+
+  if (!session?.user) {
+    throw new Error("No autorizado");
+  }
+
+  let tournament;
+
   try {
-    const id = IdSchema.parse(tournamentId);
-
-    const session = await auth();
-
-    // Validar sesión para poder mostrar el torneo
-    if (!session?.user) {
-      throw new Error("No autorizado");
-    }
-
-    const tournament = await prisma.tournament.findUnique({
+    // Obtener torneo
+    tournament = await prisma.tournament.findUnique({
       include: {
         tournamentPlayers: true,
         tournamentRounds: {
@@ -29,31 +33,22 @@ export async function getTournamentAction(tournamentId: string) {
         id,
       },
     });
-
-    if (!tournament) {
-      throw new Error("Torneo no encontrado");
-    }
-
-    // Si el user tiene role store, validar si el torneo le pertenece
-    if (session.user.role === "store") {
-      if (
-        !session.user.storeId ||
-        tournament.storeId !== session.user.storeId
-      ) {
-        redirect("/administrador/torneos");
-      }
-    }
-
-    return tournament;
   } catch (error) {
-    // Log interno para debugging (server only)
     console.error("[getTournamentAction]", error);
-
-    // Error controlado hacia el cliente
-    throw new Error(
-      error instanceof Error
-        ? error.message
-        : "Error al traer los datos del torneo"
-    );
+    throw new Error("Error al consultar el torneo");
   }
+
+  if (!tournament) {
+    return null;
+  }
+
+  // Autorización por tienda
+  if (
+    session.user.role === "store" &&
+    (!session.user.storeId || tournament.storeId !== session.user.storeId)
+  ) {
+    redirect("/administrador/torneos");
+  }
+
+  return tournament;
 }

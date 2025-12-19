@@ -1,12 +1,13 @@
 "use client";
 
-interface Props {
+interface DateTimeFieldsProps {
   date: string;
   time: string;
   minDate: string;
   minTime: string;
   onDateChange: (value: string) => void;
   onTimeChange: (value: string) => void;
+  disabled?: boolean;
 }
 
 const MINUTES = ["00", "15", "30", "45"];
@@ -15,10 +16,10 @@ export const DateTimeFields = ({
   date,
   time,
   minDate,
-  minTime,
   onDateChange,
   onTimeChange,
-}: Props) => {
+  disabled = false,
+}: DateTimeFieldsProps) => {
   const maxDate = new Date();
 
   // Fecha máxima permitida (1 año en el futuro)
@@ -41,6 +42,7 @@ export const DateTimeFields = ({
         <label className="block text-sm font-medium">Fecha</label>
         <input
           type="date"
+          disabled={disabled}
           min={minDate}
           max={maxDate.toISOString().split("T")[0]}
           value={date}
@@ -56,6 +58,7 @@ export const DateTimeFields = ({
           {/* Horas */}
           <select
             value={time.split(":")[0]}
+            disabled={disabled}
             onChange={(e) =>
               onTimeChange(`${e.target.value}:${time.split(":")[1]}`)
             }
@@ -84,6 +87,7 @@ export const DateTimeFields = ({
           {/* Minutos (15 en 15) */}
           <select
             value={time.split(":")[1]}
+            disabled={disabled}
             onChange={(e) =>
               onTimeChange(`${time.split(":")[0]}:${e.target.value}`)
             }
