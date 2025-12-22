@@ -37,6 +37,11 @@ export async function finalizeRoundAction(
       where: { id: tournamentId },
       data: { currentRoundNumber: { increment: 1 } },
     });
+
+    await prisma.round.update({
+      where: { id: round.id },
+      data: { finishedAt: new Date() },
+    });
   } catch (error) {
     // Log interno para debugging (server only)
     console.error("[finalizeRoundAction]", error);

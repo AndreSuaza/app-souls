@@ -1,18 +1,33 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { FinalizeTournamentSchema } from "@/schemas";
 
-export async function finalizeTournamentAction(tournamentId: string) {
+export async function finalizeTournamentAction(input: {
+  tournamentId: string;
+  players: { userId: string; wins: number }[];
+}) {
   try {
-    if (!tournamentId) throw new Error("Torneo no encontrado");
+    const data = FinalizeTournamentSchema.parse(input);
 
-    // Marcar torneo como finalizado
-    await prisma.tournament.update({
-      where: { id: tournamentId },
-      data: {
-        status: "finished",
-      },
-    });
+    await prisma.$transaction([
+      prisma.tournament.update({
+        where: { id: data.tournamentId },
+        data: {
+          status: "finished",
+        },
+      }),
+      ...data.players.map((player) =>
+        prisma.user.update({
+          where: { id: player.userId },
+          data: {
+            victoryPoints: { increment: player.wins },
+            eloPoints: { increment: player.wins },
+            tournamentsPlayed: { increment: 1 },
+          },
+        })
+      ),
+    ]);
   } catch (error) {
     // Log interno para debugging (server only)
     console.error("[finalizeTournament]", error);

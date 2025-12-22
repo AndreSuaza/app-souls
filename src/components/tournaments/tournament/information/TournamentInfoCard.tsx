@@ -37,14 +37,15 @@ export const TournamentInfoCard = ({
           Información del torneo
         </h2>
 
-        <button
-          onClick={onDelete}
-          disabled={isFinished}
-          className="flex items-center gap-2 px-2 sm:px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700"
-        >
-          <IoTrashOutline className="hidden sm:block" />
-          Cancelar torneo
-        </button>
+        {!isFinished && (
+          <button
+            onClick={onDelete}
+            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700"
+          >
+            <IoTrashOutline className="hidden sm:block" />
+            Cancelar torneo
+          </button>
+        )}
       </div>
 
       {/* Inputs */}

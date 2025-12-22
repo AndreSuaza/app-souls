@@ -33,7 +33,7 @@ export const TournamentRoundsHistory = () => {
       {orderedRounds.map((round, index) => (
         <div key={round.id} className="flex gap-4">
           {/* Timeline */}
-          <div className="relative flex flex-col items-center">
+          <div className="hidden sm:flex relative flex-col items-center">
             {/* Icono */}
             <RoundTimelineIcon round={round} tournament={tournament} />
 

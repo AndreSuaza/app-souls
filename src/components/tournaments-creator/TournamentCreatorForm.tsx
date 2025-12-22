@@ -19,7 +19,7 @@ export const TournamentCreator = () => {
   // Valores temporales
   const storeId = "67c4bb4b15d333fa8987403e";
   const typeTournamentId = "67c4e30b4177fdb03545c48a";
-  const format = "default";
+  const format = "Masters";
 
   const create = async () => {
     if (!title.trim()) return alert("El torneo debe tener un título");

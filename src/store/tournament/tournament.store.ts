@@ -344,7 +344,45 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     if (!state.tournamentId) return;
 
     try {
-      await finalizeTournamentAction(state.tournamentId);
+      // Construye el mapa playerId -> userId para contar victorias por usuario.
+      const playerIdToUserId = new Map(
+        state.players.map((p) => [p.id, p.userId])
+      );
+      // Inicializa los contadores en 0 para todos los inscritos.
+      const winsByUserId = new Map(
+        state.players.map((p) => [p.userId, 0])
+      );
+
+      // Suma 1 victoria por match ganado (P1/P2); empates no cuentan.
+      state.rounds.forEach((round) => {
+        round.matches.forEach((match) => {
+          if (match.result === "P1") {
+            const userId = playerIdToUserId.get(match.player1Id);
+            if (userId) {
+              winsByUserId.set(userId, (winsByUserId.get(userId) ?? 0) + 1);
+            }
+          }
+
+          if (match.result === "P2" && match.player2Id) {
+            const userId = playerIdToUserId.get(match.player2Id);
+            if (userId) {
+              winsByUserId.set(userId, (winsByUserId.get(userId) ?? 0) + 1);
+            }
+          }
+        });
+      });
+
+      // Genera el payload minimo para actualizar puntos y torneos jugados.
+      const players = state.players.map((p) => ({
+        userId: p.userId,
+        wins: winsByUserId.get(p.userId) ?? 0,
+      }));
+
+      // Actualiza el torneo y los usuarios en el backend.
+      await finalizeTournamentAction({
+        tournamentId: state.tournamentId,
+        players,
+      });
 
       set((state) => ({
         tournament: state.tournament
@@ -362,11 +400,106 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     if (!tournamentId) return false;
 
     try {
-      await deletePlayerAction(playerId);
+      const state = get();
+      const currentRound = state.rounds[state.rounds.length - 1];
+      // Solo se ajusta el match si la ronda actual existe y no ha sido finalizada.
+      const roundIsOpen =
+        currentRound?.matches.some((m) => m.result === null) ?? false;
+
+      let matchDeleteId: string | null = null;
+      let matchUpdate:
+        | {
+            id: string;
+            player1Id: string;
+            player1Nickname: string;
+            player2Id: string | null;
+            player2Nickname: string | null;
+            result: "P1" | "P2" | "DRAW" | null;
+          }
+        | null = null;
+
+      if (currentRound && roundIsOpen) {
+        // Buscar el match donde participa el jugador a eliminar.
+        const match = currentRound.matches.find(
+          (m) => m.player1Id === playerId || m.player2Id === playerId
+        );
+
+        if (match) {
+          // Si el match ya tiene BYE, se elimina; si no, se convierte a BYE.
+          const hasBye =
+            match.player2Id === null || match.player2Nickname === "BYE";
+
+          if (hasBye) {
+            matchDeleteId = match.id;
+          } else if (match.player2Id === playerId) {
+            matchUpdate = {
+              id: match.id,
+              player1Id: match.player1Id,
+              player1Nickname: match.player1Nickname,
+              player2Id: null,
+              player2Nickname: "BYE",
+              result: "P1",
+            };
+          } else {
+            matchUpdate = {
+              id: match.id,
+              player1Id: match.player2Id ?? match.player1Id,
+              player1Nickname:
+                match.player2Nickname ?? match.player1Nickname,
+              player2Id: null,
+              player2Nickname: "BYE",
+              result: "P1",
+            };
+          }
+        }
+      }
+
+      // Ejecuta la eliminacion en BD con la informacion ya calculada.
+      await deletePlayerAction({
+        playerId,
+        matchDeleteId,
+        matchUpdate,
+      });
 
       set({
         players: get().players.filter((p) => p.id !== playerId),
       });
+
+      if (currentRound && (matchDeleteId || matchUpdate)) {
+        // Actualiza el store sin depender de la respuesta del backend.
+        set((state) => ({
+          rounds: state.rounds.map((round) => {
+            if (round.id !== currentRound.id) return round;
+
+            if (matchDeleteId) {
+              return {
+                ...round,
+                matches: round.matches.filter((m) => m.id !== matchDeleteId),
+              };
+            }
+
+            if (matchUpdate) {
+              return {
+                ...round,
+                matches: round.matches.map((m) =>
+                  m.id === matchUpdate!.id
+                    ? {
+                        ...m,
+                        player1Id: matchUpdate!.player1Id,
+                        player1Nickname: matchUpdate!.player1Nickname,
+                        player2Id: matchUpdate!.player2Id,
+                        player2Nickname: matchUpdate!.player2Nickname,
+                        result: matchUpdate!.result,
+                      }
+                    : m
+                ),
+              };
+            }
+
+            return round;
+          }),
+        }));
+      }
 
       return true;
     } catch (error) {

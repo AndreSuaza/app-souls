@@ -200,9 +200,15 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
           {/* Encabezado de columnas */}
           <div className="grid grid-cols-[72px_1fr_120px_1fr_72px] items-center bg-gray-100 px-6 py-3 text-sm font-semibold text-gray-500">
             <div className="text-left">Mesa</div>
-            <div className="text-left">Jugador 1</div>
+            <div className="text-left">
+              <span className="sm:hidden">P1</span>
+              <span className="hidden sm:inline">Jugador 1</span>
+            </div>
             <div className="text-center">Resultado</div>
-            <div className="text-right">Jugador 2</div>
+            <div className="text-right">
+              <span className="sm:hidden">P2</span>
+              <span className="hidden sm:inline">Jugador 2</span>
+            </div>
             <div className="text-right">Estado</div>
           </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-type TournamentFormat = "default" | "Masters";
+type TournamentFormat = "Masters";
 
 type Props = {
   value: TournamentFormat;
@@ -8,7 +8,6 @@ type Props = {
 };
 
 const TOURNAMENT_FORMATS: { value: TournamentFormat; label: string }[] = [
-  { value: "default", label: "Default" },
   { value: "Masters", label: "Masters" },
 ];
 

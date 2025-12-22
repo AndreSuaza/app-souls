@@ -181,7 +181,6 @@ model TypeTournament {
 }
 
 enum TournamentFormat {
-  default
   Masters
 }
 
@@ -227,7 +226,8 @@ model Round {
   matches      Match[]
   createDate   DateTime @default(now())
 
-  startedAt DateTime?
+  startedAt  DateTime?
+  finishedAt DateTime?
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
 
@@ -264,6 +264,8 @@ model User {
   country           String?
   city              String?
   tournamentsPlayed Int          @default(0)
+  victoryPoints     Int          @default(0)
+  eloPoints         Int          @default(0)
   password          String?
   emailVerified     DateTime?
   image             String       @default("player")

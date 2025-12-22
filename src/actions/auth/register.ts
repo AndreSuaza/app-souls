@@ -3,6 +3,7 @@
 import { sendEmailVerification } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { palabrasProhibidas } from "@/models/inappropriateWords.model";
+import { RegisterSchema } from "@/schemas";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { AuthError } from "next-auth";
@@ -20,8 +21,8 @@ type FormInputs = {
 function validarNickname(nickname: string): string | null {
   const trimmed = nickname.trim().toLowerCase();
 
-  if (trimmed.length < 3 || trimmed.length > 20)
-    return "El nickname debe tener entre 3 y 20 caracteres.";
+  if (trimmed.length < 3 || trimmed.length > 15)
+    return "El nickname debe tener entre 3 y 15 caracteres.";
   if (!/^[a-zA-Z0-9._]+$/.test(trimmed))
     return "Solo se permiten letras, números, puntos y guiones bajos.";
   if (/([a-zA-Z0-9._])\1{3,}/.test(trimmed))
@@ -31,11 +32,19 @@ function validarNickname(nickname: string): string | null {
   if (palabrasProhibidas.some((p) => trimmed.includes(p)))
     return "El nickname contiene palabras restringidas.";
 
-  return null; // ✅ válido
+  return null;
 }
 
 export async function userRegistration(formData: FormInputs) {
   try {
+    const parsed = RegisterSchema.safeParse(formData);
+    if (!parsed.success) {
+      return {
+        success: false,
+        message: parsed.error.errors[0]?.message ?? "Datos invalidos.",
+      };
+    }
+
     // verificar si existe el usuario en la base de datos
     const existsEmail = await prisma.user.findUnique({
       where: {

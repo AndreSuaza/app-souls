@@ -16,7 +16,7 @@ import { PlayerListView } from "./PlayerListView";
 export const PlayerList = () => {
   const showToast = useToastStore((state) => state.showToast);
 
-  const { players, tournament, addPlayerByUserId, deletePlayer } =
+  const { players, rounds, tournament, addPlayerByUserId, deletePlayer } =
     useTournamentStore();
   const openAlertConfirmation = useAlertConfirmationStore(
     (s) => s.openAlertConfirmation
@@ -30,7 +30,7 @@ export const PlayerList = () => {
 
   // Cuando se selecciona un usuario desde PlayerSearchInput
   const handleSelect = async (user: UserSummaryInterface) => {
-    if (tournament?.currentRoundNumber && tournament?.currentRoundNumber > 0) {
+    if (rounds.length > 0) {
       setSelectedUserForInitialPoints(user);
       setShowInitialModal(true);
       return;
@@ -143,11 +143,7 @@ export const PlayerList = () => {
       {showInitialModal && selectedUserForInitialPoints && (
         <InitialPointsModal
           user={selectedUserForInitialPoints}
-          maxRounds={
-            tournament?.currentRoundNumber
-              ? tournament?.currentRoundNumber + 1
-              : 0
-          }
+          maxRounds={rounds.length}
           onConfirm={confirmInitialRoundsWon}
           onCancel={cancelInitialPoints}
         />

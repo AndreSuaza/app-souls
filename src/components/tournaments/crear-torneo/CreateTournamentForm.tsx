@@ -47,7 +47,7 @@ export const CreateTournamentForm = () => {
     setValue,
   } = useForm<CreateTournamentInputs>();
 
-  const [format, setFormat] = useState<"default" | "Masters">("Masters");
+  const [format, setFormat] = useState<"Masters">("Masters");
 
   // Traer los tipos de torneos
   useEffect(() => {

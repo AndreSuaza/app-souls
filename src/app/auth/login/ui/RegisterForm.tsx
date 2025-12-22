@@ -79,8 +79,8 @@ export const RegisterForm = () => {
               message: "Debe tener al menos 3 caracteres.",
             },
             maxLength: {
-              value: 20,
-              message: "Debe tener máximo 20 caracteres.",
+              value: 15,
+              message: "Debe tener maximo 15 caracteres.",
             },
             validate: {
               noRepetidos: (value) =>
@@ -124,8 +124,8 @@ export const RegisterForm = () => {
               message: "Debe tener al menos 3 caracteres.",
             },
             maxLength: {
-              value: 20,
-              message: "Debe tener máximo 20 caracteres.",
+              value: 15,
+              message: "Debe tener maximo 15 caracteres.",
             },
             validate: {
               noRepetidos: (value) =>
@@ -169,8 +169,8 @@ export const RegisterForm = () => {
               message: "Debe tener al menos 3 caracteres.",
             },
             maxLength: {
-              value: 20,
-              message: "Debe tener máximo 20 caracteres.",
+              value: 15,
+              message: "Debe tener maximo 15 caracteres.",
             },
             pattern: {
               value: /^[a-zA-Z0-9._]+$/,
