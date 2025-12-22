@@ -25,10 +25,11 @@ export type BasicTournament = {
   title: string;
   description?: string | null;
   date: string;
-  status: "pending" | "in_progress" | "finished";
+  status: "pending" | "in_progress" | "finished" | "cancelled";
   currentRoundNumber: number;
   maxRounds: number;
   format?: string;
+  typeTournamentName?: string;
 };
 
 type TournamentStoreState = {
@@ -115,6 +116,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           currentRoundNumber: data.currentRoundNumber,
           maxRounds: data.maxRounds,
           format: data.format ?? undefined,
+          typeTournamentName: data.typeTournament?.name ?? undefined,
         },
         players: data.tournamentPlayers.map((p) => ({
           id: p.id,
@@ -499,7 +501,10 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     const { tournamentId, tournament } = get();
     if (!tournamentId) return false;
 
-    if (tournament?.status === "finished") {
+    if (
+      tournament?.status === "finished" ||
+      tournament?.status === "cancelled"
+    ) {
       return false;
     }
 
@@ -509,12 +514,10 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         tournament?.status ?? "pending"
       );
 
-      // Limpia el estado local
       set({
-        tournament: null,
-        players: [],
-        rounds: [],
-        tournamentId: null,
+        tournament: tournament
+          ? { ...tournament, status: "cancelled" }
+          : null,
       });
 
       return true;

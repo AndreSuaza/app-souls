@@ -23,6 +23,11 @@ export async function getTournamentAction(tournamentId: string) {
     tournament = await prisma.tournament.findUnique({
       include: {
         tournamentPlayers: true,
+        typeTournament: {
+          select: {
+            name: true,
+          },
+        },
         tournamentRounds: {
           include: {
             matches: true,
@@ -40,6 +45,10 @@ export async function getTournamentAction(tournamentId: string) {
 
   if (!tournament) {
     return null;
+  }
+
+  if (tournament.status === "cancelled") {
+    redirect("/administrador/torneos");
   }
 
   // Autorización por tienda

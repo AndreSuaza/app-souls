@@ -20,6 +20,14 @@ const middlewareAuthConfig: NextAuthConfig = {
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   providers: [], // no hacen falta para validar el JWT
+  callbacks: {
+    session({ session, token }) {
+      if (session.user) {
+        session.user.role = token.role;
+      }
+      return session;
+    },
+  },
 };
 
 const { auth: baseAuth } = NextAuth(middlewareAuthConfig);
@@ -28,8 +36,6 @@ export default baseAuth((req) => {
   const { nextUrl } = req;
   const path = nextUrl.pathname;
   const isLoggedIn = !!req.auth;
-
-  console.log({ isLoggedIn, path: path });
 
   // Permitir todas las rutas de API de autenticación
   if (path.startsWith(apiAuthPrefix)) {
@@ -48,6 +54,10 @@ export default baseAuth((req) => {
     }
 
     const role = req.auth?.user.role;
+
+    if (role !== "admin" && role !== "store") {
+      return NextResponse.redirect(new URL("/", nextUrl));
+    }
 
     // Restricción específica para usuarios con role store
     if (role === "store") {

@@ -6,6 +6,7 @@ import {
   useTournamentStore,
   useToastStore,
   useAlertConfirmationStore,
+  useUIStore,
 } from "@/store";
 import { TournamentInfoCard } from "./TournamentInfoCard";
 import { TournamentInfoActions } from "./TournamentInfoActions";
@@ -17,10 +18,13 @@ export const TournamentInformation = () => {
     useTournamentStore();
   const showToast = useToastStore((s) => s.showToast);
   const confirm = useAlertConfirmationStore((s) => s.openAlertConfirmation);
+  const showLoading = useUIStore((s) => s.showLoading);
+  const hideLoading = useUIStore((s) => s.hideLoading);
 
   if (!tournament) return null;
 
-  const isFinished = tournament.status === "finished";
+  const isFinished =
+    tournament.status === "finished" || tournament.status === "cancelled";
 
   const [form, setForm] = useState({
     title: tournament.title,
@@ -64,9 +68,9 @@ export const TournamentInformation = () => {
   const handleDelete = () => {
     confirm({
       text: "¿Cancelar torneo?",
-      description:
-        "Esta acción eliminará el torneo de forma permanente y no se puede deshacer.",
+      description: "Esta accion cancelara el torneo y no se puede deshacer.",
       action: async () => {
+        showLoading("Cancelando torneo...");
         const success = await deleteTournament();
 
         if (success) {
@@ -75,6 +79,7 @@ export const TournamentInformation = () => {
           return true;
         }
 
+        hideLoading();
         showToast("No se pudo cancelar el torneo", "error");
         return false;
       },
@@ -93,6 +98,8 @@ export const TournamentInformation = () => {
     <div className="space-y-6">
       <TournamentInfoCard
         form={form}
+        typeTournamentName={tournament.typeTournamentName}
+        format={tournament.format}
         onChange={setForm}
         onDelete={handleDelete}
         isFinished={isFinished}

@@ -136,7 +136,7 @@ export const CreateTournamentForm = () => {
           className={clsx("w-full border rounded p-2", {
             "border-red-500": errors.title,
           })}
-          placeholder="Ej. Torneo Verano 2024"
+          placeholder="Ej. Torneo Verano 2025"
           {...register("title", {
             required: "El nombre del torneo es obligatorio",
             minLength: {

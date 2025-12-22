@@ -189,6 +189,7 @@ enum TournamentStatus {
   pending
   in_progress
   finished
+  cancelled
 }
 
 enum MatchResult {

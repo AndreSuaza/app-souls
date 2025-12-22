@@ -1,7 +1,6 @@
 "use client";
 
 import { IoTrashOutline } from "react-icons/io5";
-import { useAlertConfirmationStore } from "@/store";
 import { DateTimeFields } from "../../crear-torneo/DateTimeFields";
 
 interface TournamentForm {
@@ -12,6 +11,8 @@ interface TournamentForm {
 
 interface TournamentInfoCardProps {
   form: TournamentForm;
+  typeTournamentName?: string;
+  format?: string;
   onChange: (form: TournamentForm) => void;
   onDelete: () => void;
   isFinished: boolean;
@@ -19,26 +20,14 @@ interface TournamentInfoCardProps {
 
 export const TournamentInfoCard = ({
   form,
+  typeTournamentName,
+  format,
   onChange,
   onDelete,
   isFinished,
 }: TournamentInfoCardProps) => {
-  const confirm = useAlertConfirmationStore((s) => s.openAlertConfirmation);
-
   const date = form.date.toISOString().split("T")[0];
   const time = form.date.toTimeString().slice(0, 5);
-
-  const handleDelete = () => {
-    confirm({
-      text: "¿Cancelar torneo?",
-      description:
-        "Esta acción eliminará el torneo de forma permanente y no se puede deshacer.",
-      action: async () => {
-        onDelete();
-        return true;
-      },
-    });
-  };
 
   return (
     <div className="bg-white border rounded-2xl shadow-sm p-6 space-y-6">
@@ -49,7 +38,7 @@ export const TournamentInfoCard = ({
         </h2>
 
         <button
-          onClick={handleDelete}
+          onClick={onDelete}
           disabled={isFinished}
           className="flex items-center gap-2 px-2 sm:px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700"
         >
@@ -94,6 +83,26 @@ export const TournamentInfoCard = ({
           }
           disabled={isFinished}
         />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="text-sm font-medium">Tipo de torneo</label>
+            <input
+              className="w-full border rounded p-2 bg-gray-50 text-gray-600"
+              value={typeTournamentName ?? "-"}
+              disabled
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Formato</label>
+            <input
+              className="w-full border rounded p-2 bg-gray-50 text-gray-600"
+              value={format ?? "-"}
+              disabled
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

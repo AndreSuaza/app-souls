@@ -1,4 +1,15 @@
+"use client";
+
+import { useEffect } from "react";
+import { useUIStore } from "@/store";
+
 export default function AdminTournamentsPage() {
+  const hideLoading = useUIStore((s) => s.hideLoading);
+
+  useEffect(() => {
+    hideLoading();
+  }, [hideLoading]);
+
   return (
     <section className="space-y-6">
       {/* Título de la sección */}

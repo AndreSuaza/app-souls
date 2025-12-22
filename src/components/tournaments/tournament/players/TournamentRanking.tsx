@@ -14,6 +14,7 @@ const PAGE_SIZE = 8;
 export const TournamentRanking = () => {
   const { players } = useTournamentStore();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const pageParam = Number(searchParams.get("page") ?? 1);
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
@@ -60,7 +61,7 @@ export const TournamentRanking = () => {
       <PaginationLine
         totalPages={totalPages}
         currentPage={currentPage}
-        pathname={usePathname()}
+        pathname={pathname}
         searchParams={searchParams}
       />
     </div>

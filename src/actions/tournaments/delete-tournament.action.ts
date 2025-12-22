@@ -10,32 +10,13 @@ export async function deleteTournamentAction(
     if (status === "finished") {
       throw new Error("No se puede cancelar un torneo finalizado");
     }
+    if (status === "cancelled") {
+      throw new Error("El torneo ya esta cancelado");
+    }
 
-    // eliminar en cascada
-    await prisma.$transaction(async (tx) => {
-      // Eliminar matches
-      await tx.match.deleteMany({
-        where: {
-          round: {
-            tournamentId,
-          },
-        },
-      });
-
-      // Eliminar rondas
-      await tx.round.deleteMany({
-        where: { tournamentId },
-      });
-
-      // Eliminar jugadores
-      await tx.tournamentPlayer.deleteMany({
-        where: { tournamentId },
-      });
-
-      // Eliminar torneo
-      await tx.tournament.delete({
-        where: { id: tournamentId },
-      });
+    await prisma.tournament.update({
+      where: { id: tournamentId },
+      data: { status: "cancelled" },
     });
   } catch (error) {
     // Log interno para debugging (server only)

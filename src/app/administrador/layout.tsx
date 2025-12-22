@@ -1,11 +1,12 @@
 import {
   Sidebar,
   TopMenu,
+  AdminTopMenu,
   LoadingOverlay,
   ToastContainer,
   TournamentSidebar,
   ConfirmationModalHost,
-  Footer,
+  AdminFooter,
 } from "@/components";
 import moment from "moment";
 
@@ -17,18 +18,21 @@ export default function TournamentLayout({
   moment.locale("es");
   return (
     <>
-      <TopMenu />
+      <div className="hidden md:block">
+        <TopMenu />
+      </div>
+      <AdminTopMenu />
       <Sidebar />
       <div className="flex min-h-screen bg-gray-100">
         <LoadingOverlay />
         <ToastContainer />
         <TournamentSidebar />
 
-        <div className="flex-1 px-4 py-2 lg:px-8 lg:py-3 overflow-visible mb-4">
+        <div className="flex-1 px-4 py-2 lg:px-8 lg:py-0 overflow-visible mb-4">
           {children}
         </div>
       </div>
-      <Footer />
+      <AdminFooter />
       <ConfirmationModalHost />
     </>
   );

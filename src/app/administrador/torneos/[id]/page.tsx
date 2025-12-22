@@ -61,7 +61,7 @@ export default function TournamentAdminPage() {
   if (!tournament) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-0">
       <TournamentTabs
         active={activeTab}
         onChange={setActiveTab}
