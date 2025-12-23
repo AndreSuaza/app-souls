@@ -48,7 +48,7 @@ export async function getTournamentAction(tournamentId: string) {
   }
 
   if (tournament.status === "cancelled") {
-    redirect("/administrador/torneos");
+    redirect("/admin/torneos");
   }
 
   // Autorización por tienda
@@ -56,7 +56,7 @@ export async function getTournamentAction(tournamentId: string) {
     session.user.role === "store" &&
     (!session.user.storeId || tournament.storeId !== session.user.storeId)
   ) {
-    redirect("/administrador/torneos");
+    redirect("/admin/torneos");
   }
 
   return tournament;

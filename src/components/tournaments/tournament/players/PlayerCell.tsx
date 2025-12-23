@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { TournamentPlayerInterface } from "@/interfaces";
 
 type Highlight = "blue" | "red" | "yellow";
@@ -37,9 +38,11 @@ export const PlayerCell = ({ player, reverse = false, highlight }: Props) => {
         reverse ? "flex-row-reverse justify-end text-right" : ""
       }`}
     >
-      <img
+      <Image
         src={`/profile/${imageName}.webp`}
         alt={player.playerNickname}
+        width={36}
+        height={36}
         className={`w-9 h-9 rounded-full object-cover border ${
           highlight ? "border" : "border"
         } ${highlightBorder}`}

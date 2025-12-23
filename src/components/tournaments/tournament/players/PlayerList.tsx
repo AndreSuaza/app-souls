@@ -9,7 +9,7 @@ import {
   useToastStore,
 } from "@/store";
 import { UserSummaryInterface } from "@/interfaces";
-import { InitialPointsModal } from "../../../tournaments-creator/InitialPointsModal";
+import { InitialPointsModal } from "./InitialPointsModal";
 import { PlayerSearchInput } from "./PlayerSearchInput";
 import { PlayerListView } from "./PlayerListView";
 

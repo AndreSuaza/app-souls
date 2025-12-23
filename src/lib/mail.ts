@@ -3,8 +3,6 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.AUTH_RESEND_KEY);
 
 export const sendEmailVerification = async (email: string, token: string) => {
-  console.log("incia envio de corre");
-
   try {
     await resend.emails.send({
       from: "Souls In Xtinction Verificación de correo <verificacion@soulsinxtinction.com>",
@@ -99,7 +97,7 @@ export const sendEmailVerification = async (email: string, token: string) => {
       success: true,
     };
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return {
       error: true,
     };
@@ -205,7 +203,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
 
     return { success: true };
   } catch (error) {
-    console.log("Error enviando correo de recuperación:", error);
+    console.error("Error enviando correo de recuperación:", error);
     return { error: true };
   }
 };

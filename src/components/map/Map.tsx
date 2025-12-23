@@ -1,62 +1,51 @@
-'use client';
+"use client";
 
 import { useEffect, useRef } from "react";
-import { Loader } from "@googlemaps/js-api-loader"
-
+import { Loader } from "@googlemaps/js-api-loader";
 
 interface Props {
-    lat: number,
-    lgn: number,
-    title: string,
-    className?: string,
+  lat: number;
+  lgn: number;
+  title: string;
+  className?: string;
 }
 
-export const Map = ({title, lat, lgn, className} : Props) => {
+export const Map = ({ title, lat, lgn, className }: Props) => {
+  const mapRef = useRef(null);
 
-    const mapRef = useRef(null);
+  useEffect(() => {
+    const initMap = async () => {
+      const loader = new Loader({
+        apiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY as string,
+        version: "weekly",
+      });
 
-    useEffect(() => {
+      const { Map } = await loader.importLibrary("maps");
 
-        const initMap =  async () => {
-            const loader = new Loader({
-                apiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY as string,
-                version: 'weekly' 
-            });
+      const position = {
+        lat: lat,
+        lng: lgn,
+      };
 
-            const { Map } = await loader.importLibrary('maps');
+      const mapOptions = {
+        center: position,
+        zoom: 17,
+        mapId: "MY_NEXTJS_MAPID",
+      };
 
-            const position = {
-                lat: lat, 
-                lng: lgn
-            }
+      if (mapRef.current) {
+        const map = new Map(mapRef.current, mapOptions);
 
-            const mapOptions = {
-                center: position,
-                zoom: 17,
-                mapId: 'MY_NEXTJS_MAPID'
-            }
+        new google.maps.Marker({
+          map: map,
+          position: position,
+          label: title,
+        });
+      }
+    };
 
-            if(mapRef.current) {
-                const map = new Map(mapRef.current, mapOptions);
+    initMap();
+  }, [lat, lgn, title]);
 
-                new google.maps.Marker({
-                    map: map,
-                    position: position,
-                    label: title,                
-                })
-            }
-
-            
-
-        }
-
-       
-
-        initMap();
-    }, [lat, lgn])
-    
-
-  return (
-    <div className={className} ref={mapRef} />
-  )
-}
+  return <div className={className} ref={mapRef} />;
+};

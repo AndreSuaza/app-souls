@@ -1,66 +1,55 @@
-'use client';
+"use client";
 
 import { useEffect, useRef } from "react";
-import { Loader } from "@googlemaps/js-api-loader"
-
+import { Loader } from "@googlemaps/js-api-loader";
 
 interface Props {
-    lat: number,
-    lgn: number,
-    title: string,
-    className?: string,
+  lat: number;
+  lgn: number;
+  title: string;
+  className?: string;
 }
 
+export const MapXl = ({ title, lat, lgn }: Props) => {
+  const mapRef = useRef(null);
 
-export const MapXl = ({title, lat, lgn} : Props) => {
+  useEffect(() => {
+    const initMap = async () => {
+      const loader = new Loader({
+        apiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY as string,
+        version: "weekly",
+      });
 
-    const mapRef = useRef(null);
+      const { Map } = await loader.importLibrary("maps");
 
-    useEffect(() => {
+      const position = {
+        lat: lat,
+        lng: lgn,
+      };
 
-        const initMap =  async () => {
-            const loader = new Loader({
-                apiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY as string,
-                version: 'weekly' 
-            });
+      const mapOptions = {
+        center: position,
+        zoom: 17,
+        mapId: "MY_NEXTJS_MAPID",
+      };
 
-            const { Map } = await loader.importLibrary('maps');
+      if (mapRef.current) {
+        const map = new Map(mapRef.current, mapOptions);
 
-            const position = {
-                lat: lat, 
-                lng: lgn
-            }
+        new google.maps.Marker({
+          map: map,
+          position: position,
+          label: title,
+        });
+      }
+    };
 
-            const mapOptions = {
-                center: position,
-                zoom: 17,
-                mapId: 'MY_NEXTJS_MAPID',
-                
-            }
-
-            if(mapRef.current) {
-            const map = new Map(mapRef.current, mapOptions);
-
-            new google.maps.Marker({
-                map: map,
-                position: position,
-                label: title,                
-            })
-            }
-
-            
-
-        }
-
-       
-
-        initMap();
-    }, [lat, lgn])
-    
+    initMap();
+  }, [lat, lgn, title]);
 
   return (
     <div className="absolute w-full h-screen z-0">
-    <div className="w-full h-screen" ref={mapRef}/>
+      <div className="w-full h-screen" ref={mapRef} />
     </div>
-  )
-}
+  );
+};

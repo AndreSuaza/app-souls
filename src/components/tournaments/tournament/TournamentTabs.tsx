@@ -8,7 +8,7 @@ import {
   IoListOutline,
   IoInformationCircleOutline,
 } from "react-icons/io5";
-import { TournamentTab } from "@/app/administrador/torneos/[id]/page";
+import { TournamentTab } from "@/app/admin/torneos/[id]/page";
 
 type Props = {
   active: TournamentTab;
@@ -85,7 +85,7 @@ export const TournamentTabs = ({
       </div>
 
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t bg-white">
-        <div className="flex gap-2 px-4 overflow-x-auto">
+        <div className="flex gap-2 py-1 px-4 overflow-x-auto sm:justify-center">
           {visibleTabs.map((tab) => (
             <button
               key={tab.id}

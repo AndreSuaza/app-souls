@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import Image from "next/image";
 import { IoTrashOutline } from "react-icons/io5";
 
 type PlayerListViewProps = {
@@ -29,9 +30,11 @@ export const PlayerListView = ({
 
             <div className="ml-4 flex items-center gap-3 flex-1 text-left">
               {/* Avatar */}
-              <img
+              <Image
                 src={`/profile/${p.image ?? "player"}.webp`}
                 alt={p.playerNickname}
+                width={36}
+                height={36}
                 className="w-9 h-9 rounded-full object-cover border"
               />
 

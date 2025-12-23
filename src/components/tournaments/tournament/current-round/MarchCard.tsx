@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import Image from "next/image";
 import { MatchInterface, TournamentPlayerInterface } from "@/interfaces";
 import { PlayerCell } from "../players/PlayerCell";
 import { MatchResultSelector } from "./MatchResultSelector";
@@ -87,9 +88,11 @@ export const MatchCard = ({
           ) : (
             <div className="flex items-center gap-3 justify-end text-right">
               <p className="font-semibold text-gray-400">BYE</p>
-              <img
+              <Image
                 src="/profile/player.webp"
                 alt="BYE"
+                width={36}
+                height={36}
                 className="w-9 h-9 rounded-full object-cover border border-gray-200"
               />
             </div>
@@ -107,7 +110,7 @@ export const MatchCard = ({
         <MatchResultSelector
           match={match}
           layout="mobileGrid"
-          readOnly={readOnly}
+          readOnly={readOnly || !player2}
           onChangeResult={
             onChangeResult
               ? (result) => onChangeResult(match.id, result)
@@ -128,9 +131,11 @@ export const MatchCard = ({
             </div>
 
             {/* Avatar por defecto */}
-            <img
+            <Image
               src="/profile/player.webp"
               alt="BYE"
+              width={36}
+              height={36}
               className="w-9 h-9 rounded-full object-cover border border-gray-200"
             />
           </div>

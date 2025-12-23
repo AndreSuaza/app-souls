@@ -107,7 +107,7 @@ export const CreateTournamentForm = () => {
             date: buildISODate(),
           });
 
-          router.push(`/administrador/torneos/${tournamentId}`);
+          router.push(`/admin/torneos/${tournamentId}`);
 
           return true;
         } catch (error) {
@@ -211,7 +211,7 @@ export const CreateTournamentForm = () => {
 
       <div className="flex gap-3 pt-4 justify-end">
         <Link
-          href="/administrador/torneos"
+          href="/admin/torneos"
           className="px-4 py-2 rounded border font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
         >
           Cancelar

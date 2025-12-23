@@ -4,10 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useUIStore } from "@/store";
-import {
-  IoAddCircleOutline,
-  IoCloseOutline,
-} from "react-icons/io5";
+import { IoAddCircleOutline, IoCloseOutline } from "react-icons/io5";
 import { IoMdTrophy } from "react-icons/io";
 import { signOut } from "next-auth/react";
 
@@ -20,12 +17,12 @@ export const TournamentSidebar = () => {
   const menuItems = [
     {
       label: "Nuevo torneo",
-      href: "/administrador/torneos/crear-torneo",
+      href: "/admin/torneos/crear-torneo",
       icon: IoAddCircleOutline,
     },
     {
       label: "Torneos",
-      href: "/administrador/torneos",
+      href: "/admin/torneos",
       icon: IoMdTrophy,
     },
   ];
@@ -34,14 +31,14 @@ export const TournamentSidebar = () => {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-30 md:hidden"
+          className="fixed inset-0 bg-black/30 z-30 lg:hidden"
           onClick={close}
         />
       )}
 
       <aside
         className={clsx(
-          "fixed top-0 right-0 z-40 h-full w-64 bg-white shadow-sm transition-transform duration-200 flex flex-col md:static md:z-auto md:h-auto md:w-64 md:border-r md:border-l-0 md:translate-x-0",
+          "fixed top-0 right-0 z-40 h-full w-64 bg-white shadow-sm transition-transform duration-200 flex flex-col lg:static lg:z-auto lg:h-auto lg:w-64 lg:border-r lg:border-l-0 lg:translate-x-0",
           {
             "translate-x-0": isOpen,
             "translate-x-full": !isOpen,
@@ -53,12 +50,12 @@ export const TournamentSidebar = () => {
             Gestor de Torneos
           </span>
 
-          <button onClick={close} className="md:hidden">
+          <button onClick={close} className="lg:hidden">
             <IoCloseOutline size={22} />
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col px-2 md:px-3 py-4 gap-1">
+        <nav className="flex flex-1 flex-col px-2 lg:px-3 py-4 gap-1">
           {menuItems.map(({ label, href, icon: Icon }) => {
             const isActive = pathname === href;
 
@@ -84,7 +81,7 @@ export const TournamentSidebar = () => {
           })}
         </nav>
 
-        <div className="px-2 pb-4 md:hidden">
+        <div className="px-2 pb-4 lg:hidden">
           <button
             onClick={async () => {
               close();

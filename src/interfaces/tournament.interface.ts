@@ -4,14 +4,15 @@ export interface Tournament {
   id: string;
   title: string;
   description: string;
-  url: string;
   lat: number;
   lgn: number;
-  price: number;
   format: string;
   date: Date;
+  image?: string | null;
+  status: "pending" | "in_progress" | "finished" | "cancelled";
+  currentRoundNumber: number;
+  maxRounds: number;
   createDate: Date;
-  TournamentImage: TournamentImage[];
   typeTournament: TypeTournament;
   store: Store;
 }

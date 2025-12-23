@@ -1,9 +1,9 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import { NextResponse } from "next/server";
 
-const adminRoutes = ["/admin", "/administrador"];
+const adminRoutes = ["/admin"];
 // rutas a las que el usuario con role store puede acceder
-const storeAllowedAdminRoutes = ["/admin/torneos", "/administrador/torneos"];
+const storeAllowedAdminRoutes = ["/admin/torneos"];
 const protectedRoutes = ["/perfil"];
 const authRoutes = [
   "/auth/login",

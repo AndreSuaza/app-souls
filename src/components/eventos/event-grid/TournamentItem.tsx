@@ -2,13 +2,19 @@ import { Tournament } from "@/interfaces";
 import clsx from "clsx";
 import moment from "moment";
 import Image from "next/image";
-import Link from "next/link";
 
 interface Props {
   tournament: Tournament;
 }
 
 export const TournamentItem = ({ tournament }: Props) => {
+  const tournamentImage =
+    tournament.image && (tournament.image.startsWith("http") || tournament.image.startsWith("/"))
+      ? tournament.image
+      : tournament.image
+        ? `/tournaments/${tournament.image}`
+        : null;
+
   return (
     <div
       className={clsx(
@@ -34,28 +40,24 @@ export const TournamentItem = ({ tournament }: Props) => {
         <h2 className="text-2xl font-bold mb-2">{tournament.title}</h2>
         <p>{tournament.description}</p>
         {tournament.date > new Date() ? (
-          tournament.url !== "" ? (
-            <Link href={`/torneos/${tournament.url}`}>
-              <button className="btn-primary mt-3 mb-6">Conoce Mas</button>
-            </Link>
-          ) : (
-            <p className="font-bold uppercase my-2 text-indigo-600">
-              Más información próximamente.
-            </p>
-          )
+          <p className="font-bold uppercase my-2 text-indigo-600">
+            Mケs informaciИn prИximamente.
+          </p>
         ) : (
           <></>
         )}
       </div>
-      <div className="m-auto hidden md:block">
-        <Image
-          src={`/tournaments/${tournament.TournamentImage[0].url}.jpg`}
-          alt={tournament.title}
-          className="rounded-lg"
-          width={160}
-          height={160}
-        />
-      </div>
+      {tournamentImage ? (
+        <div className="m-auto hidden md:block">
+          <Image
+            src={tournamentImage}
+            alt={tournament.title}
+            className="rounded-lg"
+            width={160}
+            height={160}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

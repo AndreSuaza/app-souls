@@ -21,21 +21,33 @@ export const TournamentInformation = () => {
   const showLoading = useUIStore((s) => s.showLoading);
   const hideLoading = useUIStore((s) => s.hideLoading);
 
-  if (!tournament) return null;
+  useEffect(() => {
+    if (!tournament) return;
 
-  const isFinished =
-    tournament.status === "finished" || tournament.status === "cancelled";
+    // Sincroniza el formulario con el torneo actual
+    setForm({
+      title: tournament.title,
+      description: tournament.description ?? "",
+      date: new Date(tournament.date),
+    });
+  }, [tournament]);
 
-  const [form, setForm] = useState({
-    title: tournament.title,
-    description: tournament.description ?? "",
-    date: new Date(tournament.date),
+  const [form, setForm] = useState<{
+    title: string;
+    description: string;
+    date: Date;
+  }>({
+    title: "",
+    description: "",
+    date: new Date(),
   });
 
   const [hasChanges, setHasChanges] = useState(false);
 
   // Detectar cambios reales
   useEffect(() => {
+    if (!tournament) return;
+
     const changed =
       form.title !== tournament.title ||
       form.description !== (tournament.description ?? "") ||
@@ -43,6 +55,11 @@ export const TournamentInformation = () => {
 
     setHasChanges(changed);
   }, [form, tournament]);
+
+  if (!tournament) return null;
+
+  const isFinished =
+    tournament.status === "finished" || tournament.status === "cancelled";
 
   const handleSave = () => {
     confirm({
@@ -75,7 +92,7 @@ export const TournamentInformation = () => {
 
         if (success) {
           showToast("Torneo cancelado correctamente", "success");
-          router.replace("/administrador/torneos");
+          router.replace("/admin/torneos");
           return true;
         }
 

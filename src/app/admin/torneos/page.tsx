@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useUIStore } from "@/store";
 import { AdminTournamentsList } from "@/components";
-import { getAdminTournamentsAction } from "@/actions";
-import type { AdminTournamentListItem } from "@/actions/tournaments/get-admin-tournaments.action";
+import {
+  getAdminTournamentsAction,
+  type AdminTournamentListItem,
+} from "@/actions";
 
 export default function AdminTournamentsPage() {
   const hideLoading = useUIStore((s) => s.hideLoading);

@@ -75,7 +75,7 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
       params.set("page", "1");
       router.replace(`${pathname}?${params.toString()}`);
     }
-  }, [query]);
+  }, [query, currentPage, pathname, router, searchParams]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -92,7 +92,7 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
 
   const handleRowClick = (id: string, status: TournamentStatus) => {
     if (status === "cancelled") return;
-    router.push(`/administrador/torneos/${id}`);
+    router.push(`/admin/torneos/${id}`);
   };
 
   return (

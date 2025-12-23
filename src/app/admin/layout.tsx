@@ -1,13 +1,16 @@
 import {
-  Footer,
   Sidebar,
   TopMenu,
+  AdminTopMenu,
   LoadingOverlay,
   ToastContainer,
+  TournamentSidebar,
+  ConfirmationModalHost,
+  AdminFooter,
 } from "@/components";
 import moment from "moment";
 
-export default function SixLayout({
+export default function TournamentLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -15,14 +18,22 @@ export default function SixLayout({
   moment.locale("es");
   return (
     <>
-      <main className="">
+      <div className="hidden md:block">
+        <TopMenu />
+      </div>
+      <AdminTopMenu />
+      <Sidebar />
+      <div className="flex min-h-screen bg-gray-100">
         <LoadingOverlay />
         <ToastContainer />
-        <TopMenu />
-        <Sidebar />
-        <div className="px-0">{children}</div>
-      </main>
-      <Footer />
+        <TournamentSidebar />
+
+        <div className="flex-1 px-4 py-2 lg:px-8 overflow-visible mb-4">
+          {children}
+        </div>
+      </div>
+      <AdminFooter />
+      <ConfirmationModalHost />
     </>
   );
 }

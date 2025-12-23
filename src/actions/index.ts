@@ -22,7 +22,6 @@ export * from "./tournaments/get-tournament.action";
 export * from "./tournaments/save-match-result.action";
 export * from "./tournaments/search-users.action";
 export * from "./tournaments/start-round.action";
-export * from "./tournaments/tournament-url";
 export * from "./tournaments/tournaments-pagination";
 export * from "./tournaments/update-tournament-info.action";
 

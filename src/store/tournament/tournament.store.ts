@@ -299,15 +299,10 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     const round = snapshot.rounds[snapshot.rounds.length - 1];
 
     try {
-      // aplicar resultados Swiss
-      console.log("Aplicando resultados suizos...", new Date());
       applySwissResults(round, snapshot.players);
 
-      console.log("Calcular buchholz...", new Date());
       // calcular buchholz
       const updatedPlayers = calculateBuchholzForPlayers(snapshot.players);
-
-      console.log("Finalizando ronda en backend...", new Date());
 
       set((state) => ({
         players: updatedPlayers,
@@ -320,19 +315,13 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       // actualizar backend
       await finalizeRoundAction(snapshot.tournament.id, round, updatedPlayers);
 
-      console.log("Actualizando store...", new Date());
-      // actualización segura usando la versión más reciente del estado
-
       // Usar seimpre la versión más reciente del store
       const after = get();
 
-      console.log("Generando siguiente ronda si aplica...", new Date());
       // generar automáticamente la siguiente ronda si no es la última
       if (after.tournament!.currentRoundNumber < after.tournament!.maxRounds) {
         await after.generateRound();
       }
-
-      console.log("Ronda finalizada.", new Date());
     } catch (error) {
       console.error(error);
       set({ error: "Error finalizando la ronda" });
@@ -349,9 +338,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         state.players.map((p) => [p.id, p.userId])
       );
       // Inicializa los contadores en 0 para todos los inscritos.
-      const winsByUserId = new Map(
-        state.players.map((p) => [p.userId, 0])
-      );
+      const winsByUserId = new Map(state.players.map((p) => [p.userId, 0]));
 
       // Suma 1 victoria por match ganado (P1/P2); empates no cuentan.
       state.rounds.forEach((round) => {
@@ -407,16 +394,14 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         currentRound?.matches.some((m) => m.result === null) ?? false;
 
       let matchDeleteId: string | null = null;
-      let matchUpdate:
-        | {
-            id: string;
-            player1Id: string;
-            player1Nickname: string;
-            player2Id: string | null;
-            player2Nickname: string | null;
-            result: "P1" | "P2" | "DRAW" | null;
-          }
-        | null = null;
+      let matchUpdate: {
+        id: string;
+        player1Id: string;
+        player1Nickname: string;
+        player2Id: string | null;
+        player2Nickname: string | null;
+        result: "P1" | "P2" | "DRAW" | null;
+      } | null = null;
 
       if (currentRound && roundIsOpen) {
         // Buscar el match donde participa el jugador a eliminar.
@@ -444,8 +429,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
             matchUpdate = {
               id: match.id,
               player1Id: match.player2Id ?? match.player1Id,
-              player1Nickname:
-                match.player2Nickname ?? match.player1Nickname,
+              player1Nickname: match.player2Nickname ?? match.player1Nickname,
               player2Id: null,
               player2Nickname: "BYE",
               result: "P1",
@@ -648,9 +632,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       );
 
       set({
-        tournament: tournament
-          ? { ...tournament, status: "cancelled" }
-          : null,
+        tournament: tournament ? { ...tournament, status: "cancelled" } : null,
       });
 
       return true;

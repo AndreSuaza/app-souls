@@ -96,7 +96,7 @@ function assignBye(players: TournamentPlayerInterface[]): {
   const sorted = [...players].sort((a, b) => a.points - b.points);
 
   // Preferir jugador sin BYE, si no, el de menor puntaje
-  let byePlayer = sorted.find((p) => !p.hadBye) ?? sorted[0];
+  const byePlayer = sorted.find((p) => !p.hadBye) ?? sorted[0];
 
   byePlayer.hadBye = true;
 

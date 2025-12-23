@@ -36,7 +36,7 @@ export async function requestPasswordReset(email: string) {
 
     return { success: true };
   } catch (err) {
-    console.log("Error en request-password-reset:", err);
+    console.error("Error en request-password-reset:", err);
     return { success: false, message: "Error al procesar la solicitud." };
   }
 }

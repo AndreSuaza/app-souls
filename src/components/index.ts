@@ -51,16 +51,6 @@ export * from "./mazos/deck-save/SaveDeckForm";
 export * from "./login/ButtonSocial";
 export * from "./login/ButtonLogOut";
 
-export * from "./tournaments-creator/Tournament";
-export * from "./tournaments-creator/NewTournament";
-export * from "./tournaments-creator/PairingButtons";
-export * from "./tournaments-creator/PairingLabel";
-export * from "./tournaments/tournament/players/PlayerList";
-export * from "./tournaments-creator/SwissHistoric";
-export * from "./tournaments-creator/SwissRoundManager";
-export * from "./tournaments-creator/TournamentCreatorForm";
-export * from "./tournaments-creator/InitialPointsModal";
-
 export * from "./national/homeNational";
 
 export * from "./cartas/preguntas-frecuentes/preguntasFrecuentes";
@@ -76,6 +66,8 @@ export * from "./tournaments/tournament/players/TournamentPlayersView";
 export * from "./tournaments/tournament/players/TournamentRanking";
 export * from "./tournaments/tournament/hisotry/TournamentRoundsHistory";
 export * from "./tournaments/tournament/information/TournamentInformation";
+export * from "./tournaments/tournament/players/PlayerList";
+export * from "./tournaments/tournament/players/InitialPointsModal";
 
 // export * from "./cartas/index";
 // export * from "./eventos/index";

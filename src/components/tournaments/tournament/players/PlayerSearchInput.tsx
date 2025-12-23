@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import clsx from "clsx";
+import Image from "next/image";
 import { IoSearch } from "react-icons/io5";
 import { searchUsersAction } from "@/actions";
 import { UserSummaryInterface } from "@/interfaces";
@@ -23,6 +24,29 @@ export const PlayerSearchInput = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const runSearch = useCallback(
+    async (value: string) => {
+      const search = value.trim();
+      if (search.length < 1) {
+        setSuggestions([]);
+        setShowDropdown(false);
+        return;
+      }
+
+      setLoading(true);
+
+      const results = await searchUsersAction({ search });
+      const filtered = results.filter(
+        (u) => !existingPlayersIds.includes(u.id)
+      );
+
+      setSuggestions(filtered);
+      setLoading(false);
+      setShowDropdown(true);
+    },
+    [existingPlayersIds]
+  );
+
   // Debounce para búsqueda 300ms
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -30,7 +54,7 @@ export const PlayerSearchInput = ({
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [query, existingPlayersIds]);
+  }, [query, runSearch]);
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -79,25 +103,6 @@ export const PlayerSearchInput = ({
       }
     }
   }
-
-  const runSearch = async (value: string) => {
-    const search = value.trim();
-    if (search.length < 1) {
-      setSuggestions([]);
-      setShowDropdown(false);
-      return;
-    }
-
-    setLoading(true);
-
-    const results = await searchUsersAction({ search });
-
-    const filtered = results.filter((u) => !existingPlayersIds.includes(u.id));
-
-    setSuggestions(filtered);
-    setLoading(false);
-    setShowDropdown(true);
-  };
 
   return (
     <div ref={containerRef} className="relative mb-4">
@@ -164,9 +169,11 @@ export const PlayerSearchInput = ({
                 )}
               >
                 {/* Avatar */}
-                <img
+                <Image
                   src={`/profile/${user.image ?? "player"}.webp`}
                   alt={user.nickname}
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full object-cover border"
                 />
 

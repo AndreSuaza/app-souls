@@ -31,7 +31,7 @@ export async function resetPassword(token: string, newPassword: string) {
 
     return { success: true };
   } catch (err) {
-    console.log("Error en resetPassword:", err);
+    console.error("Error en resetPassword:", err);
     return { success: false, message: "Error al restablecer la contraseña." };
   }
 }

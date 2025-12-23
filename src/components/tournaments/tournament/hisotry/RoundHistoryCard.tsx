@@ -104,7 +104,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
           showToast("Ronda editada correctamente.", "success");
 
           return true;
-        } catch (error) {
+        } catch {
           showToast(
             "Ocurrió un error al guardar los cambios de la ronda.",
             "error"

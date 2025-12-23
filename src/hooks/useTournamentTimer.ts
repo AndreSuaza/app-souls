@@ -11,7 +11,7 @@ type TimerValues = {
 export function useTournamentTimer(
   roundId: string | null,
   startedAt: string | null,
-  status: "pending" | "in_progress" | "finished"
+  status: "pending" | "in_progress" | "finished" | "cancelled"
 ): TimerValues {
   const [time, setTime] = useState<TimerValues>({
     hours: "00",
