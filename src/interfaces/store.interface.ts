@@ -13,3 +13,8 @@ export interface Store {
     url: string,
     createDate: Date,
 }
+
+export interface StoreOption {
+    id: string,
+    name: string,
+}

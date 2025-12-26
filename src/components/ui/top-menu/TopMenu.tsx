@@ -122,73 +122,73 @@ export const TopMenu = () => {
 
       {/*Search, Menu*/}
       <div className="items-center hidden lg:block">
-        {
-          session ? (
-            <div
-              className="relative inline-block text-left"
-              ref={dropdownRefProfile}
+        {session ? (
+          <div
+            className="relative inline-block text-left"
+            ref={dropdownRefProfile}
+          >
+            {/* Botón */}
+            <a
+              onMouseEnter={() => setOpenProfile(!openProfile)}
+              className="flex flex-grow bg-slate-900 py-2 px-3 rounded hover:bg-slate-800 transition-all"
             >
-              {/* Botón */}
-              <a
-                onMouseEnter={() => setOpenProfile(!openProfile)}
-                className="flex flex-grow bg-slate-900 py-2 px-3 rounded hover:bg-slate-800 transition-all"
-              >
-                {session?.user.image && (
-                  <>
-                    <Image
-                      src={`/profile/${session?.user.image}.webp`}
-                      alt="Imagen de perfil"
-                      className="w-8 rounded-full mr-2"
-                      width={80}
-                      height={80}
-                    />
-                    <p className="uppercase font-semibold mt-1">
-                      {session?.user.nickname}
-                    </p>
-                  </>
-                )}
-              </a>
-
-              {/* Menú */}
-              {openProfile && (
-                <ul
-                  onMouseLeave={() => setOpenProfile(!openProfile)}
-                  className="absolute font-sem pt-2 pb-2 px-2 w-36 rounded-md bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50"
-                >
-                  <li>
-                    <Link
-                      href="/perfil"
-                      className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
-                    >
-                      Tu perfil
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/admin/torneos"
-                      className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
-                    >
-                      Torneos
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={handleClick}
-                      className="block w-full h-full text-left mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
-                    >
-                      Cerrar sesión
-                    </button>
-                  </li>
-                </ul>
+              {session?.user.image && (
+                <>
+                  <Image
+                    src={`/profile/${session?.user.image}.webp`}
+                    alt="Imagen de perfil"
+                    className="w-8 rounded-full mr-2"
+                    width={80}
+                    height={80}
+                  />
+                  <p className="uppercase font-semibold mt-1">
+                    {session?.user.nickname}
+                  </p>
+                </>
               )}
-            </div>
-          ) : (
-            <></>
-          )
-          // <Link href={"/auth/login"} className="uppercase font-semibold bg-yellow-600 px-4 py-2 rounded text-sm hover:bg-yellow-700 transition-all">
-          //   iniciar sesión
-          // </Link>
-        }
+            </a>
+
+            {/* Menú */}
+            {openProfile && (
+              <ul
+                onMouseLeave={() => setOpenProfile(!openProfile)}
+                className="absolute font-sem pt-2 pb-2 px-2 w-36 rounded-md bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50"
+              >
+                <li>
+                  <Link
+                    href="/perfil"
+                    className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                  >
+                    Tu perfil
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/admin/torneos"
+                    className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                  >
+                    Torneos
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={handleClick}
+                    className="block w-full h-full text-left mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                  >
+                    Cerrar sesión
+                  </button>
+                </li>
+              </ul>
+            )}
+          </div>
+        ) : (
+          <Link
+            href={"/auth/login"}
+            className="uppercase font-semibold bg-yellow-600 px-4 py-2 rounded text-sm hover:bg-yellow-700 transition-all"
+          >
+            iniciar sesión
+          </Link>
+        )}
       </div>
 
       <div className="block lg:hidden">

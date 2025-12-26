@@ -8,7 +8,7 @@ export async function searchUsersAction(input: SearchUsersInput) {
     const { search } = SearchUsersSchema.parse(input);
     if (!search) return [];
 
-    return prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         OR: [
           {
@@ -40,6 +40,30 @@ export async function searchUsersAction(input: SearchUsersInput) {
       },
       take: 10,
     });
+
+    if (users.length === 0) return [];
+
+    const blockedPlayers = await prisma.tournamentPlayer.findMany({
+      where: {
+        userId: {
+          in: users.map((user) => user.id),
+        },
+        tournament: {
+          status: {
+            in: ["pending", "in_progress"],
+          },
+        },
+      },
+      select: {
+        userId: true,
+      },
+    });
+
+    if (blockedPlayers.length === 0) return users;
+
+    const blockedIds = new Set(blockedPlayers.map((player) => player.userId));
+
+    return users.filter((user) => !blockedIds.has(user.id));
   } catch (error) {
     // Log interno para debugging (server only)
     console.error("[searchUsersAction]", error);

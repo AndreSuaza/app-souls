@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { PaginationLine } from "@/components/ui";
 import { AdminTournamentsSearch } from "./AdminTournamentsSearch";
@@ -57,6 +57,7 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
+  const prevQueryRef = useRef(query);
 
   const pageParam = Number(searchParams.get("page") ?? 1);
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
@@ -70,12 +71,13 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
   useEffect(() => {
-    if (currentPage !== 1) {
-      const params = new URLSearchParams(searchParams);
-      params.set("page", "1");
-      router.replace(`${pathname}?${params.toString()}`);
-    }
-  }, [query, currentPage, pathname, router, searchParams]);
+    if (prevQueryRef.current === query) return;
+    prevQueryRef.current = query;
+
+    const params = new URLSearchParams(searchParams);
+    params.set("page", "1");
+    router.replace(`${pathname}?${params.toString()}`);
+  }, [query, pathname, router, searchParams]);
 
   useEffect(() => {
     if (currentPage > totalPages) {

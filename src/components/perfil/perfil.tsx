@@ -6,6 +6,7 @@ import { IoImageOutline } from "react-icons/io5";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
 import { updateUser } from "@/actions";
+import { useToastStore } from "@/store";
 
 interface User {
     name?: string | null;
@@ -47,6 +48,7 @@ export const Pefil = ({user, avatars}: Props) => {
   const [activeTab, setActiveTab] = useState("mazos");
   const [showAvatars, setShowAvatars] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string>(user.image ? user.image : "");
+  const showToast = useToastStore((state) => state.showToast);
 
   const handleSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar.imageUrl);
@@ -55,8 +57,18 @@ export const Pefil = ({user, avatars}: Props) => {
   };
   
   const updateUserProfile = async () => {
-    await updateUser(selectedAvatar); 
-  }
+    try {
+      await updateUser(selectedAvatar);
+      showToast("Avatar actualizado correctamente", "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudo actualizar el avatar",
+        "error"
+      );
+    }
+  };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white overflow-hidden p-4">

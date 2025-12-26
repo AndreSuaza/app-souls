@@ -149,7 +149,7 @@ export const PlayerSearchInput = ({
           {/* No results */}
           {!loading && suggestions.length === 0 && (
             <div className="px-3 py-2 text-sm text-red-500">
-              No se encontraron jugadores
+              No hay jugadores disponibles
             </div>
           )}
 

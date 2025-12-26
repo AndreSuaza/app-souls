@@ -17,11 +17,13 @@ import {
 import { DateTimeFields } from "./DateTimeFields";
 import { TournamentTypeSelect } from "./TournamentTypeSelect";
 import { TournamentFormatSelect } from "./TournamentFormatSelect";
+import { StoreSelect } from "./StoreSelect";
 
 type CreateTournamentInputs = {
   title: string;
   description: string;
   typeTournamentId: string;
+  storeId?: string;
 };
 
 export const CreateTournamentForm = () => {
@@ -31,7 +33,8 @@ export const CreateTournamentForm = () => {
 
   const router = useRouter();
 
-  const { tournamentTypes, fetchTournamentTypes } = useCatalogStore();
+  const { tournamentTypes, stores, fetchTournamentTypes, fetchStores } =
+    useCatalogStore();
   const openConfirmation = useAlertConfirmationStore(
     (s) => s.openAlertConfirmation
   );
@@ -53,6 +56,12 @@ export const CreateTournamentForm = () => {
   useEffect(() => {
     fetchTournamentTypes();
   }, [fetchTournamentTypes]);
+
+  useEffect(() => {
+    if (role === "admin") {
+      fetchStores();
+    }
+  }, [role, fetchStores]);
 
   // Inicializar por defecto los datos
   useEffect(() => {
@@ -86,6 +95,13 @@ export const CreateTournamentForm = () => {
 
   // Crear el torneo
   const onSubmit = handleSubmit((data) => {
+    const resolvedStoreId = role === "admin" ? data.storeId : userStoreId;
+
+    if (!resolvedStoreId) {
+      showToast("No se pudo determinar la tienda", "error");
+      return;
+    }
+
     openConfirmation({
       text: "¿Deseas crear este torneo?",
       action: async () => {
@@ -99,10 +115,7 @@ export const CreateTournamentForm = () => {
             lat: 0,
             lgn: 0,
             maxRounds: 1,
-            storeId:
-              role === "store" && userStoreId
-                ? userStoreId
-                : "67c4bb4b15d333fa8987403e",
+            storeId: resolvedStoreId,
             typeTournamentId: data.typeTournamentId,
             date: buildISODate(),
           });
@@ -197,6 +210,15 @@ export const CreateTournamentForm = () => {
       />
 
       <div className="grid md:grid-cols-2 gap-4">
+        {role === "admin" && (
+          <StoreSelect<CreateTournamentInputs>
+            register={register}
+            errors={errors}
+            name="storeId"
+            stores={stores}
+          />
+        )}
+
         {role === "admin" && (
           <TournamentTypeSelect<CreateTournamentInputs>
             register={register}

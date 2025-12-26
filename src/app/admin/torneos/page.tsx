@@ -9,20 +9,18 @@ import {
 } from "@/actions";
 
 export default function AdminTournamentsPage() {
+  const showLoading = useUIStore((s) => s.showLoading);
   const hideLoading = useUIStore((s) => s.hideLoading);
   const [tournaments, setTournaments] = useState<AdminTournamentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    hideLoading();
-  }, [hideLoading]);
-
-  useEffect(() => {
     let active = true;
 
     const loadTournaments = async () => {
       try {
+        showLoading("Cargando torneos...");
         const data = await getAdminTournamentsAction();
         if (active) {
           setTournaments(data);
@@ -34,6 +32,7 @@ export default function AdminTournamentsPage() {
       } finally {
         if (active) {
           setLoading(false);
+          hideLoading();
         }
       }
     };
@@ -42,8 +41,9 @@ export default function AdminTournamentsPage() {
 
     return () => {
       active = false;
+      hideLoading();
     };
-  }, []);
+  }, [showLoading, hideLoading]);
 
   return (
     <section className="space-y-6">
@@ -56,12 +56,6 @@ export default function AdminTournamentsPage() {
           Gestiona y administra los torneos creados desde tu tienda.
         </p>
       </header>
-      {loading && (
-        <div className="rounded-xl border border-gray-300 bg-white p-6 text-sm text-gray-500">
-          Cargando torneos...
-        </div>
-      )}
-
       {!loading && error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-600">
           {error}

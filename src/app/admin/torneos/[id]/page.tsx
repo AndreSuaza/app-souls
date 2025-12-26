@@ -49,7 +49,9 @@ export default function TournamentAdminPage() {
 
     // Si no hay mínimo de jugadores, solo forzar si NO estás ya en players
     if (players.length < 4) {
-      if (activeTab !== "players") setActiveTab("players");
+      if (activeTab !== "players" && activeTab !== "information") {
+        setActiveTab("players");
+      }
       return;
     }
   }, [tournament, players.length, activeTab]);
