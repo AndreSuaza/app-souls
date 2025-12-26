@@ -17,11 +17,26 @@ export type AdminTournamentRow = {
   playersCount: number;
 };
 
+export type AdminTournamentsTableClassNames = {
+  container?: string;
+  table?: string;
+  head?: string;
+  headCell?: string;
+  body?: string;
+  row?: string;
+  cell?: string;
+  titleCell?: string;
+  statusCell?: string;
+  statusBadge?: string;
+  dateBadge?: string;
+};
+
 type Props = {
   tournaments: AdminTournamentRow[];
   statusConfig: AdminTournamentStatusConfig;
   formatDate: (value: string) => string;
   onSelect: (id: string, status: TournamentStatus) => void;
+  classNames?: AdminTournamentsTableClassNames;
 };
 
 export const AdminTournamentsTable = ({
@@ -29,19 +44,32 @@ export const AdminTournamentsTable = ({
   statusConfig,
   formatDate,
   onSelect,
+  classNames,
 }: Props) => {
   return (
-    <div className="hidden md:block overflow-hidden rounded-lg border bg-white">
-      <table className="min-w-full text-sm">
-        <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+    <div
+      className={clsx(
+        "hidden md:block overflow-hidden rounded-lg border",
+        classNames?.container ?? "bg-white"
+      )}
+    >
+      <table className={clsx("min-w-full text-sm", classNames?.table)}>
+        <thead
+          className={clsx(
+            "text-left text-xs uppercase tracking-wide",
+            classNames?.head ?? "bg-gray-50 text-gray-500"
+          )}
+        >
           <tr>
-            <th className="px-4 py-3">Fecha</th>
-            <th className="px-4 py-3">Nombre</th>
-            <th className="px-4 py-3">Jugadores</th>
-            <th className="px-4 py-3">Estado</th>
+            <th className={clsx("px-4 py-3", classNames?.headCell)}>Fecha</th>
+            <th className={clsx("px-4 py-3", classNames?.headCell)}>Nombre</th>
+            <th className={clsx("px-4 py-3", classNames?.headCell)}>
+              Jugadores
+            </th>
+            <th className={clsx("px-4 py-3", classNames?.headCell)}>Estado</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className={clsx(classNames?.body ?? "divide-y divide-gray-200")}>
           {tournaments.map((tournament) => {
             const isDisabled = tournament.status === "cancelled";
             const status = statusConfig[tournament.status];
@@ -62,25 +90,40 @@ export const AdminTournamentsTable = ({
                 }}
                 className={clsx(
                   "transition-colors",
-                  isDisabled
-                    ? "bg-gray-50 text-gray-400"
-                    : "cursor-pointer hover:bg-gray-50"
+                  classNames?.row ??
+                    (isDisabled
+                      ? "bg-gray-50 text-gray-400"
+                      : "cursor-pointer hover:bg-gray-50")
                 )}
               >
-                <td className="px-4 py-3">
-                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200">
+                <td className={clsx("px-4 py-3", classNames?.cell)}>
+                  <span
+                    className={clsx(
+                      "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
+                      classNames?.dateBadge ??
+                        "bg-slate-100 text-slate-700 ring-slate-200"
+                    )}
+                  >
                     {formatDate(tournament.date)}
                   </span>
                 </td>
-                <td className="px-4 py-3 font-medium text-gray-900">
+                <td
+                  className={clsx(
+                    "px-4 py-3 font-medium",
+                    classNames?.titleCell ?? "text-gray-900"
+                  )}
+                >
                   {tournament.title}
                 </td>
-                <td className="px-4 py-3">{tournament.playersCount}</td>
-                <td className="px-4 py-3">
+                <td className={clsx("px-4 py-3", classNames?.cell)}>
+                  {tournament.playersCount}
+                </td>
+                <td className={clsx("px-4 py-3", classNames?.statusCell)}>
                   <span
                     className={clsx(
                       "rounded-full px-2 py-1 text-xs font-semibold",
-                      status.className
+                      status.className,
+                      classNames?.statusBadge
                     )}
                   >
                     {status.label}

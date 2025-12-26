@@ -42,3 +42,5 @@ export * from "./decks/getDeckById";
 
 export * from "./profile/avatars";
 export * from "./profile/edit-user-session";
+export * from "./profile/get-active-tournament.action";
+export * from "./profile/get-user-tournaments.action";

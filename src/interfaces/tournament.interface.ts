@@ -84,6 +84,18 @@ export interface RoundInterface {
   matches: MatchInterface[];
 }
 
+export interface ActiveTournamentData {
+  currentUserId: string;
+  tournament: {
+    id: string;
+    title: string;
+    status: "pending" | "in_progress" | "finished" | "cancelled";
+    currentRoundNumber: number;
+  };
+  players: TournamentPlayerInterface[];
+  rounds: RoundInterface[];
+}
+
 // Match previo usado SOLO para saber cuántas rondas existen.
 export interface SwissMatchMinimal {
   id: string;

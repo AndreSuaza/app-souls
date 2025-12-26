@@ -7,6 +7,9 @@ import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
 import { updateUser } from "@/actions";
 import { useToastStore } from "@/store";
+import { type ActiveTournamentData } from "@/interfaces";
+import { ProfileCurrentTournament } from "./ProfileCurrentTournament";
+import { ProfileTournamentHistory } from "./ProfileTournamentHistory";
 
 interface User {
     name?: string | null;
@@ -28,6 +31,16 @@ type Avatar = {
   isExclusive: boolean;
 };
 
+type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
+
+type TournamentHistoryItem = {
+  id: string;
+  title: string;
+  date: string;
+  status: TournamentStatus;
+  playersCount: number;
+};
+
 // interface Deck {
 //   id: string;
 //   name: string;
@@ -39,13 +52,19 @@ type Avatar = {
 //   archetype: Archetype;
 // }
 
+type TabKey = "current" | "history" | "mazos";
+
 interface Props {
-    user: User;
-    avatars: Avatar[];
+  user: User;
+  avatars: Avatar[];
+  activeTournament: ActiveTournamentData | null;
+  tournaments: TournamentHistoryItem[];
 }
 
-export const Pefil = ({user, avatars}: Props) => {
-  const [activeTab, setActiveTab] = useState("mazos");
+export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) => {
+  const [activeTab, setActiveTab] = useState<TabKey>(
+    activeTournament ? "current" : "history"
+  );
   const [showAvatars, setShowAvatars] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string>(user.image ? user.image : "");
   const showToast = useToastStore((state) => state.showToast);
@@ -69,6 +88,10 @@ export const Pefil = ({user, avatars}: Props) => {
       );
     }
   };
+
+  const tabs: TabKey[] = activeTournament
+    ? ["current", "history", "mazos"]
+    : ["history", "mazos"];
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white overflow-hidden p-4">
@@ -123,7 +146,7 @@ export const Pefil = ({user, avatars}: Props) => {
 
         {/* Tabs */}
         <div className="flex mt-10 border-b border-purple-500/40 w-full justify-center md:justify-start">
-          {["mazos"].map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -133,17 +156,25 @@ export const Pefil = ({user, avatars}: Props) => {
                   : "text-gray-400 hover:text-purple-300"
               }`}
             >
-              {tab === "perfil"
-                ? "Perfil"
-                : tab === "mazos"
-                ? "Mis Mazos"
-                : "Historial de Torneos"}
+              {tab === "current"
+                ? "Torneo actual"
+                : tab === "history"
+                ? "Historial de torneos"
+                : "Mis mazos"}
             </button>
           ))}
         </div>
 
         {/* Contenido */}
         <div className="mt-8 w-full">
+          {activeTab === "current" && activeTournament && (
+            <ProfileCurrentTournament data={activeTournament} />
+          )}
+
+          {activeTab === "history" && (
+            <ProfileTournamentHistory tournaments={tournaments} />
+          )}
+
           {/* {activeTab === "perfil" && (
             <div className="grid grid-cols-3 gap-4 text-center">
               <StatCard label="Victorias" value="42" />

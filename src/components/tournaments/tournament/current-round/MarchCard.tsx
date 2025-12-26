@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import Image from "next/image";
+import { ReactNode } from "react";
 import { MatchInterface, TournamentPlayerInterface } from "@/interfaces";
 import { PlayerCell } from "../players/PlayerCell";
 import { MatchResultSelector } from "./MatchResultSelector";
@@ -14,6 +15,14 @@ interface MatchCardProps {
   readOnly?: boolean; // indica si el resultado es editable
   decorated?: boolean; // controla borde, sombra y redondeo
   onChangeResult?: (matchId: string, result: "P1" | "P2" | "DRAW") => void;
+  renderResult?: (match: MatchInterface) => ReactNode;
+  classNames?: {
+    container?: string;
+    tableBadge?: string;
+    tableText?: string;
+    byeText?: string;
+    byeImage?: string;
+  };
 }
 
 export const MatchCard = ({
@@ -23,6 +32,8 @@ export const MatchCard = ({
   readOnly = false, // por defecto editable
   decorated = true, // ← por defecto con estilos visuales
   onChangeResult,
+  renderResult,
+  classNames,
 }: MatchCardProps) => {
   const player1 = players.find((p) => p.id === match.player1Id);
   const player2 = players.find((p) => p.id === match.player2Id);
@@ -45,7 +56,8 @@ export const MatchCard = ({
   return (
     <div
       className={clsx(
-        "grid gap-y-3 md:grid-cols-[72px_1fr_220px_1fr_72px] md:grid-rows-1 md:gap-y-0 items-center bg-white px-2 py-4 md:p-4 w-full",
+        "grid gap-y-3 md:grid-cols-[72px_1fr_220px_1fr_72px] md:grid-rows-1 md:gap-y-0 items-center px-2 py-4 md:p-4 w-full",
+        classNames?.container ?? "bg-white",
         {
           "border rounded-xl shadow-sm": decorated,
         }
@@ -54,12 +66,22 @@ export const MatchCard = ({
       {/* Mesa */}
       <div className="flex items-center gap-2 justify-center md:col-auto md:row-auto md:justify-start">
         {/* Desktop */}
-        <span className="hidden md:flex w-8 h-8 items-center justify-center rounded-full bg-gray-100 font-semibold">
+        <span
+          className={clsx(
+            "hidden md:flex w-8 h-8 items-center justify-center rounded-full font-semibold",
+            classNames?.tableBadge ?? "bg-gray-100"
+          )}
+        >
           {tableNumber}
         </span>
 
         {/* Mobile */}
-        <span className="md:hidden text-sm font-semibold text-gray-700">
+        <span
+          className={clsx(
+            "md:hidden text-sm font-semibold",
+            classNames?.tableText ?? "text-gray-700"
+          )}
+        >
           Mesa {tableNumber}
         </span>
 
@@ -87,13 +109,23 @@ export const MatchCard = ({
             <PlayerCell player={player2} reverse highlight={p2Highlight} />
           ) : (
             <div className="flex items-center gap-3 justify-end text-right">
-              <p className="font-semibold text-gray-400">BYE</p>
+              <p
+                className={clsx(
+                  "font-semibold",
+                  classNames?.byeText ?? "text-gray-400"
+                )}
+              >
+                BYE
+              </p>
               <Image
                 src="/profile/player.webp"
                 alt="BYE"
                 width={36}
                 height={36}
-                className="w-9 h-9 rounded-full object-cover border border-gray-200"
+                className={clsx(
+                  "w-9 h-9 rounded-full object-cover border",
+                  classNames?.byeImage ?? "border-gray-200"
+                )}
               />
             </div>
           )}
@@ -107,16 +139,20 @@ export const MatchCard = ({
 
       {/* Resultado */}
       <div className="flex justify-center md:col-auto md:row-auto">
-        <MatchResultSelector
-          match={match}
-          layout="mobileGrid"
-          readOnly={readOnly || !player2}
-          onChangeResult={
-            onChangeResult
-              ? (result) => onChangeResult(match.id, result)
-              : undefined
-          }
-        />
+        {renderResult ? (
+          renderResult(match)
+        ) : (
+          <MatchResultSelector
+            match={match}
+            layout="mobileGrid"
+            readOnly={readOnly || !player2}
+            onChangeResult={
+              onChangeResult
+                ? (result) => onChangeResult(match.id, result)
+                : undefined
+            }
+          />
+        )}
       </div>
 
       {/* Jugador 2 (nickname/nombre a la derecha + avatar a la derecha) */}
@@ -127,7 +163,14 @@ export const MatchCard = ({
           <div className="flex items-center gap-3 justify-end text-right">
             {/* Texto BYE */}
             <div className="leading-tight">
-              <p className="font-semibold text-gray-400">BYE</p>
+              <p
+                className={clsx(
+                  "font-semibold",
+                  classNames?.byeText ?? "text-gray-400"
+                )}
+              >
+                BYE
+              </p>
             </div>
 
             {/* Avatar por defecto */}
@@ -136,7 +179,10 @@ export const MatchCard = ({
               alt="BYE"
               width={36}
               height={36}
-              className="w-9 h-9 rounded-full object-cover border border-gray-200"
+              className={clsx(
+                "w-9 h-9 rounded-full object-cover border",
+                classNames?.byeImage ?? "border-gray-200"
+              )}
             />
           </div>
         )}
