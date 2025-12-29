@@ -1,29 +1,46 @@
 "use client";
 
-import { useMemo } from "react";
-import { ActiveTournamentData, MatchInterface } from "@/interfaces";
+import { useEffect, useMemo } from "react";
+import {
+  ActiveTournamentData,
+  MatchInterface,
+  TournamentSnapshot,
+} from "@/interfaces";
 import { MatchCard } from "../tournaments/tournament/current-round/MarchCard";
 import { RoundHistoryCardBase } from "../tournaments/tournament/hisotry/RoundHistoryCardBase";
 import { ResultButton } from "../tournaments/tournament/current-round/ResultButton";
+import { TournamentRankingPanel } from "./TournamentRankingPanel";
+import { useToastStore } from "@/store";
+
+const EMPTY_ROUNDS: [] = [];
 
 type Props = {
   data: ActiveTournamentData;
+  selectedTournament?: TournamentSnapshot | null;
+  hasShownInProgressWarning?: boolean;
+  onInProgressWarningShown?: () => void;
 };
 
-export const ProfileCurrentTournament = ({ data }: Props) => {
-  const { tournament, players, rounds, currentUserId } = data;
-
-  const orderedRounds = useMemo(
-    () => [...rounds].sort((a, b) => a.roundNumber - b.roundNumber),
-    [rounds]
-  );
-
-  const currentRound = orderedRounds[orderedRounds.length - 1];
+export const ProfileCurrentTournament = ({
+  data,
+  selectedTournament = null,
+  hasShownInProgressWarning = false,
+  onInProgressWarningShown,
+}: Props) => {
+  const { currentTournament, lastTournament, currentUserId } = data;
+  const displayTournament =
+    selectedTournament ?? currentTournament ?? lastTournament;
+  const tournament = displayTournament?.tournament ?? null;
+  const players = displayTournament?.players ?? [];
+  const rounds = displayTournament?.rounds ?? EMPTY_ROUNDS;
+  const showToast = useToastStore((state) => state.showToast);
+  const currentRound =
+    rounds.length > 0 ? rounds[rounds.length - 1] : undefined;
   const currentPlayer = players.find(
     (player) => player.userId === currentUserId
   );
 
-  // Ubica el match del usuario en la ronda actual para mostrarlo primero.
+  // Ubica el match del usuario en la ronda actual para destacarlo primero.
   const currentMatchIndex = currentRound
     ? currentRound.matches.findIndex(
         (match) =>
@@ -37,9 +54,9 @@ export const ProfileCurrentTournament = ({ data }: Props) => {
       ? currentRound.matches[currentMatchIndex]
       : null;
 
-  // Ordena rondas con la actual primero (si existe), luego el resto en descendente.
+  // Coloca la ronda actual primero (si existe) y luego ordena el resto en descendente.
   const historyRounds = useMemo(() => {
-    if (rounds.length === 0) return [];
+    if (!tournament || rounds.length === 0) return [];
 
     const currentRoundNumber =
       tournament.status === "finished"
@@ -53,7 +70,20 @@ export const ProfileCurrentTournament = ({ data }: Props) => {
     });
   }, [rounds, tournament]);
 
-  // Render reutilizable de resultados en modo solo lectura.
+  const showCurrentRoundSection = tournament?.status === "in_progress";
+  const showPodium = tournament?.status === "finished";
+  const shouldShowWarning =
+    data.inProgressCount > 1 &&
+    tournament?.status === "in_progress" &&
+    !hasShownInProgressWarning;
+
+  useEffect(() => {
+    if (!shouldShowWarning) return;
+    showToast("Tienes mas de un torneo en progreso registrado.", "warning");
+    onInProgressWarningShown?.();
+  }, [onInProgressWarningShown, shouldShowWarning, showToast]);
+
+  // Botones de resultado reutilizables renderizados en solo lectura.
   const renderResultButtons = (match: MatchInterface) => (
     <div className="grid grid-cols-3 gap-2 w-full md:flex md:items-center md:justify-center">
       <div className="flex justify-end">
@@ -88,7 +118,7 @@ export const ProfileCurrentTournament = ({ data }: Props) => {
     </div>
   );
 
-  // Tema oscuro alineado con el estilo del admin.
+  // Tema oscuro alineado con la paleta del admin.
   const matchCardClassNames = {
     container: "bg-gray-800/60 text-gray-200 border-gray-700/50",
     tableBadge: "bg-gray-700/70 text-gray-200",
@@ -108,31 +138,108 @@ export const ProfileCurrentTournament = ({ data }: Props) => {
     matchDivider: "border-gray-700/50",
   };
 
+  const rankingPanelClassNames = {
+    container: "bg-gray-800/60 border-gray-700/50 text-gray-200",
+    title: "text-gray-200",
+    pagination: "text-gray-200",
+    emptyState:
+      "border border-dashed border-gray-700 bg-gray-900/70 text-gray-400",
+  };
+
+  const rankingDesktopClassNames = {
+    table: "text-gray-200",
+    headerRow: "text-gray-400 border-gray-700/50",
+    headerCell: "text-gray-400",
+    row: "border-gray-700/50",
+    cell: "text-gray-200",
+  };
+
+  const rankingMobileClassNames = {
+    card: "bg-gray-800/60 border-gray-700/50",
+    meta: "text-gray-300",
+    metaSecondary: "text-gray-400",
+  };
+
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-gray-200">
-          {tournament.title}
-        </h3>
+      <div className="space-y-6">
+        {tournament && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-gray-700/50 bg-gray-800/60 p-4">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                    Torneo
+                  </p>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-100">
+                    {tournament.title}
+                  </h2>
+                </div>
+                <span
+                  className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+                    tournament.status === "in_progress"
+                      ? "bg-blue-100 text-blue-700"
+                      : tournament.status === "finished"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {tournament.status === "in_progress"
+                    ? "En progreso"
+                    : tournament.status === "finished"
+                    ? "Finalizado"
+                    : "Pendiente"}
+                </span>
+              </div>
+            </div>
 
-        {currentRound && currentMatch ? (
-          <MatchCard
-            match={currentMatch}
-            tableNumber={currentMatchIndex + 1}
-            players={players}
-            readOnly
-            decorated
-            classNames={matchCardClassNames}
-            renderResult={(match) => renderResultButtons(match)}
-          />
-        ) : (
-          <div className="rounded-lg border border-dashed border-gray-700 bg-gray-900/70 p-6 text-sm text-gray-400">
-            {currentRound
-              ? "Aun no tienes un match asignado en la ronda actual."
-              : "Aun no se ha generado la ronda actual."}
+            {showCurrentRoundSection && (
+              <>
+                <h3 className="text-base font-semibold text-gray-200">
+                  Ronda actual
+                </h3>
+
+                {currentRound && currentMatch ? (
+                  <MatchCard
+                    match={currentMatch}
+                    tableNumber={currentMatchIndex + 1}
+                    players={players}
+                    readOnly
+                    decorated
+                    classNames={matchCardClassNames}
+                    renderResult={(match) => renderResultButtons(match)}
+                  />
+                ) : (
+                  <div className="rounded-lg border border-dashed border-gray-700 bg-gray-900/70 p-6 text-sm text-gray-400">
+                    {currentRound
+                      ? "Aun no tienes un match asignado en la ronda actual."
+                      : "Aun no se ha generado la ronda actual."}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>
+
+      {tournament && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-200">
+            Clasificacion general
+          </h3>
+
+          <TournamentRankingPanel
+            players={players}
+            rounds={rounds}
+            status={tournament.status}
+            showPodium={showPodium}
+            showTitle={false}
+            classNames={rankingPanelClassNames}
+            desktopClassNames={rankingDesktopClassNames}
+            mobileClassNames={rankingMobileClassNames}
+          />
+        </div>
+      )}
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-200">
@@ -147,7 +254,7 @@ export const ProfileCurrentTournament = ({ data }: Props) => {
           <div className="space-y-4">
             {historyRounds.map((round) => {
               const isCurrentRound =
-                tournament.status === "in_progress" &&
+                tournament?.status === "in_progress" &&
                 round.roundNumber === tournament.currentRoundNumber + 1;
 
               const status = isCurrentRound ? "IN_PROGRESS" : "FINISHED";

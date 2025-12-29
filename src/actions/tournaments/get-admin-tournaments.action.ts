@@ -51,7 +51,21 @@ export async function getAdminTournamentsAction() {
       },
     });
 
-    return tournaments.map((tournament) => ({
+    // asigna prioridad a los estados
+    const statusPriority: Record<AdminTournamentListItem["status"], number> = {
+      in_progress: 0,
+      pending: 1,
+      finished: 2,
+      cancelled: 2,
+    };
+
+    const sortedTournaments = [...tournaments].sort((a, b) => {
+      const priorityDiff = statusPriority[a.status] - statusPriority[b.status];
+      if (priorityDiff !== 0) return priorityDiff;
+      return b.date.getTime() - a.date.getTime();
+    });
+
+    return sortedTournaments.map((tournament) => ({
       id: tournament.id,
       title: tournament.title,
       date: tournament.date.toISOString(),

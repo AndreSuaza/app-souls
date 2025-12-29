@@ -12,9 +12,12 @@ import { sortPlayersByRanking } from "@/utils/ranking";
 const PAGE_SIZE = 8;
 
 export const TournamentRanking = () => {
-  const { players } = useTournamentStore();
+  const players = useTournamentStore((state) => state.players);
+  const tournament = useTournamentStore((state) => state.tournament);
+  const rounds = useTournamentStore((state) => state.rounds);
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const isFinished = tournament?.status === "finished";
 
   const pageParam = Number(searchParams.get("page") ?? 1);
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
@@ -26,7 +29,7 @@ export const TournamentRanking = () => {
 
   const totalPages = Math.max(1, Math.ceil(sortedPlayers.length / PAGE_SIZE));
 
-  // Aplica paginación al ranking ordenado
+  // Aplica paginacion al ranking ordenado
   const paginatedPlayers = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return sortedPlayers.slice(start, start + PAGE_SIZE);
@@ -35,7 +38,7 @@ export const TournamentRanking = () => {
   if (players.length === 0) {
     return (
       <div className="bg-white border rounded-md p-6 flex items-center justify-center text-gray-400 w-full">
-        No hay jugadores aún
+        No hay jugadores aun
       </div>
     );
   }
@@ -43,19 +46,23 @@ export const TournamentRanking = () => {
   return (
     <div className="bg-white border rounded-md p-4 w-full">
       <h2 className="text-lg font-bold mb-4 text-left">
-        Clasificación General
+        Clasificacion general
       </h2>
 
       <RankingDesktopTable
         players={paginatedPlayers}
+        rounds={rounds}
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
+        showPodium={isFinished}
       />
 
       <RankingMobileList
         players={paginatedPlayers}
+        rounds={rounds}
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
+        showPodium={isFinished}
       />
 
       <PaginationLine

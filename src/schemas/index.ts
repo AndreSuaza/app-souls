@@ -6,3 +6,4 @@ export * from "./tournament/tournament.schema";
 
 export * from "./user/search-users.schema";
 export * from "./auth/register.schema";
+export * from "./profile/tournament.schema";

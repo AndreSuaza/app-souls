@@ -1,22 +1,26 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import { useState } from "react";
 import { IoImageOutline } from "react-icons/io5";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
-import { updateUser } from "@/actions";
+import { getProfileTournament, updateUser } from "@/actions";
 import { useToastStore } from "@/store";
-import { type ActiveTournamentData } from "@/interfaces";
+import {
+  type ActiveTournamentData,
+  type TournamentSnapshot,
+} from "@/interfaces";
 import { ProfileCurrentTournament } from "./ProfileCurrentTournament";
 import { ProfileTournamentHistory } from "./ProfileTournamentHistory";
 
 interface User {
-    name?: string | null;
-    lastname?: string| null;
-    email?: string| null;
-    nickname?: string| null;
-    image?: string| null;
+  name?: string | null;
+  lastname?: string | null;
+  email?: string | null;
+  nickname?: string | null;
+  image?: string | null;
+  role?: string | null;
 }
 
 // interface Archetype {
@@ -61,20 +65,32 @@ interface Props {
   tournaments: TournamentHistoryItem[];
 }
 
-export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) => {
+export const Pefil = ({
+  user,
+  avatars,
+  activeTournament,
+  tournaments,
+}: Props) => {
+  const hasCurrentTournament = Boolean(activeTournament?.currentTournament);
   const [activeTab, setActiveTab] = useState<TabKey>(
     activeTournament ? "current" : "history"
   );
+  const [selectedTournament, setSelectedTournament] =
+    useState<TournamentSnapshot | null>(null);
+  const [hasShownInProgressWarning, setHasShownInProgressWarning] =
+    useState(false);
   const [showAvatars, setShowAvatars] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(user.image ? user.image : "");
+  const [selectedAvatar, setSelectedAvatar] = useState<string>(
+    user.image ? user.image : ""
+  );
   const showToast = useToastStore((state) => state.showToast);
 
   const handleSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar.imageUrl);
     setShowAvatars(false);
-    user.image = avatar.imageUrl
+    user.image = avatar.imageUrl;
   };
-  
+
   const updateUserProfile = async () => {
     try {
       await updateUser(selectedAvatar);
@@ -89,9 +105,61 @@ export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) =
     }
   };
 
-  const tabs: TabKey[] = activeTournament
-    ? ["current", "history", "mazos"]
-    : ["history", "mazos"];
+  const tabs: TabKey[] = activeTournament || selectedTournament
+    ? ["current", "history"]
+    : ["history"];
+  // "mazos" queda oculto temporalmente para activarlo en futuro.
+
+  const handleTabChange = (tab: TabKey) => {
+    if (tab === "history") {
+      setSelectedTournament(null);
+    }
+    setActiveTab(tab);
+  };
+
+  const handleHistorySelect = async (tournamentId: string) => {
+    const currentTournamentId =
+      activeTournament?.currentTournament?.tournament.id ?? null;
+    const lastTournamentId =
+      activeTournament?.lastTournament?.tournament.id ?? null;
+
+    if (tournamentId === currentTournamentId) {
+      setSelectedTournament(null);
+      setActiveTab("current");
+      return;
+    }
+
+    if (!activeTournament?.currentTournament && tournamentId === lastTournamentId) {
+      setSelectedTournament(null);
+      setActiveTab("current");
+      return;
+    }
+
+    try {
+      const tournament = await getProfileTournament({ tournamentId });
+      setSelectedTournament(tournament);
+      setActiveTab("current");
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudo cargar el torneo",
+        "error"
+      );
+    }
+  };
+
+  const currentTabLabel = selectedTournament
+    ? selectedTournament.tournament.id ===
+      activeTournament?.currentTournament?.tournament.id
+      ? "Torneo actual"
+      : selectedTournament.tournament.id ===
+        activeTournament?.lastTournament?.tournament.id
+      ? "Ultimo torneo"
+      : "Torneo"
+    : hasCurrentTournament
+    ? "Torneo actual"
+    : "Ultimo torneo";
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white overflow-hidden p-4">
@@ -106,16 +174,28 @@ export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) =
           {/* Avatar */}
           <div className="relative group">
             <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-purple-500 shadow-[rgba(168,85,247,0.4)] transition group-hover:scale-105">
-              <Image className="rounded-lg" width={270} height={287} src={`/profile/${user.image}.webp`} alt="Carta Prime Wenddygo" title="Prime Wenddygo"/>
+              <Image
+                className="rounded-lg"
+                width={270}
+                height={287}
+                src={`/profile/${user.image}.webp`}
+                alt="Carta Prime Wenddygo"
+                title="Prime Wenddygo"
+              />
             </div>
-            <button onClick={() => setShowAvatars(true)} className="absolute bottom-2 right-2 bg-purple-600 text-white p-2 rounded-full text-xs hover:bg-purple-700 transition">
+            <button
+              onClick={() => setShowAvatars(true)}
+              className="absolute bottom-2 right-2 bg-purple-600 text-white p-2 rounded-full text-xs hover:bg-purple-700 transition"
+            >
               <IoImageOutline className="w-6 h-6" />
             </button>
           </div>
 
           {/* Info básica */}
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-3xl font-bold text-purple-400">{user.nickname}</h1>
+            <h1 className="text-3xl font-bold text-purple-400">
+              {user.nickname}
+            </h1>
             {/* <p className="text-gray-300 italic">“No soy un mazo... soy un monstruo.”</p> */}
 
             {/* Barra de experiencia */}
@@ -140,6 +220,12 @@ export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) =
                 <p className="text-gray-400 text-xs">Email</p>
                 <p className="font-semibold">{user.email}</p>
               </div>
+              {user.role && user.role !== "player" && (
+                <div className="bg-gray-800/60 p-3 rounded-lg border border-gray-700/50">
+                  <p className="text-gray-400 text-xs">Rol</p>
+                  <p className="font-semibold">{user.role}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -149,15 +235,15 @@ export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) =
           {tabs.map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2 uppercase text-sm font-semibold transition ${
+              onClick={() => handleTabChange(tab)}
+              className={`px-6 py-2 text-sm font-semibold transition ${
                 activeTab === tab
                   ? "text-purple-400 border-b-2 border-purple-500"
                   : "text-gray-400 hover:text-purple-300"
               }`}
             >
               {tab === "current"
-                ? "Torneo actual"
+                ? currentTabLabel
                 : tab === "history"
                 ? "Historial de torneos"
                 : "Mis mazos"}
@@ -168,11 +254,21 @@ export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) =
         {/* Contenido */}
         <div className="mt-8 w-full">
           {activeTab === "current" && activeTournament && (
-            <ProfileCurrentTournament data={activeTournament} />
+            <ProfileCurrentTournament
+              data={activeTournament}
+              selectedTournament={selectedTournament}
+              hasShownInProgressWarning={hasShownInProgressWarning}
+              onInProgressWarningShown={() =>
+                setHasShownInProgressWarning(true)
+              }
+            />
           )}
 
           {activeTab === "history" && (
-            <ProfileTournamentHistory tournaments={tournaments} />
+            <ProfileTournamentHistory
+              tournaments={tournaments}
+              onSelectTournament={handleHistorySelect}
+            />
           )}
 
           {/* {activeTab === "perfil" && (
@@ -231,23 +327,28 @@ export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) =
 
         {/* Botones */}
         <div className="mt-10 flex flex-wrap gap-4 justify-center">
-          <button onClick={() => updateUserProfile()} className="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold shadow-md hover:shadow-purple-500/50 transition">
+          <button
+            onClick={() => updateUserProfile()}
+            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold shadow-md hover:shadow-purple-500/50 transition"
+          >
             Guardar
           </button>
-          <ButtonLogOut className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold shadow-md hover:shadow-red-500/50 transition">    
+          <ButtonLogOut className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold shadow-md hover:shadow-red-500/50 transition">
             Cerrar Sesión
           </ButtonLogOut>
         </div>
       </div>
-      { showAvatars && 
-        <Modal 
-            className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full h-screen md:h-auto md:w-1/2 md:left-1/4 md:top-28"
-            close={() => setShowAvatars(false)}
+      {showAvatars && (
+        <Modal
+          className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full h-screen md:h-auto md:w-1/2 md:left-1/4 md:top-28"
+          close={() => setShowAvatars(false)}
         >
           <div className="overflow-auto w-full text-center">
-            <div className=" text-gray-100 py-4 bg-slate-950"> 
-                <h1 className="font-bold md:text-2xl uppercase">¡Elige tu avatar favorito!</h1>
-            </div>    
+            <div className=" text-gray-100 py-4 bg-slate-950">
+              <h1 className="font-bold md:text-2xl uppercase">
+                ¡Elige tu avatar favorito!
+              </h1>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mx-10 my-6">
               {avatars.map((avatar) => (
                 <div
@@ -271,9 +372,7 @@ export const Pefil = ({ user, avatars, activeTournament, tournaments }: Props) =
             </div>
           </div>
         </Modal>
-      }
+      )}
     </div>
   );
-
-
-}
+};

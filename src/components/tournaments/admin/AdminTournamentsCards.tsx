@@ -42,18 +42,18 @@ export const AdminTournamentsCards = ({
             key={tournament.id}
             onClick={() => onSelect(tournament.id, tournament.status)}
             className={clsx(
-              "rounded-lg border bg-white p-4 transition-colors",
-              isDisabled
-                ? "bg-gray-50 text-gray-400"
-                : "cursor-pointer hover:bg-gray-50",
-              classNames?.card
+              "rounded-lg border p-4 transition-colors",
+              classNames?.card ??
+                (isDisabled
+                  ? "bg-gray-50 text-gray-400"
+                  : "bg-white cursor-pointer hover:bg-gray-50")
             )}
           >
             <div className="flex items-center justify-between">
               <p
                 className={clsx(
-                  "text-sm font-semibold text-gray-900",
-                  classNames?.title
+                  "text-sm font-semibold",
+                  classNames?.title ?? "text-gray-900"
                 )}
               >
                 {tournament.title}
@@ -70,14 +70,15 @@ export const AdminTournamentsCards = ({
             </div>
             <div
               className={clsx(
-                "mt-2 flex items-center justify-between text-xs text-gray-500",
-                classNames?.metaRow
+                "mt-2 flex items-center justify-between text-xs",
+                classNames?.metaRow ?? "text-gray-500"
               )}
             >
               <span
                 className={clsx(
-                  "inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-inset ring-slate-200",
-                  classNames?.dateBadge
+                  "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset",
+                  classNames?.dateBadge ??
+                    "bg-slate-100 text-slate-700 ring-slate-200"
                 )}
               >
                 {formatDate(tournament.date)}

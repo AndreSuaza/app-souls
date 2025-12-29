@@ -84,8 +84,7 @@ export interface RoundInterface {
   matches: MatchInterface[];
 }
 
-export interface ActiveTournamentData {
-  currentUserId: string;
+export interface TournamentSnapshot {
   tournament: {
     id: string;
     title: string;
@@ -94,6 +93,13 @@ export interface ActiveTournamentData {
   };
   players: TournamentPlayerInterface[];
   rounds: RoundInterface[];
+}
+
+export interface ActiveTournamentData {
+  currentUserId: string;
+  inProgressCount: number;
+  lastTournament: TournamentSnapshot | null;
+  currentTournament: TournamentSnapshot | null;
 }
 
 // Match previo usado SOLO para saber cuántas rondas existen.

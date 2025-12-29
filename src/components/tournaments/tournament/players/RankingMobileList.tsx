@@ -1,42 +1,58 @@
 "use client";
 
-import { TournamentPlayerInterface } from "@/interfaces";
+import clsx from "clsx";
+import { RoundInterface, TournamentPlayerInterface } from "@/interfaces";
 import { RankBadge } from "./RankBadge";
 import { PlayerCell } from "./PlayerCell";
 import { calculatePlayerRecord, formatRecord } from "@/utils/ranking";
-import { useTournamentStore } from "@/store";
+
+export type RankingMobileListClassNames = {
+  wrapper?: string;
+  card?: string;
+  meta?: string;
+  metaSecondary?: string;
+};
 
 interface Props {
   players: TournamentPlayerInterface[];
+  rounds: RoundInterface[];
   currentPage: number;
   pageSize: number;
+  showPodium?: boolean;
+  classNames?: RankingMobileListClassNames;
 }
 
 export const RankingMobileList = ({
   players,
+  rounds,
   currentPage,
   pageSize,
+  showPodium = true,
+  classNames,
 }: Props) => {
-  const rounds = useTournamentStore((s) => s.rounds);
-
   return (
-    <div className="md:hidden space-y-3">
+    <div className={clsx("md:hidden space-y-3", classNames?.wrapper)}>
       {players.map((player, index) => {
         const rank = (currentPage - 1) * pageSize + index + 1;
 
         return (
           <div
             key={player.id}
-            className="border rounded-md p-3 flex items-center justify-between"
+            className={clsx(
+              "border rounded-md p-3 flex items-center justify-between",
+              classNames?.card
+            )}
           >
             <div className="flex items-center gap-3">
-              <RankBadge rank={rank} />
+              <RankBadge rank={rank} showPodium={showPodium} />
               <PlayerCell player={player} />
             </div>
 
-            <div className="text-right text-sm">
+            <div className={clsx("text-right text-sm", classNames?.meta)}>
               <p className="font-bold">{player.points} pts</p>
-              <p className="text-gray-500">DE {player.buchholz}</p>
+              <p className={clsx("text-gray-500", classNames?.metaSecondary)}>
+                DE {player.buchholz}
+              </p>
               <p>{formatRecord(calculatePlayerRecord(player.id, rounds))}</p>
             </div>
           </div>

@@ -19,24 +19,6 @@ export async function addPlayerAction(input: TournamentPlayerInput) {
       throw new Error("El jugador ya está registrado en este torneo");
     }
 
-    const hasActiveTournament = await prisma.tournamentPlayer.findFirst({
-      where: {
-        userId: data.userId,
-        tournament: {
-          status: {
-            in: ["pending", "in_progress"],
-          },
-        },
-      },
-      select: { id: true },
-    });
-
-    if (hasActiveTournament) {
-      throw new Error(
-        "El jugador ya está registrado en un torneo pendiente o en progreso"
-      );
-    }
-
     const player = await prisma.tournamentPlayer.create({
       data: {
         tournamentId: data.tournamentId,

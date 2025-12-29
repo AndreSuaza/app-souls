@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState, type MouseEventHandler } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PaginationLine } from "@/components/ui";
 import {
@@ -16,6 +16,7 @@ import {
 
 type Props = {
   tournaments: AdminTournamentRow[];
+  onSelectTournament?: (id: string) => void;
 };
 
 const PAGE_SIZE = 10;
@@ -46,24 +47,23 @@ const formatDate = (value: string) =>
     year: "numeric",
   });
 
-export const ProfileTournamentHistory = ({ tournaments }: Props) => {
+export const ProfileTournamentHistory = ({
+  tournaments,
+  onSelectTournament,
+}: Props) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Normaliza el page param para evitar indices invalidos.
-  const pageParam = Number(searchParams.get("page") ?? 1);
-  const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.max(1, Math.ceil(tournaments.length / PAGE_SIZE));
 
   useEffect(() => {
     if (currentPage > totalPages) {
-      const params = new URLSearchParams(searchParams);
-      params.set("page", totalPages.toString());
-      router.replace(`${pathname}?${params.toString()}`);
+      setCurrentPage(totalPages);
     }
-  }, [currentPage, totalPages, pathname, router, searchParams]);
+  }, [currentPage, totalPages]);
 
   // Aplica paginacion local sin reconsultar datos.
   const paginated = useMemo(() => {
@@ -71,15 +71,34 @@ export const ProfileTournamentHistory = ({ tournaments }: Props) => {
     return tournaments.slice(start, start + PAGE_SIZE);
   }, [tournaments, currentPage]);
 
+  const handlePaginationClick: MouseEventHandler<HTMLDivElement> = (event) => {
+    const target = event.target as HTMLElement;
+    const link = target.closest("a");
+    if (!link) return;
+
+    event.preventDefault();
+    const url = new URL(link.href);
+    const pageParam = Number(url.searchParams.get("page") ?? 1);
+    if (isNaN(pageParam) || pageParam < 1 || pageParam > totalPages) {
+      return;
+    }
+
+    setCurrentPage(pageParam);
+  };
+
   const handleRowClick = (id: string, status: AdminTournamentRow["status"]) => {
     if (status === "cancelled") return;
+    if (onSelectTournament) {
+      onSelectTournament(id);
+      return;
+    }
     router.push("/torneos");
   };
 
   if (tournaments.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500">
-        No hay torneos para mostrar.
+      <div className="rounded-lg border border-dashed border-gray-700/50 bg-gray-800/60 text-gray-200 p-6 text-center text-sm">
+        No tienes torneos registrados.
       </div>
     );
   }
@@ -96,8 +115,7 @@ export const ProfileTournamentHistory = ({ tournaments }: Props) => {
     titleCell: "text-gray-200",
     statusCell: "text-gray-200",
     statusBadge: "ring-1 ring-inset ring-white/5",
-    dateBadge:
-      "bg-gray-800/60 text-gray-200 ring-1 ring-inset ring-white/5",
+    dateBadge: "bg-gray-800/60 text-gray-200 ring-1 ring-inset ring-white/5",
   };
 
   // Versión mobile con el mismo tema oscuro.
@@ -105,8 +123,7 @@ export const ProfileTournamentHistory = ({ tournaments }: Props) => {
     card: "bg-gray-800/60 border-gray-700/50 text-gray-200",
     title: "text-gray-200",
     metaRow: "text-gray-400",
-    dateBadge:
-      "bg-gray-800/60 text-gray-200 ring-1 ring-inset ring-white/5",
+    dateBadge: "bg-gray-800/60 text-gray-200 ring-1 ring-inset ring-white/5",
     playersText: "text-gray-300",
   };
 
@@ -128,13 +145,15 @@ export const ProfileTournamentHistory = ({ tournaments }: Props) => {
         classNames={cardClasses}
       />
 
-      <PaginationLine
-        totalPages={totalPages}
-        currentPage={currentPage}
-        pathname={pathname}
-        searchParams={searchParams}
-        className="text-gray-200"
-      />
+      <div onClick={handlePaginationClick}>
+        <PaginationLine
+          totalPages={totalPages}
+          currentPage={currentPage}
+          pathname={pathname}
+          searchParams={searchParams}
+          className="text-gray-200"
+        />
+      </div>
     </div>
   );
 };

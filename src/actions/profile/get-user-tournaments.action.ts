@@ -19,15 +19,18 @@ export const getUserTournaments = async () => {
             userId: session.user.idd,
           },
         },
+        status: {
+          not: "cancelled",
+        },
       },
       select: {
         id: true,
         title: true,
         date: true,
         status: true,
-        tournamentPlayers: {
+        _count: {
           select: {
-            id: true,
+            tournamentPlayers: true,
           },
         },
       },
@@ -42,7 +45,7 @@ export const getUserTournaments = async () => {
       title: tournament.title,
       date: tournament.date.toISOString(),
       status: tournament.status,
-      playersCount: tournament.tournamentPlayers.length,
+      playersCount: tournament._count.tournamentPlayers,
     }));
   } catch (error) {
     throw new Error(`Error en la sesion ${error}`);

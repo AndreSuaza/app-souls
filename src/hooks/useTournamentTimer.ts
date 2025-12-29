@@ -6,6 +6,7 @@ type TimerValues = {
   hours: string;
   minutes: string;
   seconds: string;
+  elapsedMs: number;
 };
 
 export function useTournamentTimer(
@@ -17,6 +18,7 @@ export function useTournamentTimer(
     hours: "00",
     minutes: "00",
     seconds: "00",
+    elapsedMs: 0,
   });
 
   useEffect(() => {
@@ -25,6 +27,7 @@ export function useTournamentTimer(
       hours: "00",
       minutes: "00",
       seconds: "00",
+      elapsedMs: 0,
     });
   }, [roundId]);
 
@@ -47,6 +50,7 @@ export function useTournamentTimer(
         hours: String(hours).padStart(2, "0"),
         minutes: String(minutes).padStart(2, "0"),
         seconds: String(seconds).padStart(2, "0"),
+        elapsedMs: diff,
       });
     };
 

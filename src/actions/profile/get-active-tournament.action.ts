@@ -11,47 +11,142 @@ export const getActiveTournament = async () => {
   }
 
   try {
-    // Buscar el torneo activo (pending / in_progress) mas reciente del usuario.
-    const tournamentPlayer = await prisma.tournamentPlayer.findFirst({
+    const playerSelect = {
+      id: true,
+      userId: true,
+      playerNickname: true,
+      name: true,
+      lastname: true,
+      image: true,
+      points: true,
+      buchholz: true,
+    };
+
+    const roundSelect = {
+      id: true,
+      roundNumber: true,
+      matches: {
+        select: {
+          id: true,
+          player1Id: true,
+          player2Id: true,
+          result: true,
+        },
+      },
+    };
+
+    // Cuenta cuantos torneos en progreso tiene registrados el usuario.
+    const inProgressCount = await prisma.tournamentPlayer.count({
       where: {
         userId: session.user.idd,
         tournament: {
-          status: {
-            in: ["pending", "in_progress"],
-          },
+          status: "in_progress",
         },
-      },
-      select: {
-        tournament: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            currentRoundNumber: true,
-            tournamentPlayers: true,
-            tournamentRounds: {
-              include: {
-                matches: true,
-              },
-              orderBy: {
-                roundNumber: "asc",
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createDate: "desc",
       },
     });
 
-    if (!tournamentPlayer) return null;
+    // Selecciona el torneo en progreso mas reciente segun el registro del usuario.
+    const currentTournamentPlayer =
+      inProgressCount > 0
+        ? await prisma.tournamentPlayer.findFirst({
+            where: {
+              userId: session.user.idd,
+              tournament: {
+                status: "in_progress",
+              },
+            },
+            select: {
+              tournament: {
+                select: {
+                  id: true,
+                  title: true,
+                  status: true,
+                  currentRoundNumber: true,
+                  tournamentPlayers: {
+                    select: playerSelect,
+                  },
+                  tournamentRounds: {
+                    select: roundSelect,
+                    orderBy: {
+                      roundNumber: "asc",
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createDate: "desc",
+            },
+          })
+        : null;
 
-    const tournament = tournamentPlayer.tournament;
+    // Solo busca el ultimo torneo si no hay torneos en progreso.
+    const lastTournamentPlayer =
+      inProgressCount === 0
+        ? await prisma.tournamentPlayer.findFirst({
+            where: {
+              userId: session.user.idd,
+              tournament: {
+                status: {
+                  in: ["pending", "finished"],
+                },
+              },
+            },
+            select: {
+              tournament: {
+                select: {
+                  id: true,
+                  title: true,
+                  status: true,
+                  currentRoundNumber: true,
+                  tournamentPlayers: {
+                    select: playerSelect,
+                  },
+                  tournamentRounds: {
+                    select: roundSelect,
+                    orderBy: {
+                      roundNumber: "asc",
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createDate: "desc",
+            },
+          })
+        : null;
 
-    // Normalizar la salida para consumo directo en el perfil.
-    return {
-      currentUserId: session.user.idd,
+    // Normaliza un torneo para reutilizar la misma estructura en el perfil.
+    // Se devuelven algunos campos con valores por defecto para mantener el shape esperado en el perfil.
+    const mapTournamentDetails = (
+      tournament: {
+        id: string;
+        title: string;
+        status: "pending" | "in_progress" | "finished" | "cancelled";
+        currentRoundNumber: number;
+        tournamentPlayers: Array<{
+          id: string;
+          userId: string;
+          playerNickname: string;
+          name: string | null;
+          lastname: string | null;
+          image: string | null;
+          points: number;
+          buchholz: number;
+        }>;
+        tournamentRounds: Array<{
+          id: string;
+          roundNumber: number;
+          matches: Array<{
+            id: string;
+            player1Id: string;
+            player2Id: string | null;
+            result: "P1" | "P2" | "DRAW" | null;
+          }>;
+        }>;
+      }
+    ) => ({
       tournament: {
         id: tournament.id,
         title: tournament.title,
@@ -66,24 +161,42 @@ export const getActiveTournament = async () => {
         lastname: player.lastname ?? undefined,
         image: player.image ?? undefined,
         points: player.points,
-        pointsInitial: player.pointsInitial,
-        hadBye: player.hadBye,
         buchholz: player.buchholz,
-        rivals: player.rivals,
+        pointsInitial: 0,
+        hadBye: false,
+        rivals: [],
       })),
       rounds: tournament.tournamentRounds.map((round) => ({
         id: round.id,
         roundNumber: round.roundNumber,
-        startedAt: round.startedAt ? round.startedAt.toISOString() : null,
+        startedAt: null,
         matches: round.matches.map((match) => ({
           id: match.id,
           player1Id: match.player1Id,
           player2Id: match.player2Id,
-          player1Nickname: match.player1Nickname,
-          player2Nickname: match.player2Nickname,
+          player1Nickname: "",
+          player2Nickname: null,
           result: match.result,
         })),
       })),
+    });
+
+    const lastTournament = lastTournamentPlayer?.tournament
+      ? mapTournamentDetails(lastTournamentPlayer.tournament)
+      : null;
+
+    const currentTournament = currentTournamentPlayer?.tournament ?? null;
+
+    if (!lastTournament && !currentTournament) return null;
+
+    // Normaliza la respuesta para consumo directo en perfil.
+    return {
+      currentUserId: session.user.idd,
+      inProgressCount,
+      lastTournament,
+      currentTournament: currentTournament
+        ? mapTournamentDetails(currentTournament)
+        : null,
     };
   } catch (error) {
     throw new Error(`Error en la sesion ${error}`);

@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTournamentStore } from "@/store";
 import { RoundProgressBar } from "./RoundProgressBar";
 import { TournamentTimer } from "./TournamentTimer";
 import { RoundActionButton } from "./RoundActionButton";
+import { CurrentRoundTimerModal } from "./CurrentRoundTimerModal";
 
 export const CurrentRoundHeader = () => {
   const { tournament, rounds } = useTournamentStore();
+  const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
 
   // Ronda actual (última generada)
   const currentRound = useMemo(() => {
@@ -54,13 +56,25 @@ export const CurrentRoundHeader = () => {
 
       {/* Timer + Acción */}
       <div className="flex gap-2 lg:gap-3 flex-row items-center justify-between md:justify-normal">
-        <TournamentTimer />
+        <button
+          type="button"
+          onClick={() => setIsTimerModalOpen(true)}
+          className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          aria-label="Abrir temporizador"
+        >
+          <TournamentTimer />
+        </button>
 
         {/* Separador visual (solo desktop) */}
         <div className="hidden md:block h-10 w-px bg-gray-300 mx-1 lg:mx-2" />
 
         <RoundActionButton />
       </div>
+
+      <CurrentRoundTimerModal
+        open={isTimerModalOpen}
+        onClose={() => setIsTimerModalOpen(false)}
+      />
     </div>
   );
 };
