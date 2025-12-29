@@ -87,14 +87,14 @@ export const RegisterForm = () => {
               },
               maxLength: {
                 value: 15,
-                message: "Debe tener maximo 15 caracteres.",
+                message: "Debe tener máximo 15 caracteres.",
               },
               validate: {
                 noRepetidos: (value) =>
                   !/([a-zA-Z0-9._])\1{3,}/.test(value) ||
                   "No permite repetir el mismo caracter muchas veces.",
                 noSoloNumeros: (value) =>
-                  !/^\d+$/.test(value) || "No puede ser solo numeros.",
+                  !/^\d+$/.test(value) || "No puede ser solo números.",
                 noUrls: (value) =>
                   !/@|www\./.test(value) || "No permite correos o URLs.",
                 noProhibidas: (value) => {
@@ -141,14 +141,14 @@ export const RegisterForm = () => {
               },
               maxLength: {
                 value: 15,
-                message: "Debe tener maximo 15 caracteres.",
+                message: "Debe tener máximo 15 caracteres.",
               },
               validate: {
                 noRepetidos: (value) =>
                   !/([a-zA-Z0-9._])\1{3,}/.test(value) ||
                   "No permite repetir el mismo caracter muchas veces",
                 noSoloNumeros: (value) =>
-                  !/^\d+$/.test(value) || "No puede ser solo numeros.",
+                  !/^\d+$/.test(value) || "No puede ser solo números.",
                 noUrls: (value) =>
                   !/@|www\./.test(value) || "No permite correos o URLs.",
                 noProhibidas: (value) => {
@@ -195,18 +195,19 @@ export const RegisterForm = () => {
               },
               maxLength: {
                 value: 15,
-                message: "Debe tener maximo 15 caracteres.",
+                message: "Debe tener máximo 15 caracteres.",
               },
               pattern: {
                 value: /^[a-zA-Z0-9._]+$/,
-                message: "Solo permite letras, numeros, puntos y guiones bajos.",
+                message:
+                  "Solo permite letras, numeros, puntos y guiones bajos.",
               },
               validate: {
                 noRepetidos: (value) =>
                   !/([a-zA-Z0-9._])\1{3,}/.test(value) ||
                   "No permite repetir el mismo caracter muchas veces",
                 noSoloNumeros: (value) =>
-                  !/^\d+$/.test(value) || "No puede ser solo numeros.",
+                  !/^\d+$/.test(value) || "No puede ser solo números.",
                 noUrls: (value) =>
                   !/@|www\./.test(value) || "No permite correos o URLs.",
                 noProhibidas: (value) => {
@@ -244,7 +245,7 @@ export const RegisterForm = () => {
               }
             )}
             type="email"
-            placeholder="Ingresa tu correo electronico"
+            placeholder="Ingresa tu correo electrónico"
             {...register("email", {
               required: {
                 value: true,
@@ -252,7 +253,8 @@ export const RegisterForm = () => {
               },
               pattern: {
                 value: /^\S+@\S+$/i,
-                message: "Ingresado no es valido. Verifica e intentalo nuevamente.",
+                message:
+                  "Ingresado no es valido. Verifica e intentalo nuevamente.",
               },
             })}
           />
@@ -270,7 +272,7 @@ export const RegisterForm = () => {
             htmlFor="password"
             className="text-xs font-semibold tracking-[0.12em] text-slate-600"
           >
-            Contrasena
+            Contraseña
           </label>
           <div className="relative mt-2">
             <input
@@ -284,15 +286,15 @@ export const RegisterForm = () => {
                 }
               )}
               {...register("password", {
-                required: "El campo 'contrasena' es requerido.",
+                required: "El campo 'contraseña' es requerido.",
                 minLength: {
                   value: 8,
                   message: "Debe tener al menos 8 caracteres",
                 },
                 validate: {
                   hasUppercase: (v) =>
-                    /[A-Z]/.test(v) || "Debe contener una mayuscula",
-                  hasNumber: (v) => /\d/.test(v) || "Debe contener un numero",
+                    /[A-Z]/.test(v) || "Debe contener una mayúscula",
+                  hasNumber: (v) => /\d/.test(v) || "Debe contener un número",
                   hasSpecialChar: (v) =>
                     /[!@#$%^&*(),.?\":{}|<>]/.test(v) ||
                     "Debe contener un caracter especial",
@@ -327,7 +329,7 @@ export const RegisterForm = () => {
             htmlFor="confirmPassword"
             className="text-xs font-semibold tracking-[0.12em] text-slate-600"
           >
-            Confirmar contrasena
+            Confirmar contraseña
           </label>
           <div className="relative mt-2">
             <input
@@ -341,7 +343,7 @@ export const RegisterForm = () => {
                 }
               )}
               {...register("confirmPassword", {
-                required: "El campo 'confirmar contrasena' es requerido.",
+                required: "El campo 'confirmar contraseña' es requerido.",
                 minLength: {
                   value: 8,
                   message: "Debe tener al menos 8 caracteres",
@@ -396,4 +398,3 @@ export const RegisterForm = () => {
     </form>
   );
 };
-
