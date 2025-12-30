@@ -65,11 +65,24 @@ export const ProfileTournamentHistory = ({
     }
   }, [currentPage, totalPages]);
 
+  // Ordena por estado para priorizar en progreso, luego pendientes y al final finalizados.
+  const orderedTournaments = useMemo(() => {
+    const statusOrder: Record<AdminTournamentRow["status"], number> = {
+      in_progress: 0,
+      pending: 1,
+      finished: 2,
+      cancelled: 3,
+    };
+    return [...tournaments].sort(
+      (a, b) => statusOrder[a.status] - statusOrder[b.status]
+    );
+  }, [tournaments]);
+
   // Aplica paginacion local sin reconsultar datos.
   const paginated = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
-    return tournaments.slice(start, start + PAGE_SIZE);
-  }, [tournaments, currentPage]);
+    return orderedTournaments.slice(start, start + PAGE_SIZE);
+  }, [orderedTournaments, currentPage]);
 
   const handlePaginationClick: MouseEventHandler<HTMLDivElement> = (event) => {
     const target = event.target as HTMLElement;

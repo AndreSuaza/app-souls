@@ -61,6 +61,7 @@ export const CurrentRoundHeader = () => {
           onClick={() => setIsTimerModalOpen(true)}
           className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
           aria-label="Abrir temporizador"
+          title="Abrir temporizador"
         >
           <TournamentTimer />
         </button>

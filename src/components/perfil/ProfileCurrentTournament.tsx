@@ -11,6 +11,7 @@ import { RoundHistoryCardBase } from "../tournaments/tournament/hisotry/RoundHis
 import { ResultButton } from "../tournaments/tournament/current-round/ResultButton";
 import { TournamentRankingPanel } from "./TournamentRankingPanel";
 import { useToastStore } from "@/store";
+import { FiRefreshCw } from "react-icons/fi";
 
 const EMPTY_ROUNDS: [] = [];
 
@@ -19,6 +20,7 @@ type Props = {
   selectedTournament?: TournamentSnapshot | null;
   hasShownInProgressWarning?: boolean;
   onInProgressWarningShown?: () => void;
+  onRefreshTournament?: (tournamentId: string) => void;
 };
 
 export const ProfileCurrentTournament = ({
@@ -26,6 +28,7 @@ export const ProfileCurrentTournament = ({
   selectedTournament = null,
   hasShownInProgressWarning = false,
   onInProgressWarningShown,
+  onRefreshTournament,
 }: Props) => {
   const { currentTournament, lastTournament, currentUserId } = data;
   const displayTournament =
@@ -175,21 +178,34 @@ export const ProfileCurrentTournament = ({
                     {tournament.title}
                   </h2>
                 </div>
-                <span
-                  className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
-                    tournament.status === "in_progress"
-                      ? "bg-blue-100 text-blue-700"
+                <div className="flex items-center gap-2">
+                  {tournament.status === "in_progress" &&
+                    onRefreshTournament && (
+                      <button
+                        type="button"
+                        title="Actualizar torneo"
+                        onClick={() => onRefreshTournament(tournament.id)}
+                        className="rounded-full p-1 text-gray-300 transition hover:bg-gray-700/60 hover:text-purple-300"
+                      >
+                        <FiRefreshCw className="h-4 w-4" />
+                      </button>
+                    )}
+                  <span
+                    className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+                      tournament.status === "in_progress"
+                        ? "bg-blue-100 text-blue-700"
+                        : tournament.status === "finished"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {tournament.status === "in_progress"
+                      ? "En progreso"
                       : tournament.status === "finished"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {tournament.status === "in_progress"
-                    ? "En progreso"
-                    : tournament.status === "finished"
-                    ? "Finalizado"
-                    : "Pendiente"}
-                </span>
+                      ? "Finalizado"
+                      : "Pendiente"}
+                  </span>
+                </div>
               </div>
             </div>
 

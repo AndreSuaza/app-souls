@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { RegisterForm } from "../login/ui/RegisterForm";
+import { RegisterForm } from "@/components";
 
 export default async function LogInPage() {
   return (
@@ -23,7 +23,7 @@ export default async function LogInPage() {
             <p className="text-xs ml-2 tracking-[0.2em] text-slate-200/90">
               Registro de jugador
             </p>
-            <p className="mt-3 text-3xl font-black tracking-tight text-white drop-shadow-[0_10px_18px_rgba(0,0,0,0.45)] lg:text-7xl">
+            <p className="mt-3 text-3xl font-black tracking-tight text-white drop-shadow-[0_10px_18px_rgba(0,0,0,0.45)] lg:text-6xl">
               Crear una cuenta
             </p>
           </div>

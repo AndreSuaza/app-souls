@@ -1,3 +1,8 @@
+export * from "./auth/ForgotPasswordForm";
+export * from "./auth/LoginForm";
+export * from "./auth/RegisterForm";
+export * from "./auth/ResetPasswordForm";
+
 export * from "./productos/product-grid/ProductGrid";
 export * from "./productos/slideshow/cards-slideshow";
 export * from "./productos/product-by-card/ProductByCard";

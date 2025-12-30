@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
-import { userRegistration } from "@/actions/auth/register";
+import { userRegistration } from "@/actions";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { MdError, MdCheckCircle } from "react-icons/md";
 import Link from "next/link";

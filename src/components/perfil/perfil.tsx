@@ -5,8 +5,8 @@ import { useState } from "react";
 import { IoImageOutline } from "react-icons/io5";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
-import { getProfileTournament, updateUser } from "@/actions";
-import { useToastStore } from "@/store";
+import { getActiveTournament, getProfileTournament, updateUser } from "@/actions";
+import { useToastStore, useUIStore } from "@/store";
 import {
   type ActiveTournamentData,
   type TournamentSnapshot,
@@ -56,7 +56,7 @@ type TournamentHistoryItem = {
 //   archetype: Archetype;
 // }
 
-type TabKey = "current" | "history" | "mazos";
+type TabKey = "current" | "history" | "selected" | "mazos";
 
 interface Props {
   user: User;
@@ -71,7 +71,11 @@ export const Pefil = ({
   activeTournament,
   tournaments,
 }: Props) => {
-  const hasCurrentTournament = Boolean(activeTournament?.currentTournament);
+  const [activeTournamentState, setActiveTournamentState] =
+    useState<ActiveTournamentData | null>(activeTournament);
+  const hasCurrentTournament = Boolean(
+    activeTournamentState?.currentTournament
+  );
   const [activeTab, setActiveTab] = useState<TabKey>(
     activeTournament ? "current" : "history"
   );
@@ -84,6 +88,8 @@ export const Pefil = ({
     user.image ? user.image : ""
   );
   const showToast = useToastStore((state) => state.showToast);
+  const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
 
   const handleSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar.imageUrl);
@@ -105,40 +111,52 @@ export const Pefil = ({
     }
   };
 
-  const tabs: TabKey[] = activeTournament || selectedTournament
+  const hasBaseTournament =
+    Boolean(activeTournamentState?.currentTournament) ||
+    Boolean(activeTournamentState?.lastTournament);
+  const hasSelectedTournament = Boolean(selectedTournament);
+
+  const tabs: TabKey[] = hasBaseTournament
     ? ["current", "history"]
     : ["history"];
+
+  if (hasSelectedTournament) {
+    tabs.push("selected");
+  }
   // "mazos" queda oculto temporalmente para activarlo en futuro.
 
   const handleTabChange = (tab: TabKey) => {
-    if (tab === "history") {
-      setSelectedTournament(null);
-    }
     setActiveTab(tab);
   };
 
   const handleHistorySelect = async (tournamentId: string) => {
+    showLoading("Cargando torneo...");
     const currentTournamentId =
-      activeTournament?.currentTournament?.tournament.id ?? null;
+      activeTournamentState?.currentTournament?.tournament.id ?? null;
     const lastTournamentId =
-      activeTournament?.lastTournament?.tournament.id ?? null;
+      activeTournamentState?.lastTournament?.tournament.id ?? null;
 
     if (tournamentId === currentTournamentId) {
       setSelectedTournament(null);
       setActiveTab("current");
+      hideLoading();
       return;
     }
 
-    if (!activeTournament?.currentTournament && tournamentId === lastTournamentId) {
+    if (
+      !activeTournamentState?.currentTournament &&
+      tournamentId === lastTournamentId
+    ) {
       setSelectedTournament(null);
       setActiveTab("current");
+      hideLoading();
       return;
     }
 
     try {
       const tournament = await getProfileTournament({ tournamentId });
       setSelectedTournament(tournament);
-      setActiveTab("current");
+      setActiveTab("selected");
     } catch (error) {
       showToast(
         error instanceof Error
@@ -146,18 +164,46 @@ export const Pefil = ({
           : "No se pudo cargar el torneo",
         "error"
       );
+    } finally {
+      hideLoading();
     }
   };
 
-  const currentTabLabel = selectedTournament
-    ? selectedTournament.tournament.id ===
-      activeTournament?.currentTournament?.tournament.id
-      ? "Torneo actual"
-      : selectedTournament.tournament.id ===
-        activeTournament?.lastTournament?.tournament.id
-      ? "Ultimo torneo"
-      : "Torneo"
-    : hasCurrentTournament
+  const handleRefreshTournament = async (tournamentId: string) => {
+    showLoading("Actualizando torneo...");
+    if (selectedTournament?.tournament.id === tournamentId) {
+      try {
+        const tournament = await getProfileTournament({ tournamentId });
+        setSelectedTournament(tournament);
+      } catch (error) {
+        showToast(
+          error instanceof Error
+            ? error.message
+            : "No se pudo actualizar el torneo",
+          "error"
+        );
+      } finally {
+        hideLoading();
+      }
+      return;
+    }
+
+    try {
+      const refreshed = await getActiveTournament();
+      setActiveTournamentState(refreshed);
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudo actualizar el torneo",
+        "error"
+      );
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const currentTabLabel = hasCurrentTournament
     ? "Torneo actual"
     : "Ultimo torneo";
 
@@ -246,6 +292,8 @@ export const Pefil = ({
                 ? currentTabLabel
                 : tab === "history"
                 ? "Historial de torneos"
+                : tab === "selected"
+                ? "Torneo"
                 : "Mis mazos"}
             </button>
           ))}
@@ -253,16 +301,30 @@ export const Pefil = ({
 
         {/* Contenido */}
         <div className="mt-8 w-full">
-          {activeTab === "current" && activeTournament && (
+          {activeTab === "current" && activeTournamentState && (
             <ProfileCurrentTournament
-              data={activeTournament}
-              selectedTournament={selectedTournament}
+              data={activeTournamentState}
               hasShownInProgressWarning={hasShownInProgressWarning}
               onInProgressWarningShown={() =>
                 setHasShownInProgressWarning(true)
               }
+              onRefreshTournament={handleRefreshTournament}
             />
           )}
+
+          {activeTab === "selected" &&
+            activeTournamentState &&
+            selectedTournament && (
+              <ProfileCurrentTournament
+                data={activeTournamentState}
+                selectedTournament={selectedTournament}
+                hasShownInProgressWarning={hasShownInProgressWarning}
+                onInProgressWarningShown={() =>
+                  setHasShownInProgressWarning(true)
+                }
+                onRefreshTournament={handleRefreshTournament}
+              />
+            )}
 
           {activeTab === "history" && (
             <ProfileTournamentHistory

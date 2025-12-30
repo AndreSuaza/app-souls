@@ -102,6 +102,7 @@ const TimeBox = ({
     <span
       className={clsx(
         "font-bold leading-none",
+        isOvertime ? "text-red-700" : "text-slate-900",
         classNames?.value ??
           (size === "5xl"
             ? "text-7xl md:text-8xl"
@@ -122,7 +123,7 @@ const TimeBox = ({
     </span>
     <span
       className={clsx(
-        "text-gray-500",
+        isOvertime ? "text-red-600" : "text-gray-500",
         classNames?.label ??
           (size === "5xl"
             ? "text-2xl md:text-3xl"

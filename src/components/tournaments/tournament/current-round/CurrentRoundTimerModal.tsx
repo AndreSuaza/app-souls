@@ -36,7 +36,7 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
 
-      <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_25px_60px_rgba(15,23,42,0.25)]">
+      <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-[0_25px_60px_rgba(15,23,42,0.25)]">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full border border-slate-200 bg-white/90 p-1 text-slate-600 shadow-sm hover:bg-slate-100"
@@ -75,11 +75,11 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
             </span>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2">
+          <div className="rounded-xl border border-slate-200 bg-white px-4 py-2">
             <RoundProgressBar round={currentRound} />
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-3 sm:px-5 py-6 shadow-[inset_0_1px_10px_rgba(15,23,42,0.08)]">
+          <div className="rounded-2xl border border-slate-200 bg-white px-3 sm:px-5 py-6 shadow-[inset_0_1px_10px_rgba(15,23,42,0.08)]">
             <div className="flex flex-col items-center gap-3">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
                 Tiempo transcurrido
