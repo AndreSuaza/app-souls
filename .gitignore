@@ -41,4 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 # Codex / AI instructions
-AGENT.md
+AGENTS.md
