@@ -2,10 +2,15 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { IoImageOutline } from "react-icons/io5";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
-import { getActiveTournament, getProfileTournament, updateUser } from "@/actions";
+import {
+  getActiveTournament,
+  getProfileTournament,
+  updateUser,
+} from "@/actions";
 import { useToastStore, useUIStore } from "@/store";
 import {
   type ActiveTournamentData,
@@ -90,6 +95,7 @@ export const Pefil = ({
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
+  const { update } = useSession();
 
   const handleSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar.imageUrl);
@@ -100,6 +106,8 @@ export const Pefil = ({
   const updateUserProfile = async () => {
     try {
       await updateUser(selectedAvatar);
+      // Sincroniza el avatar en la sesion para reflejarlo en el top menu.
+      await update({ user: { image: selectedAvatar } });
       showToast("Avatar actualizado correctamente", "success");
     } catch (error) {
       showToast(
@@ -159,9 +167,7 @@ export const Pefil = ({
       setActiveTab("selected");
     } catch (error) {
       showToast(
-        error instanceof Error
-          ? error.message
-          : "No se pudo cargar el torneo",
+        error instanceof Error ? error.message : "No se pudo cargar el torneo",
         "error"
       );
     } finally {
@@ -210,7 +216,7 @@ export const Pefil = ({
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white overflow-hidden p-4">
       {/* Fondo */}
-      <div className="absolute inset-0 bg-[url('/images/fondo-souls.jpg')] bg-cover bg-center opacity-20 blur-sm"></div>
+      {/* <div className="absolute inset-0 bg-[url('/images/fondo-souls.jpg')] bg-cover bg-center opacity-20 blur-sm"></div> */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/95"></div>
 
       {/* Contenedor principal */}

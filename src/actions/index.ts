@@ -18,6 +18,7 @@ export * from "./tournaments/finalize-tournament.action";
 export * from "./tournaments/generate-round.action";
 export * from "./tournaments/get-admin-tournaments.action";
 export * from "./tournaments/get-public-tournaments.action";
+export * from "./tournaments/get-public-tournament-detail.action";
 export * from "./tournaments/get-tournament-types.action";
 export * from "./tournaments/get-tournament.action";
 export * from "./tournaments/save-match-result.action";

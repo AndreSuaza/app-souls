@@ -8,7 +8,11 @@ import {
   IoListOutline,
   IoInformationCircleOutline,
 } from "react-icons/io5";
-import { TournamentTab } from "@/app/admin/torneos/[id]/page";
+export type TournamentTab =
+  | "players"
+  | "currentRound"
+  | "rounds"
+  | "information";
 
 type Props = {
   active: TournamentTab;
@@ -16,6 +20,7 @@ type Props = {
   tournamentTitle: string;
   playersCount: number;
   tournamentStatus?: "pending" | "in_progress" | "finished" | "cancelled";
+  hiddenTabs?: TournamentTab[];
 };
 
 const tabs: { id: TournamentTab; label: string; icon: ReactElement }[] = [
@@ -41,6 +46,7 @@ export const TournamentTabs = ({
   tournamentTitle,
   playersCount,
   tournamentStatus,
+  hiddenTabs,
 }: Props) => {
   const canEnableCurrentRound =
     playersCount >= MIN_PLAYERS_FOR_ROUND &&
@@ -48,17 +54,19 @@ export const TournamentTabs = ({
     tournamentStatus !== "cancelled";
 
   const visibleTabs = tabs.filter(
-    (tab) => tab.id !== "currentRound" || canEnableCurrentRound
+    (tab) =>
+      (tab.id !== "currentRound" || canEnableCurrentRound) &&
+      !hiddenTabs?.includes(tab.id)
   );
 
   return (
     <>
-      <div className="md:hidden font-semibold text-gray-900 text-base truncate">
+      <div className="md:hidden font-bold text-gray-900 text-lg truncate">
         {tournamentTitle}
       </div>
 
       <div className="hidden md:flex flex-col gap-3 border-b border-gray-200 pb-2 md:flex-row md:items-center md:justify-between">
-        <div className="font-semibold text-gray-900 text-base lg:text-lg truncate max-w-[70%]">
+        <div className="font-bold text-gray-900 text-lg lg:text-xl truncate max-w-[70%]">
           {tournamentTitle}
         </div>
 

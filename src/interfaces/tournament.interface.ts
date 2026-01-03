@@ -95,6 +95,22 @@ export interface TournamentSnapshot {
   rounds: RoundInterface[];
 }
 
+export interface PublicTournamentDetail {
+  tournament: {
+    id: string;
+    title: string;
+    description: string | null;
+    date: string;
+    status: "pending" | "in_progress" | "finished" | "cancelled";
+    currentRoundNumber: number;
+    maxRounds: number;
+    format?: string | null;
+    typeTournamentName?: string | null;
+  };
+  players: TournamentPlayerInterface[];
+  rounds: RoundInterface[];
+}
+
 export interface ActiveTournamentData {
   currentUserId: string;
   inProgressCount: number;
