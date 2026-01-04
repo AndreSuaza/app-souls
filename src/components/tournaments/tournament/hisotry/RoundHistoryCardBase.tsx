@@ -115,10 +115,7 @@ export const RoundHistoryCardBase = ({
           </div>
 
           <p
-            className={clsx(
-              "text-sm",
-              classNames?.metaText ?? "text-gray-500"
-            )}
+            className={clsx("text-sm", classNames?.metaText ?? "text-gray-500")}
           >
             {status === "IN_PROGRESS"
               ? `${completedMatches} de ${totalMatches} partidas completadas`
@@ -144,26 +141,6 @@ export const RoundHistoryCardBase = ({
               classNames?.divider ?? "border-gray-200"
             )}
           />
-
-          <div
-            className={clsx(
-              "grid grid-cols-[72px_1fr_120px_1fr_72px] items-center px-6 py-3 text-sm font-semibold",
-              classNames?.tableHeader ?? "bg-gray-100",
-              classNames?.tableHeaderText ?? "text-gray-500"
-            )}
-          >
-            <div className="text-left">Mesa</div>
-            <div className="text-left">
-              <span className="sm:hidden">P1</span>
-              <span className="hidden sm:inline">Jugador 1</span>
-            </div>
-            <div className="text-center">Resultado</div>
-            <div className="text-right">
-              <span className="sm:hidden">P2</span>
-              <span className="hidden sm:inline">Jugador 2</span>
-            </div>
-            <div className="text-right">Estado</div>
-          </div>
 
           <div>
             {visibleMatches.map((match, index) => (

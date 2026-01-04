@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useUIStore } from "@/store";
 import clsx from "clsx";
@@ -16,6 +16,8 @@ import {
   IoLogoInstagram,
   IoLogoTiktok,
   IoLogoYoutube,
+  IoLogInOutline,
+  IoLogOutOutline,
   IoStorefrontOutline,
   IoTrophyOutline,
 } from "react-icons/io5";
@@ -79,14 +81,14 @@ export const Sidebar = () => {
                     <IoTrophyOutline className="w-6 h-6 mr-3"/>
                     Torneos
                 </Link> */}
-          <Link
+          {/* <Link
             className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
             href="/preguntas-frecuentes"
             onClick={closeMenu}
           >
             <IoFlashOutline className="w-6 h-6 mr-3" />
             Preguntas Frecuentes
-          </Link>
+          </Link> */}
           <Link
             className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
             href="/cartas"
@@ -162,30 +164,45 @@ export const Sidebar = () => {
               <IoLogoTiktok className="w-6 h-6 ml-4 transition-all hover:text-yellow-600" />
             </Link>
           </div>
-          {session && (
+          {session ? (
             <div className="mt-6 border-t-2 pt-4">
               <Link
                 href="/perfil"
-                className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                className="block w-full h-full mb-2 mt-2 p-1  pl-6 md:pl-0 hover:bg-gray-800 transition-transform"
+                onClick={closeMenu}
               >
                 Tu perfil
               </Link>
 
-              {session.user.role === "store" && (
+              {(session.user.role === "store" ||
+                session.user.role === "admin") && (
                 <Link
                   href="/admin/torneos"
-                  className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                  className="block w-full h-full mb-2 mt-2 p-1  pl-6 md:pl-0 hover:bg-gray-800 transition-transform"
+                  onClick={closeMenu}
                 >
-                  Crear Torneo
+                  Torneos
                 </Link>
               )}
 
               <button
                 onClick={handleClick}
-                className="block w-full h-full text-left mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
               >
+                <IoLogOutOutline className="w-6 h-6 mr-3" />
                 Cerrar sesión
               </button>
+            </div>
+          ) : (
+            <div className="mt-6 border-t-2 pt-4">
+              <Link
+                href="/auth/login"
+                className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                onClick={closeMenu}
+              >
+                <IoLogInOutline className="w-6 h-6 mr-3" />
+                Iniciar sesión
+              </Link>
             </div>
           )}
         </div>
