@@ -19,8 +19,9 @@ interface Props {
 }
 
 export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
-  const { editRoundResults } = useTournamentStore();
-  const showConfirmation = useAlertConfirmationStore(
+  const { editRoundResults, recalculateCurrentRound, rounds } =
+    useTournamentStore();
+  const openAlertConfirmation = useAlertConfirmationStore(
     (s) => s.openAlertConfirmation
   );
   const { showLoading, hideLoading } = useUIStore();
@@ -50,6 +51,8 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
     tournament.status === "in_progress" &&
     round.roundNumber < tournament.currentRoundNumber + 1;
 
+  const TEN_MINUTES_MS = 10 * 60 * 1000;
+
   const handleEdit = () => {
     // Si es la ronda actual, ir a pestana Ronda actual
     if (status === "IN_PROGRESS") {
@@ -66,10 +69,10 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
   };
 
   const handleSave = () => {
-    showConfirmation({
+    openAlertConfirmation({
       text: "Guardar cambios de la ronda",
       description:
-        "Estas seguro de que deseas guardar los cambios realizados en esta ronda?",
+        "¿Estas seguro de que deseas guardar los cambios realizados en esta ronda?",
       action: async () => {
         try {
           showLoading("Guardando resultados de la ronda...");
@@ -79,6 +82,54 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
           setIsEditing(false);
 
           showToast("Ronda editada correctamente.", "success");
+
+          const currentRound =
+            rounds.length > 0 ? rounds[rounds.length - 1] : null;
+          const isCurrentRound =
+            currentRound?.roundNumber === tournament.currentRoundNumber + 1;
+
+          // Si existe ronda actual, se decide el recalc segun el estado del inicio.
+          if (currentRound && isCurrentRound) {
+            if (!currentRound.startedAt) {
+              showLoading("Recalculando ronda...");
+              try {
+                const success = await recalculateCurrentRound();
+                if (success) {
+                  showToast("Ronda recalculada", "info");
+                } else {
+                  showToast("Error al recalcular la ronda", "error");
+                }
+              } finally {
+                hideLoading();
+              }
+            } else {
+              const startedAtMs = new Date(currentRound.startedAt).getTime();
+              const elapsed = Date.now() - startedAtMs;
+
+              if (!Number.isNaN(startedAtMs) && elapsed < TEN_MINUTES_MS) {
+                hideLoading();
+                openAlertConfirmation({
+                  text: "¿Recalcular la ronda actual?",
+                  description:
+                    "Se reiniciara la ronda y se generaran nuevos emparejamientos.",
+                  action: async () => {
+                    showLoading("Recalculando ronda...");
+                    try {
+                      return await recalculateCurrentRound();
+                    } finally {
+                      hideLoading();
+                    }
+                  },
+                  onSuccess: () => {
+                    showToast("Ronda recalculada", "info");
+                  },
+                  onError: () => {
+                    showToast("Error al recalcular la ronda", "error");
+                  },
+                });
+              }
+            }
+          }
 
           return true;
         } catch {
