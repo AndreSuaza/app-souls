@@ -1,11 +1,13 @@
 "use client";
 
 import type { Card } from "@/interfaces";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
 import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
+import { getPaginatedCards } from "@/actions";
+import type { PaginationFilters } from "../../finders/CardFinderLabLocal";
 
 interface Propertie {
   id: string;
@@ -27,6 +29,8 @@ interface Props {
   mainDeck?: Decklist[];
   sideDeck?: Decklist[];
   className?: string;
+  initialFilters?: PaginationFilters;
+  initialPage?: number;
 }
 
 const addCardLogic = (
@@ -87,13 +91,28 @@ export const DeckCreator = ({
   totalPages,
   mainDeck,
   sideDeck,
+  initialFilters,
+  initialPage = 1,
 }: Props) => {
+  const hasImportedRef = useRef(false);
+  const [cardsState, setCardsState] = useState(cards);
+  const [totalPagesState, setTotalPagesState] = useState(totalPages);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [currentFilters, setCurrentFilters] = useState<PaginationFilters>(
+    initialFilters ?? {}
+  );
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
   const [deckListSide, setDeckListSide] = useState<Decklist[]>([]);
   const [viewList, setViewList] = useState(false);
 
   const importDeck = useCallback(() => {
+    const hasIncomingDeck =
+      (mainDeck?.length ?? 0) > 0 || (sideDeck?.length ?? 0) > 0;
+
+    // Evita sobrescribir el mazo del usuario cuando cambian los filtros/busquedas.
+    if (hasImportedRef.current || !hasIncomingDeck) return;
+
     if (mainDeck) {
       const main = mainDeck.filter(
         (c) => !c.card.types.some((type) => type.name === "Limbo")
@@ -115,11 +134,44 @@ export const DeckCreator = ({
 
       if (sideCount <= 40) setDeckListSide(side);
     }
+
+    hasImportedRef.current = true;
   }, [mainDeck, sideDeck]);
 
   useEffect(() => {
     importDeck();
   }, [importDeck]);
+
+  const fetchCards = useCallback(
+    async (filters: PaginationFilters, page: number) => {
+      // Se consulta el mismo action desde cliente para filtrar/paginar sin recargar la ruta.
+      const result = await getPaginatedCards({
+        page,
+        ...filters,
+      });
+
+      setCardsState(result.cards);
+      setTotalPagesState(result.totalPage);
+      setCurrentPage(result.currentPage ?? page);
+    },
+    []
+  );
+
+  const handleSearch = useCallback(
+    async (filters: PaginationFilters) => {
+      // Mantiene filtros/paginado en memoria para evitar dependencia de la URL.
+      setCurrentFilters(filters);
+      await fetchCards(filters, 1);
+    },
+    [fetchCards]
+  );
+
+  const handlePageChange = useCallback(
+    async (page: number) => {
+      await fetchCards(currentFilters, page);
+    },
+    [currentFilters, fetchCards]
+  );
 
   const addCard = (cardSeleted: Card) => {
     if (cardSeleted.types.filter((type) => type.name === "Alma").length > 0) {
@@ -199,12 +251,15 @@ export const DeckCreator = ({
     <div className="grid grid-cols-2 lg:grid-cols-4 mb-6">
       <div className="">
         <CardFinder
-          cards={cards}
+          cards={cardsState}
           propertiesCards={propertiesCards}
-          totalPage={totalPages}
+          totalPage={totalPagesState}
           cols={2}
           addCard={addCard}
           addCardSidedeck={addCardSideDeck}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onSearch={handleSearch}
         />
       </div>
       <div className="col-span-1 md:col-span-3 mt-6 mx-2">
