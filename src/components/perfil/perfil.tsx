@@ -220,7 +220,7 @@ export const Pefil = ({
       <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/95"></div>
 
       {/* Contenedor principal */}
-      <div className="relative z-10 w-full max-w-6xl bg-gray-900/70 border border-purple-600/40 rounded-2xl shadow-[rgba(168,85,247,0.3)] p-8 backdrop-blur-md flex flex-col items-center transition">
+      <div className="relative z-10 w-full max-w-6xl bg-gray-900/70 border border-purple-600/40 rounded-2xl shadow-[rgba(168,85,247,0.3)] py-8 px-4 backdrop-blur-md flex flex-col items-center transition">
         {/* Encabezado */}
         <div className="flex flex-col md:flex-row items-center gap-8 w-full">
           {/* Avatar */}

@@ -3,6 +3,7 @@ import {
   getTournamentAction,
   addPlayerAction,
   generateRoundAction,
+  recalculateRoundAction,
   saveMatchResultAction,
   finalizeRoundAction,
   finalizeTournamentAction,
@@ -66,6 +67,7 @@ type TournamentStoreState = {
     updatedMatches: MatchInterface[]
   ) => Promise<void>;
   startCurrentRound: () => Promise<void>;
+  recalculateCurrentRound: () => Promise<boolean>;
   deleteTournament: () => Promise<boolean>;
   updateTournamentInfo: (data: {
     title: string;
@@ -200,6 +202,19 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         },
       ],
     });
+
+    const after = get();
+    const currentRound = after.rounds[after.rounds.length - 1];
+    const shouldRecalculate =
+      after.tournament?.status === "in_progress" &&
+      currentRound &&
+      !currentRound.startedAt &&
+      currentRound.roundNumber === after.tournament.currentRoundNumber + 1;
+
+    // Recalcula emparejamientos si se agrega un jugador antes de iniciar la ronda.
+    if (shouldRecalculate) {
+      await after.recalculateCurrentRound();
+    }
   },
 
   generateRound: async () => {
@@ -485,6 +500,20 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         }));
       }
 
+      const after = get();
+      const recalculationRound = after.rounds[after.rounds.length - 1];
+      const shouldRecalculate =
+        after.tournament?.status === "in_progress" &&
+        recalculationRound &&
+        !recalculationRound.startedAt &&
+        recalculationRound.roundNumber ===
+          after.tournament.currentRoundNumber + 1;
+
+      // Recalcula la ronda actual si se elimina un jugador antes de iniciarla.
+      if (shouldRecalculate) {
+        await after.recalculateCurrentRound();
+      }
+
       return true;
     } catch (error) {
       console.error(error);
@@ -611,6 +640,50 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     } catch (error) {
       console.error(error);
       set({ error: "Error iniciando la ronda" });
+    }
+  },
+
+  recalculateCurrentRound: async () => {
+    const state = get();
+    const { tournamentId, tournament } = state;
+    const currentRound = state.rounds[state.rounds.length - 1];
+    if (!tournamentId || !tournament || !currentRound) return false;
+
+    try {
+      const apiRound = await recalculateRoundAction({
+        tournamentId,
+        roundId: currentRound.id,
+        players: state.players,
+        currentRoundNumber: tournament.currentRoundNumber,
+      });
+
+      const updatedRound: RoundInterface = {
+        id: currentRound.id,
+        roundNumber: apiRound.swissRound.number,
+        startedAt: null, // Reinicia la ronda para permitir un nuevo inicio.
+        matches: apiRound.swissRound.matches.map((m, index) => {
+          const matchId = apiRound.matchIds[index];
+
+          return {
+            id: matchId,
+            player1Id: m.player1.id,
+            player2Id: m.player2?.id ?? null,
+            player1Nickname: m.player1.playerNickname,
+            player2Nickname: m.player2?.playerNickname ?? "BYE",
+            result: m.player2 ? null : "P1",
+          };
+        }),
+      };
+
+      // Actualiza solo la ronda actual sin reconsultar la base de datos.
+      set((state) => ({
+        rounds: [...state.rounds.slice(0, -1), updatedRound],
+      }));
+      return true;
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error recalculando la ronda" });
+      return false;
     }
   },
 

@@ -4,7 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useUIStore } from "@/store";
-import { IoAddCircleOutline, IoCloseOutline } from "react-icons/io5";
+import {
+  IoAddCircleOutline,
+  IoCloseOutline,
+  IoHomeOutline,
+} from "react-icons/io5";
 import { IoMdTrophy } from "react-icons/io";
 import { signOut } from "next-auth/react";
 
@@ -15,6 +19,11 @@ export const TournamentSidebar = () => {
   const pathname = usePathname();
 
   const menuItems = [
+    {
+      label: "Inicio",
+      href: "/",
+      icon: IoHomeOutline,
+    },
     {
       label: "Nuevo torneo",
       href: "/admin/torneos/crear-torneo",

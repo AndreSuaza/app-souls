@@ -56,6 +56,7 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [inputValue, setInputValue] = useState("");
   const [query, setQuery] = useState("");
   const prevQueryRef = useRef(query);
 
@@ -69,6 +70,15 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
   }, [query, tournaments]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  useEffect(() => {
+    // Evita filtrar y resetear paginacion en cada tecla.
+    const timeoutId = setTimeout(() => {
+      setQuery(inputValue);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [inputValue]);
 
   useEffect(() => {
     if (prevQueryRef.current === query) return;
@@ -100,9 +110,9 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
   return (
     <div className="space-y-4">
       <AdminTournamentsSearch
-        query={query}
+        query={inputValue}
         totalCount={filtered.length}
-        onChange={setQuery}
+        onChange={setInputValue}
       />
 
       {filtered.length === 0 ? (
