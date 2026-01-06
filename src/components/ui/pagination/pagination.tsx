@@ -8,26 +8,33 @@ import { PaginationLine } from './paginationLine';
 interface Props {
   children: ReactNode;
   totalPages: number;  
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
 }
 
 
-export const Pagination = ({ children, totalPages }: Props) => {
+export const Pagination = ({ children, totalPages, currentPage, onPageChange }: Props) => {
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isControlled = typeof currentPage === "number" && !!onPageChange;
 
   const pageString = searchParams.get('page') ?? 1;
-  const currentPage = isNaN( +pageString ) ? 1 : +pageString;
+  const resolvedPage = isControlled
+    ? currentPage ?? 1
+    : isNaN(+pageString)
+      ? 1
+      : +pageString;
 
-  if (currentPage < 1 || isNaN(+pageString) ) {
+  if (!isControlled && (resolvedPage < 1 || isNaN(+pageString))) {
     redirect( pathname );
   }
   
   return (
     <>
-    <PaginationLine className='hidden sm:block' currentPage={currentPage} pathname={pathname} searchParams={searchParams} totalPages={totalPages}/>
+    <PaginationLine className='hidden sm:block' currentPage={resolvedPage} pathname={pathname} searchParams={searchParams} totalPages={totalPages} onPageChange={onPageChange}/>
     {children}
-    <PaginationLine currentPage={currentPage} pathname={pathname} searchParams={searchParams} totalPages={totalPages}/>
+    <PaginationLine currentPage={resolvedPage} pathname={pathname} searchParams={searchParams} totalPages={totalPages} onPageChange={onPageChange}/>
     </>
     
   );

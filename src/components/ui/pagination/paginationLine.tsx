@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { ReadonlyURLSearchParams } from 'next/navigation';
 import { IoChevronBackOutline, IoChevronForwardOutline } from 'react-icons/io5';
 import { generatePaginationNumbers } from '@/utils';
+import type { MouseEvent } from 'react';
 
 
 interface Props {
@@ -13,10 +14,11 @@ interface Props {
   searchParams: ReadonlyURLSearchParams;
   pathname: string;
   className?: string;
+  onPageChange?: (page: number) => void;
 }
 
 
-export const PaginationLine = ({ totalPages, currentPage, searchParams, pathname, className }: Props) => {
+export const PaginationLine = ({ totalPages, currentPage, searchParams, pathname, className, onPageChange }: Props) => {
 
 
   const allPages = generatePaginationNumbers(currentPage, totalPages);
@@ -44,6 +46,19 @@ export const PaginationLine = ({ totalPages, currentPage, searchParams, pathname
 
   }
 
+  const handlePageClick = (
+    pageNumber: number | string,
+    event: MouseEvent<HTMLAnchorElement>
+  ) => {
+    if (!onPageChange) return;
+    event.preventDefault();
+
+    if (pageNumber === "...") return;
+    const nextPage = typeof pageNumber === "number" ? pageNumber : Number(pageNumber);
+    if (Number.isNaN(nextPage) || nextPage < 1 || nextPage > totalPages) return;
+    onPageChange(nextPage);
+  };
+
 
   return (
     <div className={`${className} text-center mt-3 mb-3 md:flex`}>
@@ -55,6 +70,11 @@ export const PaginationLine = ({ totalPages, currentPage, searchParams, pathname
             <Link
               className="page-link relative block  border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
               href={ createPageUrl( currentPage - 1 ) }
+              onClick={
+                onPageChange
+                  ? (event) => handlePageClick(currentPage - 1, event)
+                  : undefined
+              }
             >
               <IoChevronBackOutline size={30} />
             </Link>
@@ -74,6 +94,11 @@ export const PaginationLine = ({ totalPages, currentPage, searchParams, pathname
                     )
                   }
                   href={ createPageUrl( page ) }
+                  onClick={
+                    onPageChange
+                      ? (event) => handlePageClick(page, event)
+                      : undefined
+                  }
                 >
                   { page }
                 </Link>
@@ -90,6 +115,11 @@ export const PaginationLine = ({ totalPages, currentPage, searchParams, pathname
             <Link
               className="page-link relative block border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
               href={ createPageUrl( currentPage + 1 ) }
+              onClick={
+                onPageChange
+                  ? (event) => handlePageClick(currentPage + 1, event)
+                  : undefined
+              }
             >
               <IoChevronForwardOutline size={30} />
             </Link>
