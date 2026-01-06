@@ -107,6 +107,16 @@ export interface PublicTournamentDetail {
     format?: string | null;
     typeTournamentName?: string | null;
   };
+  store: {
+    name: string;
+    city: string;
+    address: string;
+    country: string;
+    phone: string;
+    url: string;
+    lat: number;
+    lgn: number;
+  };
   players: TournamentPlayerInterface[];
   rounds: RoundInterface[];
 }

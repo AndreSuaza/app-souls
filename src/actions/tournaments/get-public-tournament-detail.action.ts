@@ -30,6 +30,18 @@ export async function getPublicTournamentDetailAction(
             name: true,
           },
         },
+        store: {
+          select: {
+            name: true,
+            city: true,
+            address: true,
+            country: true,
+            phone: true,
+            url: true,
+            lat: true,
+            lgn: true,
+          },
+        },
         tournamentPlayers: {
           select: {
             id: true,
@@ -83,6 +95,16 @@ export async function getPublicTournamentDetailAction(
         maxRounds: tournament.maxRounds,
         format: tournament.format ?? null,
         typeTournamentName: tournament.typeTournament?.name ?? null,
+      },
+      store: {
+        name: tournament.store.name,
+        city: tournament.store.city,
+        address: tournament.store.address,
+        country: tournament.store.country,
+        phone: tournament.store.phone,
+        url: tournament.store.url,
+        lat: tournament.store.lat,
+        lgn: tournament.store.lgn,
       },
       players: tournament.tournamentPlayers.map((player) => ({
         id: player.id,
