@@ -32,9 +32,8 @@ export const CurrentRoundHeader = () => {
     return rounds[rounds.length - 1];
   }, [rounds]);
 
-  if (!tournament) return null;
-
   const isCurrentRound =
+    !!tournament &&
     currentRound?.roundNumber === tournament.currentRoundNumber + 1;
 
   useEffect(() => {
@@ -71,6 +70,8 @@ export const CurrentRoundHeader = () => {
 
     return () => clearTimeout(timeoutId);
   }, [TEN_MINUTES_MS, currentRound]);
+
+  if (!tournament) return null;
 
   const handleRecalculateRound = () => {
     openAlertConfirmation({
