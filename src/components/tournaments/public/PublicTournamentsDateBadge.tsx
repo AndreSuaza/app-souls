@@ -25,7 +25,7 @@ const formatDateTime = (value: string) => {
 
 export function PublicTournamentsDateBadge({ value }: Props) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 dark:border-[#4d3267] dark:bg-[#1f152a] dark:text-slate-200">
+    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-200">
       <MdTimer className="text-purple-600 text-sm" />
       {formatDateTime(value)}
     </span>

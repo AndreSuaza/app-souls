@@ -33,7 +33,7 @@ export function PublicTournamentsFilters({
               "flex h-9 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-medium transition-colors",
               isActive
                 ? "bg-purple-600 text-white shadow-sm"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-[#362348] dark:text-slate-300 dark:hover:bg-[#4d3267] dark:hover:text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white"
             )}
           >
             {filter.label}

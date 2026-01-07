@@ -19,16 +19,16 @@ export default function TournamentLayout({
   return (
     <>
       <div className="hidden md:block">
-        <TopMenu />
+        <TopMenu variant="admin" />
       </div>
       <AdminTopMenu />
-      <Sidebar />
-      <div className="flex min-h-screen bg-gray-100">
+      <Sidebar variant="admin" />
+      <div className="flex min-h-screen bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
         <LoadingOverlay />
         <ToastContainer />
         <TournamentSidebar />
 
-        <div className="flex-1 px-4 py-2 lg:px-8 overflow-visible mb-4">
+        <div className="flex-1 px-4 py-6 lg:px-8 overflow-visible mb-4">
           {children}
         </div>
       </div>

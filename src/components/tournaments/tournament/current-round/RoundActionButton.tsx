@@ -34,7 +34,7 @@ export const RoundActionButton = () => {
 
   // Handlers con loading
   const handleGenerateRound = async () => {
-    showLoading("Generando ronda…");
+    showLoading("Generando rondaƒ?İ");
     try {
       await generateRound();
     } catch {
@@ -45,7 +45,7 @@ export const RoundActionButton = () => {
   };
 
   const handleFinalizeRound = async () => {
-    showLoading("Procesando ronda…");
+    showLoading("Procesando rondaƒ?İ");
     try {
       await finalizeRound();
     } catch {
@@ -56,7 +56,7 @@ export const RoundActionButton = () => {
   };
 
   const handleFinalizeTournament = async () => {
-    showLoading("Finalizando torneo…");
+    showLoading("Finalizando torneoƒ?İ");
     try {
       await finalizeTournament();
       showToast("Torneo finalizado", "info");
@@ -89,7 +89,7 @@ export const RoundActionButton = () => {
     return (
       <button
         onClick={async () => {
-          showLoading("Iniciando ronda…");
+          showLoading("Iniciando rondaƒ?İ");
           try {
             await startCurrentRound();
           } catch {

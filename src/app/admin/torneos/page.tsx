@@ -47,17 +47,16 @@ export default function AdminTournamentsPage() {
 
   return (
     <section className="space-y-6">
-      {/* Título de la sección */}
       <header>
-        <h1 className="text-2xl font-semibold text-gray-900">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
           Administración de torneos
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           Gestiona y administra los torneos creados desde tu tienda.
         </p>
       </header>
       {!loading && error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-600">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-600 dark:border-red-500/30 dark:bg-red-900/20 dark:text-red-200">
           {error}
         </div>
       )}

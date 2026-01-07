@@ -172,13 +172,33 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
       defaultExpanded={isLastRound}
       allowExpand
       maxVisibleMatches={4}
+      classNames={{
+        container:
+          "bg-white dark:bg-tournament-dark-surface border border-slate-200 dark:border-tournament-dark-border",
+        title: "text-slate-900 dark:text-white",
+        metaText: "text-slate-500 dark:text-slate-400",
+        divider: "border-slate-200 dark:border-tournament-dark-border",
+        matchDivider: "border-slate-200 dark:border-tournament-dark-border",
+        expandButton:
+          "border-slate-200 text-slate-600 dark:border-tournament-dark-border dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted",
+        showAllButton:
+          "text-purple-600 hover:text-purple-600/80 dark:text-purple-600 dark:hover:text-purple-600/80",
+      }}
+      matchCardClassNames={{
+        container: "bg-white dark:bg-tournament-dark-surface",
+        tableBadge:
+          "bg-slate-100 text-slate-700 dark:bg-tournament-dark-muted dark:text-slate-200",
+        tableText: "text-slate-700 dark:text-slate-200",
+        byeText: "text-slate-400 dark:text-slate-500",
+        byeImage: "border-slate-200 dark:border-tournament-dark-border",
+      }}
       headerActions={
         <>
           {canEditRound && !isEditing && (
             <button
               onClick={handleEdit}
               title="Editar ronda"
-              className="p-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700"
+              className="p-1 text-sm rounded bg-purple-600 text-white hover:bg-purple-600/90"
             >
               <IoPencil />
             </button>
@@ -189,7 +209,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
               <button
                 onClick={handleSave}
                 title="Guardar cambios"
-                className="p-1 text-sm rounded bg-green-600 text-white hover:bg-green-700"
+                className="p-1 text-sm rounded bg-emerald-600 text-white hover:bg-emerald-700"
               >
                 <IoSave />
               </button>
@@ -197,7 +217,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
               <button
                 onClick={handleCancel}
                 title="Cancelar edicion"
-                className="p-1 text-sm rounded bg-red-600 text-white hover:bg-red-700"
+                className="p-1 text-sm rounded bg-rose-600 text-white hover:bg-rose-700"
               >
                 <IoClose />
               </button>

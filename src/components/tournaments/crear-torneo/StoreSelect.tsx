@@ -24,12 +24,17 @@ export const StoreSelect = <T extends FieldValues>({
 }: Props<T>) => {
   return (
     <div>
-      <label className="block text-sm font-medium">Tienda</label>
+      <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+        Tienda
+      </label>
 
       <select
-        className={clsx("w-full border rounded p-2", {
-          "border-red-500": errors[name],
-        })}
+        className={clsx(
+          "w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white",
+          {
+            "border-red-500": errors[name],
+          }
+        )}
         {...register(name, {
           required: "Debe seleccionar una tienda",
         })}
@@ -44,7 +49,7 @@ export const StoreSelect = <T extends FieldValues>({
       </select>
 
       {errors[name] && (
-        <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+        <div className="mt-1 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
           <MdError size={14} />
           <span>{errors[name]?.message as string}</span>
         </div>

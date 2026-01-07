@@ -108,7 +108,7 @@ export const PlayerSearchInput = ({
     <div ref={containerRef} className="relative mb-4">
       <div className="relative">
         {/* Ícono buscar */}
-        <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+        <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
 
         {/* Input */}
         <input
@@ -116,7 +116,7 @@ export const PlayerSearchInput = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="border w-full py-1 rounded pl-8 pr-8"
+          className="w-full rounded-lg border border-slate-200 bg-white py-1 pl-8 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
           placeholder="Escribe el nombre o nickname"
           onFocus={() => {
             if (query.trim().length > 0) {
@@ -130,7 +130,7 @@ export const PlayerSearchInput = ({
       {query.length > 0 && (
         <button
           onClick={() => setQuery("")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
         >
           ✕
         </button>
@@ -138,17 +138,17 @@ export const PlayerSearchInput = ({
 
       {/* Dropdown */}
       {showDropdown && (
-        <div className="absolute left-0 top-full mt-1 w-full bg-white border rounded shadow-lg z-20 max-h-56 overflow-auto">
+        <div className="absolute left-0 top-full mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg z-20 max-h-56 overflow-auto dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
           {/* Loading */}
           {loading && (
-            <div className="px-3 py-2 text-sm text-gray-500 italic">
+            <div className="px-3 py-2 text-sm text-slate-500 italic dark:text-slate-400">
               Buscando...
             </div>
           )}
 
           {/* No results */}
           {!loading && suggestions.length === 0 && (
-            <div className="px-3 py-2 text-sm text-red-500">
+            <div className="px-3 py-2 text-sm text-red-500 dark:text-red-400">
               No hay jugadores disponibles
             </div>
           )}
@@ -164,8 +164,8 @@ export const PlayerSearchInput = ({
                 className={clsx(
                   "px-3 py-2 cursor-pointer flex items-center gap-3",
                   highlightedIndex === index
-                    ? "bg-indigo-200"
-                    : "hover:bg-indigo-100"
+                    ? "bg-purple-600/10 dark:bg-purple-600/20"
+                    : "hover:bg-slate-100 dark:hover:bg-tournament-dark-muted"
                 )}
               >
                 {/* Avatar */}
@@ -174,7 +174,7 @@ export const PlayerSearchInput = ({
                   alt={user.nickname}
                   width={32}
                   height={32}
-                  className="w-8 h-8 rounded-full object-cover border"
+                  className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-tournament-dark-border"
                 />
 
                 {/* Info */}
@@ -184,7 +184,7 @@ export const PlayerSearchInput = ({
                   </span>
 
                   {(user.name || user.lastname) && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       {[user.name, user.lastname].filter(Boolean).join(" ")}
                     </span>
                   )}

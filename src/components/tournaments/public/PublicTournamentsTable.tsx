@@ -32,9 +32,9 @@ const openTournament = (url: string) => {
 
 export function PublicTournamentsTable({ tournaments, statusConfig }: Props) {
   return (
-    <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-[#4d3267] dark:bg-[#1f152a] md:block">
+    <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-accent dark:bg-tournament-dark-surface md:block">
       <table className="w-full text-left text-sm">
-        <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-[#261933] dark:text-slate-400">
+        <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-tournament-dark-header dark:text-slate-400">
           <tr>
             <th className="px-6 py-4">Evento</th>
             <th className="px-6 py-4">Fecha</th>
@@ -42,7 +42,7 @@ export function PublicTournamentsTable({ tournaments, statusConfig }: Props) {
             <th className="px-6 py-4 text-right">Accion</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-[#4d3267]">
+        <tbody className="divide-y divide-slate-200 dark:divide-tournament-dark-accent">
           {tournaments.map((tournament) => {
             const status = statusConfig[tournament.status];
             const tournamentUrl = `/torneos/${tournament.id}`;
@@ -62,7 +62,7 @@ export function PublicTournamentsTable({ tournaments, statusConfig }: Props) {
                   event.preventDefault();
                   openTournament(tournamentUrl);
                 }}
-                className="cursor-pointer transition-colors hover:bg-slate-50 focus-within:bg-slate-50 dark:hover:bg-[#2a1d36] dark:focus-within:bg-[#2a1d36]"
+                className="cursor-pointer transition-colors hover:bg-slate-50 focus-within:bg-slate-50 dark:hover:bg-tournament-dark-muted dark:focus-within:bg-tournament-dark-muted"
               >
                 <td className="px-6 py-4 text-base font-semibold text-slate-900 dark:text-white">
                   <Link

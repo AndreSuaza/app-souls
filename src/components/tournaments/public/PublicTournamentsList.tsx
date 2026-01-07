@@ -107,7 +107,7 @@ export function PublicTournamentsList({ tournaments }: Props) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 dark:border-[#4d3267] dark:bg-[#1f152a] dark:text-slate-300">
+        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
           No hay torneos disponibles por ahora.
         </div>
       ) : (
@@ -129,7 +129,7 @@ export function PublicTournamentsList({ tournaments }: Props) {
           currentPage={currentPage}
           pathname={pathname}
           searchParams={searchParams}
-          className="text-slate-900 dark:text-slate-200 dark:[&_a]:text-slate-200 dark:[&_a]:hover:bg-[#362348] dark:[&_a]:hover:text-white"
+          className="text-slate-900 dark:text-slate-200 dark:[&_a]:text-slate-200 dark:[&_a]:hover:bg-tournament-dark-border dark:[&_a]:hover:text-white"
         />
       )}
     </section>

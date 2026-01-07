@@ -140,15 +140,20 @@ export const CreateTournamentForm = () => {
   return (
     <form
       onSubmit={onSubmit}
-      className="bg-white p-6 rounded-lg shadow space-y-4"
+      className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
     >
       <div>
-        <label className="block text-sm font-medium">Nombre del torneo</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+          Nombre del torneo
+        </label>
         <input
           maxLength={50}
-          className={clsx("w-full border rounded p-2", {
-            "border-red-500": errors.title,
-          })}
+          className={clsx(
+            "w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500",
+            {
+              "border-red-500": errors.title,
+            }
+          )}
           placeholder="Ej. Torneo Verano 2025"
           {...register("title", {
             required: "El nombre del torneo es obligatorio",
@@ -164,7 +169,7 @@ export const CreateTournamentForm = () => {
         />
 
         {errors.title && (
-          <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+          <div className="mt-1 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
             <MdError size={14} />
             <span>{errors.title.message}</span>
           </div>
@@ -172,12 +177,17 @@ export const CreateTournamentForm = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Descripción</label>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+          Descripción
+        </label>
         <textarea
           maxLength={300}
-          className={clsx("w-full border rounded p-2", {
-            "border-red-500": errors.description,
-          })}
+          className={clsx(
+            "w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500",
+            {
+              "border-red-500": errors.description,
+            }
+          )}
           rows={3}
           {...register("description", {
             required: "La descripción es obligatoria",
@@ -193,7 +203,7 @@ export const CreateTournamentForm = () => {
         />
 
         {errors.description && (
-          <div className="flex items-center gap-1 text-red-500 text-xs mt-1">
+          <div className="mt-1 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
             <MdError size={14} />
             <span>{errors.description.message}</span>
           </div>
@@ -234,14 +244,14 @@ export const CreateTournamentForm = () => {
       <div className="flex gap-3 pt-4 justify-end">
         <Link
           href="/admin/torneos"
-          className="px-4 py-2 rounded border font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
+          className="rounded-lg border border-slate-200 bg-slate-100 px-4 py-2 font-medium text-slate-700 transition-colors hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
         >
           Cancelar
         </Link>
 
         <button
           type="submit"
-          className="bg-indigo-600 front-medium text-white px-4 py-2 rounded hover:bg-indigo-700"
+          className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white shadow-lg shadow-purple-600/20 transition-colors hover:bg-purple-600/90"
         >
           Crear torneo
         </button>

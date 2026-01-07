@@ -40,7 +40,7 @@ export function PublicTournamentsHero() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden rounded-none sm:rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-[#362348] dark:bg-[#1a1122]">
+    <section className="relative overflow-hidden rounded-none sm:rounded-2xl border border-slate-200 bg-white shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-hero">
       <div className="absolute inset-0 bg-[url('/tournaments/SMCC-baner.jpg')] bg-cover bg-center" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/40 dark:from-black/50 dark:via-black/60 dark:to-black/70" />
 
@@ -49,7 +49,7 @@ export function PublicTournamentsHero() {
           {HERO_TOURNAMENT.title}
         </h1>
 
-        <div className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/90 p-2 text-sm font-semibold text-slate-700 shadow-sm dark:border-[#362348] dark:bg-[#1a1122]/70 dark:text-slate-200">
+        <div className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/90 p-2 text-sm font-semibold text-slate-700 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-hero/70 dark:text-slate-200">
           <MdTimer className="text-purple-600 text-lg" />
           <span>Inicia en: {countdown}</span>
         </div>

@@ -55,7 +55,7 @@ export function PublicTournamentsMobileList({
               event.preventDefault();
               openTournament(tournamentUrl);
             }}
-            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-[#362348] dark:bg-[#1f152a]"
+            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
           >
             <div className="flex items-start justify-between gap-3">
               <p className="min-w-0 flex-1 text-base font-semibold text-slate-900 line-clamp-2 dark:text-white">

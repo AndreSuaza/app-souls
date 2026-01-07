@@ -14,6 +14,15 @@ Textos en grises text-slate-500
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --tournament-dark-bg: 25 16 34;
+  --tournament-dark-surface: 31 21 42;
+  --tournament-dark-hero: 26 17 34;
+  --tournament-dark-border: 54 35 72;
+  --tournament-dark-accent: 77 50 103;
+  --tournament-dark-header: 38 25 51;
+  --tournament-dark-muted: 42 29 54;
+  --tournament-dark-muted-strong: 34 23 43;
+  --tournament-dark-muted-hover: 58 41 71;
 }
 /* 
 @media (prefers-color-scheme: dark) {

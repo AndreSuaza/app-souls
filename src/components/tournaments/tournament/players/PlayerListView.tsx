@@ -24,9 +24,14 @@ export const PlayerListView = ({
   return (
     <ul>
       {players.map((p, idx) => (
-        <li key={p.id} className="border-b px-2 py-4 font-semibold">
+        <li
+          key={p.id}
+          className="border-b border-slate-200 px-2 py-4 font-semibold text-slate-900 dark:border-tournament-dark-border dark:text-white"
+        >
           <div className="flex justify-between items-center">
-            <span className="w-6 text-left text-gray-400">{idx + 1}</span>
+            <span className="w-6 text-left text-slate-400 dark:text-slate-500">
+              {idx + 1}
+            </span>
 
             <div className="ml-4 flex items-center gap-3 flex-1 text-left">
               {/* Avatar */}
@@ -35,7 +40,7 @@ export const PlayerListView = ({
                 alt={p.playerNickname}
                 width={36}
                 height={36}
-                className="w-9 h-9 rounded-full object-cover border"
+                className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-tournament-dark-border"
               />
 
               {/* Texto */}
@@ -43,7 +48,7 @@ export const PlayerListView = ({
                 <span>{p.playerNickname}</span>
 
                 {(p.name || p.lastname) && (
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     {[p.name, p.lastname].filter(Boolean).join(" ")}
                   </span>
                 )}
@@ -56,8 +61,8 @@ export const PlayerListView = ({
                 className={clsx(
                   "w-6 h-6",
                   isFinished
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-400 hover:text-red-600 cursor-pointer"
+                    ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                    : "text-slate-400 hover:text-red-600 dark:text-slate-500 dark:hover:text-red-400 cursor-pointer"
                 )}
                 onClick={() => {
                   if (!isFinished && onDelete) onDelete(p.id);

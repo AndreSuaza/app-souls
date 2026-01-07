@@ -26,7 +26,7 @@ export const CurrentRoundHeader = () => {
 
   const TEN_MINUTES_MS = 10 * 60 * 1000;
 
-  // Ronda actual (última generada)
+  // Ronda actual (カltima generada)
   const currentRound = useMemo(() => {
     if (rounds.length === 0) return undefined;
     return rounds[rounds.length - 1];
@@ -99,19 +99,18 @@ export const CurrentRoundHeader = () => {
     !!currentRound && isCurrentRound && canShowRecalculate;
 
   return (
-    <div className="w-full bg-white rounded-xl p-4 shadow-sm border flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="w-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       {/* Info de la ronda */}
       <div className="flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between md:flex-col md:items-start md:gap-2">
           {/* Estado del torneo */}
           <span
-            className={`order-2 md:order-1 w-fit px-3 py-1 rounded-full text-xs font-semibold
-            ${
+            className={`order-2 md:order-1 w-fit px-3 py-1 rounded-full text-xs font-semibold ring-1 ring-inset ${
               tournament.status === "in_progress"
-                ? "bg-blue-100 text-blue-700"
+                ? "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-200 dark:ring-blue-500/30"
                 : tournament.status === "finished"
-                ? "bg-gray-200 text-gray-700"
-                : "bg-yellow-100 text-yellow-700"
+                ? "bg-slate-200 text-slate-700 ring-slate-300 dark:bg-tournament-dark-muted dark:text-slate-400 dark:ring-tournament-dark-accent"
+                : "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-500/30"
             }`}
           >
             {tournament.status === "in_progress"
@@ -122,7 +121,7 @@ export const CurrentRoundHeader = () => {
           </span>
 
           {/* Número de ronda */}
-          <h2 className="order-1 md:order-2 text-xl font-bold">
+          <h2 className="order-1 md:order-2 text-xl font-bold text-slate-900 dark:text-white">
             Ronda {currentRound?.roundNumber ?? tournament.currentRoundNumber}
             {/* Mostrar "de X" solo si se ha generado al menos la priemra ronda*/}
             {tournament.maxRounds > 1 && ` de ${tournament.maxRounds}`}
@@ -138,7 +137,7 @@ export const CurrentRoundHeader = () => {
         <button
           type="button"
           onClick={() => setIsTimerModalOpen(true)}
-          className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          className="rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600/30"
           aria-label="Abrir temporizador"
           title="Abrir temporizador"
         >
@@ -146,7 +145,7 @@ export const CurrentRoundHeader = () => {
         </button>
 
         {/* Separador visual (solo desktop) */}
-        <div className="hidden md:block h-10 w-px bg-gray-300 mx-1 lg:mx-2" />
+        <div className="hidden md:block h-10 w-px bg-slate-200 dark:bg-tournament-dark-border mx-1 lg:mx-2" />
 
         <div className="flex w-full flex-col items-center gap-2 md:w-auto md:items-start">
           <div className="flex w-full justify-center md:justify-start [&>button]:w-full [&>button]:max-w-[220px] [&>button]:justify-center">

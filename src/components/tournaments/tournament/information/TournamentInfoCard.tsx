@@ -30,17 +30,17 @@ export const TournamentInfoCard = ({
   const time = form.date.toTimeString().slice(0, 5);
 
   return (
-    <div className="bg-white border rounded-2xl shadow-sm p-6 space-y-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
           Información del torneo
         </h2>
 
         {!isFinished && (
           <button
             onClick={onDelete}
-            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-sm rounded-lg bg-red-600 text-white hover:bg-red-700"
+            className="flex items-center gap-2 px-2 sm:px-4 py-2 text-sm rounded-lg bg-rose-600 text-white hover:bg-rose-700"
           >
             <IoTrashOutline className="hidden sm:block" />
             Cancelar torneo
@@ -51,9 +51,11 @@ export const TournamentInfoCard = ({
       {/* Inputs */}
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium">Título</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Título
+          </label>
           <input
-            className="w-full border rounded p-2"
+            className="w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
             value={form.title}
             disabled={isFinished}
             onChange={(e) => onChange({ ...form, title: e.target.value })}
@@ -61,9 +63,11 @@ export const TournamentInfoCard = ({
         </div>
 
         <div>
-          <label className="text-sm font-medium">Descripción</label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Descripción
+          </label>
           <textarea
-            className="w-full border rounded p-2"
+            className="w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
             rows={3}
             value={form.description}
             disabled={isFinished}
@@ -87,18 +91,22 @@ export const TournamentInfoCard = ({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="text-sm font-medium">Tipo de torneo</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              Tipo de torneo
+            </label>
             <input
-              className="w-full border rounded p-2 bg-gray-50 text-gray-600"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
               value={typeTournamentName ?? "-"}
               disabled
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium">Formato</label>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              Formato
+            </label>
             <input
-              className="w-full border rounded p-2 bg-gray-50 text-gray-600"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
               value={format ?? "-"}
               disabled
             />

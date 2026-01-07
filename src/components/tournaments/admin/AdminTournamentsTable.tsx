@@ -49,15 +49,16 @@ export const AdminTournamentsTable = ({
   return (
     <div
       className={clsx(
-        "hidden md:block overflow-hidden rounded-lg border",
-        classNames?.container ?? "bg-white"
+        "hidden md:block overflow-hidden rounded-xl border border-slate-200 dark:border-tournament-dark-accent bg-white dark:bg-tournament-dark-surface shadow-sm",
+        classNames?.container
       )}
     >
       <table className={clsx("min-w-full text-sm", classNames?.table)}>
         <thead
           className={clsx(
             "text-left text-xs uppercase tracking-wide",
-            classNames?.head ?? "bg-gray-50 text-gray-500"
+            classNames?.head ??
+              "bg-slate-50 text-slate-500 dark:bg-tournament-dark-header dark:text-slate-400 border-b border-slate-200 dark:border-tournament-dark-accent"
           )}
         >
           <tr>
@@ -69,7 +70,12 @@ export const AdminTournamentsTable = ({
             <th className={clsx("px-4 py-3", classNames?.headCell)}>Estado</th>
           </tr>
         </thead>
-        <tbody className={clsx(classNames?.body ?? "divide-y divide-gray-200")}>
+        <tbody
+          className={clsx(
+            classNames?.body ??
+              "divide-y divide-slate-200 dark:divide-tournament-dark-accent"
+          )}
+        >
           {tournaments.map((tournament) => {
             const isDisabled = tournament.status === "cancelled";
             const status = statusConfig[tournament.status];
@@ -92,8 +98,8 @@ export const AdminTournamentsTable = ({
                   "transition-colors",
                   classNames?.row ??
                     (isDisabled
-                      ? "bg-gray-50 text-gray-400"
-                      : "cursor-pointer hover:bg-gray-50")
+                      ? "bg-slate-50 text-slate-400 dark:bg-tournament-dark-muted-strong dark:text-slate-500"
+                      : "cursor-pointer hover:bg-slate-50 dark:hover:bg-tournament-dark-muted")
                 )}
               >
                 <td className={clsx("px-4 py-3", classNames?.cell)}>
@@ -101,7 +107,7 @@ export const AdminTournamentsTable = ({
                     className={clsx(
                       "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
                       classNames?.dateBadge ??
-                        "bg-slate-100 text-slate-700 ring-slate-200"
+                        "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-tournament-dark-muted dark:text-slate-200 dark:ring-tournament-dark-accent"
                     )}
                   >
                     {formatDate(tournament.date)}
@@ -110,7 +116,7 @@ export const AdminTournamentsTable = ({
                 <td
                   className={clsx(
                     "px-4 py-3 font-medium",
-                    classNames?.titleCell ?? "text-gray-900"
+                    classNames?.titleCell ?? "text-slate-900 dark:text-white"
                   )}
                 >
                   {tournament.title}
@@ -121,7 +127,7 @@ export const AdminTournamentsTable = ({
                 <td className={clsx("px-4 py-3", classNames?.statusCell)}>
                   <span
                     className={clsx(
-                      "rounded-full px-2 py-1 text-xs font-semibold",
+                      "rounded-full px-2 py-1 text-xs font-semibold ring-1 ring-inset",
                       status.className,
                       classNames?.statusBadge
                     )}
