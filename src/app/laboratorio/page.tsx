@@ -72,7 +72,26 @@ export default async function Cards({ searchParams }: Props) {
       <Title 
         title="Laboratorio de mazos"
       />
-      <DeckCreator cards={cards} propertiesCards={propertiesCards} mainDeck={mainDeck} sideDeck={sideDeck} totalPages={totalPage}/> 
+      <DeckCreator
+        cards={cards}
+        propertiesCards={propertiesCards}
+        mainDeck={mainDeck}
+        sideDeck={sideDeck}
+        totalPages={totalPage}
+        initialPage={page2}
+        initialFilters={{
+          text,
+          products,
+          types,
+          archetypes,
+          keywords,
+          costs,
+          forces,
+          defenses,
+          rarities,
+          limit,
+        }}
+      /> 
       <Footer/>
     </main>
     

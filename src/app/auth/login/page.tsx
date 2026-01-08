@@ -11,8 +11,8 @@ export default async function LogInPage({ searchParams }: Props) {
   const isVerified = verified === "true";
 
   return (
-    <div className="flex items-end bg-gray-800 min-h-screen bg-[url(/bg-registro.webp)] bg-cover bg-fixed">
-      <div className="relative z-10 m-auto w-[600px]">
+    <div className="flex items-start bg-gray-800 min-h-[100dvh] bg-[url(/bg-registro.webp)] bg-cover bg-scroll sm:items-end sm:min-h-screen sm:bg-fixed">
+      <div className="relative z-10 mx-auto mt-6 w-full max-w-[600px] px-4 pb-6 sm:m-auto sm:mt-0 sm:w-[600px] sm:px-0 sm:pb-0">
         <div className="mx-auto lg:ml-16 mb-6">
           <div className="relative w-[300px] h-[61px] lg:w-[446px] lg:h-[85px] mx-auto lg:mx-0">
             <Link href="/">

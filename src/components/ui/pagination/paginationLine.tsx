@@ -12,6 +12,7 @@ interface Props {
   searchParams: ReadonlyURLSearchParams;
   pathname: string;
   className?: string;
+  onPageChange?: (page: number) => void;
 }
 
 export const PaginationLine = ({
