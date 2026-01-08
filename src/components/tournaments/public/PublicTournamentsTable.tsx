@@ -13,6 +13,7 @@ type TournamentItem = {
   status: TournamentStatus;
   storeName?: string | null;
   playersCount?: number;
+  tierName?: string | null;
 };
 
 type StatusConfig = Record<
@@ -29,6 +30,7 @@ type Props = {
   showStoreColumn?: boolean;
   showPlayersColumn?: boolean;
   showActionColumn?: boolean;
+  showTierColumn?: boolean;
   onSelect?: (tournament: TournamentItem) => void;
   actionLabel?: string;
 };
@@ -43,6 +45,7 @@ export function PublicTournamentsTable({
   showStoreColumn = true,
   showPlayersColumn = false,
   showActionColumn = true,
+  showTierColumn = false,
   onSelect,
   actionLabel = "Ver torneo",
 }: Props) {
@@ -50,16 +53,17 @@ export function PublicTournamentsTable({
 
   return (
     <div className="hidden overflow-hidden rounded-xl border border-tournament-dark-accent bg-white shadow-sm dark:border-tournament-dark-accent dark:bg-tournament-dark-surface md:block">
-      <table className="w-full text-left text-sm">
+      <table className="w-full text-left text-xs">
         <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-tournament-dark-header dark:text-slate-400">
-          <tr>
-            <th className="px-6 py-4">Evento</th>
-            {showStoreColumn && <th className="px-6 py-4">Tienda</th>}
-            <th className="px-6 py-4">Fecha</th>
-            <th className="px-6 py-4">Estado</th>
-            {showPlayersColumn && <th className="px-6 py-4">Jugadores</th>}
+          <tr className="text-xs">
+            <th className="px-3 py-4">Evento</th>
+            {showTierColumn && <th className="px-3 py-4">Tipo</th>}
+            {showStoreColumn && <th className="px-3 py-4">Tienda</th>}
+            <th className="px-3 py-4">Fecha</th>
+            <th className="px-3 py-4">Estado</th>
+            {showPlayersColumn && <th className="px-3 py-4">Jugadores</th>}
             {showActionColumn && (
-              <th className="px-6 py-4 text-right">Acción</th>
+              <th className="px-3 py-4 text-right">Acción</th>
             )}
           </tr>
         </thead>
@@ -92,7 +96,7 @@ export function PublicTournamentsTable({
                 }}
                 className="cursor-pointer transition-colors hover:bg-slate-50 focus-within:bg-slate-50 dark:hover:bg-tournament-dark-muted dark:focus-within:bg-tournament-dark-muted"
               >
-                <td className="px-6 py-4 text-base font-semibold text-slate-900 dark:text-white">
+                <td className="px-3 py-4 text-base font-semibold text-slate-900 dark:text-white">
                   {isPublicView ? (
                     <Link
                       href={tournamentUrl}
@@ -106,15 +110,20 @@ export function PublicTournamentsTable({
                     <span>{tournament.title}</span>
                   )}
                 </td>
+                {showTierColumn && (
+                  <td className="px-3 py-4 text-sm text-slate-600 dark:text-slate-300">
+                    {tournament.tierName ?? "-"}
+                  </td>
+                )}
                 {showStoreColumn && (
-                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                  <td className="px-3 py-4 text-sm text-slate-600 dark:text-slate-300">
                     {tournament.storeName ?? "-"}
                   </td>
                 )}
-                <td className="px-6 py-4">
+                <td className="px-3 py-4">
                   <PublicTournamentsDateBadge value={tournament.date} />
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-3 py-4">
                   <span
                     className={clsx(
                       "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
@@ -125,12 +134,12 @@ export function PublicTournamentsTable({
                   </span>
                 </td>
                 {showPlayersColumn && (
-                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                  <td className="px-3 py-4 text-sm text-slate-600 dark:text-slate-300">
                     {tournament.playersCount ?? "-"}
                   </td>
                 )}
                 {showActionColumn && isPublicView && (
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-3 py-4 text-right">
                     <Link
                       href={tournamentUrl}
                       target="_blank"

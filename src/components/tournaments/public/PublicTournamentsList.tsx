@@ -16,6 +16,7 @@ type TournamentItem = {
   status: TournamentStatus;
   storeName?: string | null;
   playersCount?: number;
+  tierName?: string | null;
 };
 
 type FilterKey = "all" | TournamentStatus;

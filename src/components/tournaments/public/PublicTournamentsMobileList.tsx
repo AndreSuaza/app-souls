@@ -13,6 +13,7 @@ type TournamentItem = {
   status: TournamentStatus;
   storeName?: string | null;
   playersCount?: number;
+  tierName?: string | null;
 };
 
 type StatusConfig = Record<
@@ -29,6 +30,7 @@ type Props = {
   showStoreColumn?: boolean;
   showPlayersColumn?: boolean;
   showActionColumn?: boolean;
+  showTierColumn?: boolean;
   onSelect?: (tournament: TournamentItem) => void;
   actionLabel?: string;
 };
@@ -43,6 +45,7 @@ export function PublicTournamentsMobileList({
   showStoreColumn = true,
   showPlayersColumn = false,
   showActionColumn = true,
+  showTierColumn = false,
   onSelect,
   actionLabel = "Ver torneo",
 }: Props) {
@@ -93,6 +96,11 @@ export function PublicTournamentsMobileList({
             {showStoreColumn && (
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
                 Tienda: {tournament.storeName ?? "-"}
+              </p>
+            )}
+            {showTierColumn && (
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Tipo: {tournament.tierName ?? "-"}
               </p>
             )}
 

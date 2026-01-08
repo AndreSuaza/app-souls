@@ -49,7 +49,7 @@ export function PublicTournamentsHero({ tournament }: Props) {
     const intervalId = setInterval(updateCountdown, 60000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [tournament?.date]);
 
   const formatDateTime = (value: string) => {
     const date = new Date(value);

@@ -6,6 +6,8 @@ import { useUIStore } from "@/store";
 import { AdminTournamentsList } from "@/components";
 import {
   getAdminTournamentsAction,
+  getTournamentTypesAction,
+  getStoreOptionsAction,
   type AdminTournamentListItem,
 } from "@/actions";
 
@@ -17,6 +19,9 @@ export default function AdminTournamentsPage() {
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
   const showStoreColumn = session?.user?.role === "admin";
+  const isAdmin = showStoreColumn;
+  const [tierOptions, setTierOptions] = useState<string[]>([]);
+  const [storeOptions, setStoreOptions] = useState<string[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -24,9 +29,23 @@ export default function AdminTournamentsPage() {
     const loadTournaments = async () => {
       try {
         showLoading("Cargando torneos...");
-        const data = await getAdminTournamentsAction();
+        const [data, types, stores] = await Promise.all([
+          getAdminTournamentsAction(),
+          getTournamentTypesAction(),
+          getStoreOptionsAction(),
+        ]);
         if (active) {
           setTournaments(data);
+          setTierOptions(
+            Array.from(new Set(types.map((type) => type.name))).filter(
+              (name) => name.trim().length > 0
+            )
+          );
+          setStoreOptions(
+            Array.from(new Set(stores.map((store) => store.name))).filter(
+              (name) => name.trim().length > 0
+            )
+          );
         }
       } catch {
         if (active) {
@@ -68,6 +87,9 @@ export default function AdminTournamentsPage() {
         <AdminTournamentsList
           tournaments={tournaments}
           showStoreColumn={showStoreColumn}
+          isAdmin={isAdmin}
+          availableTiers={tierOptions}
+          availableStores={storeOptions}
         />
       )}
     </section>
