@@ -37,6 +37,8 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
 
   // Controla si esta ronda esta en modo edicion
   const [isEditing, setIsEditing] = useState(false);
+  // Controla si la card está expandida
+  const [expanded, setExpanded] = useState(isLastRound);
 
   // Copia local editable de los matchs (NO se guarda hasta confirmar)
   const [editableMatches, setEditableMatches] = useState(round.matches);
@@ -65,6 +67,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
     }
 
     setEditableMatches(structuredClone(round.matches));
+    setExpanded(true); // abre la card al editar
     setIsEditing(true);
   };
 
@@ -171,10 +174,12 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
       onChangeResult={isEditing ? handleLocalResultChange : undefined}
       defaultExpanded={isLastRound}
       allowExpand
+      expanded={expanded}
+      onToggleExpand={setExpanded}
       maxVisibleMatches={4}
       classNames={{
         container:
-          "bg-white dark:bg-tournament-dark-surface border border-slate-200 dark:border-tournament-dark-border",
+          "bg-white dark:bg-tournament-dark-surface border border-tournament-dark-accent dark:border-tournament-dark-border",
         title: "text-slate-900 dark:text-white",
         metaText: "text-slate-500 dark:text-slate-400",
         divider: "border-slate-200 dark:border-tournament-dark-border",

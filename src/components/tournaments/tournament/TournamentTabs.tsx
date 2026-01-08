@@ -92,7 +92,7 @@ export const TournamentTabs = ({
         </div>
       </div>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-surface">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-tournament-dark-accent dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-surface">
         <div className="flex gap-2 py-1 px-4 overflow-x-auto sm:justify-center">
           {visibleTabs.map((tab) => (
             <button

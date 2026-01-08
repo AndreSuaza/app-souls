@@ -42,7 +42,7 @@ export const AdminTournamentsCards = ({
             key={tournament.id}
             onClick={() => onSelect(tournament.id, tournament.status)}
             className={clsx(
-              "rounded-xl border border-slate-200 dark:border-tournament-dark-border p-4 transition-colors",
+              "rounded-xl border border-tournament-dark-accent dark:border-tournament-dark-border p-4 transition-colors",
               classNames?.card ??
                 (isDisabled
                   ? "bg-slate-50 text-slate-400 dark:bg-tournament-dark-muted-strong dark:text-slate-500"

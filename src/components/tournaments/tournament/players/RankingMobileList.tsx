@@ -39,7 +39,7 @@ export const RankingMobileList = ({
           <div
             key={player.id}
             className={clsx(
-              "border rounded-md p-3 flex items-center justify-between",
+              "border rounded-md p-3 flex items-center justify-between bg-white border-slate-200 dark:bg-tournament-dark-surface dark:border-tournament-dark-border",
               classNames?.card
             )}
           >
@@ -48,9 +48,19 @@ export const RankingMobileList = ({
               <PlayerCell player={player} />
             </div>
 
-            <div className={clsx("text-right text-sm", classNames?.meta)}>
+            <div
+              className={clsx(
+                "text-right text-sm text-slate-700 dark:text-slate-200",
+                classNames?.meta
+              )}
+            >
               <p className="font-bold">{player.points} pts</p>
-              <p className={clsx("text-gray-500", classNames?.metaSecondary)}>
+              <p
+                className={clsx(
+                  "text-slate-500 dark:text-slate-400",
+                  classNames?.metaSecondary
+                )}
+              >
                 DE {player.buchholz}
               </p>
               <p>{formatRecord(calculatePlayerRecord(player.id, rounds))}</p>

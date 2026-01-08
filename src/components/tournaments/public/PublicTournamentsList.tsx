@@ -14,6 +14,8 @@ type TournamentItem = {
   title: string;
   date: string;
   status: TournamentStatus;
+  storeName?: string | null;
+  playersCount?: number;
 };
 
 type FilterKey = "all" | TournamentStatus;
@@ -34,6 +36,16 @@ const statusConfig = {
     label: "Programado",
     className:
       "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-500/30",
+  },
+  finished: {
+    label: "Finalizado",
+    className:
+      "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-500/30",
+  },
+  cancelled: {
+    label: "Cancelado",
+    className:
+      "bg-slate-200 text-slate-600 ring-slate-300 dark:bg-tournament-dark-muted dark:text-slate-400 dark:ring-tournament-dark-accent",
   },
 };
 
@@ -107,7 +119,7 @@ export function PublicTournamentsList({ tournaments }: Props) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
+        <div className="rounded-xl border border-dashed border-tournament-dark-accent bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
           No hay torneos disponibles por ahora.
         </div>
       ) : (
@@ -129,7 +141,7 @@ export function PublicTournamentsList({ tournaments }: Props) {
           currentPage={currentPage}
           pathname={pathname}
           searchParams={searchParams}
-          className="text-slate-900 dark:text-slate-200 dark:[&_a]:text-slate-200 dark:[&_a]:hover:bg-tournament-dark-border dark:[&_a]:hover:text-white"
+          className="text-slate-900 dark:[&_a]:text-slate-200 dark:hover:[&_a]:text-slate-900  dark:[&_a]:hover:text-white"
         />
       )}
     </section>

@@ -47,7 +47,7 @@ export const TournamentSidebar = () => {
 
       <aside
         className={clsx(
-          "fixed top-0 right-0 z-40 h-full w-64 bg-white dark:bg-tournament-dark-surface text-slate-900 dark:text-white shadow-sm transition-transform duration-200 flex flex-col lg:static lg:z-auto lg:h-auto lg:w-64 lg:border-r lg:border-slate-200 dark:lg:border-tournament-dark-border lg:border-l-0 lg:translate-x-0",
+          "fixed top-0 right-0 z-40 h-full w-64 bg-white dark:bg-tournament-dark-surface text-slate-900 dark:text-white shadow-sm transition-transform duration-200 flex flex-col lg:static lg:z-auto lg:h-auto lg:w-64 lg:border-r lg:border-tournament-dark-accent dark:lg:border-tournament-dark-border lg:border-l-0 lg:translate-x-0",
           {
             "translate-x-0": isOpen,
             "translate-x-full": !isOpen,

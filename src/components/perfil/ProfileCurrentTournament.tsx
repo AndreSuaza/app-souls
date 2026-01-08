@@ -86,6 +86,21 @@ export const ProfileCurrentTournament = ({
     onInProgressWarningShown?.();
   }, [onInProgressWarningShown, shouldShowWarning, showToast]);
 
+  // Render simple VS para rondas no finalizadas en vista publica/perfil
+  const renderVS = () => (
+    <div className="flex items-center justify-center w-full">
+      <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">
+        VS
+      </span>
+    </div>
+  );
+
+  // Elimina el resultado solo para UI (no muta el original)
+  const stripMatchResult = (match: MatchInterface): MatchInterface => ({
+    ...match,
+    result: null,
+  });
+
   // Botones de resultado reutilizables renderizados en solo lectura.
   const renderResultButtons = (match: MatchInterface) => (
     <div className="grid grid-cols-3 gap-2 w-full md:flex md:items-center md:justify-center">
@@ -121,60 +136,18 @@ export const ProfileCurrentTournament = ({
     </div>
   );
 
-  // Tema oscuro alineado con la paleta del admin.
-  const matchCardClassNames = {
-    container: "bg-gray-800/60 text-gray-200 border-gray-700/50",
-    tableBadge: "bg-gray-700/70 text-gray-200",
-    tableText: "text-gray-200",
-    byeText: "text-gray-300",
-    byeImage: "border-gray-700/50",
-  };
-
-  const historyCardClassNames = {
-    container: "border-gray-700/50 bg-gray-800/60 text-gray-200",
-    header: "text-gray-200",
-    title: "text-gray-200",
-    metaText: "text-gray-400",
-    divider: "border-gray-700/50",
-    tableHeader: "bg-gray-800/60",
-    tableHeaderText: "text-gray-400",
-    matchDivider: "border-gray-700/50",
-  };
-
-  const rankingPanelClassNames = {
-    container: "bg-gray-800/60 border-gray-700/50 text-gray-200",
-    title: "text-gray-200",
-    pagination: "text-gray-200",
-    emptyState:
-      "border border-dashed border-gray-700 bg-gray-900/70 text-gray-400",
-  };
-
-  const rankingDesktopClassNames = {
-    table: "text-gray-200",
-    headerRow: "text-gray-400 border-gray-700/50",
-    headerCell: "text-gray-400",
-    row: "border-gray-700/50",
-    cell: "text-gray-200",
-  };
-
-  const rankingMobileClassNames = {
-    card: "bg-gray-800/60 border-gray-700/50",
-    meta: "text-gray-300",
-    metaSecondary: "text-gray-400",
-  };
-
   return (
     <div className="space-y-8">
       <div className="space-y-6">
         {tournament && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-gray-700/50 bg-gray-800/60 p-4">
+            <div className="rounded-xl border border-tournament-dark-accent bg-white p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
                     Torneo
                   </p>
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-100">
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
                     {tournament.title}
                   </h2>
                 </div>
@@ -185,7 +158,7 @@ export const ProfileCurrentTournament = ({
                         type="button"
                         title="Actualizar torneo"
                         onClick={() => onRefreshTournament(tournament.id)}
-                        className="rounded-full p-1 text-gray-300 transition hover:bg-gray-700/60 hover:text-purple-300"
+                        className="rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
                       >
                         <FiRefreshCw className="h-4 w-4" />
                       </button>
@@ -193,10 +166,10 @@ export const ProfileCurrentTournament = ({
                   <span
                     className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
                       tournament.status === "in_progress"
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
                         : tournament.status === "finished"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
+                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
+                        : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
                     }`}
                   >
                     {tournament.status === "in_progress"
@@ -211,25 +184,28 @@ export const ProfileCurrentTournament = ({
 
             {showCurrentRoundSection && (
               <>
-                <h3 className="text-base font-semibold text-gray-200">
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200">
                   Ronda actual
                 </h3>
 
                 {currentRound && currentMatch ? (
                   <MatchCard
-                    match={currentMatch}
+                    match={stripMatchResult(currentMatch)}
                     tableNumber={currentMatchIndex + 1}
                     players={players}
                     readOnly
                     decorated
-                    classNames={matchCardClassNames}
-                    renderResult={(match) => renderResultButtons(match)}
+                    renderResult={() =>
+                      tournament?.status !== "finished"
+                        ? renderVS()
+                        : renderResultButtons(currentMatch)
+                    }
                   />
                 ) : (
-                  <div className="rounded-lg border border-dashed border-gray-700 bg-gray-900/70 p-6 text-sm text-gray-400">
+                  <div className="rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
                     {currentRound
-                      ? "Aun no tienes un match asignado en la ronda actual."
-                      : "Aun no se ha generado la ronda actual."}
+                      ? "Aún no tienes un match asignado en la ronda actual."
+                      : "Aún no se ha generado la ronda actual."}
                   </div>
                 )}
               </>
@@ -240,7 +216,7 @@ export const ProfileCurrentTournament = ({
 
       {tournament && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-200">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
             Clasificacion general
           </h3>
 
@@ -250,21 +226,18 @@ export const ProfileCurrentTournament = ({
             status={tournament.status}
             showPodium={showPodium}
             showTitle={false}
-            classNames={rankingPanelClassNames}
-            desktopClassNames={rankingDesktopClassNames}
-            mobileClassNames={rankingMobileClassNames}
           />
         </div>
       )}
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-200">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
           Historial de rondas
         </h3>
 
         {historyRounds.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-gray-700 bg-gray-900/70 p-6 text-sm text-gray-400">
-            Aun no se han generado rondas.
+          <div className="rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
+            Aún no se han generado rondas.
           </div>
         ) : (
           <div className="space-y-4">
@@ -281,12 +254,18 @@ export const ProfileCurrentTournament = ({
                   round={round}
                   players={players}
                   status={status}
-                  matches={round.matches}
+                  matches={
+                    status === "IN_PROGRESS"
+                      ? round.matches.map(stripMatchResult)
+                      : round.matches
+                  }
                   readOnly
                   allowExpand={false}
-                  classNames={historyCardClassNames}
-                  matchCardClassNames={matchCardClassNames}
-                  renderResult={(match) => renderResultButtons(match)}
+                  renderResult={(match) =>
+                    status === "IN_PROGRESS"
+                      ? renderVS()
+                      : renderResultButtons(match)
+                  }
                 />
               );
             })}

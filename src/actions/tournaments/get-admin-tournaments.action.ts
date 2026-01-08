@@ -9,6 +9,7 @@ export type AdminTournamentListItem = {
   date: string;
   status: "pending" | "in_progress" | "finished" | "cancelled";
   playersCount: number;
+  storeName?: string | null;
 };
 
 export async function getAdminTournamentsAction() {
@@ -42,6 +43,11 @@ export async function getAdminTournamentsAction() {
         title: true,
         date: true,
         status: true,
+        store: {
+          select: {
+            name: true,
+          },
+        },
         // Se usa la relacion para contar jugadores sin consultas extra.
         tournamentPlayers: {
           select: {
@@ -71,6 +77,7 @@ export async function getAdminTournamentsAction() {
       date: tournament.date.toISOString(),
       status: tournament.status,
       playersCount: tournament.tournamentPlayers.length,
+      storeName: tournament.store?.name ?? null,
     }));
   } catch (error) {
     console.error("[getAdminTournamentsAction]", error);

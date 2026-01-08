@@ -10,7 +10,7 @@ export const RoundMatchesSection = () => {
 
   if (!currentRound) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
+      <div className="rounded-xl border border-tournament-dark-accent bg-white p-6 text-center text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
         Aún no se ha generado la ronda
       </div>
     );
@@ -42,7 +42,8 @@ export const RoundMatchesSection = () => {
             players={players}
             readOnly={!currentRound.startedAt}
             classNames={{
-              container: "bg-white dark:bg-tournament-dark-surface",
+              container:
+                "bg-white border-tournament-dark-accent dark:bg-tournament-dark-surface",
               tableBadge:
                 "bg-slate-100 text-slate-700 dark:bg-tournament-dark-muted dark:text-slate-200",
               tableText: "text-slate-700 dark:text-slate-200",

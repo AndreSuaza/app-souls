@@ -38,7 +38,7 @@ export const RankingDesktopTable = ({
         <thead>
           <tr
             className={clsx(
-              "text-sm text-gray-500 border-b",
+              "text-sm text-slate-500 border-b border-slate-200 dark:text-slate-400 dark:border-tournament-dark-border",
               classNames?.headerRow
             )}
           >
@@ -70,27 +70,52 @@ export const RankingDesktopTable = ({
               <tr
                 key={player.id}
                 className={clsx(
-                  "border-b last:border-none",
+                  "border-b last:border-none border-slate-200 dark:border-tournament-dark-border",
                   classNames?.row
                 )}
               >
-                <td className={clsx("py-3", classNames?.cell)}>
+                <td
+                  className={clsx(
+                    "py-3 text-slate-700 dark:text-slate-200",
+                    classNames?.cell
+                  )}
+                >
                   <RankBadge rank={rank} showPodium={showPodium} />
                 </td>
 
-                <td className={clsx("py-3", classNames?.cell)}>
+                <td
+                  className={clsx(
+                    "py-3 text-slate-700 dark:text-slate-200",
+                    classNames?.cell
+                  )}
+                >
                   <PlayerCell player={player} />
                 </td>
 
-                <td className={clsx("py-3 text-center font-bold", classNames?.cell)}>
+                <td
+                  className={clsx(
+                    "py-3 text-center font-bold text-slate-700 dark:text-slate-200",
+                    classNames?.cell
+                  )}
+                >
                   {player.points}
                 </td>
 
-                <td className={clsx("py-3 text-center", classNames?.cell)}>
+                <td
+                  className={clsx(
+                    "py-3 text-center text-slate-700 dark:text-slate-200",
+                    classNames?.cell
+                  )}
+                >
                   {player.buchholz}
                 </td>
 
-                <td className={clsx("py-3 text-center", classNames?.cell)}>
+                <td
+                  className={clsx(
+                    "py-3 text-center text-slate-700 dark:text-slate-200",
+                    classNames?.cell
+                  )}
+                >
                   {formatRecord(calculatePlayerRecord(player.id, rounds))}
                 </td>
               </tr>

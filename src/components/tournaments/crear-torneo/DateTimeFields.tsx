@@ -49,7 +49,7 @@ export const DateTimeFields = ({
           max={maxDate.toISOString().split("T")[0]}
           value={date}
           onChange={(e) => onDateChange(e.target.value)}
-          className="w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
+          className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
         />
       </div>
 
@@ -66,7 +66,7 @@ export const DateTimeFields = ({
             onChange={(e) =>
               onTimeChange(`${e.target.value}:${time.split(":")[1]}`)
             }
-            className="w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
+            className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
           >
             {Array.from({ length: 24 }).map((_, h) => {
               const hour = String(h).padStart(2, "0");
@@ -95,7 +95,7 @@ export const DateTimeFields = ({
             onChange={(e) =>
               onTimeChange(`${time.split(":")[0]}:${e.target.value}`)
             }
-            className="w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
+            className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
           >
             {MINUTES.map((m) => {
               const selectedHour = Number(time.split(":")[0]);

@@ -26,7 +26,7 @@ export const PlayerListView = ({
       {players.map((p, idx) => (
         <li
           key={p.id}
-          className="border-b border-slate-200 px-2 py-4 font-semibold text-slate-900 dark:border-tournament-dark-border dark:text-white"
+          className="border-b border-tournament-dark-accent px-2 py-4 font-semibold text-slate-900 dark:border-tournament-dark-border dark:text-white"
         >
           <div className="flex justify-between items-center">
             <span className="w-6 text-left text-slate-400 dark:text-slate-500">
@@ -40,7 +40,7 @@ export const PlayerListView = ({
                 alt={p.playerNickname}
                 width={36}
                 height={36}
-                className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-tournament-dark-border"
+                className="w-9 h-9 rounded-full object-cover border border-tournament-dark-accent dark:border-tournament-dark-border"
               />
 
               {/* Texto */}

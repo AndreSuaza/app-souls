@@ -4,13 +4,15 @@ import Link from "next/link";
 import clsx from "clsx";
 import { PublicTournamentsDateBadge } from "./PublicTournamentsDateBadge";
 
-type TournamentStatus = "pending" | "in_progress";
+type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
 
 type TournamentItem = {
   id: string;
   title: string;
   date: string;
   status: TournamentStatus;
+  storeName?: string | null;
+  playersCount?: number;
 };
 
 type StatusConfig = Record<
@@ -24,28 +26,54 @@ type StatusConfig = Record<
 type Props = {
   tournaments: TournamentItem[];
   statusConfig: StatusConfig;
+  showStoreColumn?: boolean;
+  showPlayersColumn?: boolean;
+  showActionColumn?: boolean;
+  onSelect?: (tournament: TournamentItem) => void;
+  actionLabel?: string;
 };
 
 const openTournament = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
 };
 
-export function PublicTournamentsTable({ tournaments, statusConfig }: Props) {
+export function PublicTournamentsTable({
+  tournaments,
+  statusConfig,
+  showStoreColumn = true,
+  showPlayersColumn = false,
+  showActionColumn = true,
+  onSelect,
+  actionLabel = "Ver torneo",
+}: Props) {
+  const isPublicView = !onSelect;
+
   return (
-    <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-accent dark:bg-tournament-dark-surface md:block">
+    <div className="hidden overflow-hidden rounded-xl border border-tournament-dark-accent bg-white shadow-sm dark:border-tournament-dark-accent dark:bg-tournament-dark-surface md:block">
       <table className="w-full text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 dark:bg-tournament-dark-header dark:text-slate-400">
           <tr>
             <th className="px-6 py-4">Evento</th>
+            {showStoreColumn && <th className="px-6 py-4">Tienda</th>}
             <th className="px-6 py-4">Fecha</th>
             <th className="px-6 py-4">Estado</th>
-            <th className="px-6 py-4 text-right">Accion</th>
+            {showPlayersColumn && <th className="px-6 py-4">Jugadores</th>}
+            {showActionColumn && (
+              <th className="px-6 py-4 text-right">Acción</th>
+            )}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-tournament-dark-accent">
           {tournaments.map((tournament) => {
             const status = statusConfig[tournament.status];
             const tournamentUrl = `/torneos/${tournament.id}`;
+            const handleSelect = () => {
+              if (onSelect) {
+                onSelect(tournament);
+                return;
+              }
+              openTournament(tournamentUrl);
+            };
             return (
               <tr
                 key={tournament.id}
@@ -55,25 +83,34 @@ export function PublicTournamentsTable({ tournaments, statusConfig }: Props) {
                   const target = event.target as HTMLElement;
                   // Evita abrir doble pestana cuando se hace clic en un enlace.
                   if (target.closest("a")) return;
-                  openTournament(tournamentUrl);
+                  handleSelect();
                 }}
                 onKeyDown={(event) => {
                   if (event.key !== "Enter" && event.key !== " ") return;
                   event.preventDefault();
-                  openTournament(tournamentUrl);
+                  handleSelect();
                 }}
                 className="cursor-pointer transition-colors hover:bg-slate-50 focus-within:bg-slate-50 dark:hover:bg-tournament-dark-muted dark:focus-within:bg-tournament-dark-muted"
               >
                 <td className="px-6 py-4 text-base font-semibold text-slate-900 dark:text-white">
-                  <Link
-                    href={tournamentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-purple-600 dark:hover:text-purple-300"
-                  >
-                    {tournament.title}
-                  </Link>
+                  {isPublicView ? (
+                    <Link
+                      href={tournamentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-purple-600 dark:hover:text-purple-300"
+                    >
+                      {tournament.title}
+                    </Link>
+                  ) : (
+                    <span>{tournament.title}</span>
+                  )}
                 </td>
+                {showStoreColumn && (
+                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                    {tournament.storeName ?? "-"}
+                  </td>
+                )}
                 <td className="px-6 py-4">
                   <PublicTournamentsDateBadge value={tournament.date} />
                 </td>
@@ -87,16 +124,23 @@ export function PublicTournamentsTable({ tournaments, statusConfig }: Props) {
                     {status.label}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
-                  <Link
-                    href={tournamentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-700 font-semibold hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
-                  >
-                    Ver torneo
-                  </Link>
-                </td>
+                {showPlayersColumn && (
+                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
+                    {tournament.playersCount ?? "-"}
+                  </td>
+                )}
+                {showActionColumn && isPublicView && (
+                  <td className="px-6 py-4 text-right">
+                    <Link
+                      href={tournamentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-700 font-semibold hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
+                    >
+                      {actionLabel}
+                    </Link>
+                  </td>
+                )}
               </tr>
             );
           })}

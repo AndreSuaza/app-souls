@@ -2,12 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  IoCallOutline,
-  IoGlobeOutline,
-  IoLocationOutline,
-  IoStorefrontOutline,
-} from "react-icons/io5";
+import { IoLocationOutline, IoStorefrontOutline } from "react-icons/io5";
 import { FiRefreshCw } from "react-icons/fi";
 import { getPublicTournamentDetailAction } from "@/actions";
 import { Map, TournamentRankingPanel } from "@/components";
@@ -31,8 +26,6 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   const showToast = useToastStore((s) => s.showToast);
 
   const { tournament, players, rounds = EMPTY_ROUNDS, store } = tournamentData;
-  const storePhone = store.phone?.trim() ? store.phone : "No disponible";
-  const storeUrl = store.url?.trim() ? store.url : null;
 
   // Valida coordenadas para renderizar el mapa solo si son confiables.
   const hasValidCoordinates =
@@ -96,6 +89,21 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
     }
   }, [showLoading, hideLoading, showToast, tournament]);
 
+  // Render simple VS para rondas no finalizadas en vista publica/perfil
+  const renderVS = () => (
+    <div className="flex items-center justify-center w-full">
+      <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">
+        VS
+      </span>
+    </div>
+  );
+
+  // Elimina el resultado solo para UI (no muta el original)
+  const stripMatchResult = (match: MatchInterface): MatchInterface => ({
+    ...match,
+    result: null,
+  });
+
   // Botones de resultado reutilizables renderizados en solo lectura.
   const renderResultButtons = (match: MatchInterface) => (
     <div className="grid grid-cols-3 gap-2 w-full md:flex md:items-center md:justify-center">
@@ -131,121 +139,55 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
     </div>
   );
 
-  // Tema oscuro alineado con la paleta del perfil.
-  const matchCardClassNames = {
-    container: "bg-gray-800/60 text-gray-200 border-gray-700/50",
-    tableBadge: "bg-gray-700/70 text-gray-200",
-    tableText: "text-gray-200",
-    byeText: "text-gray-300",
-    byeImage: "border-gray-700/50",
-  };
-
-  const historyCardClassNames = {
-    container: "border-gray-700/50 bg-gray-800/60 text-gray-200",
-    header: "text-gray-200",
-    title: "text-gray-200",
-    metaText: "text-gray-400",
-    divider: "border-gray-700/50",
-    tableHeader: "bg-gray-800/60",
-    tableHeaderText: "text-gray-400",
-    matchDivider: "border-gray-700/50",
-  };
-
-  const rankingPanelClassNames = {
-    container: "bg-gray-800/60 border-gray-700/50 text-gray-200",
-    title: "text-gray-200",
-    pagination: "text-gray-200",
-    emptyState:
-      "border border-dashed border-gray-700 bg-gray-900/70 text-gray-400",
-  };
-
-  const rankingDesktopClassNames = {
-    table: "text-gray-200",
-    headerRow: "text-gray-400 border-gray-700/50",
-    headerCell: "text-gray-400",
-    row: "border-gray-700/50",
-    cell: "text-gray-200",
-  };
-
-  const rankingMobileClassNames = {
-    card: "bg-gray-800/60 border-gray-700/50",
-    meta: "text-gray-300",
-    metaSecondary: "text-gray-400",
-  };
-
   return (
-    <div className="relative min-h-screen flex items-start justify-center bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white overflow-hidden p-4 pb-14">
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/95" />
+    <div className="relative min-h-screen flex flex-col space-y-3 items-start justify-center bg-slate-50 text-slate-900 overflow-hidden px-3 pb-14 pt-2 md:pt-6 dark:bg-tournament-dark-bg dark:text-white sm:px-6 md:px-10 lg:px-16">
+      <div className="absolute inset-0 hidden" />
 
-      <div className="relative z-10 w-full max-w-6xl bg-gray-900/70 border border-purple-600/40 rounded-2xl shadow-[rgba(168,85,247,0.3)] p-6 md:p-8 backdrop-blur-md flex flex-col gap-8">
-        <div className="flex justify-start">
-          <Link
-            href="/torneos"
-            className="inline-flex items-center gap-2 rounded-full border border-purple-500/50 px-4 py-2 text-sm font-semibold text-purple-200 transition hover:border-purple-400 hover:bg-purple-500/10 hover:text-white"
-          >
-            Volver a torneos
-          </Link>
-        </div>
+      <div className="flex justify-start">
+        <Link
+          href="/torneos"
+          className="inline-flex items-center gap-2 rounded-full border border-tournament-dark-accent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
+        >
+          Volver a torneos
+        </Link>
+      </div>
 
+      <div className="relative z-10 w-full max-w-6xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:p-8 flex flex-col gap-8">
         <div className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-gray-700/50 bg-gray-800/60 p-5">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-gray-400">
-                <IoStorefrontOutline className="text-purple-300" />
+            <div className="rounded-xl border border-tournament-dark-accent bg-white p-5 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+                <IoStorefrontOutline className="text-purple-600 dark:text-purple-300" />
                 Tienda organizadora
               </div>
-              <h2 className="mt-3 text-2xl md:text-3xl font-bold text-gray-100">
+              <h2 className="mt-3 text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
                 {store.name}
               </h2>
 
-              <div className="mt-4 grid gap-3 text-sm text-gray-300">
-                <div className="flex items-start gap-3">
-                  <IoLocationOutline className="mt-0.5 text-purple-300" />
+              <div className="mt-4 grid gap-3 text-sm text-slate-600 dark:text-slate-300">
+                <div className="flex items-start gap-x-3 text-xl">
+                  <IoLocationOutline className="mt-1.5 text-purple-600 dark:text-purple-300" />
                   <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide">
-                      Ubicacion
-                    </p>
                     <p>
                       {store.city}, {store.country}
                     </p>
-                    <p className="text-gray-300">{store.address}</p>
+                    <p className="text-slate-600 dark:text-slate-300">
+                      {store.address}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <IoCallOutline className="mt-0.5 text-purple-300" />
-                  <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide">
-                      Telefono
+                {tournament.description && (
+                  <div className="mt-3">
+                    <p className="mt-1 text-base md:text-xl font-medium text-slate-700 dark:text-slate-200">
+                      {tournament.description}
                     </p>
-                    <p>{storePhone}</p>
                   </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <IoGlobeOutline className="mt-0.5 text-purple-300" />
-                  <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide">
-                      Sitio
-                    </p>
-                    {storeUrl ? (
-                      <Link
-                        href={storeUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-purple-300 hover:text-purple-200"
-                      >
-                        {storeUrl}
-                      </Link>
-                    ) : (
-                      <p>No disponible</p>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-700/50 bg-gray-800/60 p-3">
+            <div className="rounded-xl border border-tournament-dark-accent bg-white p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
               {hasValidCoordinates ? (
                 <Map
                   className="h-[280px] w-full rounded-lg"
@@ -254,7 +196,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                   title={store.name}
                 />
               ) : (
-                <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-gray-700 text-sm text-gray-400">
+                <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong dark:text-slate-300">
                   Mapa no disponible.
                 </div>
               )}
@@ -263,13 +205,13 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
           {tournament && (
             <div className="space-y-4">
-              <div className="rounded-xl border border-gray-700/50 bg-gray-800/60 p-4">
+              <div className="rounded-xl border border-tournament-dark-accent bg-white p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-1">
-                    <p className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
                       Torneo
                     </p>
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-100">
+                    <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
                       {tournament.title}
                     </h2>
                   </div>
@@ -279,7 +221,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                         type="button"
                         title="Actualizar torneo"
                         onClick={handleReload}
-                        className="rounded-full p-1 text-gray-300 transition hover:bg-gray-700/60 hover:text-purple-300"
+                        className="rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
                       >
                         <FiRefreshCw className="h-4 w-4" />
                       </button>
@@ -287,10 +229,10 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                     <span
                       className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
                         tournament.status === "in_progress"
-                          ? "bg-blue-100 text-blue-700"
+                          ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
                           : tournament.status === "finished"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
+                          : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
                       }`}
                     >
                       {tournament.status === "in_progress"
@@ -305,7 +247,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
               {showCurrentRoundSection && (
                 <>
-                  <h3 className="text-base font-semibold text-gray-200">
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200">
                     Ronda actual
                   </h3>
 
@@ -314,19 +256,18 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                       {currentRound.matches.map((match, index) => (
                         <MatchCard
                           key={match.id}
-                          match={match}
+                          match={stripMatchResult(match)}
                           tableNumber={index + 1}
                           players={players}
                           readOnly
                           decorated
-                          classNames={matchCardClassNames}
-                          renderResult={(item) => renderResultButtons(item)}
+                          renderResult={() => renderVS()}
                         />
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-lg border border-dashed border-gray-700 bg-gray-900/70 p-6 text-sm text-gray-400">
-                      Aun no se ha generado la ronda actual.
+                    <div className="rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
+                      Aún no se ha generado la ronda actual.
                     </div>
                   )}
                 </>
@@ -337,7 +278,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
         {tournament && (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-200">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
               Clasificacion general
             </h3>
 
@@ -347,21 +288,18 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
               status={tournament.status}
               showPodium={showPodium}
               showTitle={false}
-              classNames={rankingPanelClassNames}
-              desktopClassNames={rankingDesktopClassNames}
-              mobileClassNames={rankingMobileClassNames}
             />
           </div>
         )}
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-200">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
             Historial de rondas
           </h3>
 
           {historyRounds.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-gray-700 bg-gray-900/70 p-6 text-sm text-gray-400">
-              Aun no se han generado rondas.
+            <div className="flex items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
+              Aún no se han generado rondas.
             </div>
           ) : (
             <div className="space-y-4">
@@ -378,12 +316,18 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                     round={round}
                     players={players}
                     status={status}
-                    matches={round.matches}
+                    matches={
+                      status === "IN_PROGRESS"
+                        ? round.matches.map(stripMatchResult)
+                        : round.matches
+                    }
                     readOnly
                     allowExpand={false}
-                    classNames={historyCardClassNames}
-                    matchCardClassNames={matchCardClassNames}
-                    renderResult={(match) => renderResultButtons(match)}
+                    renderResult={(match) =>
+                      status === "IN_PROGRESS"
+                        ? renderVS()
+                        : renderResultButtons(match)
+                    }
                   />
                 );
               })}

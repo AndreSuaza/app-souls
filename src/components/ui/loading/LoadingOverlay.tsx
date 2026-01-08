@@ -13,15 +13,11 @@ export const LoadingOverlay: React.FC = () => {
   return (
     <div
       className="
-      fixed inset-0 z-[9999]
-      bg-gray-200/10 backdrop-blur-0
-      flex items-center justify-center
-      pointer-events-auto
-    "
+      fixed inset-0 z-[9999] bg-gray-200/10 dark:bg-black/40 backdrop-blur-0 flex items-center justify-center pointer-events-auto"
     >
       <div className="relative flex flex-col items-center gap-4">
         {/* aura pulsante */}
-        <div className="absolute inset-0 rounded-full bg-white/10 blur-2xl animate-pulse"></div>
+        <div className="absolute inset-0 rounded-full bg-white/10 dark:bg-black/20 blur-2xl animate-pulse"></div>
 
         {/* icono */}
         <div className="relative animate-spin drop-shadow-[0_0_12px_rgba(255,255,255,0.35)]">
@@ -34,7 +30,7 @@ export const LoadingOverlay: React.FC = () => {
         </div>
 
         {/* texto */}
-        <p className="text-black/80 text-sm tracking-wide">
+        <p className="text-black/80 dark:text-white/80 text-sm tracking-wide">
           {loadingMessage ?? "Cargando…"}
         </p>
       </div>

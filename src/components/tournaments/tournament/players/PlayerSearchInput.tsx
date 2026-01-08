@@ -116,7 +116,7 @@ export const PlayerSearchInput = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="w-full rounded-lg border border-slate-200 bg-white py-1 pl-8 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
+          className="w-full rounded-lg border border-tournament-dark-accent bg-white py-1 pl-8 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
           placeholder="Escribe el nombre o nickname"
           onFocus={() => {
             if (query.trim().length > 0) {
@@ -138,7 +138,7 @@ export const PlayerSearchInput = ({
 
       {/* Dropdown */}
       {showDropdown && (
-        <div className="absolute left-0 top-full mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg z-20 max-h-56 overflow-auto dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+        <div className="absolute left-0 top-full mt-1 w-full rounded-lg border border-tournament-dark-accent bg-white shadow-lg z-20 max-h-56 overflow-auto dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
           {/* Loading */}
           {loading && (
             <div className="px-3 py-2 text-sm text-slate-500 italic dark:text-slate-400">
@@ -174,7 +174,7 @@ export const PlayerSearchInput = ({
                   alt={user.nickname}
                   width={32}
                   height={32}
-                  className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-tournament-dark-border"
+                  className="w-8 h-8 rounded-full object-cover border border-tournament-dark-accent dark:border-tournament-dark-border"
                 />
 
                 {/* Info */}

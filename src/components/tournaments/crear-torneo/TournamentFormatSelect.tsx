@@ -21,7 +21,7 @@ export const TournamentFormatSelect = ({ value, onChange }: Props) => {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value as TournamentFormat)}
-        className="w-full rounded-lg border border-slate-200 bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
+        className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
       >
         {TOURNAMENT_FORMATS.map((f) => (
           <option key={f.value} value={f.value}>

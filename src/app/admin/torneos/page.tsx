@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useUIStore } from "@/store";
 import { AdminTournamentsList } from "@/components";
 import {
@@ -14,6 +15,8 @@ export default function AdminTournamentsPage() {
   const [tournaments, setTournaments] = useState<AdminTournamentListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const showStoreColumn = session?.user?.role === "admin";
 
   useEffect(() => {
     let active = true;
@@ -61,7 +64,12 @@ export default function AdminTournamentsPage() {
         </div>
       )}
 
-      {!loading && !error && <AdminTournamentsList tournaments={tournaments} />}
+      {!loading && !error && (
+        <AdminTournamentsList
+          tournaments={tournaments}
+          showStoreColumn={showStoreColumn}
+        />
+      )}
     </section>
   );
 }

@@ -19,10 +19,10 @@ export default function TournamentLayout({
   return (
     <>
       <div className="hidden md:block">
-        <TopMenu variant="admin" />
+        <TopMenu />
       </div>
       <AdminTopMenu />
-      <Sidebar variant="admin" />
+      <Sidebar />
       <div className="flex min-h-screen bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
         <LoadingOverlay />
         <ToastContainer />

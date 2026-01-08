@@ -28,25 +28,37 @@ export const metadata: Metadata = {
 };
 
 export default async function EventosPage() {
-  const { tournaments } = await getPublicTournaments();
+  const { tournaments, heroTournament } = await getPublicTournaments();
   const listTournaments = tournaments.map((tournament) => ({
     id: tournament.id,
     title: tournament.title,
     status: tournament.status,
     date: tournament.date.toISOString(),
+    storeName: tournament.store.name,
   }));
 
   return (
     <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
       <div className="mx-auto flex min-h-screen flex-col gap-12 pb-16 pt-0 sm:pt-8">
         <div className="px-0 sm:px-6 md:px-10 lg:px-16">
-          <PublicTournamentsHero />
+          <PublicTournamentsHero
+            tournament={
+              heroTournament
+                ? {
+                    id: heroTournament.id,
+                    title: heroTournament.title,
+                    date: heroTournament.date.toISOString(),
+                    status: heroTournament.status,
+                  }
+                : null
+            }
+          />
         </div>
 
         <div className="px-3 sm:px-6 md:px-10 lg:px-16">
           <Suspense
             fallback={
-              <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
+              <div className="rounded-xl border border-dashed border-tournament-dark-accent bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
                 Cargando torneos...
               </div>
             }

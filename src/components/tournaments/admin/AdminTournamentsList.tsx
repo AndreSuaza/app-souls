@@ -3,12 +3,11 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { PaginationLine } from "@/components/ui";
-import { AdminTournamentsSearch } from "./AdminTournamentsSearch";
 import {
-  AdminTournamentsTable,
-  type AdminTournamentStatusConfig,
-} from "./AdminTournamentsTable";
-import { AdminTournamentsCards } from "./AdminTournamentsCards";
+  PublicTournamentsMobileList,
+  PublicTournamentsTable,
+} from "@/components";
+import { AdminTournamentsSearch } from "./AdminTournamentsSearch";
 
 type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
 
@@ -18,15 +17,17 @@ export type AdminTournamentListItem = {
   date: string;
   status: TournamentStatus;
   playersCount: number;
+  storeName?: string | null;
 };
 
 type Props = {
   tournaments: AdminTournamentListItem[];
+  showStoreColumn?: boolean;
 };
 
 const PAGE_SIZE = 10;
 
-const statusConfig: AdminTournamentStatusConfig = {
+const statusConfig = {
   pending: {
     label: "Pendiente",
     className:
@@ -49,14 +50,10 @@ const statusConfig: AdminTournamentStatusConfig = {
   },
 };
 
-const formatDate = (value: string) =>
-  new Date(value).toLocaleDateString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-
-export const AdminTournamentsList = ({ tournaments }: Props) => {
+export const AdminTournamentsList = ({
+  tournaments,
+  showStoreColumn = false,
+}: Props) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -120,23 +117,30 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
       />
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
+        <div className="rounded-xl border border-dashed border-tournament-dark-accent bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
           No hay torneos para mostrar.
         </div>
       ) : (
         <>
-          <AdminTournamentsTable
+          <PublicTournamentsTable
             tournaments={paginated}
             statusConfig={statusConfig}
-            formatDate={formatDate}
-            onSelect={handleRowClick}
+            showStoreColumn={showStoreColumn}
+            showPlayersColumn
+            showActionColumn={false}
+            onSelect={(tournament) =>
+              handleRowClick(tournament.id, tournament.status)
+            }
           />
 
-          <AdminTournamentsCards
+          <PublicTournamentsMobileList
             tournaments={paginated}
             statusConfig={statusConfig}
-            formatDate={formatDate}
-            onSelect={handleRowClick}
+            showStoreColumn={showStoreColumn}
+            showPlayersColumn
+            onSelect={(tournament) =>
+              handleRowClick(tournament.id, tournament.status)
+            }
           />
 
           <PaginationLine
@@ -144,7 +148,7 @@ export const AdminTournamentsList = ({ tournaments }: Props) => {
             currentPage={currentPage}
             pathname={pathname}
             searchParams={searchParams}
-            className="text-slate-900 dark:text-slate-200 dark:[&_a]:text-slate-200 dark:[&_a]:hover:bg-tournament-dark-border dark:[&_a]:hover:text-white"
+            className="text-slate-900 dark:[&_a]:text-slate-200 dark:hover:[&_a]:text-slate-900  dark:[&_a]:hover:text-white"
           />
         </>
       )}

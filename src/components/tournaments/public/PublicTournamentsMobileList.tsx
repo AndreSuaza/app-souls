@@ -4,13 +4,15 @@ import Link from "next/link";
 import clsx from "clsx";
 import { PublicTournamentsDateBadge } from "./PublicTournamentsDateBadge";
 
-type TournamentStatus = "pending" | "in_progress";
+type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
 
 type TournamentItem = {
   id: string;
   title: string;
   date: string;
   status: TournamentStatus;
+  storeName?: string | null;
+  playersCount?: number;
 };
 
 type StatusConfig = Record<
@@ -24,6 +26,11 @@ type StatusConfig = Record<
 type Props = {
   tournaments: TournamentItem[];
   statusConfig: StatusConfig;
+  showStoreColumn?: boolean;
+  showPlayersColumn?: boolean;
+  showActionColumn?: boolean;
+  onSelect?: (tournament: TournamentItem) => void;
+  actionLabel?: string;
 };
 
 const openTournament = (url: string) => {
@@ -33,12 +40,24 @@ const openTournament = (url: string) => {
 export function PublicTournamentsMobileList({
   tournaments,
   statusConfig,
+  showStoreColumn = true,
+  showPlayersColumn = false,
+  showActionColumn = true,
+  onSelect,
+  actionLabel = "Ver torneo",
 }: Props) {
   return (
     <div className="space-y-3 md:hidden">
       {tournaments.map((tournament) => {
         const status = statusConfig[tournament.status];
         const tournamentUrl = `/torneos/${tournament.id}`;
+        const handleSelect = () => {
+          if (onSelect) {
+            onSelect(tournament);
+            return;
+          }
+          openTournament(tournamentUrl);
+        };
         return (
           <div
             key={tournament.id}
@@ -48,14 +67,14 @@ export function PublicTournamentsMobileList({
               const target = event.target as HTMLElement;
               // Evita abrir doble pestana cuando se hace clic en un enlace.
               if (target.closest("a")) return;
-              openTournament(tournamentUrl);
+              handleSelect();
             }}
             onKeyDown={(event) => {
               if (event.key !== "Enter" && event.key !== " ") return;
               event.preventDefault();
-              openTournament(tournamentUrl);
+              handleSelect();
             }}
-            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
+            className="rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
           >
             <div className="flex items-start justify-between gap-3">
               <p className="min-w-0 flex-1 text-base font-semibold text-slate-900 line-clamp-2 dark:text-white">
@@ -71,16 +90,30 @@ export function PublicTournamentsMobileList({
               </span>
             </div>
 
+            {showStoreColumn && (
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Tienda: {tournament.storeName ?? "-"}
+              </p>
+            )}
+
+            {showPlayersColumn && (
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                Jugadores: {tournament.playersCount ?? "-"}
+              </p>
+            )}
+
             <div className="mt-3 flex items-center justify-between gap-3">
               <PublicTournamentsDateBadge value={tournament.date} />
-              <Link
-                href={tournamentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold text-purple-700 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
-              >
-                Ver torneo
-              </Link>
+              {showActionColumn && (
+                <Link
+                  href={tournamentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold text-purple-700 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
+                >
+                  {actionLabel}
+                </Link>
+              )}
             </div>
           </div>
         );

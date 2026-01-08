@@ -99,7 +99,7 @@ export const CurrentRoundHeader = () => {
     !!currentRound && isCurrentRound && canShowRecalculate;
 
   return (
-    <div className="w-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="w-full rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       {/* Info de la ronda */}
       <div className="flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between md:flex-col md:items-start md:gap-2">
@@ -145,7 +145,7 @@ export const CurrentRoundHeader = () => {
         </button>
 
         {/* Separador visual (solo desktop) */}
-        <div className="hidden md:block h-10 w-px bg-slate-200 dark:bg-tournament-dark-border mx-1 lg:mx-2" />
+        <div className="hidden md:block h-10 w-px bg-tournament-dark-accent dark:bg-tournament-dark-border mx-1 lg:mx-2" />
 
         <div className="flex w-full flex-col items-center gap-2 md:w-auto md:items-start">
           <div className="flex w-full justify-center md:justify-start [&>button]:w-full [&>button]:max-w-[220px] [&>button]:justify-center">

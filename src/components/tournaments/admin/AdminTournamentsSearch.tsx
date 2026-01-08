@@ -22,7 +22,7 @@ export const AdminTournamentsSearch = ({
           type="search"
           onChange={(event) => onChange(event.target.value)}
           placeholder="Buscar por nombre"
-          className="w-full rounded-lg border border-slate-200 dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-surface py-2 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
+          className="w-full rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-surface py-2 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
         />
       </div>
       <p className="text-xs text-slate-500 dark:text-slate-400">

@@ -11,7 +11,7 @@ export const TournamentRoundsHistory = () => {
 
   if (rounds.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-center text-slate-500 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300 sm:p-8">
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-tournament-dark-accent bg-white p-4 text-center text-slate-500 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300 sm:p-8">
         <p className="text-lg font-semibold text-slate-900 dark:text-white">
           Aún no hay rondas generadas
         </p>

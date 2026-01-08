@@ -20,7 +20,7 @@ export const InitialPointsModal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-80 rounded-xl border border-slate-200 bg-white p-5 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+      <div className="w-80 rounded-xl border border-tournament-dark-accent bg-white p-5 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
         <h2 className="mb-3 text-lg font-bold text-slate-900 dark:text-white">
           Jugador tardío
         </h2>
@@ -38,14 +38,14 @@ export const InitialPointsModal = ({
           type="number"
           min={0}
           max={maxRounds}
-          className="mb-4 w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
+          className="mb-4 w-full rounded-lg border border-tournament-dark-accent bg-white px-2 py-1 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
           value={roundsWon}
           onChange={(e) => setRoundsWon(e.target.value)}
         />
 
         <div className="flex justify-end gap-2">
           <button
-            className="rounded-lg border border-slate-200 bg-slate-100 px-3 py-1 text-slate-700 hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
+            className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-3 py-1 text-slate-700 hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
             onClick={onCancel}
           >
             Cancelar

@@ -49,7 +49,7 @@ export const AdminTournamentsTable = ({
   return (
     <div
       className={clsx(
-        "hidden md:block overflow-hidden rounded-xl border border-slate-200 dark:border-tournament-dark-accent bg-white dark:bg-tournament-dark-surface shadow-sm",
+        "hidden md:block overflow-hidden rounded-xl border border-tournament-dark-accent dark:border-tournament-dark-accent bg-white dark:bg-tournament-dark-surface shadow-sm",
         classNames?.container
       )}
     >
@@ -58,7 +58,7 @@ export const AdminTournamentsTable = ({
           className={clsx(
             "text-left text-xs uppercase tracking-wide",
             classNames?.head ??
-              "bg-slate-50 text-slate-500 dark:bg-tournament-dark-header dark:text-slate-400 border-b border-slate-200 dark:border-tournament-dark-accent"
+              "bg-slate-50 text-slate-500 dark:bg-tournament-dark-header dark:text-slate-400 border-b border-tournament-dark-accent dark:border-tournament-dark-accent"
           )}
         >
           <tr>
