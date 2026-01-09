@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { IoImageOutline } from "react-icons/io5";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
@@ -88,23 +89,33 @@ export const Pefil = ({
   const [hasShownInProgressWarning, setHasShownInProgressWarning] =
     useState(false);
   const [showAvatars, setShowAvatars] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(
-    user.image ? user.image : ""
-  );
+  const [baseAvatar, setBaseAvatar] = useState(user.image ?? "");
+  const [selectedAvatar, setSelectedAvatar] = useState(baseAvatar);
+  const isAvatarChanged = selectedAvatar !== baseAvatar;
+
+  useEffect(() => {
+    const nextAvatar = user.image ?? "";
+    setBaseAvatar(nextAvatar);
+    setSelectedAvatar(nextAvatar);
+  }, [user.image]);
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
+  const { update } = useSession();
 
   const handleSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar.imageUrl);
     setShowAvatars(false);
-    user.image = avatar.imageUrl;
   };
 
   const updateUserProfile = async () => {
     try {
+      showLoading("Actualizando avatar...");
       await updateUser(selectedAvatar);
+      // Sincroniza el avatar en la sesion para reflejarlo en el top menu.
+      await update({ user: { image: selectedAvatar } });
       showToast("Avatar actualizado correctamente", "success");
+      setBaseAvatar(selectedAvatar);
     } catch (error) {
       showToast(
         error instanceof Error
@@ -112,7 +123,13 @@ export const Pefil = ({
           : "No se pudo actualizar el avatar",
         "error"
       );
+    } finally {
+      hideLoading();
     }
+  };
+
+  const handleDiscardAvatar = () => {
+    setSelectedAvatar(baseAvatar);
   };
 
   const hasBaseTournament =
@@ -210,23 +227,23 @@ export const Pefil = ({
     : "Ultimo torneo";
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white overflow-hidden p-4">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted-strong dark:to-tournament-dark-bg text-slate-900 dark:text-white overflow-hidden p-4">
       {/* Fondo */}
-      <div className="absolute inset-0 bg-[url('/images/fondo-souls.jpg')] bg-cover bg-center opacity-20 blur-sm"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/95"></div>
+      {/* <div className="absolute inset-0 bg-[url('/images/fondo-souls.jpg')] bg-cover bg-center opacity-20 blur-sm"></div> */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-slate-100/80 to-slate-100/90 dark:from-black/70 dark:to-black/90"></div>
 
       {/* Contenedor principal */}
-      <div className="relative z-10 w-full max-w-6xl bg-gray-900/70 border border-purple-600/40 rounded-2xl shadow-[rgba(168,85,247,0.3)] py-8 px-4 backdrop-blur-md flex flex-col items-center transition">
+      <div className="relative z-10 w-full max-w-6xl bg-white/90 dark:bg-tournament-dark-surface/90 border border-slate-200 dark:border-tournament-dark-border rounded-2xl shadow-xl py-8 px-4 backdrop-blur-md flex flex-col items-center transition">
         {/* Encabezado */}
         <div className="flex flex-col md:flex-row items-center gap-8 w-full">
           {/* Avatar */}
           <div className="relative group">
-            <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-purple-500 shadow-[rgba(168,85,247,0.4)] transition group-hover:scale-105">
+            <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-purple-600 shadow-[0_0_20px_rgba(147,51,234,0.35)] transition group-hover:scale-105">
               <Image
                 className="rounded-lg"
                 width={270}
                 height={287}
-                src={`/profile/${user.image}.webp`}
+                src={`/profile/${selectedAvatar || user.image}.webp`}
                 alt="Carta Prime Wenddygo"
                 title="Prime Wenddygo"
               />
@@ -241,10 +258,10 @@ export const Pefil = ({
 
           {/* Info básica */}
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-3xl font-bold text-purple-400">
+            <h1 className="text-3xl font-bold text-purple-600 dark:text-purple-300">
               {user.nickname}
             </h1>
-            {/* <p className="text-gray-300 italic">“No soy un mazo... soy un monstruo.”</p> */}
+            {/* <p className="text-gray-300 italic">â€œNo soy un mazo... soy un monstruo.</p> */}
 
             {/* Barra de experiencia */}
             {/* <div className="mt-4">
@@ -255,22 +272,30 @@ export const Pefil = ({
               <p className="text-xs text-gray-400 mt-1">XP: 750 / 1000</p>
             </div> */}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm text-gray-300">
-              <div className="bg-gray-800/60 p-3 rounded-lg border border-gray-700/50">
-                <p className="text-gray-400 text-xs">Nombre</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm text-slate-600 dark:text-slate-300">
+              <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
+                <p className="text-slate-500 dark:text-slate-400 text-xs">
+                  Nombre
+                </p>
                 <p className="font-semibold">{user.name}</p>
               </div>
-              <div className="bg-gray-800/60 p-3 rounded-lg border border-gray-700/50">
-                <p className="text-gray-400 text-xs">Apellido</p>
+              <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
+                <p className="text-slate-500 dark:text-slate-400 text-xs">
+                  Apellido
+                </p>
                 <p className="font-semibold">{user.lastname}</p>
               </div>
-              <div className="bg-gray-800/60 p-3 rounded-lg border border-gray-700/50">
-                <p className="text-gray-400 text-xs">Email</p>
+              <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
+                <p className="text-slate-500 dark:text-slate-400 text-xs">
+                  Email
+                </p>
                 <p className="font-semibold">{user.email}</p>
               </div>
               {user.role && user.role !== "player" && (
-                <div className="bg-gray-800/60 p-3 rounded-lg border border-gray-700/50">
-                  <p className="text-gray-400 text-xs">Rol</p>
+                <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
+                  <p className="text-slate-500 dark:text-slate-400 text-xs">
+                    Rol
+                  </p>
                   <p className="font-semibold">{user.role}</p>
                 </div>
               )}
@@ -278,16 +303,33 @@ export const Pefil = ({
           </div>
         </div>
 
+        {isAvatarChanged && (
+          <div className="flex w-full justify-end gap-3 mt-6">
+            <button
+              onClick={handleDiscardAvatar}
+              className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted transition"
+            >
+              Descartar
+            </button>
+            <button
+              onClick={updateUserProfile}
+              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-white shadow-md shadow-purple-600/40 transition"
+            >
+              Guardar
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
-        <div className="flex mt-10 border-b border-purple-500/40 w-full justify-center md:justify-start">
+        <div className="flex mt-10 border-b border-slate-200 dark:border-tournament-dark-border w-full justify-center md:justify-start">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
               className={`px-6 py-2 text-sm font-semibold transition ${
                 activeTab === tab
-                  ? "text-purple-400 border-b-2 border-purple-500"
-                  : "text-gray-400 hover:text-purple-300"
+                  ? "text-purple-600 border-b-2 border-purple-600"
+                  : "text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-300"
               }`}
             >
               {tab === "current"
@@ -391,24 +433,19 @@ export const Pefil = ({
 
         {/* Botones */}
         <div className="mt-10 flex flex-wrap gap-4 justify-center">
-          <button
-            onClick={() => updateUserProfile()}
-            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold shadow-md hover:shadow-purple-500/50 transition"
-          >
-            Guardar
-          </button>
-          <ButtonLogOut className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold shadow-md hover:shadow-red-500/50 transition">
+          <ButtonLogOut className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold shadow-md hover:shadow-red-500/50 transition text-white">
             Cerrar Sesión
           </ButtonLogOut>
         </div>
       </div>
+
       {showAvatars && (
         <Modal
-          className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full h-screen md:h-auto md:w-1/2 md:left-1/4 md:top-28"
+          className="top-0 left-0 flex justify-center bg-slate-50 dark:bg-tournament-dark-bg z-20 transition-all w-full h-screen md:h-auto md:w-1/2 md:left-1/4 md:top-28"
           close={() => setShowAvatars(false)}
         >
           <div className="overflow-auto w-full text-center">
-            <div className=" text-gray-100 py-4 bg-slate-950">
+            <div className="text-slate-100 py-4 bg-slate-900 dark:bg-tournament-dark-hero">
               <h1 className="font-bold md:text-2xl uppercase">
                 ¡Elige tu avatar favorito!
               </h1>
@@ -420,8 +457,8 @@ export const Pefil = ({
                   onClick={() => handleSelect(avatar)}
                   className={`cursor-pointer rounded border-4 transition-all ${
                     selectedAvatar === avatar.name
-                      ? "border-purple-500 shadow-lg shadow-purple-500/50 scale-105"
-                      : "border-transparent hover:border-purple-400"
+                      ? "border-purple-600 shadow-lg shadow-purple-600/40 scale-105"
+                      : "border-transparent hover:border-purple-500"
                   }`}
                 >
                   <Image

@@ -82,7 +82,9 @@ const TimeBox = ({
     <div
       className={clsx(
         "flex flex-col items-center rounded-lg",
-        isOvertime ? "bg-red-100/80" : "bg-gray-100",
+        isOvertime
+          ? "bg-red-100/80 dark:bg-red-900/30"
+          : "bg-slate-100 dark:bg-tournament-dark-muted",
         classNames?.box ??
           (size === "5xl"
             ? "px-14 py-9 min-w-[230px]"
@@ -102,7 +104,9 @@ const TimeBox = ({
     <span
       className={clsx(
         "font-bold leading-none",
-        isOvertime ? "text-red-700" : "text-slate-900",
+        isOvertime
+          ? "text-red-700 dark:text-red-300"
+          : "text-slate-900 dark:text-white",
         classNames?.value ??
           (size === "5xl"
             ? "text-7xl md:text-8xl"
@@ -123,7 +127,9 @@ const TimeBox = ({
     </span>
     <span
       className={clsx(
-        isOvertime ? "text-red-600" : "text-gray-500",
+        isOvertime
+          ? "text-red-600 dark:text-red-300"
+          : "text-slate-500 dark:text-slate-400",
         classNames?.label ??
           (size === "5xl"
             ? "text-2xl md:text-3xl"
@@ -148,7 +154,10 @@ const TimeBox = ({
 // Separador visual ":" entre cajas
 const TimeSeparator = ({ className }: { className?: string }) => (
   <span
-    className={clsx("text-base md:text-lg font-bold text-gray-500", className)}
+    className={clsx(
+      "text-base md:text-lg font-bold text-slate-500 dark:text-slate-400",
+      className
+    )}
   >
     :
   </span>

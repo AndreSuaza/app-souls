@@ -45,6 +45,8 @@ type Props = {
   headerActions?: ReactNode;
   defaultExpanded?: boolean;
   allowExpand?: boolean;
+  expanded?: boolean; // permite control desde el padre
+  onToggleExpand?: (expanded: boolean) => void; // callback del padre
   maxVisibleMatches?: number;
   classNames?: RoundHistoryCardBaseClassNames;
 };
@@ -61,19 +63,32 @@ export const RoundHistoryCardBase = ({
   headerActions,
   defaultExpanded = true,
   allowExpand = true,
+  expanded,
+  onToggleExpand,
   maxVisibleMatches,
   classNames,
 }: Props) => {
-  const [expanded, setExpanded] = useState<boolean>(defaultExpanded);
+  // Estado interno solo para modo NO controlado
+  const [internalExpanded, setInternalExpanded] =
+    useState<boolean>(defaultExpanded);
+
+  // Si el padre manda "expanded", se usa ese (controlado). Si no, se usa el interno.
+  const isControlled = expanded !== undefined;
+  const isExpanded = isControlled ? expanded : internalExpanded;
+
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
+    // Si viene controlado desde el padre, no tocar el estado interno
+    if (isControlled) return;
+
+    // Modo NO controlado
     if (allowExpand) {
-      setExpanded(defaultExpanded);
+      setInternalExpanded(defaultExpanded);
     } else {
-      setExpanded(true);
+      setInternalExpanded(true);
     }
-  }, [allowExpand, defaultExpanded]);
+  }, [allowExpand, defaultExpanded, isControlled]);
 
   const totalMatches = matches.length;
   const completedMatches = matches.filter(
@@ -89,7 +104,8 @@ export const RoundHistoryCardBase = ({
     <div
       className={clsx(
         "border rounded-xl shadow-sm py-3",
-        classNames?.container ?? "bg-white"
+        classNames?.container ??
+          "bg-white text-slate-900 border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-200 dark:border-tournament-dark-border"
       )}
     >
       <div
@@ -103,7 +119,7 @@ export const RoundHistoryCardBase = ({
             <h3
               className={clsx(
                 "font-semibold",
-                classNames?.title ?? "text-gray-800"
+                classNames?.title ?? "text-slate-900 dark:text-slate-200"
               )}
             >
               Ronda {round.roundNumber}
@@ -115,7 +131,10 @@ export const RoundHistoryCardBase = ({
           </div>
 
           <p
-            className={clsx("text-sm", classNames?.metaText ?? "text-gray-500")}
+            className={clsx(
+              "text-sm",
+              classNames?.metaText ?? "text-slate-500 dark:text-slate-400"
+            )}
           >
             {status === "IN_PROGRESS"
               ? `${completedMatches} de ${totalMatches} partidas completadas`
@@ -125,20 +144,35 @@ export const RoundHistoryCardBase = ({
 
         {allowExpand && (
           <button
-            onClick={() => setExpanded((prev) => !prev)}
-            className={clsx("p-1 rounded-md border", classNames?.expandButton)}
+            onClick={() => {
+              const next = !isExpanded;
+
+              // Si el padre controla, avisarle
+              if (onToggleExpand) {
+                onToggleExpand(next);
+                return;
+              }
+
+              // Si no es controlado, usar el interno
+              setInternalExpanded(next);
+            }}
+            className={clsx(
+              "p-1 rounded-md border border-tournament-dark-accent text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300",
+              classNames?.expandButton
+            )}
           >
-            {expanded ? <IoChevronUp /> : <IoChevronDown />}
+            {isExpanded ? <IoChevronUp /> : <IoChevronDown />}
           </button>
         )}
       </div>
 
-      {expanded && (
+      {isExpanded && (
         <>
           <hr
             className={clsx(
               "mt-3 border",
-              classNames?.divider ?? "border-gray-200"
+              classNames?.divider ??
+                "border-slate-200 dark:border-tournament-dark-border"
             )}
           />
 
@@ -158,7 +192,8 @@ export const RoundHistoryCardBase = ({
                 <hr
                   className={clsx(
                     "border",
-                    classNames?.matchDivider ?? "border-gray-200"
+                    classNames?.matchDivider ??
+                      "border-slate-200 dark:border-tournament-dark-border"
                   )}
                 />
               </div>
@@ -169,7 +204,7 @@ export const RoundHistoryCardBase = ({
                 <button
                   onClick={() => setShowAll((prev) => !prev)}
                   className={clsx(
-                    "text-sm font-medium text-indigo-600 hover:underline",
+                    "text-sm font-medium text-purple-600 hover:underline dark:text-purple-300",
                     classNames?.showAllButton
                   )}
                 >

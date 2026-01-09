@@ -10,7 +10,7 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
   callbacks: {
     // jwt() se ejecuta cada vez que se crea o actualiza un token JWT.
     // Aquí es donde puedes agregar información adicional al token.
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.idd = user.id;
         token.role = user.role;
@@ -22,6 +22,11 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
           token.storeId = user.storeId ?? null;
         }
       }
+      // Actualiza el avatar en la session cuando el cliente lo cambia.
+      if (trigger === "update" && session?.user?.image) {
+        token.image = session.user.image;
+      }
+
       return token;
     },
     // session() se utiliza para agregar la información del token a la sesión del usuario,

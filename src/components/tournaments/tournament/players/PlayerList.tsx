@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { IoChevronDownSharp, IoChevronUp } from "react-icons/io5";
 import clsx from "clsx";
 import {
   useAlertConfirmationStore,
   useTournamentStore,
+  useUIStore,
   useToastStore,
 } from "@/store";
 import { UserSummaryInterface } from "@/interfaces";
@@ -21,16 +22,22 @@ export const PlayerList = () => {
   const openAlertConfirmation = useAlertConfirmationStore(
     (s) => s.openAlertConfirmation
   );
+  const showLoading = useUIStore((s) => s.showLoading);
+  const hideLoading = useUIStore((s) => s.hideLoading);
   const isFinished = tournament?.status === "finished";
 
   const [showPlayers, setShowPlayers] = useState(true);
   const [showInitialModal, setShowInitialModal] = useState(false);
   const [selectedUserForInitialPoints, setSelectedUserForInitialPoints] =
     useState<UserSummaryInterface | null>(null);
+  const isSubmittingInitialPoints = useRef(false);
 
   // Cuando se selecciona un usuario desde PlayerSearchInput
   const handleSelect = async (user: UserSummaryInterface) => {
-    if (rounds.length > 0) {
+    const firstRoundStarted = !!rounds[0]?.startedAt;
+
+    // Solo solicitar puntos iniciales cuando la primera ronda ya inicio.
+    if (firstRoundStarted) {
       setSelectedUserForInitialPoints(user);
       setShowInitialModal(true);
       return;
@@ -52,7 +59,11 @@ export const PlayerList = () => {
   };
 
   const confirmInitialRoundsWon = async (roundsWon: number) => {
+    if (isSubmittingInitialPoints.current) return;
     if (!selectedUserForInitialPoints || !tournament) return;
+
+    isSubmittingInitialPoints.current = true;
+    const selectedUser = selectedUserForInitialPoints;
 
     const maxRounds = tournament.currentRoundNumber + 1;
     const safeRoundsWon = Math.min(roundsWon, maxRounds);
@@ -60,21 +71,26 @@ export const PlayerList = () => {
     const points = safeRoundsWon * 3;
 
     try {
-      await addPlayerByUserId(
-        selectedUserForInitialPoints.id,
-        selectedUserForInitialPoints.nickname,
-        selectedUserForInitialPoints.name,
-        selectedUserForInitialPoints.lastname,
-        selectedUserForInitialPoints.image,
-        points
-      );
-
+      // Cierra el modal y evita duplicados mientras se procesa el registro.
       setShowInitialModal(false);
       setSelectedUserForInitialPoints(null);
+      showLoading("Agregando jugador...");
+
+      await addPlayerByUserId(
+        selectedUser.id,
+        selectedUser.nickname,
+        selectedUser.name,
+        selectedUser.lastname,
+        selectedUser.image,
+        points
+      );
 
       showToast("Jugador agregado al torneo", "success");
     } catch {
       showToast("Error al agregar el jugador", "error");
+    } finally {
+      hideLoading();
+      isSubmittingInitialPoints.current = false;
     }
   };
 
@@ -84,19 +100,21 @@ export const PlayerList = () => {
   };
 
   return (
-    <div className="px-4 py-3 border rounded-md bg-slate-50 border-gray-300 transition-all flex-1">
+    <div className="flex-1 rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-center text-xl font-bold">Jugadores</h2>
+        <h2 className="text-center text-xl font-bold text-slate-900 dark:text-white">
+          Jugadores
+        </h2>
 
         <div className="lg:hidden">
           {showPlayers ? (
             <IoChevronUp
-              className="p-1 w-8 h-8 rounded-md border cursor-pointer"
+              className="p-1 w-8 h-8 rounded-md border border-tournament-dark-accent text-slate-600 dark:border-tournament-dark-border dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted cursor-pointer"
               onClick={() => setShowPlayers(false)}
             />
           ) : (
             <IoChevronDownSharp
-              className="p-1 w-8 h-8 rounded-md border cursor-pointer"
+              className="p-1 w-8 h-8 rounded-md border border-tournament-dark-accent text-slate-600 dark:border-tournament-dark-border dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted cursor-pointer"
               onClick={() => setShowPlayers(true)}
             />
           )}

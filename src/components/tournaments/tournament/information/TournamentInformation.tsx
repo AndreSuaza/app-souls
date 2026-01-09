@@ -85,7 +85,7 @@ export const TournamentInformation = () => {
   const handleDelete = () => {
     confirm({
       text: "¿Cancelar torneo?",
-      description: "Esta accion cancelara el torneo y no se puede deshacer.",
+      description: "Esta acción cancelara el torneo y no se puede deshacer.",
       action: async () => {
         showLoading("Cancelando torneo...");
         const success = await deleteTournament();

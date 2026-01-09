@@ -93,11 +93,12 @@ export const TournamentRankingPanel = ({
     return (
       <div
         className={clsx(
-          "border rounded-md p-6 flex items-center justify-center w-full",
-          classNames?.emptyState ?? "bg-white text-gray-400"
+          "border rounded-xl p-6 flex items-center justify-center w-full",
+          classNames?.emptyState ??
+            "border border-dashed border-tournament-dark-accent bg-white text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300"
         )}
       >
-        No hay jugadores aun
+        No hay jugadores aún
       </div>
     );
   }
@@ -105,14 +106,15 @@ export const TournamentRankingPanel = ({
   return (
     <div
       className={clsx(
-        "border rounded-md px-4 py-3 w-full",
-        classNames?.container ?? "bg-white"
+        "border rounded-xl px-4 py-3 w-full",
+        classNames?.container ??
+          "bg-white border-tournament-dark-accent text-slate-900 dark:bg-tournament-dark-surface dark:border-tournament-dark-border dark:text-slate-200"
       )}
     >
       {showTitle && title && (
         <h2
           className={clsx(
-            "text-lg font-bold mb-4 text-left",
+            "text-lg font-bold mb-4 text-left text-slate-900 dark:text-white",
             classNames?.title
           )}
         >
@@ -145,7 +147,10 @@ export const TournamentRankingPanel = ({
             currentPage={currentPage}
             pathname={pathname}
             searchParams={searchParams}
-            className={classNames?.pagination}
+            className={
+              classNames?.pagination ??
+              "text-slate-900 dark:[&_a]:text-slate-200 dark:hover:[&_a]:text-slate-900  dark:[&_a]:hover:text-white"
+            }
           />
         </div>
       )}

@@ -34,7 +34,7 @@ export const RoundActionButton = () => {
 
   // Handlers con loading
   const handleGenerateRound = async () => {
-    showLoading("Generando ronda…");
+    showLoading("Generando ronda");
     try {
       await generateRound();
     } catch {
@@ -45,7 +45,7 @@ export const RoundActionButton = () => {
   };
 
   const handleFinalizeRound = async () => {
-    showLoading("Procesando ronda…");
+    showLoading("Procesando ronda");
     try {
       await finalizeRound();
     } catch {
@@ -56,7 +56,7 @@ export const RoundActionButton = () => {
   };
 
   const handleFinalizeTournament = async () => {
-    showLoading("Finalizando torneo…");
+    showLoading("Finalizando torneo");
     try {
       await finalizeTournament();
       showToast("Torneo finalizado", "info");
@@ -74,7 +74,7 @@ export const RoundActionButton = () => {
         onClick={handleGenerateRound}
         className="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
       >
-        <FaPlay className="hidden sm:flex" size={16} />
+        <FaPlay className="flex shrink-0" size={16} />
         Generar ronda
       </button>
     );
@@ -89,7 +89,7 @@ export const RoundActionButton = () => {
     return (
       <button
         onClick={async () => {
-          showLoading("Iniciando ronda…");
+          showLoading("Iniciando ronda");
           try {
             await startCurrentRound();
           } catch {
@@ -100,7 +100,7 @@ export const RoundActionButton = () => {
         }}
         className="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700"
       >
-        <FaPlay className="hidden sm:flex" size={16} />
+        <FaPlay className="flex shrink-0" size={16} />
         Iniciar ronda
       </button>
     );
@@ -125,7 +125,7 @@ export const RoundActionButton = () => {
               : "bg-indigo-300 cursor-not-allowed"
           }`}
       >
-        <FaStopCircle className="hidden sm:flex" size={18} />
+        <FaStopCircle className="flex shrink-0" size={18} />
         Finalizar ronda
       </button>
     );
@@ -149,7 +149,7 @@ export const RoundActionButton = () => {
               : "bg-red-300 cursor-not-allowed"
           }`}
       >
-        <FaCheckCircle className="hidden sm:flex" size={18} />
+        <FaCheckCircle className="flex shrink-0" size={18} />
         Finalizar torneo
       </button>
     );

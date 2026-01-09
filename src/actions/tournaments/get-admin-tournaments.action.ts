@@ -9,6 +9,8 @@ export type AdminTournamentListItem = {
   date: string;
   status: "pending" | "in_progress" | "finished" | "cancelled";
   playersCount: number;
+  storeName?: string | null;
+  typeTournamentName?: string | null;
 };
 
 export async function getAdminTournamentsAction() {
@@ -37,18 +39,28 @@ export async function getAdminTournamentsAction() {
     const tournaments = await prisma.tournament.findMany({
       where,
       orderBy: { date: "desc" },
-      select: {
-        id: true,
-        title: true,
-        date: true,
-        status: true,
-        // Se usa la relacion para contar jugadores sin consultas extra.
-        tournamentPlayers: {
-          select: {
-            id: true,
+        select: {
+          id: true,
+          title: true,
+          date: true,
+          status: true,
+          store: {
+            select: {
+              name: true,
+            },
+          },
+          typeTournament: {
+            select: {
+              name: true,
+            },
+          },
+          // Se usa la relacion para contar jugadores sin consultas extra.
+          tournamentPlayers: {
+            select: {
+              id: true,
+            },
           },
         },
-      },
     });
 
     // asigna prioridad a los estados
@@ -65,13 +77,15 @@ export async function getAdminTournamentsAction() {
       return b.date.getTime() - a.date.getTime();
     });
 
-    return sortedTournaments.map((tournament) => ({
-      id: tournament.id,
-      title: tournament.title,
-      date: tournament.date.toISOString(),
-      status: tournament.status,
-      playersCount: tournament.tournamentPlayers.length,
-    }));
+      return sortedTournaments.map((tournament) => ({
+        id: tournament.id,
+        title: tournament.title,
+        date: tournament.date.toISOString(),
+        status: tournament.status,
+        playersCount: tournament.tournamentPlayers.length,
+        storeName: tournament.store?.name ?? null,
+        typeTournamentName: tournament.typeTournament?.name ?? null,
+      }));
   } catch (error) {
     console.error("[getAdminTournamentsAction]", error);
     throw new Error("Error cargando torneos");

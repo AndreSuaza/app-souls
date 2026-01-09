@@ -32,7 +32,7 @@ export const UpdateTournamentInfoSchema = z.object({
   title: z
     .string()
     .min(3, "El título debe tener al menos 3 caracteres")
-    .max(50, "El título no puede superar los 50 caracteres"),
+    .max(60, "El título no puede superar los 60 caracteres"),
 
   description: z
     .string()
@@ -58,6 +58,4 @@ export const FinalizeTournamentSchema = z.object({
   ),
 });
 
-export type FinalizeTournamentInput = z.infer<
-  typeof FinalizeTournamentSchema
->;
+export type FinalizeTournamentInput = z.infer<typeof FinalizeTournamentSchema>;

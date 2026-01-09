@@ -19,16 +19,18 @@ export const InitialPointsModal = ({
   const [roundsWon, setRoundsWon] = useState("0");
 
   return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white p-5 rounded shadow-xl w-80">
-        <h2 className="font-bold text-lg mb-3">Jugador tardío</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-80 rounded-xl border border-tournament-dark-accent bg-white p-5 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+        <h2 className="mb-3 text-lg font-bold text-slate-900 dark:text-white">
+          Jugador tardío
+        </h2>
 
-        <p className="text-sm mb-3">
+        <p className="mb-3 text-sm text-slate-600 dark:text-slate-300">
           Ingrese la cantidad de <strong>rondas ganadas</strong> para{" "}
           <strong>{user.nickname}</strong>
         </p>
 
-        <p className="text-xs text-gray-500 mb-2">
+        <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">
           Máximo permitido: {maxRounds}
         </p>
 
@@ -36,20 +38,20 @@ export const InitialPointsModal = ({
           type="number"
           min={0}
           max={maxRounds}
-          className="w-full border rounded px-2 py-1 mb-4"
+          className="mb-4 w-full rounded-lg border border-tournament-dark-accent bg-white px-2 py-1 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
           value={roundsWon}
           onChange={(e) => setRoundsWon(e.target.value)}
         />
 
         <div className="flex justify-end gap-2">
           <button
-            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+            className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-3 py-1 text-slate-700 hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
             onClick={onCancel}
           >
             Cancelar
           </button>
           <button
-            className="px-3 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700"
+            className="rounded-lg bg-purple-600 px-3 py-1 text-white shadow-lg shadow-purple-600/20 hover:bg-purple-600/90"
             onClick={() =>
               onConfirm(Math.min(parseInt(roundsWon, 10) || 0, maxRounds))
             }

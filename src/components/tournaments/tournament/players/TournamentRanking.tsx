@@ -37,15 +37,15 @@ export const TournamentRanking = () => {
 
   if (players.length === 0) {
     return (
-      <div className="bg-white border rounded-md p-6 flex items-center justify-center text-gray-400 w-full">
-        No hay jugadores aun
+      <div className="flex w-full items-center justify-center rounded-xl border border-dashed border-tournament-dark-accent bg-white p-6 text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
+        No hay jugadores aún
       </div>
     );
   }
 
   return (
-    <div className="bg-white border rounded-md p-4 w-full">
-      <h2 className="text-lg font-bold mb-4 text-left">
+    <div className="w-full rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+      <h2 className="mb-4 text-left text-lg font-bold text-slate-900 dark:text-white">
         Clasificacion general
       </h2>
 
@@ -55,6 +55,12 @@ export const TournamentRanking = () => {
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
         showPodium={isFinished}
+        classNames={{
+          headerRow:
+            "text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 border-b border-tournament-dark-accent dark:border-tournament-dark-border",
+          row: "border-b border-tournament-dark-accent dark:border-tournament-dark-border last:border-none",
+          cell: "text-slate-700 dark:text-slate-200",
+        }}
       />
 
       <RankingMobileList
@@ -63,6 +69,11 @@ export const TournamentRanking = () => {
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
         showPodium={isFinished}
+        classNames={{
+          card: "rounded-xl border border-tournament-dark-accent bg-white p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface",
+          meta: "text-right text-sm text-slate-700 dark:text-slate-200",
+          metaSecondary: "text-slate-500 dark:text-slate-400",
+        }}
       />
 
       <PaginationLine
@@ -70,6 +81,7 @@ export const TournamentRanking = () => {
         currentPage={currentPage}
         pathname={pathname}
         searchParams={searchParams}
+        className="text-slate-900 dark:[&_a]:text-slate-200 dark:hover:[&_a]:text-slate-900  dark:[&_a]:hover:text-white"
       />
     </div>
   );

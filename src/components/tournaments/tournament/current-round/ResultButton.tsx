@@ -25,22 +25,22 @@ export const ResultButton = ({
   // Define el estilo del boton
   const stylesByVariant: Record<Variant, { active: string; idle: string }> = {
     p1: {
-      active: "bg-blue-600 text-white",
+      active: "bg-blue-600 text-white dark:bg-blue-500",
       idle: readOnly
-        ? "bg-gray-100 text-gray-400"
-        : "bg-gray-100 hover:bg-blue-100 hover:text-blue-700",
+        ? "bg-slate-100 text-slate-400 dark:bg-tournament-dark-muted dark:text-slate-500"
+        : "bg-slate-100 text-slate-700 hover:bg-blue-100 hover:text-blue-700 dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-blue-500/20 dark:hover:text-blue-200",
     },
     draw: {
-      active: "bg-yellow-500 text-white",
+      active: "bg-yellow-500 text-white dark:bg-yellow-400",
       idle: readOnly
-        ? "bg-gray-100 text-gray-400"
-        : "bg-gray-100 hover:bg-yellow-100 hover:text-yellow-700",
+        ? "bg-slate-100 text-slate-400 dark:bg-tournament-dark-muted dark:text-slate-500"
+        : "bg-slate-100 text-slate-700 hover:bg-yellow-100 hover:text-yellow-700 dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-yellow-500/20 dark:hover:text-yellow-200",
     },
     p2: {
-      active: "bg-red-600 text-white",
+      active: "bg-rose-600 text-white dark:bg-rose-500",
       idle: readOnly
-        ? "bg-gray-100 text-gray-400"
-        : "bg-gray-100 hover:bg-red-100 hover:text-red-700",
+        ? "bg-slate-100 text-slate-400 dark:bg-tournament-dark-muted dark:text-slate-500"
+        : "bg-slate-100 text-slate-700 hover:bg-rose-100 hover:text-rose-700 dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-rose-500/20 dark:hover:text-rose-200",
     },
   };
 

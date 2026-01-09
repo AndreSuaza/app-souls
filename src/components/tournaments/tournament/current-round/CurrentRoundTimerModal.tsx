@@ -36,10 +36,10 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
 
-      <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-[0_25px_60px_rgba(15,23,42,0.25)]">
+      <div className="relative w-full max-w-4xl overflow-hidden rounded-2xl border border-tournament-dark-accent bg-slate-100 shadow-[0_25px_60px_rgba(15,23,42,0.25)] dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full border border-slate-200 bg-white/90 p-1 text-slate-600 shadow-sm hover:bg-slate-100"
+          className="absolute right-4 top-4 rounded-full border border-tournament-dark-accent bg-white/90 p-1 text-slate-600 shadow-sm hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
           aria-label="Cerrar"
         >
           <IoCloseOutline className="h-6 w-6" />
@@ -48,10 +48,10 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
         <div className="space-y-6 px-4 sm:px-6 pb-6 pt-5 md:px-10">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
                 Ronda actual
               </p>
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
                 Ronda{" "}
                 {currentRound?.roundNumber ?? tournament.currentRoundNumber}
                 {tournament.maxRounds > 1 && ` de ${tournament.maxRounds}`}
@@ -59,12 +59,12 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
             </div>
 
             <span
-              className={`w-fit rounded-full px-3 py-1 text-sm font-semibold md:mr-8 ${
+              className={`w-fit rounded-full px-3 py-1 text-sm font-semibold ring-1 ring-inset md:mr-8 ${
                 tournament.status === "in_progress"
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-200 dark:ring-blue-500/30"
                   : tournament.status === "finished"
-                  ? "bg-gray-200 text-gray-700"
-                  : "bg-yellow-100 text-yellow-700"
+                  ? "bg-slate-200 text-slate-700 ring-slate-300 dark:bg-tournament-dark-muted dark:text-slate-400 dark:ring-tournament-dark-accent"
+                  : "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-500/30"
               }`}
             >
               {tournament.status === "in_progress"
@@ -75,13 +75,13 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
             </span>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white px-4 py-2">
+          <div className="rounded-xl border border-tournament-dark-accent bg-white px-4 py-2 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
             <RoundProgressBar round={currentRound} />
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white px-3 sm:px-5 py-6 shadow-[inset_0_1px_10px_rgba(15,23,42,0.08)]">
+          <div className="rounded-2xl border border-tournament-dark-accent bg-white px-3 sm:px-5 py-6 shadow-[inset_0_1px_10px_rgba(15,23,42,0.08)] dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
             <div className="flex flex-col items-center gap-3">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500">
                 Tiempo transcurrido
               </p>
               <TournamentTimer
@@ -89,7 +89,8 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
                   container: "gap-2 sm:gap-3 md:gap-4 lg:gap-5",
                   box: "px-4 py-4 min-w-[60px] sm:px-9 sm:py-6 sm:min-w-[150px] md:px-12 md:py-8 md:min-w-[200px] lg:px-14 lg:py-9 lg:min-w-[230px]",
                   value: "text-5xl md:text-6xl lg:text-7xl leading-none",
-                  label: "text-lg md:text-xl lg:text-2xl text-gray-500",
+                  label:
+                    "text-lg md:text-xl lg:text-2xl text-slate-500 dark:text-slate-400",
                   separator: "text-lg md:text-2xl lg:text-3xl",
                 }}
               />
@@ -106,7 +107,7 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
                 height={40}
               />
               <span
-                className={`${titleFont.className} antialiased font-bold ml-2 text-xl text-slate-900`}
+                className={`${titleFont.className} antialiased font-bold ml-2 text-xl text-slate-900 dark:text-white`}
               >
                 {" "}
                 Souls In Xtinction | TCG

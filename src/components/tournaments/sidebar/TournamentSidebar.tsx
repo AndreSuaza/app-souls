@@ -47,15 +47,15 @@ export const TournamentSidebar = () => {
 
       <aside
         className={clsx(
-          "fixed top-0 right-0 z-40 h-full w-64 bg-white shadow-sm transition-transform duration-200 flex flex-col lg:static lg:z-auto lg:h-auto lg:w-64 lg:border-r lg:border-l-0 lg:translate-x-0",
+          "fixed top-0 right-0 z-40 h-full w-64 bg-white dark:bg-tournament-dark-surface text-slate-900 dark:text-white shadow-sm transition-transform duration-200 flex flex-col lg:static lg:z-auto lg:h-auto lg:w-64 lg:border-r lg:border-tournament-dark-accent dark:lg:border-tournament-dark-border lg:border-l-0 lg:translate-x-0",
           {
             "translate-x-0": isOpen,
             "translate-x-full": !isOpen,
           }
         )}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <span className="font-bold text-black whitespace-nowrap">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-tournament-dark-border">
+          <span className="font-bold text-slate-900 dark:text-white whitespace-nowrap">
             Gestor de Torneos
           </span>
 
@@ -77,8 +77,9 @@ export const TournamentSidebar = () => {
                   "flex items-center gap-3 rounded-lg px-4 py-3 font-medium transition-colors",
                   {
                     "lg:justify-start lg:px-4 lg:py-3 lg:gap-3": true,
-                    "bg-indigo-100 text-indigo-600": isActive,
-                    "text-gray-600 hover:bg-gray-100 hover:text-gray-900":
+                    "bg-purple-600 text-white shadow-sm dark:bg-tournament-dark-accent dark:text-white":
+                      isActive,
+                    "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white":
                       !isActive,
                   }
                 )}
@@ -96,7 +97,7 @@ export const TournamentSidebar = () => {
               close();
               await signOut();
             }}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white"
           >
             Cerrar sesion
           </button>

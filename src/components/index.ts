@@ -3,6 +3,8 @@ export * from "./auth/LoginForm";
 export * from "./auth/RegisterForm";
 export * from "./auth/ResetPasswordForm";
 
+export * from "./perfil";
+
 export * from "./productos/product-grid/ProductGrid";
 export * from "./productos/slideshow/cards-slideshow";
 export * from "./productos/product-by-card/ProductByCard";
@@ -73,18 +75,10 @@ export * from "./tournaments/tournament/hisotry/TournamentRoundsHistory";
 export * from "./tournaments/tournament/information/TournamentInformation";
 export * from "./tournaments/tournament/players/PlayerList";
 export * from "./tournaments/tournament/players/InitialPointsModal";
-
-// export * from "./cartas/index";
-// export * from "./eventos/index";
-// export * from "./finders/index";
-// export * from "./form/index";
-// export * from "./home/index";
-// export * from "./login/index";
-// export * from "./map/index";
-// export * from "./mazos/index";
-// export * from "./national/index";
-// export * from "./perfil/index";
-// export * from "./productos/index";
-// export * from "./stores/index";
-// export * from "./tournaments-creator/index";
-// export * from "./ui/index";
+export * from "./tournaments/tournament/public/PublicTournamentDetail";
+export * from "./tournaments/public/PublicTournamentsDateBadge";
+export * from "./tournaments/public/PublicTournamentsFilters";
+export * from "./tournaments/public/PublicTournamentsHero";
+export * from "./tournaments/public/PublicTournamentsList";
+export * from "./tournaments/public/PublicTournamentsMobileList";
+export * from "./tournaments/public/PublicTournamentsTable";

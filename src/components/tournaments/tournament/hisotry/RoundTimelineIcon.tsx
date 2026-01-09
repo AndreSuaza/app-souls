@@ -16,10 +16,10 @@ export const RoundTimelineIcon = ({ round, tournament }: Props) => {
 
   return (
     <div
-      className={`w-8 h-8 bg-white rounded-full flex items-center justify-center border ${
+      className={`w-8 h-8 rounded-full flex items-center justify-center border bg-white dark:bg-tournament-dark-surface ${
         isCurrentRound
-          ? "text-blue-600 border-blue-600"
-          : "text-green-600 border-gray-300"
+          ? "text-purple-600 border-purple-600/40"
+          : "text-emerald-600 border-slate-200 dark:text-emerald-300 dark:border-tournament-dark-border"
       }`}
     >
       {isCurrentRound ? <FaClock size={14} /> : <FaCheckCircle size={14} />}

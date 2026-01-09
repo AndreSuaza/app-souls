@@ -1,7 +1,7 @@
-﻿import { getPublicTournaments } from "@/actions";
-import { PublicTournamentCard } from "@/components/eventos/event-grid/PublicTournamentCard";
-import { titleFont } from "@/config/fonts";
+import { Suspense } from "react";
+import { getPublicTournaments } from "@/actions";
 import { Metadata } from "next";
+import { PublicTournamentsHero, PublicTournamentsList } from "@/components";
 
 export const metadata: Metadata = {
   title: "Torneos de Souls In Xtinction TCG | Compite y Demuestra tu Habilidad",
@@ -28,60 +28,43 @@ export const metadata: Metadata = {
 };
 
 export default async function EventosPage() {
-  const { tournaments } = await getPublicTournaments();
-  const inProgressCount = tournaments.filter(
-    (tournament) => tournament.status === "in_progress"
-  ).length;
-  const pendingCount = tournaments.filter(
-    (tournament) => tournament.status === "pending"
-  ).length;
+  const { tournaments, heroTournament } = await getPublicTournaments();
+  const listTournaments = tournaments.map((tournament) => ({
+    id: tournament.id,
+    title: tournament.title,
+    status: tournament.status,
+    date: tournament.date.toISOString(),
+    storeName: tournament.store.name,
+  }));
 
   return (
-    <div className="relative min-h-screen bg-[url(/national/bg-national.png)] bg-cover bg-fixed bg-center">
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/60 to-slate-950/80" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_transparent_55%)]" />
+    <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
+      <div className="mx-auto flex min-h-screen flex-col gap-12 pb-16 pt-0 sm:pt-8">
+        <div className="px-0 sm:px-6 md:px-10 lg:px-16">
+          <PublicTournamentsHero
+            tournament={
+              heroTournament
+                ? {
+                    id: heroTournament.id,
+                    title: heroTournament.title,
+                    date: heroTournament.date.toISOString(),
+                    status: heroTournament.status,
+                  }
+                : null
+            }
+          />
+        </div>
 
-      <div className="relative">
-        <section className="mx-auto max-w-6xl px-4 pt-10">
-          <div className="rounded-3xl border border-white/15 bg-slate-950/70 p-6 text-white shadow-[0_30px_60px_rgba(15,23,42,0.4)] backdrop-blur">
-            <p className="text-xs tracking-[0.3em] text-slate-300">
-              Circuito nacional
-            </p>
-            <h1
-              className={`${titleFont.className} mt-3 text-4xl font-bold text-white md:text-5xl lg:text-6xl`}
-            >
-              Torneos TCG
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm text-slate-200">
-              Compite en eventos oficiales y encuentra el siguiente torneo
-              disponible en tu ciudad.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3 text-xs">
-              <span className="rounded-full bg-emerald-500/20 px-3 py-1 font-semibold text-emerald-200">
-                En progreso: {inProgressCount}
-              </span>
-              <span className="rounded-full bg-amber-500/20 px-3 py-1 font-semibold text-amber-200">
-                Programados: {pendingCount}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <div className="mx-auto max-w-5xl px-4 pb-12 pt-6">
-          <div className="space-y-6">
-            {tournaments.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-white/30 bg-white/90 p-6 text-center text-sm text-slate-600">
-                No hay torneos disponibles por ahora.
+        <div className="px-3 sm:px-6 md:px-10 lg:px-16">
+          <Suspense
+            fallback={
+              <div className="rounded-xl border border-dashed border-tournament-dark-accent bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
+                Cargando torneos...
               </div>
-            ) : (
-              tournaments.map((tournament) => (
-                <PublicTournamentCard
-                  key={tournament.id}
-                  tournament={tournament}
-                />
-              ))
-            )}
-          </div>
+            }
+          >
+            <PublicTournamentsList tournaments={listTournaments} />
+          </Suspense>
         </div>
       </div>
     </div>

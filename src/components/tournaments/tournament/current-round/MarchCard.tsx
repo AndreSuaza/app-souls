@@ -57,7 +57,8 @@ export const MatchCard = ({
     <div
       className={clsx(
         "grid gap-y-3 md:grid-cols-[72px_1fr_220px_1fr_72px] md:grid-rows-1 md:gap-y-0 items-center px-2 py-4 md:p-4 w-full",
-        classNames?.container ?? "bg-white",
+        classNames?.container ??
+          "bg-white text-slate-900 border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-200 dark:border-tournament-dark-border",
         {
           "border rounded-xl shadow-sm": decorated,
         }
@@ -69,7 +70,8 @@ export const MatchCard = ({
         <span
           className={clsx(
             "hidden md:flex w-8 h-8 items-center justify-center rounded-full font-semibold",
-            classNames?.tableBadge ?? "bg-gray-100"
+            classNames?.tableBadge ??
+              "bg-slate-100 text-slate-700 dark:bg-tournament-dark-muted dark:text-slate-200"
           )}
         >
           {tableNumber}
@@ -79,7 +81,7 @@ export const MatchCard = ({
         <span
           className={clsx(
             "md:hidden text-sm font-semibold",
-            classNames?.tableText ?? "text-gray-700"
+            classNames?.tableText ?? "text-slate-700 dark:text-slate-200"
           )}
         >
           Mesa {tableNumber}
@@ -99,7 +101,7 @@ export const MatchCard = ({
         </div>
 
         {/* VS */}
-        <span className="text-xs font-semibold text-gray-400 w-6 text-center">
+        <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 w-6 text-center">
           VS
         </span>
 
@@ -112,7 +114,7 @@ export const MatchCard = ({
               <p
                 className={clsx(
                   "font-semibold",
-                  classNames?.byeText ?? "text-gray-400"
+                  classNames?.byeText ?? "text-slate-400 dark:text-slate-500"
                 )}
               >
                 BYE
@@ -124,7 +126,8 @@ export const MatchCard = ({
                 height={36}
                 className={clsx(
                   "w-9 h-9 rounded-full object-cover border",
-                  classNames?.byeImage ?? "border-gray-200"
+                  classNames?.byeImage ??
+                    "border-slate-200 dark:border-tournament-dark-border"
                 )}
               />
             </div>
@@ -166,7 +169,7 @@ export const MatchCard = ({
               <p
                 className={clsx(
                   "font-semibold",
-                  classNames?.byeText ?? "text-gray-400"
+                  classNames?.byeText ?? "text-slate-400 dark:text-slate-500"
                 )}
               >
                 BYE
@@ -181,7 +184,8 @@ export const MatchCard = ({
               height={36}
               className={clsx(
                 "w-9 h-9 rounded-full object-cover border",
-                classNames?.byeImage ?? "border-gray-200"
+                classNames?.byeImage ??
+                  "border-slate-200 dark:border-tournament-dark-border"
               )}
             />
           </div>

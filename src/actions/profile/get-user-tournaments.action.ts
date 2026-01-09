@@ -28,6 +28,11 @@ export const getUserTournaments = async () => {
         title: true,
         date: true,
         status: true,
+        store: {
+          select: {
+            name: true,
+          },
+        },
         _count: {
           select: {
             tournamentPlayers: true,
@@ -46,6 +51,7 @@ export const getUserTournaments = async () => {
       date: tournament.date.toISOString(),
       status: tournament.status,
       playersCount: tournament._count.tournamentPlayers,
+      storeName: tournament.store?.name ?? null,
     }));
   } catch (error) {
     throw new Error(`Error en la sesion ${error}`);
