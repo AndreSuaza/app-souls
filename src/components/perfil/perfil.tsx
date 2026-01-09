@@ -26,7 +26,7 @@ interface User {
   nickname?: string | null;
   image?: string | null;
   role?: string | null;
-  victoryPoints?: string | null;
+  victoryPoints?: number | null;
 }
 
 // interface Archetype {
