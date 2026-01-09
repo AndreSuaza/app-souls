@@ -26,6 +26,7 @@ interface User {
   nickname?: string | null;
   image?: string | null;
   role?: string | null;
+  victoryPoints?: string | null;
 }
 
 // interface Archetype {
@@ -290,6 +291,12 @@ export const Pefil = ({
                   Email
                 </p>
                 <p className="font-semibold">{user.email}</p>
+              </div>
+               <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
+                <p className="text-slate-500 dark:text-slate-400 text-xs">
+                  Puntos
+                </p>
+                <p className="font-semibold">{user.victoryPoints}</p>
               </div>
               {user.role && user.role !== "player" && (
                 <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">

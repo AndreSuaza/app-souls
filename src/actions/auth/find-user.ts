@@ -24,6 +24,7 @@ export const getUserById = async () => {
       nickname: user?.nickname,
       image: user?.image,
       role: user?.role,
+      victoryPoints: user?.victoryPoints,
     };
   } catch (error) {
     throw new Error(`Error en la sesion ${error}`);
