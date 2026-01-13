@@ -161,7 +161,7 @@ export const PlayerList = () => {
       {showInitialModal && selectedUserForInitialPoints && (
         <InitialPointsModal
           user={selectedUserForInitialPoints}
-          maxRounds={rounds.length}
+          maxRounds={rounds.length - 1}
           onConfirm={confirmInitialRoundsWon}
           onCancel={cancelInitialPoints}
         />

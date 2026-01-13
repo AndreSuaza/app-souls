@@ -27,6 +27,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function EventosPage() {
   const { tournaments, heroTournament } = await getPublicTournaments();
   const listTournaments = tournaments.map((tournament) => ({
