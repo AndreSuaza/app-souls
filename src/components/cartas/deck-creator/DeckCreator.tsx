@@ -7,7 +7,7 @@ import { Decklist } from "@/interfaces/decklist.interface";
 import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
 import { getPaginatedCards } from "@/actions";
-import type { PaginationFilters } from "../../finders/CardFinderLabLocal";
+import type { PaginationFilters } from "@/interfaces";
 
 interface Propertie {
   id: string;

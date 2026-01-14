@@ -1,58 +1,65 @@
-
-
-
 export interface Type {
-    name: string;
-    id?: string;
-    createDate?: Date;
+  name: string;
+  id?: string;
+  createDate?: Date;
 }
 
 export interface Archetype {
-    name: string;
-    id?: string;
-    createDate?: Date;
+  name: string;
+  id?: string;
+  createDate?: Date;
 }
 
 export interface Rarity {
-    name: string;
-    id?: string;
+  name: string;
+  id?: string;
 }
 
 export interface Keyword {
-    name: string;
-    id?: string;
-    createDate?: Date;
+  name: string;
+  id?: string;
+  createDate?: Date;
 }
 
 interface Product {
-    code: string;
-    name: string;
-    show: boolean;
-    url: string;
+  code: string;
+  name: string;
+  show: boolean;
+  url: string;
 }
 
 interface Price {
-
-    price: number;
-    rarity: string;
-
-} 
-
-export interface Card {
-    id: string;
-    idd: string;
-    code: string;
-    types: Type[];
-    limit: string;
-    rarities: Rarity[];
-    cost: number;
-    force: string;
-    defense: string;
-    archetypes: Archetype[];
-    keywords: Keyword[];
-    name: string;
-    effect: string;
-    product: Product;
-    price: Price[];
+  price: number;
+  rarity: string;
 }
 
+export interface Card {
+  id: string;
+  idd: string;
+  code: string;
+  types: Type[];
+  limit: string;
+  rarities: Rarity[];
+  cost: number;
+  force: string;
+  defense: string;
+  archetypes: Archetype[];
+  keywords: Keyword[];
+  name: string;
+  effect: string;
+  product: Product;
+  price: Price[];
+}
+
+export interface PaginationFilters {
+  text?: string;
+  products?: string;
+  types?: string;
+  archetypes?: string;
+  keywords?: string;
+  costs?: string;
+  forces?: string;
+  defenses?: string;
+  rarities?: string;
+  limit?: string;
+}

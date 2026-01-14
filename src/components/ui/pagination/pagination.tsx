@@ -1,41 +1,47 @@
-'use client';
+"use client";
 
-import { redirect, usePathname, useSearchParams } from 'next/navigation';
-import { ReactNode } from 'react';
-import { PaginationLine } from './paginationLine';
-
+import { redirect, usePathname, useSearchParams } from "next/navigation";
+import { ReactNode } from "react";
+import { PaginationLine } from "./paginationLine";
 
 interface Props {
   children: ReactNode;
-  totalPages: number;  
+  totalPages: number;
   currentPage?: number;
   onPageChange?: (page: number) => void;
 }
 
-
-export const Pagination = ({ children, totalPages, currentPage, onPageChange }: Props) => {
-
+export const Pagination = ({
+  children,
+  totalPages,
+  currentPage,
+  onPageChange,
+}: Props) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isControlled = typeof currentPage === "number" && !!onPageChange;
 
-  const pageString = searchParams.get('page') ?? 1;
+  const pageString = searchParams.get("page") ?? 1;
   const resolvedPage = isControlled
     ? currentPage ?? 1
     : isNaN(+pageString)
-      ? 1
-      : +pageString;
+    ? 1
+    : +pageString;
 
   if (!isControlled && (resolvedPage < 1 || isNaN(+pageString))) {
-    redirect( pathname );
+    redirect(pathname);
   }
-  
+
   return (
     <>
-    <PaginationLine className='hidden sm:block' currentPage={resolvedPage} pathname={pathname} searchParams={searchParams} totalPages={totalPages} onPageChange={onPageChange}/>
-    {children}
-    <PaginationLine currentPage={resolvedPage} pathname={pathname} searchParams={searchParams} totalPages={totalPages} onPageChange={onPageChange}/>
+      {children}
+      <PaginationLine
+        currentPage={resolvedPage}
+        pathname={pathname}
+        searchParams={searchParams}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
     </>
-    
   );
-}
+};

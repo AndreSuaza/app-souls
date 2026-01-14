@@ -131,6 +131,8 @@ export const getPaginatedCards = async({
         return {
             currentPage: page,
             totalPage: totalPages,
+            totalCount,
+            perPage: take,
             cards: cards.map( card => ({
                 ...card,
                 price: card.price.map(p => {return {price: p.price, rarity: p.rarity.name}})

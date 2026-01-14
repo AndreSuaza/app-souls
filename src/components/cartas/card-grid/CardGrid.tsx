@@ -1,57 +1,68 @@
-'use client';
+"use client";
+
+"use client";
 
 import type { Card } from "@/interfaces";
 import { CardItem } from "./CardItem";
 import { useCardDetailStore } from "@/store";
 import { CardDetail } from "../card-detail/CardDetail";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface Props {
-    cards: Card[];
-    cols: number
-    addCard?: (c: Card) => void
-    addCardSidedeck?: (c: Card) => void
+  cards: Card[];
+  columns?: number;
+  addCard?: (c: Card) => void;
+  addCardSidedeck?: (c: Card) => void;
 }
 
-export const CardGrid = ({cards, cols, addCard, addCardSidedeck}: Props) => {
+export const CardGrid = ({
+  cards,
+  columns = 6,
+  addCard,
+  addCardSidedeck,
+}: Props) => {
+  const isCardDetailOpen = useCardDetailStore(
+    (state) => state.isCardDetailOpen
+  );
+  const [indexDeck, setIndexDeck] = useState(0);
+  const openCardDetail = useCardDetailStore((state) => state.openCardDetail);
 
-    const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
-    const [indexDeck, setIndexDeck] = useState(0);
-    const openCardDetail = useCardDetailStore( state => state.openCardDetail );
-    
-    const detailCard = (index: number) => {
-      setIndexDeck(index);
-      openCardDetail();
-    }
+  const detailCard = (index: number) => {
+    setIndexDeck(index);
+    openCardDetail();
+  };
 
-    const colsGrid = () => {
-      switch (cols) {
-        case 6:
-          return 'grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mx-4 mb-10 px-2'
-        case 2:
-          return 'mt-6 h-[560px] overflow-hidden overflow-y-scroll grid grid-cols-1 md:grid-cols-2 gap-4 mx-4 mb-10 px-2'
-        default:
-          return 'grid grid-cols-1 mb-10 px-2'
-      }
-    } 
+  const gridStyle = {
+    gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+  };
 
   return (
     <>
-    <div className="mt-4">
-        <ul className={colsGrid()}>
-
-            {
-                cards.map( (card, index) => (
-                  <li key={card.id} >
-                    <CardItem card={card} addCard={addCard} addCardSidedeck={addCardSidedeck} index={index} detailCard={detailCard}/>
-                  </li>
-                ))
-            }
-        </ul>
-    </div>
-    {isCardDetailOpen && (
-          <CardDetail cards={cards} indexList={indexDeck} />
-    )}          
+      <div className="mt-4">
+        <motion.ul
+          layout
+          style={gridStyle}
+          className="grid gap-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+        >
+          {cards.map((card, index) => (
+            <motion.li key={card.id} layout>
+              <CardItem
+                card={card}
+                addCard={addCard}
+                addCardSidedeck={addCardSidedeck}
+                index={index}
+                detailCard={detailCard}
+              />
+            </motion.li>
+          ))}
+        </motion.ul>
+      </div>
+      {isCardDetailOpen && <CardDetail cards={cards} indexList={indexDeck} />}
     </>
-  )
-}
+  );
+};
