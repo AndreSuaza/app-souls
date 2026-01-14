@@ -54,6 +54,7 @@ export const FinalizeTournamentSchema = z.object({
     z.object({
       userId: z.string().min(1),
       wins: z.number().int().min(0),
+      matches: z.number().int().min(0),
     })
   ),
 });

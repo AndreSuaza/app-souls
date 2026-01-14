@@ -1,5 +1,6 @@
 "use server";
 
+import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { SearchUsersSchema, SearchUsersInput } from "@/schemas";
 
@@ -30,6 +31,7 @@ export async function searchUsersAction(input: SearchUsersInput) {
             },
           },
         ],
+        role: Role.player,
       },
       select: {
         id: true,
