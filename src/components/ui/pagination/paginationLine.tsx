@@ -56,14 +56,22 @@ export const PaginationLine = ({
     onPageChange(pageNumber);
   };
 
+  const baseItemClass = clsx(
+    "page-link relative block py-1 px-3 border border-transparent rounded-lg font-semibold transition duration-200 shadow-sm hover:shadow",
+    "bg-white text-slate-700 hover:bg-slate-100 dark:bg-tournament-dark-muted dark:text-white dark:hover:bg-tournament-dark-border"
+  );
+  const activeItemClass = clsx(
+    "bg-purple-600 text-white hover:bg-purple-600 dark:bg-purple-500 dark:text-white shadow-lg"
+  );
+
   const renderPageItem = (pageNumber: number | string) => {
-    const baseClass = clsx(
-      "page-link relative block py-1 px-3 border-0 outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none",
-      {
-        "bg-indigo-500 shadow-sm text-white hover:text-white hover:bg-indigo-700":
-          pageNumber === currentPage,
-      }
-    );
+    if (pageNumber === "...") {
+      return (
+        <span className="page-link relative block py-1 px-3 border border-transparent text-slate-400 dark:text-slate-400">
+          {pageNumber}
+        </span>
+      );
+    }
 
     if (pageNumber === "...") {
       return (
@@ -73,11 +81,15 @@ export const PaginationLine = ({
       );
     }
 
+    const className = clsx(baseItemClass, {
+      [activeItemClass]: pageNumber === currentPage,
+    });
+
     if (isControlled) {
       return (
         <button
           type="button"
-          className={baseClass}
+          className={className}
           onClick={() => handleControlledChange(Number(pageNumber))}
         >
           {pageNumber}
@@ -86,7 +98,7 @@ export const PaginationLine = ({
     }
 
     return (
-      <Link className={baseClass} href={createPageUrl(pageNumber)}>
+      <Link className={className} href={createPageUrl(pageNumber)}>
         {pageNumber}
       </Link>
     );
@@ -98,7 +110,7 @@ export const PaginationLine = ({
     targetPage: number
   ) => {
     const sharedClass =
-      "page-link relative block border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none";
+      "page-link relative block h-10 w-10 flex items-center justify-center text-slate-700 rounded-lg hover:bg-slate-100 dark:border-tournament-dark-border dark:text-white dark:hover:bg-tournament-dark-border focus:outline-none shadow-sm";
 
     if (isControlled) {
       return (
@@ -120,33 +132,35 @@ export const PaginationLine = ({
   };
 
   return (
-    <div className={`${className} text-center mt-3 mb-3 md:flex`}>
-      <nav aria-label="Pagination Cards" className="mt-4 mx-4">
-        <ul className="flex list-style-none">
-          <li className="page-item">
-            {renderArrow("prev", <IoChevronBackOutline size={30} />, currentPage - 1)}
-          </li>
+    <div className={`${className} mt-3 mb-3 flex justify-center`}>
+      <nav aria-label="Pagination Cards" className="flex justify-center">
+        <ul className="flex gap-2 items-center">
+          {currentPage > 1 && (
+            <li className="page-item">
+              {renderArrow(
+                "prev",
+                <IoChevronBackOutline size={22} />,
+                currentPage - 1
+              )}
+            </li>
+          )}
 
           {allPages.map((page, index) => (
-            <li key={`${page}+${index}`} className="page-item hidden md:block">
+            <li key={`${page}+${index}`} className="page-item">
               {renderPageItem(page)}
             </li>
           ))}
 
-          <li className="page-item">
-            {renderArrow(
-              "next",
-              <IoChevronForwardOutline size={30} />,
-              currentPage + 1
-            )}
-          </li>
+          {currentPage < totalPages && (
+            <li className="page-item">
+              {renderArrow(
+                "next",
+                <IoChevronForwardOutline size={22} />,
+                currentPage + 1
+              )}
+            </li>
+          )}
         </ul>
-        <div className="md:hidden page-link relative block border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none">
-          <p className="font-bold">
-            Pag <span className="text-indigo-600">{currentPage}</span> de{" "}
-            {totalPages}
-          </p>
-        </div>
       </nav>
     </div>
   );

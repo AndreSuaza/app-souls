@@ -3,12 +3,11 @@
 import { useCallback, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { CardFinderLab, Pagination } from "@/components";
-import { CardGrid } from "../card-grid/CardGrid";
-import { Card } from "@/interfaces";
+import { Card, PaginationFilters } from "@/interfaces";
 import { getPaginatedCards } from "@/actions";
-import { CardFinderLabLocal } from "../../finders/CardFinderLabLocal";
 import { buildPaginationFilters, FilterSelections } from "@/utils/filter-utils";
-import type { PaginationFilters } from "@/interfaces";
+import { CardGrid } from "../card-grid/CardGrid";
+import { CardFinderLabLocal } from "../../finders/CardFinderLabLocal";
 import {
   CardFiltersSidebar,
   FILTER_PANEL_WIDTH,
@@ -135,13 +134,32 @@ export const CardFinder = ({
         onPageChange,
       };
 
+  const mdColumnsValue = useAdvancedFilters
+    ? panelOpen
+      ? 2
+      : 4
+    : 4;
+  const lgColumnsValue = useAdvancedFilters
+    ? panelOpen
+      ? 4
+      : 6
+    : columns;
+  const xlColumnsValue = useAdvancedFilters
+    ? panelOpen
+      ? 6
+      : 8
+    : Math.max(columns, 8);
+
   const gridContent = (
     <Pagination {...paginationProps}>
       <CardGrid
         cards={cardsSource}
         addCard={addCard}
         addCardSidedeck={addCardSidedeck}
-        columns={columns}
+        smColumns={2}
+        mdColumns={mdColumnsValue}
+        lgColumns={lgColumnsValue}
+        xlColumns={xlColumnsValue}
       />
     </Pagination>
   );

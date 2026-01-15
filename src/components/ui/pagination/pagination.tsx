@@ -33,7 +33,7 @@ export const Pagination = ({
   }
 
   return (
-    <>
+    <div className="space-y-10">
       {children}
       <PaginationLine
         currentPage={resolvedPage}
@@ -42,6 +42,6 @@ export const Pagination = ({
         totalPages={totalPages}
         onPageChange={onPageChange}
       />
-    </>
+    </div>
   );
 };
