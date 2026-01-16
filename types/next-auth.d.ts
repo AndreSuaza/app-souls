@@ -28,5 +28,6 @@ declare module "next-auth/jwt" {
     nickname?: string;
     image?: string;
     storeId?: string | null;
+    expiresAt?: number;
   }
 }

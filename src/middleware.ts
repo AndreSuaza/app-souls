@@ -12,15 +12,23 @@ const authRoutes = [
   "/auth/reset-password",
 ];
 const apiAuthPrefix = "/api/auth";
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 // Config especial para middleware: NADA de MongoDB, Prisma, bcrypt, etc.
 // Esto debido a que EDGE no soporta esas librerías (solo Node.js).
 // Por eso solo validamos el JWT y no hacemos nada más avanzado.
 const middlewareAuthConfig: NextAuthConfig = {
   secret: process.env.NEXTAUTH_SECRET,
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
   providers: [], // no hacen falta para validar el JWT
   callbacks: {
+    jwt({ token }) {
+      // Respeta el vencimiento absoluto definido en el servidor.
+      if (token.expiresAt && Date.now() > token.expiresAt) {
+        return null;
+      }
+      return token;
+    },
     session({ session, token }) {
       if (session.user) {
         session.user.role = token.role;
