@@ -82,8 +82,12 @@ export const CardDetail = ({ cards, indexList }: Props) => {
   }, [card]);
 
   const keywordsText = useMemo(() => {
-    if (!card?.keywords?.length) return "Sin efecto";
-    return card.keywords.map((keyword: Keyword) => keyword.name).join(", ");
+    if (!card?.keywords?.length) return "Sin palabras clave";
+    const keywordNames = card.keywords
+      .map((keyword: Keyword) => keyword.name?.trim())
+      .filter((name): name is string => !!name);
+    if (keywordNames.length === 0) return "Sin palabras clave";
+    return keywordNames.join(", ");
   }, [card]);
 
   const stats = useMemo(() => {
@@ -119,7 +123,7 @@ export const CardDetail = ({ cards, indexList }: Props) => {
         onClick={closeCardDetail}
       />
 
-      <div className="relative z-10 h-full w-full overflow-hidden border-2 border-purple-600 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[80vh] sm:w-full sm:max-w-6xl sm:rounded-2xl sm:mx-4 sm:my-6 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg lg:w-3/5 lg:max-w-none">
+      <div className="relative z-10 h-full w-full overflow-hidden border-2 border-purple-600 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[80vh] sm:w-full sm:max-w-6xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg lg:w-3/5 lg:max-w-none">
         <div className="flex items-center justify-between border-b border-purple-600 bg-slate-100/90 px-6 py-4 dark:border-tournament-dark-border dark:bg-slate-950/70">
           <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl dark:text-slate-100">
             {card.name}
@@ -129,7 +133,7 @@ export const CardDetail = ({ cards, indexList }: Props) => {
             type="button"
             aria-label="Cerrar detalle de carta"
             onClick={closeCardDetail}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-purple-600 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-slate-950/80 dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-slate-950/80 dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
           >
             <IoCloseOutline className="h-6 w-6" />
           </button>
@@ -139,7 +143,7 @@ export const CardDetail = ({ cards, indexList }: Props) => {
           type="button"
           aria-label="Carta anterior"
           onClick={backCard}
-          className="absolute left-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
+          className="absolute left-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
         >
           <IoChevronBack className="h-6 w-6" />
         </button>
@@ -147,15 +151,15 @@ export const CardDetail = ({ cards, indexList }: Props) => {
           type="button"
           aria-label="Carta siguiente"
           onClick={forwardCard}
-          className="absolute right-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
+          className="absolute right-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
         >
           <IoChevronForward className="h-6 w-6" />
         </button>
 
-        <div className="grid h-[calc(100vh-72px)] grid-cols-1 overflow-y-auto sm:h-auto sm:max-h-[calc(80vh-72px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
-          <div className="relative flex flex-col items-center  gap-5 border-b border-purple-600 py-6 lg:border-b-0 lg:border-r dark:border-tournament-dark-border">
+        <div className="grid h-[calc(100vh-72px)] grid-cols-1 overflow-y-auto px-4 sm:h-auto sm:max-h-[calc(80vh-72px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+          <div className="relative flex flex-col items-center gap-5 border-b border-purple-600 py-6 lg:border-b-0 dark:border-tournament-dark-border">
             <div className="relative w-full max-w-[380px]">
-              <div className="overflow-hidden rounded-[24px] bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
+              <div className="overflow-hidden rounded-lg bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
                 <Image
                   src={`/cards/${card.code}-${card.idd}.webp`}
                   alt={card.name}
@@ -167,7 +171,7 @@ export const CardDetail = ({ cards, indexList }: Props) => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-6 p-6 lg:p-8">
+          <div className="flex flex-col gap-6 px-4 py-6 sm:px-5 lg:px-6 lg:py-6">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {stats.map((item) => (
                 <CardDetailStatCard
@@ -187,7 +191,7 @@ export const CardDetail = ({ cards, indexList }: Props) => {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-purple-600 bg-white p-5 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:shadow-inner">
+            <div className="rounded-lg border border-purple-600 bg-white p-5 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:shadow-inner">
               <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                 Efecto de habilidad
               </p>

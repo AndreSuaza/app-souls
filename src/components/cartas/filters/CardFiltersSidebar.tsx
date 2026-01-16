@@ -44,6 +44,21 @@ interface CardFiltersSidebarProps {
 }
 
 const LIMIT_OPTIONS = [{ label: "Legendaria", value: "legendaria" }];
+const FILTER_SELECTION_KEYS: FilterKey[] = [
+  "products",
+  "types",
+  "archetypes",
+  "keywords",
+  "rarities",
+  "cost",
+  "force",
+  "defense",
+  "limit",
+];
+
+const areArraysEqual = (left: string[], right: string[]) =>
+  left.length === right.length &&
+  left.every((value, index) => value === right[index]);
 
 export function CardFiltersSidebar({
   propertiesCards,
@@ -70,6 +85,8 @@ export function CardFiltersSidebar({
   });
   // Evita disparar la busqueda cuando el estado se sincroniza desde la URL.
   const skipNextChangeRef = useRef(false);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previousFiltersRef = useRef<FilterSelections>(filters);
 
   const filterSections = useMemo(
     () => [
@@ -96,7 +113,7 @@ export function CardFiltersSidebar({
         label: "Arquetipo",
         icon: <GiSpellBook className="text-xl" />,
         options: propertiesCards.archetypes.map((item) => ({
-          label: item.name,
+          label: item.name?.trim() ? item.name : "Sin arquetipo",
           value: item.id,
         })),
       },
@@ -105,7 +122,7 @@ export function CardFiltersSidebar({
         label: "Palabras clave",
         icon: <RiHashtag className="text-xl" />,
         options: propertiesCards.keywords.map((item) => ({
-          label: item.name,
+          label: item.name?.trim() ? item.name : "Sin palabras clave",
           value: item.id,
         })),
       },
@@ -160,12 +177,21 @@ export function CardFiltersSidebar({
   const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = null;
+      }
       onFiltersChange?.(filters);
     }
   };
 
   const handleClear = () => {
     const nextFilters = getDefaultFilters();
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = null;
+    }
+    skipNextChangeRef.current = true;
     setFilters(nextFilters);
     onFiltersChange?.(nextFilters);
   };
@@ -174,13 +200,17 @@ export function CardFiltersSidebar({
     setFilters((prev) => ({ ...prev, text: value }));
   };
 
-  const handleSearch = () => {
-    onFiltersChange?.(filters);
-  };
-
   const toggleSection = (key: FilterKey) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const hasNonTextChange = (
+    previous: FilterSelections,
+    next: FilterSelections
+  ) =>
+    FILTER_SELECTION_KEYS.some(
+      (key) => !areArraysEqual(previous[key], next[key])
+    );
 
   const hasPushedRef = useRef(false);
 
@@ -200,15 +230,43 @@ export function CardFiltersSidebar({
 
     if (!hasPushedRef.current) {
       hasPushedRef.current = true;
+      previousFiltersRef.current = filters;
       return;
     }
 
     if (skipNextChangeRef.current) {
       skipNextChangeRef.current = false;
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = null;
+      }
+      previousFiltersRef.current = filters;
       return;
     }
 
+    const previousFilters = previousFiltersRef.current;
+    const textChanged = previousFilters.text !== filters.text;
+    const otherChanged = hasNonTextChange(previousFilters, filters);
+
+    if (textChanged && !otherChanged) {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+      // Aplica debounce solo al texto para evitar consultas por cada tecla.
+      debounceTimeoutRef.current = setTimeout(() => {
+        onFiltersChange(filters);
+      }, 300);
+      previousFiltersRef.current = filters;
+      return;
+    }
+
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = null;
+    }
+
     onFiltersChange(filters);
+    previousFiltersRef.current = filters;
   }, [filters, onFiltersChange]);
 
   const statsRangeText = statsRange ?? "0-0 de 0";
@@ -217,8 +275,8 @@ export function CardFiltersSidebar({
     <div className="relative z-10">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative w-full sm:min-w-[260px] sm:max-w-[360px]">
+          <div className="flex items-center gap-3">
+            <div className="relative min-w-[250px] sm:min-w-[260px] max-w-[360px]">
               <div className="relative">
                 <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-300" />
                 <input
@@ -227,27 +285,18 @@ export function CardFiltersSidebar({
                   onChange={(event) => handleTextChange(event.target.value)}
                   onKeyDown={handleInputKeyDown}
                   placeholder="Buscar nombre, código o efecto"
-                  className="w-full rounded-full border border-slate-300 dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-muted text-slate-700 dark:text-white pl-8 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-lg border border-slate-300 dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-muted text-slate-700 dark:text-white pl-8 pr-0 sm:pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleSearch}
-                className="md:hidden flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-full text-sm font-semibold text-slate-600 bg-white shadow-sm hover:border-slate-400 transition dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
-              >
-                Buscar
-              </button>
-              <button
-                type="button"
-                onClick={onPanelToggle}
-                className="flex items-center gap-2 px-4 py-2 border border-purple-400 rounded-full text-sm font-semibold text-purple-600 bg-white dark:bg-tournament-dark-muted dark:text-purple-300 shadow-sm hover:border-purple-600 transition"
-              >
-                <IoFilterSharp className="w-5 h-5" />
-                <span>Filtrar</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={onPanelToggle}
+              className="flex items-center gap-2 px-4 py-2 border border-purple-400 rounded-lg text-sm font-semibold text-purple-600 bg-white dark:bg-tournament-dark-muted dark:text-purple-300 shadow-sm hover:border-purple-600 transition"
+            >
+              <IoFilterSharp className="w-5 h-5" />
+              <span>Filtrar</span>
+            </button>
           </div>
           <div className="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
             Mostrando{" "}
@@ -272,12 +321,12 @@ export function CardFiltersSidebar({
           pointerEvents: panelOpen ? "auto" : "none",
         }}
       >
-        <div className="relative rounded-[30px] border border-slate-200 dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-surface shadow-2xl p-6">
+        <div className="relative rounded-lg border border-slate-200 dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-surface shadow-2xl p-6">
           <div className="flex items-center justify-between mb-4">
             <button
               type="button"
               onClick={handleClear}
-              className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-purple-600"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 hover:border-purple-400"
             >
               Borrar filtros
             </button>
@@ -295,6 +344,7 @@ export function CardFiltersSidebar({
                 key={section.key}
                 label={section.label}
                 icon={section.icon}
+                hasSelection={filters[section.key].length > 0}
                 expanded={expanded[section.key]}
                 onToggle={() => toggleSection(section.key)}
               >

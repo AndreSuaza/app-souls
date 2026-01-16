@@ -33,7 +33,7 @@ export const CardItem = ({
 
   return (
     <div key={card.id} className="flex flex-col transition-all hover:-mt-2">
-      <div className="relative overflow-hidden rounded-2xl bg-slate-950/70 shadow-md shadow-gray-600 fade-in dark:bg-tournament-dark-muted-strong/40 dark:shadow-white">
+      <div className="relative overflow-hidden rounded-lg bg-slate-950/70 shadow-sm shadow-gray-600 fade-in dark:bg-tournament-dark-muted-strong/40 dark:shadow-white">
         <div className="absolute top-16 -right-1 z-10">
           <IoEyeOutline
             className="w-8 h-8 bg-slate-500 text-white p-1 rounded cursor-pointer"

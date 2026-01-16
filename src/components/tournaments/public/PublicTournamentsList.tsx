@@ -142,7 +142,6 @@ export function PublicTournamentsList({ tournaments }: Props) {
           currentPage={currentPage}
           pathname={pathname}
           searchParams={searchParams}
-          className="text-slate-900 dark:[&_a]:text-slate-200 dark:hover:[&_a]:text-slate-900  dark:[&_a]:hover:text-white"
         />
       )}
     </section>

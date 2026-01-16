@@ -17,8 +17,8 @@ interface Props {
 
 export function CardDetailProductCard({ product }: Props) {
   const content = (
-    <div className="flex items-center gap-4 rounded-2xl border border-purple-600 bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:shadow-lg">
-      <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-purple-600 bg-slate-100 dark:border-tournament-dark-border dark:bg-slate-950/60">
+    <div className="flex items-center gap-4 rounded-lg border border-purple-600 bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:shadow-lg">
+      <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-purple-600 bg-slate-100 dark:border-tournament-dark-border dark:bg-slate-950/60">
         <Image
           width={60}
           height={60}

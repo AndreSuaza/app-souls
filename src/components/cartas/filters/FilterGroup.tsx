@@ -1,11 +1,12 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { HiChevronDown } from "react-icons/hi2";
+import { HiChevronDown, HiFunnel } from "react-icons/hi2";
 
 export interface FilterGroupProps {
   label: string;
   icon: ReactNode;
+  hasSelection?: boolean;
   expanded?: boolean;
   onToggle?: () => void;
   children: ReactNode;
@@ -14,6 +15,7 @@ export interface FilterGroupProps {
 export function FilterGroup({
   label,
   icon,
+  hasSelection = false,
   expanded = false,
   onToggle,
   children,
@@ -28,6 +30,9 @@ export function FilterGroup({
         <div className="flex items-center gap-2">
           <span className="text-lg text-purple-600">{icon}</span>
           <span>{label}</span>
+          {hasSelection && (
+            <HiFunnel className="text-purple-500" size={14} />
+          )}
         </div>
         <HiChevronDown
           className={`transition-transform ${

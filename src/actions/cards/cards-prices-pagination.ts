@@ -6,7 +6,11 @@ import {prisma} from "@/lib/prisma";
 interface WhereClause {
     product?: { code: { in: string[] } };
     raritiesIds?: { hasEvery: string[] };
-    OR?: Array<{ effect?: { contains: string }; idd?: string; name?: { contains: string } }>;
+    OR?: Array<{
+        effect?: { contains: string; mode: "insensitive" };
+        idd?: { equals: string; mode: "insensitive" };
+        name?: { contains: string; mode: "insensitive" };
+    }>;
 }
 
 interface PaginationOptions {
@@ -41,7 +45,13 @@ export const getPaginatedPricesCards = async({
                 }
             }
             if(rarities) { where.raritiesIds = {hasEvery: rarities.split(',').map(item => item.trim())}}
-            if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
+            if(text) {
+                where.OR = [
+                    { effect: { contains: text, mode: "insensitive" } },
+                    { idd: { equals: text, mode: "insensitive" } },
+                    { name: { contains: text, mode: "insensitive" } },
+                ]
+            }
             return where;
         }
 

@@ -138,7 +138,7 @@ export const PaginationLine = ({
   };
 
   return (
-    <div className={`${className} mt-3 mb-3 flex justify-center`}>
+    <div className={clsx("mt-3 mb-3 flex justify-center", className)}>
       <nav aria-label="Pagination Cards" className="flex justify-center">
         <ul className="flex gap-2 items-center">
           {currentPage > 1 && (
