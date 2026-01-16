@@ -14,11 +14,11 @@ import {
   GiStarFormation,
   GiCardPick,
 } from "react-icons/gi";
+import { FilterSelections } from "@/interfaces";
 import { FilterGroup } from "./FilterGroup";
 import { FilterOption } from "./FilterOption";
 import {
   FilterKey,
-  FilterSelections,
   getDefaultFilters,
   numberOptions,
 } from "@/utils/filter-utils";
@@ -38,6 +38,7 @@ interface CardFiltersSidebarProps {
   panelOpen: boolean;
   onPanelToggle: () => void;
   onClosePanel: () => void;
+  initialFilters?: FilterSelections;
   onFiltersChange?: (filters: FilterSelections) => void;
   statsRange?: string;
 }
@@ -49,10 +50,13 @@ export function CardFiltersSidebar({
   panelOpen,
   onPanelToggle,
   onClosePanel,
+  initialFilters,
   onFiltersChange,
   statsRange,
 }: CardFiltersSidebarProps) {
-  const [filters, setFilters] = useState<FilterSelections>(getDefaultFilters());
+  const [filters, setFilters] = useState<FilterSelections>(
+    () => initialFilters ?? getDefaultFilters()
+  );
   const [expanded, setExpanded] = useState<Record<FilterKey, boolean>>({
     products: false,
     types: false,
@@ -64,6 +68,8 @@ export function CardFiltersSidebar({
     defense: false,
     limit: false,
   });
+  // Evita disparar la busqueda cuando el estado se sincroniza desde la URL.
+  const skipNextChangeRef = useRef(false);
 
   const filterSections = useMemo(
     () => [
@@ -168,6 +174,10 @@ export function CardFiltersSidebar({
     setFilters((prev) => ({ ...prev, text: value }));
   };
 
+  const handleSearch = () => {
+    onFiltersChange?.(filters);
+  };
+
   const toggleSection = (key: FilterKey) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -175,10 +185,26 @@ export function CardFiltersSidebar({
   const hasPushedRef = useRef(false);
 
   useEffect(() => {
+    if (!initialFilters) return;
+    setFilters((prev) => {
+      if (JSON.stringify(prev) === JSON.stringify(initialFilters)) {
+        return prev;
+      }
+      skipNextChangeRef.current = true;
+      return initialFilters;
+    });
+  }, [initialFilters]);
+
+  useEffect(() => {
     if (!onFiltersChange) return;
 
     if (!hasPushedRef.current) {
       hasPushedRef.current = true;
+      return;
+    }
+
+    if (skipNextChangeRef.current) {
+      skipNextChangeRef.current = false;
       return;
     }
 
@@ -191,8 +217,8 @@ export function CardFiltersSidebar({
     <div className="relative z-10">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="relative min-w-[250px] max-w-[360px]">
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:min-w-[260px] sm:max-w-[360px]">
               <div className="relative">
                 <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-300" />
                 <input
@@ -201,18 +227,27 @@ export function CardFiltersSidebar({
                   onChange={(event) => handleTextChange(event.target.value)}
                   onKeyDown={handleInputKeyDown}
                   placeholder="Buscar nombre, código o efecto"
-                  className="w-full rounded-full border border-slate-300 dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-muted text-slate-700 dark:text-white pl-10 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full rounded-full border border-slate-300 dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-muted text-slate-700 dark:text-white pl-8 pr-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onPanelToggle}
-              className="flex items-center gap-2 px-4 py-2 border border-purple-400 rounded-full text-sm font-semibold text-purple-600 bg-white dark:bg-tournament-dark-muted dark:text-purple-300 shadow-sm hover:border-purple-600 transition"
-            >
-              <IoFilterSharp className="w-5 h-5" />
-              <span>Filtrar</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleSearch}
+                className="md:hidden flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-full text-sm font-semibold text-slate-600 bg-white shadow-sm hover:border-slate-400 transition dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+              >
+                Buscar
+              </button>
+              <button
+                type="button"
+                onClick={onPanelToggle}
+                className="flex items-center gap-2 px-4 py-2 border border-purple-400 rounded-full text-sm font-semibold text-purple-600 bg-white dark:bg-tournament-dark-muted dark:text-purple-300 shadow-sm hover:border-purple-600 transition"
+              >
+                <IoFilterSharp className="w-5 h-5" />
+                <span>Filtrar</span>
+              </button>
+            </div>
           </div>
           <div className="text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
             Mostrando{" "}
@@ -230,9 +265,10 @@ export function CardFiltersSidebar({
         initial={{ opacity: 0, x: -20 }}
         animate={panelOpen ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
         transition={{ duration: 0.3 }}
-        className="absolute left-0 top-full mt-3"
+        className={`mt-3 w-full md:absolute md:left-0 md:top-full md:mt-3 md:w-[320px] ${
+          panelOpen ? "block" : "hidden md:block"
+        }`}
         style={{
-          width: FILTER_PANEL_WIDTH,
           pointerEvents: panelOpen ? "auto" : "none",
         }}
       >

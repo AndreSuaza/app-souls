@@ -56,13 +56,12 @@ export const PaginationLine = ({
     onPageChange(pageNumber);
   };
 
-  const baseItemClass = clsx(
-    "page-link relative block py-1 px-3 border border-transparent rounded-lg font-semibold transition duration-200 shadow-sm hover:shadow",
-    "bg-white text-slate-700 hover:bg-slate-100 dark:bg-tournament-dark-muted dark:text-white dark:hover:bg-tournament-dark-border"
-  );
-  const activeItemClass = clsx(
-    "bg-purple-600 text-white hover:bg-purple-600 dark:bg-purple-500 dark:text-white shadow-lg"
-  );
+  const baseItemClass =
+    "page-link relative block py-1 px-3 border border-transparent rounded-lg font-semibold transition duration-200 shadow-sm hover:shadow";
+  const inactiveItemClass =
+    "bg-white text-slate-700 hover:bg-slate-100 dark:bg-tournament-dark-muted dark:text-white dark:hover:bg-tournament-dark-border";
+  const activeItemClass =
+    "bg-purple-600 text-white hover:bg-purple-600 dark:bg-purple-500 dark:text-white shadow-lg border-purple-600 dark:border-purple-400";
 
   const renderPageItem = (pageNumber: number | string) => {
     if (pageNumber === "...") {
@@ -81,15 +80,18 @@ export const PaginationLine = ({
       );
     }
 
-    const className = clsx(baseItemClass, {
-      [activeItemClass]: pageNumber === currentPage,
-    });
+    const isActive = Number(pageNumber) === currentPage;
+    const className = clsx(
+      baseItemClass,
+      isActive ? activeItemClass : inactiveItemClass
+    );
 
     if (isControlled) {
       return (
         <button
           type="button"
           className={className}
+          aria-current={isActive ? "page" : undefined}
           onClick={() => handleControlledChange(Number(pageNumber))}
         >
           {pageNumber}
@@ -98,7 +100,11 @@ export const PaginationLine = ({
     }
 
     return (
-      <Link className={className} href={createPageUrl(pageNumber)}>
+      <Link
+        className={className}
+        href={createPageUrl(pageNumber)}
+        aria-current={isActive ? "page" : undefined}
+      >
         {pageNumber}
       </Link>
     );

@@ -63,32 +63,38 @@ export const CardGrid = ({
   return (
     <>
       <div className="mt-4">
-        <motion.ul
-          layout
-          className={clsx(
-            "grid gap-4 grid-cols-1",
-            getGridClass("sm", smColumns ?? 2),
-            getGridClass("md", mdColumns ?? 4),
-            getGridClass("lg", lgColumns ?? columns),
-            getGridClass("xl", xlColumns ?? columns)
-          )}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-        >
-          {cards.map((card, index) => (
-            <motion.li key={card.id} layout>
-              <CardItem
-                card={card}
-                addCard={addCard}
-                addCardSidedeck={addCardSidedeck}
-                index={index}
-                detailCard={detailCard}
-              />
-            </motion.li>
-          ))}
-        </motion.ul>
+        {cards.length === 0 ? (
+          <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white/80 py-16 text-center text-sm font-semibold text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/60 dark:text-slate-300">
+            No se encontraron resultados.
+          </div>
+        ) : (
+          <motion.ul
+            layout
+            className={clsx(
+              "grid gap-4 grid-cols-1",
+              getGridClass("sm", smColumns ?? 2),
+              getGridClass("md", mdColumns ?? 4),
+              getGridClass("lg", lgColumns ?? columns),
+              getGridClass("xl", xlColumns ?? columns)
+            )}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {cards.map((card, index) => (
+              <motion.li key={card.id} layout>
+                <CardItem
+                  card={card}
+                  addCard={addCard}
+                  addCardSidedeck={addCardSidedeck}
+                  index={index}
+                  detailCard={detailCard}
+                />
+              </motion.li>
+            ))}
+          </motion.ul>
+        )}
       </div>
       {isCardDetailOpen && <CardDetail cards={cards} indexList={indexDeck} />}
     </>

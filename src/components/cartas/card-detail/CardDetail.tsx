@@ -1,144 +1,212 @@
-'use client';
+"use client";
 
-import { ProductsByCard } from "@/components/productos/product-by-card/ProductByCard";
 import type { Archetype, Card, Keyword, Rarity, Type } from "@/interfaces";
 import { useCardDetailStore } from "@/store";
 import Image from "next/image";
-import { useState } from "react";
-import { IoChevronBack, IoChevronForward, IoCloseOutline } from "react-icons/io5";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  IoChevronBack,
+  IoChevronForward,
+  IoCloseOutline,
+} from "react-icons/io5";
+import { CardDetailStatCard } from "./CardDetailStatCard";
+import { CardDetailProductCard } from "./CardDetailProductCard";
 
 interface Props {
-    cards: Card[];
-    indexList: number;
+  cards: Card[];
+  indexList: number;
 }
 
-export const CardDetail = ({cards, indexList}: Props) => {
+export const CardDetail = ({ cards, indexList }: Props) => {
+  const [deckList] = useState(cards);
+  const [card, setCard] = useState(deckList[indexList]);
+  const [indexCard, setIndexCard] = useState(indexList);
+  const [isMounted, setIsMounted] = useState(false);
+  const isCardDetailOpen = useCardDetailStore(
+    (state) => state.isCardDetailOpen
+  );
+  const closeCardDetail = useCardDetailStore((state) => state.closeCardDetail);
 
-    const [deckList] = useState(cards)
-    const [card, setCard] = useState(deckList[indexList]);
-    const [indexCard, setIndexCard] = useState(indexList);
-    const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
-    const closeCardDetail = useCardDetailStore( state => state.closeCardDetail );
+  useEffect(() => {
+    if (!isCardDetailOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    // Bloquea el scroll del body mientras el modal esta abierto.
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isCardDetailOpen]);
 
-    const forwardCard = () => {
+  useEffect(() => {
+    // Evita renderizar el portal antes de que exista document.
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
-        if(indexCard < deckList.length-1) {
-            setIndexCard(indexCard+1);
-            setCard(deckList[indexCard+1]);
-        } else {
-            setIndexCard(0);
-            setCard(deckList[0]);
-        } 
+  const forwardCard = () => {
+    if (indexCard < deckList.length - 1) {
+      setIndexCard(indexCard + 1);
+      setCard(deckList[indexCard + 1]);
+    } else {
+      setIndexCard(0);
+      setCard(deckList[0]);
     }
+  };
 
-    const backCard = () => {
+  const backCard = () => {
+    if (indexCard > 0) {
+      setIndexCard(indexCard - 1);
+      setCard(deckList[indexCard - 1]);
+    } else {
+      setIndexCard(deckList.length - 1);
+      setCard(deckList[deckList.length - 1]);
+    }
+  };
 
-        if(indexCard > 0) {
-            setIndexCard(indexCard-1);
-            setCard(deckList[indexCard-1]);
-        } else {
-            setIndexCard(deckList.length-1);
-            setCard(deckList[deckList.length-1]);
-        } 
-    }
+  const typeText = useMemo(() => {
+    if (!card?.types?.length) return "";
+    return card.types.map((type: Type) => type.name).join(", ");
+  }, [card]);
 
-  return (
-    <>
-    {
-        isCardDetailOpen && (
-            <div
-                className="fixed top-0 left-0 w-screen h-screen z-10 bg-black opacity-30"
-            />
-        )
-    }
-        
-    {
-        isCardDetailOpen && (
-            <div 
-                onClick={ closeCardDetail }
-                className="fade-in fixed top-0 left-0 w-screen h-screen z-10 backdrop-filter backdrop-blur-sm"
-            />
-        )
-    }
-    <div className="fixed top-0 left-0 bg-gray-100 z-20 transition-all h-screen md:w-3/6 md:left-1/4 md:h-5/6 md:top-14">
-         <IoCloseOutline 
-            size={50}
-            className="absolute top-3 right-5 cursor-pointer text-gray-100 bg-slate-950 hover:bg-indigo-600"
-            onClick={ closeCardDetail }
-        />
-        <IoChevronForward 
-            size={50}
-            className="bg-slate-950 absolute cursor-pointer hover:bg-slate-950 text-gray-100 top-[400px] right-0 md:-right-10"
-            onClick={ forwardCard }
-        />
-        <IoChevronBack  
-            size={50}
-            className="bg-slate-950 absolute cursor-pointer hover:bg-slate-950 text-gray-100 top-[400px] left-0 md:-left-10"
-            onClick={ backCard }
-        />
-        <div className="text-center text-gray-100 py-4 bg-slate-950"> 
-            <h1 className="font-bold text-2xl md:text-4xl">{card.name}</h1>
+  const archetypeText = useMemo(() => {
+    if (!card?.archetypes?.length) return "";
+    return card.archetypes
+      .map((archetype: Archetype) => archetype.name)
+      .join(", ");
+  }, [card]);
+
+  const rarityText = useMemo(() => {
+    if (!card?.rarities?.length) return "";
+    return card.rarities.map((rarity: Rarity) => rarity.name).join(", ");
+  }, [card]);
+
+  const keywordsText = useMemo(() => {
+    if (!card?.keywords?.length) return "Sin efecto";
+    return card.keywords.map((keyword: Keyword) => keyword.name).join(", ");
+  }, [card]);
+
+  const stats = useMemo(() => {
+    const items = [
+      { label: "Tipo", value: typeText },
+      { label: "Coste", value: card.cost },
+      { label: "Fuerza", value: card.force },
+      { label: "Defensa", value: card.defense },
+      { label: "Arquetipo", value: archetypeText },
+      { label: "Rareza", value: rarityText },
+    ];
+
+    // Evita mostrar etiquetas vacias para atributos que no existan en la carta.
+    return items
+      .map((item) => {
+        if (item.value === null || item.value === undefined) {
+          return { label: item.label, value: "" };
+        }
+        if (typeof item.value === "number") {
+          return { label: item.label, value: `${item.value}` };
+        }
+        return { label: item.label, value: item.value.toString().trim() };
+      })
+      .filter((item) => item.value.length > 0);
+  }, [typeText, archetypeText, rarityText, card]);
+
+  if (!isCardDetailOpen || !isMounted) return null;
+
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+      <div
+        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+        onClick={closeCardDetail}
+      />
+
+      <div className="relative z-10 h-full w-full overflow-hidden border-2 border-purple-600 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[80vh] sm:w-full sm:max-w-6xl sm:rounded-2xl sm:mx-4 sm:my-6 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg lg:w-3/5 lg:max-w-none">
+        <div className="flex items-center justify-between border-b border-purple-600 bg-slate-100/90 px-6 py-4 dark:border-tournament-dark-border dark:bg-slate-950/70">
+          <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl dark:text-slate-100">
+            {card.name}
+          </h1>
+
+          <button
+            type="button"
+            aria-label="Cerrar detalle de carta"
+            onClick={closeCardDetail}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-purple-600 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-slate-950/80 dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+          >
+            <IoCloseOutline className="h-6 w-6" />
+          </button>
         </div>
-        <div className="pb-4 h-screen overflow-auto grid grid-cols-1 lg:grid-cols-2 md:h-5/6">
-            
-            <div className="px-4 mt-4">
 
+        <button
+          type="button"
+          aria-label="Carta anterior"
+          onClick={backCard}
+          className="absolute left-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
+        >
+          <IoChevronBack className="h-6 w-6" />
+        </button>
+        <button
+          type="button"
+          aria-label="Carta siguiente"
+          onClick={forwardCard}
+          className="absolute right-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
+        >
+          <IoChevronForward className="h-6 w-6" />
+        </button>
+
+        <div className="grid h-[calc(100vh-72px)] grid-cols-1 overflow-y-auto sm:h-auto sm:max-h-[calc(80vh-72px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+          <div className="relative flex flex-col items-center  gap-5 border-b border-purple-600 py-6 lg:border-b-0 lg:border-r dark:border-tournament-dark-border">
+            <div className="relative w-full max-w-[380px]">
+              <div className="overflow-hidden rounded-[24px] bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
                 <Image
-                    src={`/cards/${card.code}-${card.idd}.webp`}
-                    alt={card.name}
-                    className='w-full object-cover rounded-2xl'
-                    width={500}
-                    height={718}
+                  src={`/cards/${card.code}-${card.idd}.webp`}
+                  alt={card.name}
+                  className="block w-full object-cover"
+                  width={500}
+                  height={718}
                 />
+              </div>
             </div>
-            <div className="px-4 ">
-                <table className="text-left w-full mt-6 font-semibold">
-                    <tbody>
-                        <tr className="border-b">
-                            <th>Tipo</th>
-                            <td className="h-10 text-gray-600">{card?.types.map((type: Type, i ) => {return i > 0 ? ', '+type.name : type.name})}</td>
-                            <th>Coste</th>
-                            <td className="h-10 text-gray-600">{card?.cost}</td>
-                        </tr>
-                        <tr className="h-10 border-b">
-                            <th>Fuerza</th>
-                            <td className="h-10 text-gray-600">{card?.force}</td>
-                            <th>Defensa</th>
-                            <td className="h-10 text-gray-600">{card?.defense}</td>
-                        </tr>
-                        <tr className="h-10 border-b">
-                            <th>Arqueotipo</th>
-                            <td className="h-10 text-gray-600">{card?.archetypes.map((archetype: Archetype, i) => {return i > 0 ? ', '+archetype.name : archetype.name})}</td>
-                            <th>Palabras Clave</th>
-                            <td className="h-10 text-gray-600">{card?.keywords.map((keyword: Keyword, i) => {return i > 0 ? ', '+keyword.name : keyword.name})}</td>
-                        </tr>
-                        <tr className="h-10 border-b">
-                            <th>Rareza</th>
-                            <td className="h-10 text-gray-600" colSpan={4}>{card?.rarities.map((rarity: Rarity, i) => {return i > 0 ? ', '+rarity.name : rarity.name})}</td>
-                        </tr>
-                        {/* <tr className="h-10 border-b">
-                            <th>Precios</th>
-                            <td className="h-10 text-gray-600" colSpan={4}>{card?.price.map((p, i) => {return i > 0 ? ', '+`${p.rarity}: ${p.price}` : `${p.rarity}: ${p.price}`})}</td>
-                        </tr> */}
-                        <tr>
-                            <th className="pt-2">Efecto</th>
-                        </tr>
-                        <tr className="h-10 border-b">
-                            <td colSpan={4} className="pb-6 text-gray-600">{card?.effect}</td>
-                        </tr>
-                        <tr>
-                            <th className="pt-2" colSpan={4}>Productos donde puedes encontrar esta carta.</th>
-                        </tr>
-                        <tr>
-                            <td className="w-full h-10 text-gray-500 max-h-40" colSpan={4}>
-                                <ProductsByCard product={card.product}/>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+          </div>
+
+          <div className="flex flex-col gap-6 p-6 lg:p-8">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {stats.map((item) => (
+                <CardDetailStatCard
+                  key={item.label}
+                  label={item.label}
+                  value={item.value}
+                />
+              ))}
             </div>
-        </div> 
+
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                Palabras clave
+              </p>
+              <p className="text-sm text-slate-700 dark:text-slate-200">
+                {keywordsText}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-purple-600 bg-white p-5 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:shadow-inner">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                Efecto de habilidad
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                {card.effect || "Sin efecto"}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                Productos donde puedes encontrar esta carta
+              </p>
+              <CardDetailProductCard product={card.product} />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    </>
-  )
-}
+  );
+
+  return createPortal(modalContent, document.body);
+};

@@ -63,3 +63,16 @@ export interface PaginationFilters {
   rarities?: string;
   limit?: string;
 }
+
+export interface FilterSelections {
+  text: string;
+  products: string[];
+  types: string[];
+  archetypes: string[];
+  keywords: string[];
+  rarities: string[];
+  cost: string[];
+  force: string[];
+  defense: string[];
+  limit: string[];
+}

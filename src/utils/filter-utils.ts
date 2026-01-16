@@ -10,20 +10,9 @@ export type FilterKey =
   | "defense"
   | "limit";
 
-import type { PaginationFilters } from "@/interfaces";
+import type { PaginationFilters, FilterSelections } from "@/interfaces";
 
-export interface FilterSelections {
-  text: string;
-  products: string[];
-  types: string[];
-  archetypes: string[];
-  keywords: string[];
-  rarities: string[];
-  cost: string[];
-  force: string[];
-  defense: string[];
-  limit: string[];
-}
+type SearchParamsReader = Pick<URLSearchParams, "get">;
 
 const numberValues = Array.from({ length: 11 }).map((_, index) => `${index}`);
 export const numberOptions = numberValues;
@@ -78,6 +67,31 @@ export function getDefaultFilters(): FilterSelections {
     force: [],
     defense: [],
     limit: [],
+  };
+}
+
+const splitQueryValues = (value: string | null): string[] => {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+};
+
+export function parseFiltersFromSearchParams(
+  searchParams: SearchParamsReader
+): FilterSelections {
+  return {
+    text: searchParams.get("text")?.trim() ?? "",
+    products: splitQueryValues(searchParams.get("products")),
+    types: splitQueryValues(searchParams.get("types")),
+    archetypes: splitQueryValues(searchParams.get("archetypes")),
+    keywords: splitQueryValues(searchParams.get("keywords")),
+    rarities: splitQueryValues(searchParams.get("rarities")),
+    cost: splitQueryValues(searchParams.get("costs")),
+    force: splitQueryValues(searchParams.get("forces")),
+    defense: splitQueryValues(searchParams.get("defenses")),
+    limit: splitQueryValues(searchParams.get("limit")),
   };
 }
 

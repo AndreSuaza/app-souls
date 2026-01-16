@@ -1,11 +1,16 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { CardFinderLab, Pagination } from "@/components";
-import { Card, PaginationFilters } from "@/interfaces";
+import { Card, PaginationFilters, FilterSelections } from "@/interfaces";
 import { getPaginatedCards } from "@/actions";
-import { buildPaginationFilters, FilterSelections } from "@/utils/filter-utils";
+import {
+  buildFilterQuery,
+  buildPaginationFilters,
+  parseFiltersFromSearchParams,
+} from "@/utils/filter-utils";
 import { CardGrid } from "../card-grid/CardGrid";
 import { CardFinderLabLocal } from "../../finders/CardFinderLabLocal";
 import {
@@ -64,17 +69,99 @@ export const CardFinder = ({
   onSearch,
   useAdvancedFilters = false,
 }: Props) => {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const initialSelections = useMemo(
+    () => parseFiltersFromSearchParams(searchParams),
+    [searchParams]
+  );
+  const initialPaginationFilters = useMemo(
+    () => buildPaginationFilters(initialSelections),
+    [initialSelections]
+  );
+  const initialPage = useMemo(() => {
+    const pageParam = searchParams.get("page");
+    const pageNumber = pageParam ? Number.parseInt(pageParam, 10) : 1;
+    if (Number.isNaN(pageNumber) || pageNumber < 1) return 1;
+    return pageNumber;
+  }, [searchParams]);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [cardsState, setCardsState] = useState(cards);
   const [totalPagesState, setTotalPagesState] = useState(totalPage);
   const [advancedCurrentPage, setAdvancedCurrentPage] = useState(
-    currentPage ?? 1
+    currentPage ?? initialPage
   );
-  const [advancedFilters, setAdvancedFilters] = useState<PaginationFilters>({});
+  const [advancedFilters, setAdvancedFilters] = useState<PaginationFilters>(
+    () => initialPaginationFilters
+  );
+  const [advancedSelection, setAdvancedSelection] = useState<FilterSelections>(
+    () => initialSelections
+  );
   const [totalCardsState, setTotalCardsState] = useState(
     totalCards ?? cards.length
   );
   const [perPageState, setPerPageState] = useState(perPage ?? 30);
+
+  useEffect(() => {
+    // Detecta viewport md+ para mantener el layout actual en pantallas grandes.
+    const media = window.matchMedia("(min-width: 768px)");
+    const handleChange = () => setIsDesktop(media.matches);
+    handleChange();
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (!useAdvancedFilters) return;
+    setAdvancedSelection(initialSelections);
+    setAdvancedFilters(initialPaginationFilters);
+    setAdvancedCurrentPage(currentPage ?? initialPage);
+  }, [
+    useAdvancedFilters,
+    initialSelections,
+    initialPaginationFilters,
+    initialPage,
+    currentPage,
+  ]);
+
+  // Sincroniza filtros con la URL sin disparar navegacion de Next.
+  const updateUrlWithFilters = useCallback(
+    (selection: FilterSelections, page: number) => {
+      if (typeof window === "undefined") return;
+
+      const params = new URLSearchParams(window.location.search);
+      const managedKeys = [
+        "text",
+        "products",
+        "types",
+        "archetypes",
+        "keywords",
+        "rarities",
+        "costs",
+        "forces",
+        "defenses",
+        "limit",
+        "page",
+      ];
+
+      managedKeys.forEach((key) => params.delete(key));
+
+      const filterParams = new URLSearchParams(buildFilterQuery(selection));
+      for (const [key, value] of filterParams.entries()) {
+        params.set(key, value);
+      }
+
+      if (page > 1) {
+        params.set("page", page.toString());
+      }
+
+      const query = params.toString();
+      const nextUrl = query ? `${pathname}?${query}` : pathname;
+      window.history.replaceState(null, "", nextUrl);
+    },
+    [pathname]
+  );
 
   const fetchAdvancedCards = useCallback(
     async (filters: PaginationFilters, page: number) => {
@@ -103,15 +190,23 @@ export const CardFinder = ({
   const handleAdvancedPageChange = useCallback(
     async (page: number) => {
       await fetchAdvancedCards(advancedFilters, page);
+      updateUrlWithFilters(advancedSelection, page);
     },
-    [advancedFilters, fetchAdvancedCards]
+    [
+      advancedFilters,
+      fetchAdvancedCards,
+      updateUrlWithFilters,
+      advancedSelection,
+    ]
   );
 
   const handleSidebarFiltersChange = useCallback(
     (selection: FilterSelections) => {
+      setAdvancedSelection(selection);
+      updateUrlWithFilters(selection, 1);
       void handleAdvancedSearch(buildPaginationFilters(selection));
     },
-    [handleAdvancedSearch]
+    [handleAdvancedSearch, updateUrlWithFilters]
   );
 
   const columns = useMemo(() => {
@@ -134,16 +229,8 @@ export const CardFinder = ({
         onPageChange,
       };
 
-  const mdColumnsValue = useAdvancedFilters
-    ? panelOpen
-      ? 2
-      : 4
-    : 4;
-  const lgColumnsValue = useAdvancedFilters
-    ? panelOpen
-      ? 4
-      : 6
-    : columns;
+  const mdColumnsValue = useAdvancedFilters ? (panelOpen ? 2 : 4) : 4;
+  const lgColumnsValue = useAdvancedFilters ? (panelOpen ? 4 : 6) : columns;
   const xlColumnsValue = useAdvancedFilters
     ? panelOpen
       ? 6
@@ -181,18 +268,19 @@ export const CardFinder = ({
           panelOpen={panelOpen}
           onPanelToggle={() => setPanelOpen((value) => !value)}
           onClosePanel={() => setPanelOpen(false)}
+          initialFilters={initialSelections}
           onFiltersChange={handleSidebarFiltersChange}
           statsRange={statsRange}
         />
         <div className="overflow-hidden">
           <motion.div
-            animate={{ x: panelOpen ? FILTER_PANEL_WIDTH + 24 : 0 }}
+            animate={{ x: panelOpen && isDesktop ? FILTER_PANEL_WIDTH + 24 : 0 }}
             transition={{ type: "tween", duration: 0.35 }}
-            style={{
-              width: panelOpen
-                ? `calc(100% - ${FILTER_PANEL_WIDTH + 24}px)`
-                : "100%",
-            }}
+            style={
+              panelOpen && isDesktop
+                ? { width: `calc(100% - ${FILTER_PANEL_WIDTH + 24}px)` }
+                : undefined
+            }
           >
             {gridContent}
           </motion.div>
