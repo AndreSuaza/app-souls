@@ -2,7 +2,10 @@
 
 import { CardItemList } from "../card-grid/CardItemList";
 import { Card, Decklist } from "@/interfaces";
-import { useEffect, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
+import { IoChevronDownOutline, IoChevronUpOutline } from "react-icons/io5";
+import { AnimatePresence, motion } from "framer-motion";
+import clsx from "clsx";
 
 interface Props {
   deckListMain: Decklist[];
@@ -12,9 +15,33 @@ interface Props {
   addCard?: (c: Card) => void;
   dropCardSide?: (c: Card) => void;
   addCardSide?: (c: Card) => void;
+  columnsLg?: number;
+  columnsXl?: number;
 }
 
 const initialCounts = { und: 0, arm: 0, con: 0, ent: 0 };
+const typeMap: Record<string, keyof typeof initialCounts> = {
+  Unidad: "und",
+  Arma: "arm",
+  Conjuro: "con",
+  Ente: "ent",
+};
+
+const buildDeckStats = (decklist: Decklist[]) => {
+  const totals = decklist.reduce(
+    (acc, deck) => {
+      deck.card.types.forEach((type) => {
+        const key = typeMap[type.name];
+        if (key) acc[key] += deck.count;
+      });
+      acc.total += deck.count;
+      return acc;
+    },
+    { ...initialCounts, total: 0 }
+  );
+
+  return totals;
+};
 
 export const ShowDeck = ({
   deckListMain,
@@ -24,119 +51,211 @@ export const ShowDeck = ({
   addCard,
   dropCardSide,
   addCardSide,
+  columnsLg = 4,
+  columnsXl = 6,
 }: Props) => {
-  const [numCards, setNumCard] = useState({ und: 0, arm: 0, con: 0, ent: 0 });
+  const [sectionsOpen, setSectionsOpen] = useState({
+    limbo: true,
+    main: true,
+    side: true,
+  });
 
-  const countDecklist = (decklist: Decklist[]) => {
-    return decklist.reduce((acc, deck) => acc + deck.count, 0);
+  // Calcula estadísticas por sección para mostrar los contadores.
+  const mainStats = useMemo(
+    () => buildDeckStats(deckListMain),
+    [deckListMain]
+  );
+  const limboStats = useMemo(
+    () => buildDeckStats(deckListLimbo),
+    [deckListLimbo]
+  );
+  const sideStats = useMemo(
+    () => buildDeckStats(deckListSide),
+    [deckListSide]
+  );
+
+  const toggleSection = (section: keyof typeof sectionsOpen) => {
+    setSectionsOpen((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const countCardsTypes = useCallback(() => {
-    const typeMap: Record<string, keyof typeof initialCounts> = {
-      Unidad: "und",
-      Arma: "arm",
-      Conjuro: "con",
-      Ente: "ent",
-    };
+  const getGridClass = (breakpoint: "lg" | "xl", value: number) => {
+    switch (value) {
+      case 4:
+        return `${breakpoint}:grid-cols-4`;
+      case 6:
+        return `${breakpoint}:grid-cols-6`;
+      case 8:
+        return `${breakpoint}:grid-cols-8`;
+      default:
+        return `${breakpoint}:grid-cols-4`;
+    }
+  };
 
-    const updatedNumCards = deckListMain.reduce(
-      (acc, deck) => {
-        deck.card.types.forEach((type) => {
-          const key = typeMap[type.name];
-          if (key) acc[key] += deck.count;
-        });
-        return acc;
-      },
-      { ...initialCounts }
-    );
+  const gridClassName = clsx(
+    "grid grid-cols-1 gap-2 md:grid-cols-4",
+    getGridClass("lg", columnsLg),
+    getGridClass("xl", columnsXl),
+  );
 
-    setNumCard(updatedNumCards);
-  }, [deckListMain]);
-
-  useEffect(() => {
-    countCardsTypes();
-  }, [countCardsTypes]);
+  const renderStats = (stats: ReturnType<typeof buildDeckStats>) => (
+    <ul className="mb-2 flex flex-row flex-wrap gap-2 rounded-lg bg-slate-900/90 px-2 py-1 text-xs text-white dark:bg-tournament-dark-muted sm:text-sm">
+      <li>
+        <span className="font-bold">T:</span> {stats.total}
+      </li>
+      <li>
+        <span className="font-bold text-red-600">U:</span> {stats.und}
+      </li>
+      <li>
+        <span className="font-bold text-purple-700">C:</span> {stats.con}
+      </li>
+      <li>
+        <span className="font-bold text-gray-400">A:</span> {stats.arm}
+      </li>
+      <li>
+        <span className="font-bold text-yellow-500">E:</span> {stats.ent}
+      </li>
+    </ul>
+  );
 
   return (
     <>
-      <div className="border-2 p-2 rounded-xl shadow-md bg-slate-100">
+      <div className="mb-6 rounded-lg border border-slate-200 bg-white p-3 text-slate-900 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-100">
         <div className="flex flex-col">
-          <h2 className="bg-yellow-500 py-1 px-2 rounded text-sm md:text-2xl uppercase font-bold mb-2 text-white">
-            Mazo Limbo
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-2">
-            {deckListLimbo
-              .slice()
-              .reverse()
-              .map((deck, index) => (
-                <CardItemList
-                  key={deck.card.id + index}
-                  card={deck.card}
-                  count={deck.count}
-                  dropCard={dropCard}
-                  addCard={addCard}
-                />
-              ))}
+          <div className="mb-2 flex w-full items-center justify-between rounded-lg bg-amber-500/90 px-3 py-1 text-xs font-bold uppercase text-white sm:text-sm md:text-base">
+            <span>Mazo Limbo</span>
+            <button
+              type="button"
+              onClick={() => toggleSection("limbo")}
+              className="inline-flex items-center justify-center text-white/90 transition hover:text-white"
+              aria-label="Mostrar u ocultar mazo limbo"
+            >
+              {sectionsOpen.limbo ? (
+                <IoChevronUpOutline className="h-4 w-4" />
+              ) : (
+                <IoChevronDownOutline className="h-4 w-4" />
+              )}
+            </button>
           </div>
+          {renderStats(limboStats)}
 
-          <h2 className="bg-indigo-500 px-2 py-1 rounded text-sm md:text-2xl uppercase font-bold my-2 pr-6 text-white">
-            Mazo Principal
-          </h2>
-          <ul className="flex flex-row bg-gray-900 p-1 rounded-md mb-1 text-white">
-            <li className="mr-2">
-              <span className="font-bold ml-2">T:</span>{" "}
-              {countDecklist(deckListMain)}
-            </li>
-            <li className="mr-2">
-              <span className="font-bold text-red-600">U:</span> {numCards.und}
-            </li>
-            <li className="mr-2">
-              <span className="font-bold text-purple-700">C:</span>{" "}
-              {numCards.con}
-            </li>
-            <li className="mr-2">
-              <span className="font-bold text-gray-400">A:</span> {numCards.arm}
-            </li>
-            <li className="mr-2">
-              <span className="font-bold text-yellow-500">E:</span>{" "}
-              {numCards.ent}
-            </li>
-          </ul>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-2">
-          {deckListMain
-            .slice()
-            .reverse()
-            .map((deck, index) => (
-              <CardItemList
-                key={deck.card.id + index}
-                card={deck.card}
-                count={deck.count}
-                dropCard={dropCard}
-                addCard={addCard}
-              />
-            ))}
-        </div>
+          {/* Animación para mantener la misma sensación del grid de /cartas. */}
+          <AnimatePresence initial={false}>
+            {sectionsOpen.limbo && (
+              <motion.div
+                key="limbo-grid"
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className={gridClassName}
+              >
+                {deckListLimbo
+                  .slice()
+                  .reverse()
+                  .map((deck, index) => (
+                    <motion.div key={deck.card.id + index} layout>
+                      <CardItemList
+                        card={deck.card}
+                        count={deck.count}
+                        dropCard={dropCard}
+                        addCard={addCard}
+                      />
+                    </motion.div>
+                  ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <h2 className="bg-blue-500 py-1 px-2 rounded text-sm md:text-2xl uppercase font-bold my-2 text-white">
-          Mazo Apoyo
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-2">
-          {deckListSide
-            .slice()
-            .reverse()
-            .map((deck, index) => (
-              <CardItemList
-                key={deck.card.id + index}
-                card={deck.card}
-                count={deck.count}
-                dropCard={dropCardSide}
-                addCard={addCardSide}
-              />
-            ))}
+          <div className="my-2 flex w-full items-center justify-between rounded-lg bg-purple-600 px-3 py-1 text-xs font-bold uppercase text-white sm:text-sm md:text-base">
+            <span>Mazo Principal</span>
+            <button
+              type="button"
+              onClick={() => toggleSection("main")}
+              className="inline-flex items-center justify-center text-white/90 transition hover:text-white"
+              aria-label="Mostrar u ocultar mazo principal"
+            >
+              {sectionsOpen.main ? (
+                <IoChevronUpOutline className="h-4 w-4" />
+              ) : (
+                <IoChevronDownOutline className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          {renderStats(mainStats)}
         </div>
+        <AnimatePresence initial={false}>
+          {sectionsOpen.main && (
+            <motion.div
+              key="main-grid"
+              layout
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className={gridClassName}
+            >
+              {deckListMain
+                .slice()
+                .reverse()
+                .map((deck, index) => (
+                  <motion.div key={deck.card.id + index} layout>
+                    <CardItemList
+                      card={deck.card}
+                      count={deck.count}
+                      dropCard={dropCard}
+                      addCard={addCard}
+                    />
+                  </motion.div>
+                ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="my-2 flex w-full items-center justify-between rounded-lg bg-sky-600 px-3 py-1 text-xs font-bold uppercase text-white sm:text-sm md:text-base">
+          <span>Mazo Apoyo</span>
+          <button
+            type="button"
+            onClick={() => toggleSection("side")}
+            className="inline-flex items-center justify-center text-white/90 transition hover:text-white"
+            aria-label="Mostrar u ocultar mazo apoyo"
+          >
+            {sectionsOpen.side ? (
+              <IoChevronUpOutline className="h-4 w-4" />
+            ) : (
+              <IoChevronDownOutline className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+        {renderStats(sideStats)}
+
+        <AnimatePresence initial={false}>
+          {sectionsOpen.side && (
+            <motion.div
+              key="side-grid"
+              layout
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className={gridClassName}
+            >
+              {deckListSide
+                .slice()
+                .reverse()
+                .map((deck, index) => (
+                  <motion.div key={deck.card.id + index} layout>
+                    <CardItemList
+                      card={deck.card}
+                      count={deck.count}
+                      dropCard={dropCardSide}
+                      addCard={addCardSide}
+                    />
+                  </motion.div>
+                ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );

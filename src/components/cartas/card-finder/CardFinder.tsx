@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import clsx from "clsx";
 import { CardFinderLab, Pagination } from "@/components";
 import { Card, PaginationFilters, FilterSelections } from "@/interfaces";
 import { getPaginatedCards } from "@/actions";
@@ -24,6 +25,9 @@ const formatStatsRange = (page: number, perPage: number, total: number) => {
   const end = Math.min(page * perPage, total);
   return `${start}-${end} de ${total}`;
 };
+
+const GRID_CARD_MIN_WIDTH = 160;
+const GRID_GAP_PX = 16;
 
 //Mover a interface
 
@@ -53,6 +57,18 @@ interface Props {
   onPageChange?: (page: number) => void;
   onSearch?: (filters: PaginationFilters) => void;
   useAdvancedFilters?: boolean;
+  layoutVariant?: "page" | "embedded";
+  layoutColumns?: {
+    md?: number;
+    lg?: number;
+    xl?: number;
+  };
+  layoutColumnsOpen?: {
+    lg?: number;
+    xl?: number;
+  };
+  disableUrlSync?: boolean;
+  disableGridAnimations?: boolean;
 }
 
 export const CardFinder = ({
@@ -68,6 +84,11 @@ export const CardFinder = ({
   onPageChange,
   onSearch,
   useAdvancedFilters = false,
+  layoutVariant = "page",
+  layoutColumns,
+  layoutColumnsOpen,
+  disableUrlSync = false,
+  disableGridAnimations = false,
 }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -102,6 +123,8 @@ export const CardFinder = ({
     totalCards ?? cards.length
   );
   const [perPageState, setPerPageState] = useState(perPage ?? 30);
+  const gridWrapperRef = useRef<HTMLDivElement | null>(null);
+  const [autoColumns, setAutoColumns] = useState<number | null>(null);
 
   useEffect(() => {
     // Detecta viewport md+ para mantener el layout actual en pantallas grandes.
@@ -125,9 +148,43 @@ export const CardFinder = ({
     currentPage,
   ]);
 
+  useEffect(() => {
+    if (!useAdvancedFilters) return;
+    const element = gridWrapperRef.current;
+    if (!element) return;
+
+    const calculateColumns = (width: number) => {
+      const nextColumns = Math.floor(
+        (width + GRID_GAP_PX) / (GRID_CARD_MIN_WIDTH + GRID_GAP_PX)
+      );
+      return Math.max(1, Math.min(8, nextColumns));
+    };
+
+    // Ajusta columnas segun el ancho real para que el layout responda al espacio disponible.
+    const updateColumns = (width: number) => {
+      const nextValue = calculateColumns(width);
+      setAutoColumns((prev) => (prev === nextValue ? prev : nextValue));
+    };
+
+    updateColumns(element.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
+        updateColumns(entry.contentRect.width);
+      });
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [useAdvancedFilters]);
+
   // Sincroniza filtros con la URL sin disparar navegacion de Next.
   const updateUrlWithFilters = useCallback(
     (selection: FilterSelections, page: number) => {
+      if (disableUrlSync) return;
       if (typeof window === "undefined") return;
 
       const params = new URLSearchParams(window.location.search);
@@ -160,7 +217,7 @@ export const CardFinder = ({
       const nextUrl = query ? `${pathname}?${query}` : pathname;
       window.history.replaceState(null, "", nextUrl);
     },
-    [pathname]
+    [disableUrlSync, pathname]
   );
 
   const fetchAdvancedCards = useCallback(
@@ -229,13 +286,38 @@ export const CardFinder = ({
         onPageChange,
       };
 
-  const mdColumnsValue = useAdvancedFilters ? (panelOpen ? 2 : 4) : 4;
-  const lgColumnsValue = useAdvancedFilters ? (panelOpen ? 4 : 6) : columns;
+  const isEmbedded = layoutVariant === "embedded";
+  const embeddedMdColumns = layoutColumns?.md ?? 2;
+  const embeddedLgColumns = layoutColumns?.lg ?? 4;
+  const embeddedXlColumns = layoutColumns?.xl ?? 6;
+  const mdColumnsValue = useAdvancedFilters
+    ? isEmbedded
+      ? embeddedMdColumns
+      : panelOpen
+      ? 2
+      : 4
+    : 4;
+  const lgColumnsValue = useAdvancedFilters
+    ? isEmbedded
+      ? panelOpen
+        ? layoutColumnsOpen?.lg ?? embeddedLgColumns
+        : embeddedLgColumns
+      : panelOpen
+      ? 4
+      : 6
+    : columns;
   const xlColumnsValue = useAdvancedFilters
-    ? panelOpen
+    ? isEmbedded
+      ? panelOpen
+        ? layoutColumnsOpen?.xl ?? embeddedXlColumns
+        : embeddedXlColumns
+      : panelOpen
       ? 6
       : 8
     : Math.max(columns, 8);
+  const resolvedAutoColumns = useAdvancedFilters
+    ? autoColumns ?? undefined
+    : undefined;
 
   const gridContent = (
     <Pagination {...paginationProps}>
@@ -247,6 +329,8 @@ export const CardFinder = ({
         mdColumns={mdColumnsValue}
         lgColumns={lgColumnsValue}
         xlColumns={xlColumnsValue}
+        autoColumns={resolvedAutoColumns}
+        disableAnimations={disableGridAnimations}
       />
     </Pagination>
   );
@@ -261,8 +345,15 @@ export const CardFinder = ({
   }, [advancedCurrentPage, perPageState, totalCardsState, useAdvancedFilters]);
 
   if (useAdvancedFilters) {
+    const advancedContainerClassName = clsx(
+      "relative",
+      layoutVariant === "embedded"
+        ? "px-4 pb-6 pt-4 sm:px-5"
+        : "px-4 pb-10 pt-6 sm:px-6 min-h-[100vh] bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg"
+    );
+
     return (
-      <div className="relative px-4 pb-10 pt-6 sm:px-6 min-h-[100vh] bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg">
+      <div className={advancedContainerClassName}>
         <CardFiltersSidebar
           propertiesCards={propertiesCards}
           panelOpen={panelOpen}
@@ -274,6 +365,7 @@ export const CardFinder = ({
         />
         <div className="overflow-hidden">
           <motion.div
+            ref={gridWrapperRef}
             animate={{ x: panelOpen && isDesktop ? FILTER_PANEL_WIDTH + 24 : 0 }}
             transition={{ type: "tween", duration: 0.35 }}
             style={

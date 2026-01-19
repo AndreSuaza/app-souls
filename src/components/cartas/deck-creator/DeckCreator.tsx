@@ -2,6 +2,8 @@
 
 import type { Card } from "@/interfaces";
 import { useEffect, useState, useCallback, useRef } from "react";
+import clsx from "clsx";
+import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
 import { CardFinder } from "../card-finder/CardFinder";
@@ -36,14 +38,14 @@ interface Props {
 const addCardLogic = (
   deckListSelected: Decklist[],
   cardfound: Decklist | undefined,
-  cardSeleted: Card
+  cardSeleted: Card,
 ) => {
   if (cardfound) {
     if (cardfound.count < 2) {
       const updatedCards = deckListSelected.map((deck) =>
         deck.card.name === cardSeleted.name
           ? { card: deck.card, count: 2 }
-          : deck
+          : deck,
       );
       return updatedCards;
     }
@@ -55,23 +57,25 @@ const addCardLogic = (
 const dropCardLogic = (
   deckListSelected: Decklist[],
   cardfound: Decklist | undefined,
-  cardSeleted: Card
+  cardSeleted: Card,
 ) => {
   if (cardfound && cardfound.count === 2) {
     const updatedCards = deckListSelected.map((deck) =>
-      deck.card.name === cardSeleted.name ? { card: deck.card, count: 1 } : deck
+      deck.card.name === cardSeleted.name
+        ? { card: deck.card, count: 1 }
+        : deck,
     );
     return updatedCards;
   } else {
     return deckListSelected.filter(
-      (cardDeck) => cardDeck.card.name != cardSeleted.name
+      (cardDeck) => cardDeck.card.name != cardSeleted.name,
     );
   }
 };
 
 const addCardDecklist = (deckListSelected: Decklist[], cardSeleted: Card) => {
   const cardfound = deckListSelected.find(
-    (cardDeck) => cardDeck.card.name == cardSeleted.name
+    (cardDeck) => cardDeck.card.name == cardSeleted.name,
   );
 
   return addCardLogic(deckListSelected, cardfound, cardSeleted);
@@ -79,7 +83,7 @@ const addCardDecklist = (deckListSelected: Decklist[], cardSeleted: Card) => {
 
 const dropCardDecklist = (deckListSelected: Decklist[], cardSeleted: Card) => {
   const cardfound = deckListSelected.find(
-    (cardDeck) => cardDeck.card.name == cardSeleted.name
+    (cardDeck) => cardDeck.card.name == cardSeleted.name,
   );
 
   return dropCardLogic(deckListSelected, cardfound, cardSeleted);
@@ -93,18 +97,21 @@ export const DeckCreator = ({
   sideDeck,
   initialFilters,
   initialPage = 1,
+  className,
 }: Props) => {
   const hasImportedRef = useRef(false);
   const [cardsState, setCardsState] = useState(cards);
   const [totalPagesState, setTotalPagesState] = useState(totalPages);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [currentFilters, setCurrentFilters] = useState<PaginationFilters>(
-    initialFilters ?? {}
+    initialFilters ?? {},
   );
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
   const [deckListSide, setDeckListSide] = useState<Decklist[]>([]);
   const [viewList, setViewList] = useState(false);
+  // Controla el colapso del panel de busqueda para pantallas grandes.
+  const [isFinderCollapsed, setIsFinderCollapsed] = useState(false);
 
   const importDeck = useCallback(() => {
     const hasIncomingDeck =
@@ -115,10 +122,10 @@ export const DeckCreator = ({
 
     if (mainDeck) {
       const main = mainDeck.filter(
-        (c) => !c.card.types.some((type) => type.name === "Limbo")
+        (c) => !c.card.types.some((type) => type.name === "Limbo"),
       );
       const limbo = mainDeck.filter((c) =>
-        c.card.types.some((type) => type.name === "Limbo")
+        c.card.types.some((type) => type.name === "Limbo"),
       );
 
       const mainCount = main.reduce((acc, deck) => acc + deck.count, 0);
@@ -154,7 +161,7 @@ export const DeckCreator = ({
       setTotalPagesState(result.totalPage);
       setCurrentPage(result.currentPage ?? page);
     },
-    []
+    [],
   );
 
   const handleSearch = useCallback(
@@ -163,14 +170,14 @@ export const DeckCreator = ({
       setCurrentFilters(filters);
       await fetchCards(filters, 1);
     },
-    [fetchCards]
+    [fetchCards],
   );
 
   const handlePageChange = useCallback(
     async (page: number) => {
       await fetchCards(currentFilters, page);
     },
-    [currentFilters, fetchCards]
+    [currentFilters, fetchCards],
   );
 
   const addCard = (cardSeleted: Card) => {
@@ -248,41 +255,92 @@ export const DeckCreator = ({
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 mb-6">
-      <div className="">
-        <CardFinder
-          cards={cardsState}
-          propertiesCards={propertiesCards}
-          totalPage={totalPagesState}
-          cols={2}
-          addCard={addCard}
-          addCardSidedeck={addCardSideDeck}
-          currentPage={currentPage}
-          onPageChange={handlePageChange}
-          onSearch={handleSearch}
-        />
+    <div
+      className={clsx(
+        "flex h-full flex-col gap-4 overflow-hidden lg:flex-row lg:gap-0",
+        className,
+      )}
+    >
+      {/* min-h-0 permite que cada columna tenga su propio scroll en el layout flex. */}
+      <section
+        className={clsx(
+          "flex min-h-0 flex-1 flex-col overflow-y-auto lg:h-full lg:w-1/2",
+          isFinderCollapsed &&
+            "lg:w-0 lg:flex-none lg:overflow-hidden lg:opacity-0",
+        )}
+      >
+        <div className="min-h-full px-4 pt-4 pb-10">
+          <CardFinder
+            cards={cardsState}
+            propertiesCards={propertiesCards}
+            totalPage={totalPagesState}
+            cols={2}
+            addCard={addCard}
+            addCardSidedeck={addCardSideDeck}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+            onSearch={handleSearch}
+            useAdvancedFilters
+            layoutVariant="embedded"
+            layoutColumns={{ md: 2, lg: 4, xl: 4 }}
+            layoutColumnsOpen={{ lg: 1, xl: 2 }}
+            disableUrlSync
+            disableGridAnimations
+          />
+        </div>
+      </section>
+
+      <div className="relative hidden w-10 items-center justify-center lg:flex">
+        <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-slate-200 dark:bg-tournament-dark-border" />
+        <button
+          type="button"
+          onClick={() => setIsFinderCollapsed((prev) => !prev)}
+          title={
+            isFinderCollapsed
+              ? "Expandir buscador de cartas"
+              : "Contraer buscador de cartas"
+          }
+          className="relative z-10 flex h-10 w-10 items-center justify-center rounded-lg border border-purple-400 bg-purple-600 text-white shadow-md transition hover:bg-purple-500 dark:border-purple-300 dark:bg-purple-500"
+          aria-label={
+            isFinderCollapsed
+              ? "Expandir buscador de cartas"
+              : "Contraer buscador de cartas"
+          }
+        >
+          {isFinderCollapsed ? (
+            <IoChevronForwardOutline className="h-5 w-5" />
+          ) : (
+            <IoChevronBackOutline className="h-5 w-5" />
+          )}
+        </button>
       </div>
-      <div className="col-span-1 md:col-span-3 mt-6 mx-2">
-        <div className="flex my-2">
-          <OptionsDeckCreator
+
+      <section className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:h-full lg:w-1/2 pb-10">
+        <div className="min-h-full px-4 pt-4 pb-10">
+          <div className="flex my-3">
+            <OptionsDeckCreator
+              deckListMain={deckListMain}
+              deckListLimbo={deckListLimbo}
+              deckListSide={deckListSide}
+              clearDecklist={clearDecklist}
+              changeViewList={changeViewList}
+              viewList={viewList}
+            />
+          </div>
+          <ShowDeck
             deckListMain={deckListMain}
             deckListLimbo={deckListLimbo}
             deckListSide={deckListSide}
-            clearDecklist={clearDecklist}
-            changeViewList={changeViewList}
-            viewList={viewList}
+            addCard={addCard}
+            dropCard={dropCard}
+            addCardSide={addCardSideDeck}
+            dropCardSide={dropCardSideDeck}
+            columnsLg={isFinderCollapsed ? 6 : 4}
+            columnsXl={isFinderCollapsed ? 8 : 4}
           />
+          <div className="h-6" aria-hidden />
         </div>
-        <ShowDeck
-          deckListMain={deckListMain}
-          deckListLimbo={deckListLimbo}
-          deckListSide={deckListSide}
-          addCard={addCard}
-          dropCard={dropCard}
-          addCardSide={addCardSideDeck}
-          dropCardSide={dropCardSideDeck}
-        />
-      </div>
+      </section>
     </div>
   );
 };

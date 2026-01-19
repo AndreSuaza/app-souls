@@ -15,8 +15,10 @@ interface Props {
   mdColumns?: number;
   lgColumns?: number;
   xlColumns?: number;
+  autoColumns?: number;
   addCard?: (c: Card) => void;
   addCardSidedeck?: (c: Card) => void;
+  disableAnimations?: boolean;
 }
 
 const getGridClass = (
@@ -34,8 +36,33 @@ const getGridClass = (
       return `${breakpoint}:grid-cols-4`;
     case 5:
       return `${breakpoint}:grid-cols-5`;
+    case 7:
+      return `${breakpoint}:grid-cols-7`;
+    case 8:
+      return `${breakpoint}:grid-cols-8`;
     default:
       return `${breakpoint}:grid-cols-6`;
+  }
+};
+
+const getBaseGridClass = (value: number) => {
+  switch (value) {
+    case 1:
+      return "grid-cols-1";
+    case 2:
+      return "grid-cols-2";
+    case 3:
+      return "grid-cols-3";
+    case 4:
+      return "grid-cols-4";
+    case 5:
+      return "grid-cols-5";
+    case 7:
+      return "grid-cols-7";
+    case 8:
+      return "grid-cols-8";
+    default:
+      return "grid-cols-6";
   }
 };
 
@@ -46,8 +73,10 @@ export const CardGrid = ({
   mdColumns,
   lgColumns,
   xlColumns,
+  autoColumns,
   addCard,
   addCardSidedeck,
+  disableAnimations = false,
 }: Props) => {
   const isCardDetailOpen = useCardDetailStore(
     (state) => state.isCardDetailOpen
@@ -60,6 +89,16 @@ export const CardGrid = ({
     openCardDetail();
   };
 
+  const gridClassName = autoColumns
+    ? clsx("grid gap-4", getBaseGridClass(autoColumns))
+    : clsx(
+        "grid gap-4 grid-cols-1",
+        getGridClass("sm", smColumns ?? 2),
+        getGridClass("md", mdColumns ?? 4),
+        getGridClass("lg", lgColumns ?? columns),
+        getGridClass("xl", xlColumns ?? columns)
+      );
+
   return (
     <>
       <div className="mt-4">
@@ -67,16 +106,24 @@ export const CardGrid = ({
           <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white/80 py-16 text-center text-sm font-semibold text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/60 dark:text-slate-300">
             No se encontraron resultados.
           </div>
+        ) : disableAnimations ? (
+          <ul className={gridClassName}>
+            {cards.map((card, index) => (
+              <li key={card.id}>
+                <CardItem
+                  card={card}
+                  addCard={addCard}
+                  addCardSidedeck={addCardSidedeck}
+                  index={index}
+                  detailCard={detailCard}
+                />
+              </li>
+            ))}
+          </ul>
         ) : (
           <motion.ul
             layout
-            className={clsx(
-              "grid gap-4 grid-cols-1",
-              getGridClass("sm", smColumns ?? 2),
-              getGridClass("md", mdColumns ?? 4),
-              getGridClass("lg", lgColumns ?? columns),
-              getGridClass("xl", xlColumns ?? columns)
-            )}
+            className={gridClassName}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}

@@ -110,9 +110,12 @@ export const OptionsDeckCreator = ({
         setShowDeckImage(false);
     }
 
+    const actionButtonClass =
+        "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300";
+
     return (
         <>
-        <div className="grid grid-cols-4 md:grid-cols-8 gap-1 mb-2 -mt-2">
+        <div className="grid grid-cols-4 gap-2 mb-3 md:grid-cols-8">
             {/* {session?.user && 
             <button
                 className="btn-short"
@@ -134,7 +137,7 @@ export const OptionsDeckCreator = ({
             } */}
 
              <button
-                className="btn-short"
+                className={actionButtonClass}
                 title="Cambiar Vista del Mazo"
                 onClick={changeViewList}
             >
@@ -147,25 +150,29 @@ export const OptionsDeckCreator = ({
             </button>
 
             <button
-                className="btn-short"
+                className={actionButtonClass}
                 title="Exportar Mazo"
                 onClick={createCodeDeck}
             >
                 <IoShareSocialOutline className="w-6 h-6 -mb-0.5" />
             </button>
            
-            <button className="btn-short" title="Exportar Imagen" onClick={() => setShowDeckImage(true)}>
+            <button
+                className={actionButtonClass}
+                title="Exportar Imagen"
+                onClick={() => setShowDeckImage(true)}
+            >
                 <IoImageOutline className="w-6 h-6 -mb-0.5" />
             </button>
             <button
-                className="btn-short"
+                className={actionButtonClass}
                 title="Prueba Manos"
                 onClick={handTest}
             >
                 <IoHandRightOutline className="w-6 h-6 -mb-0.5" />
             </button>
             <button
-                className="btn-short"
+                className={actionButtonClass}
                 title="Limpiar Mazo"
                 onClick={clearDecklist}
             >
