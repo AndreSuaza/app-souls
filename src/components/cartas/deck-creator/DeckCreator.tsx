@@ -264,9 +264,10 @@ export const DeckCreator = ({
       {/* min-h-0 permite que cada columna tenga su propio scroll en el layout flex. */}
       <section
         className={clsx(
-          "flex min-h-0 flex-1 flex-col overflow-y-auto lg:h-full lg:w-1/2",
-          isFinderCollapsed &&
-            "lg:w-0 lg:flex-none lg:overflow-hidden lg:opacity-0",
+          "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto lg:h-full",
+          isFinderCollapsed
+            ? "lg:w-0 lg:flex-none lg:overflow-hidden lg:opacity-0"
+            : "lg:w-1/2",
         )}
       >
         <div className="min-h-full px-4 pt-4 pb-10">
@@ -315,7 +316,12 @@ export const DeckCreator = ({
         </button>
       </div>
 
-      <section className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:h-full lg:w-1/2 pb-10">
+      <section
+        className={clsx(
+          "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto lg:h-full pb-10",
+          isFinderCollapsed ? "lg:w-auto" : "lg:w-1/2",
+        )}
+      >
         <div className="min-h-full px-4 pt-4 pb-10">
           <div className="flex my-3">
             <OptionsDeckCreator
