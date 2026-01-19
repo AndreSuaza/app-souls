@@ -70,7 +70,7 @@ export default async function Cards({ searchParams }: Props) {
   const page2 = page ? parseInt(page) : 1;
 
   const propertiesCards = await getPropertiesCards();
-  const { cards, totalPage } = await getPaginatedCards({
+  const { cards, totalPage, totalCount, perPage } = await getPaginatedCards({
     page: page2,
     text,
     products,
@@ -105,6 +105,8 @@ export default async function Cards({ searchParams }: Props) {
       mainDeck={mainDeck}
       sideDeck={sideDeck}
       totalPages={totalPage}
+      totalCards={totalCount}
+      perPage={perPage}
       initialPage={page2}
       className="h-full min-h-0"
       initialFilters={{

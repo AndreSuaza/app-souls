@@ -28,6 +28,8 @@ interface Props {
   cards: Card[];
   propertiesCards: Properties;
   totalPages: number;
+  totalCards?: number;
+  perPage?: number;
   mainDeck?: Decklist[];
   sideDeck?: Decklist[];
   className?: string;
@@ -93,6 +95,8 @@ export const DeckCreator = ({
   cards,
   propertiesCards,
   totalPages,
+  totalCards,
+  perPage,
   mainDeck,
   sideDeck,
   initialFilters,
@@ -281,6 +285,8 @@ export const DeckCreator = ({
             currentPage={currentPage}
             onPageChange={handlePageChange}
             onSearch={handleSearch}
+            totalCards={totalCards}
+            perPage={perPage}
             useAdvancedFilters
             layoutVariant="embedded"
             layoutColumns={{ md: 2, lg: 4, xl: 4 }}

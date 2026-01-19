@@ -24,7 +24,7 @@ export const CardDetail = ({ cards, indexList }: Props) => {
   const [indexCard, setIndexCard] = useState(indexList);
   const [isMounted, setIsMounted] = useState(false);
   const isCardDetailOpen = useCardDetailStore(
-    (state) => state.isCardDetailOpen
+    (state) => state.isCardDetailOpen,
   );
   const closeCardDetail = useCardDetailStore((state) => state.closeCardDetail);
 
@@ -119,11 +119,11 @@ export const CardDetail = ({ cards, indexList }: Props) => {
   const modalContent = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm fade-in"
         onClick={closeCardDetail}
       />
 
-      <div className="relative z-10 h-full w-full overflow-hidden border-2 border-purple-600 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[80vh] sm:w-full sm:max-w-6xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg lg:w-3/5 lg:max-w-none">
+      <div className="relative z-10 h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[80vh] sm:w-full sm:max-w-6xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg lg:w-3/5 lg:max-w-none">
         <div className="flex items-center justify-between border-b border-purple-600 bg-slate-100/90 px-6 py-4 dark:border-tournament-dark-border dark:bg-slate-950/70">
           <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl dark:text-slate-100">
             {card.name}
@@ -133,7 +133,7 @@ export const CardDetail = ({ cards, indexList }: Props) => {
             type="button"
             aria-label="Cerrar detalle de carta"
             onClick={closeCardDetail}
-            className="flex h-11 w-11 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-slate-950/80 dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-gray-300 bg-white text-slate-600 transition hover:border-purple-400 hover:text-purple-600 dark:border dark:border-tournament-dark-border dark:bg-slate-950/80 dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
           >
             <IoCloseOutline className="h-6 w-6" />
           </button>
