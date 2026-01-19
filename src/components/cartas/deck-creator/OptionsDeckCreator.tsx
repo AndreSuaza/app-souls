@@ -116,7 +116,7 @@ export const OptionsDeckCreator = ({
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-2 mb-3 md:grid-cols-8">
+      <div className="mb-3 flex flex-wrap gap-2">
         {/* {session?.user && 
             <button
                 className="btn-short"
@@ -251,21 +251,29 @@ export const OptionsDeckCreator = ({
               </h1>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 px-5 pb-6 pt-6 md:grid-cols-6">
-              {mazoTest.slice(0, 6).map((card) => (
-                <div key={card.id}>
-                  <Image
-                    width={500}
-                    height={718}
-                    src={`/cards/${card.code}-${card.idd}.webp`}
-                    alt={card.name}
-                    title={card.name}
-                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
-                    placeholder="blur"
-                    className="rounded-lg drop-shadow-md"
-                  />
+            <div className="px-5 pb-6 pt-6">
+              {mazoTest.length === 0 ? (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 py-10 text-sm font-semibold text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200">
+                  No hay cartas en el mazo para mostrar una mano.
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
+                  {mazoTest.slice(0, 6).map((card) => (
+                    <div key={card.id}>
+                      <Image
+                        width={500}
+                        height={718}
+                        src={`/cards/${card.code}-${card.idd}.webp`}
+                        alt={card.name}
+                        title={card.name}
+                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
+                        placeholder="blur"
+                        className="rounded-lg drop-shadow-md"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="px-5 pb-6">

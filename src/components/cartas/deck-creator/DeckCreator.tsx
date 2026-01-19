@@ -261,20 +261,20 @@ export const DeckCreator = ({
   return (
     <div
       className={clsx(
-        "flex h-full flex-col gap-4 overflow-hidden lg:flex-row lg:gap-0",
+        "flex h-full flex-col gap-4 overflow-y-auto lg:flex-row lg:gap-0 lg:overflow-hidden",
         className,
       )}
     >
       {/* min-h-0 permite que cada columna tenga su propio scroll en el layout flex. */}
       <section
         className={clsx(
-          "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto lg:h-full",
+          "flex min-h-0 min-w-0 flex-col lg:h-full lg:overflow-y-auto",
           isFinderCollapsed
-            ? "lg:w-0 lg:flex-none lg:overflow-hidden lg:opacity-0"
-            : "lg:w-1/2",
+            ? "lg:flex-none lg:w-0 lg:overflow-hidden lg:opacity-0"
+            : "lg:flex-1 lg:w-1/2",
         )}
       >
-        <div className="min-h-full px-4 pt-4 pb-10">
+        <div className="min-h-0 px-4 pt-4 pb-6 lg:min-h-full lg:pb-10">
           <CardFinder
             cards={cardsState}
             propertiesCards={propertiesCards}
@@ -324,12 +324,12 @@ export const DeckCreator = ({
 
       <section
         className={clsx(
-          "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto lg:h-full pb-10",
-          isFinderCollapsed ? "lg:w-auto" : "lg:w-1/2",
+          "flex min-h-0 min-w-0 flex-col pb-6 lg:h-full lg:overflow-y-auto lg:pb-10",
+          isFinderCollapsed ? "lg:flex-1 lg:w-auto" : "lg:flex-1 lg:w-1/2",
         )}
       >
-        <div className="min-h-full px-4 pt-4 pb-10">
-          <div className="flex my-3">
+        <div className="min-h-0 px-4 pt-4 pb-6 lg:min-h-full lg:pb-10">
+          <div className="my-3 w-full">
             <OptionsDeckCreator
               deckListMain={deckListMain}
               deckListLimbo={deckListLimbo}

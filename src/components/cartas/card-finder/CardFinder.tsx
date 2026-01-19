@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { IoChevronDownOutline, IoChevronUpOutline } from "react-icons/io5";
 import clsx from "clsx";
 import { CardFinderLab, Pagination } from "@/components";
 import { Card, PaginationFilters, FilterSelections } from "@/interfaces";
@@ -94,11 +95,11 @@ export const CardFinder = ({
   const pathname = usePathname();
   const initialSelections = useMemo(
     () => parseFiltersFromSearchParams(searchParams),
-    [searchParams]
+    [searchParams],
   );
   const initialPaginationFilters = useMemo(
     () => buildPaginationFilters(initialSelections),
-    [initialSelections]
+    [initialSelections],
   );
   const initialPage = useMemo(() => {
     const pageParam = searchParams.get("page");
@@ -107,20 +108,22 @@ export const CardFinder = ({
     return pageNumber;
   }, [searchParams]);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [cardsState, setCardsState] = useState(cards);
   const [totalPagesState, setTotalPagesState] = useState(totalPage);
   const [advancedCurrentPage, setAdvancedCurrentPage] = useState(
-    currentPage ?? initialPage
+    currentPage ?? initialPage,
   );
   const [advancedFilters, setAdvancedFilters] = useState<PaginationFilters>(
-    () => initialPaginationFilters
+    () => initialPaginationFilters,
   );
   const [advancedSelection, setAdvancedSelection] = useState<FilterSelections>(
-    () => initialSelections
+    () => initialSelections,
   );
   const [totalCardsState, setTotalCardsState] = useState(
-    totalCards ?? cards.length
+    totalCards ?? cards.length,
   );
   const [perPageState, setPerPageState] = useState(perPage ?? 30);
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
@@ -130,6 +133,15 @@ export const CardFinder = ({
     // Detecta viewport md+ para mantener el layout actual en pantallas grandes.
     const media = window.matchMedia("(min-width: 768px)");
     const handleChange = () => setIsDesktop(media.matches);
+    handleChange();
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    // Mantiene el comportamiento original en lg+ y evita ocultar filtros alli.
+    const media = window.matchMedia("(min-width: 1024px)");
+    const handleChange = () => setIsLargeScreen(media.matches);
     handleChange();
     media.addEventListener("change", handleChange);
     return () => media.removeEventListener("change", handleChange);
@@ -149,13 +161,13 @@ export const CardFinder = ({
   ]);
 
   useEffect(() => {
-    if (!useAdvancedFilters) return;
+    if (!useAdvancedFilters || layoutVariant !== "embedded") return;
     const element = gridWrapperRef.current;
     if (!element) return;
 
     const calculateColumns = (width: number) => {
       const nextColumns = Math.floor(
-        (width + GRID_GAP_PX) / (GRID_CARD_MIN_WIDTH + GRID_GAP_PX)
+        (width + GRID_GAP_PX) / (GRID_CARD_MIN_WIDTH + GRID_GAP_PX),
       );
       return Math.max(1, Math.min(8, nextColumns));
     };
@@ -179,7 +191,7 @@ export const CardFinder = ({
     return () => {
       observer.disconnect();
     };
-  }, [useAdvancedFilters]);
+  }, [useAdvancedFilters, layoutVariant]);
 
   // Sincroniza filtros con la URL sin disparar navegacion de Next.
   const updateUrlWithFilters = useCallback(
@@ -217,7 +229,7 @@ export const CardFinder = ({
       const nextUrl = query ? `${pathname}?${query}` : pathname;
       window.history.replaceState(null, "", nextUrl);
     },
-    [disableUrlSync, pathname]
+    [disableUrlSync, pathname],
   );
 
   const fetchAdvancedCards = useCallback(
@@ -233,7 +245,7 @@ export const CardFinder = ({
       setTotalCardsState(result.totalCount ?? totalCardsState);
       setPerPageState(result.perPage ?? perPageState);
     },
-    [totalCardsState, perPageState]
+    [totalCardsState, perPageState],
   );
 
   const handleAdvancedSearch = useCallback(
@@ -241,7 +253,7 @@ export const CardFinder = ({
       setAdvancedFilters(filters);
       await fetchAdvancedCards(filters, 1);
     },
-    [fetchAdvancedCards]
+    [fetchAdvancedCards],
   );
 
   const handleAdvancedPageChange = useCallback(
@@ -254,7 +266,7 @@ export const CardFinder = ({
       fetchAdvancedCards,
       updateUrlWithFilters,
       advancedSelection,
-    ]
+    ],
   );
 
   const handleSidebarFiltersChange = useCallback(
@@ -263,7 +275,7 @@ export const CardFinder = ({
       updateUrlWithFilters(selection, 1);
       void handleAdvancedSearch(buildPaginationFilters(selection));
     },
-    [handleAdvancedSearch, updateUrlWithFilters]
+    [handleAdvancedSearch, updateUrlWithFilters],
   );
 
   const columns = useMemo(() => {
@@ -287,6 +299,25 @@ export const CardFinder = ({
       };
 
   const isEmbedded = layoutVariant === "embedded";
+  const showMobileToggle = isEmbedded && !isLargeScreen;
+  const hideEmbeddedContent = showMobileToggle && filtersCollapsed;
+
+  useEffect(() => {
+    if (!showMobileToggle && filtersCollapsed) {
+      setFiltersCollapsed(false);
+    }
+  }, [showMobileToggle, filtersCollapsed]);
+
+  const toggleFiltersCollapse = () => {
+    setFiltersCollapsed((prev) => {
+      const nextValue = !prev;
+      if (nextValue) {
+        setPanelOpen(false);
+      }
+      return nextValue;
+    });
+  };
+
   const embeddedMdColumns = layoutColumns?.md ?? 2;
   const embeddedLgColumns = layoutColumns?.lg ?? 4;
   const embeddedXlColumns = layoutColumns?.xl ?? 6;
@@ -294,29 +325,29 @@ export const CardFinder = ({
     ? isEmbedded
       ? embeddedMdColumns
       : panelOpen
-      ? 2
-      : 4
+        ? 2
+        : 4
     : 4;
   const lgColumnsValue = useAdvancedFilters
     ? isEmbedded
       ? panelOpen
-        ? layoutColumnsOpen?.lg ?? embeddedLgColumns
+        ? (layoutColumnsOpen?.lg ?? embeddedLgColumns)
         : embeddedLgColumns
       : panelOpen
-      ? 4
-      : 6
+        ? 4
+        : 6
     : columns;
   const xlColumnsValue = useAdvancedFilters
     ? isEmbedded
       ? panelOpen
-        ? layoutColumnsOpen?.xl ?? embeddedXlColumns
+        ? (layoutColumnsOpen?.xl ?? embeddedXlColumns)
         : embeddedXlColumns
       : panelOpen
-      ? 6
-      : 8
+        ? 6
+        : 8
     : Math.max(columns, 8);
   const resolvedAutoColumns = useAdvancedFilters
-    ? autoColumns ?? undefined
+    ? (autoColumns ?? undefined)
     : undefined;
 
   const gridContent = (
@@ -340,7 +371,7 @@ export const CardFinder = ({
     return formatStatsRange(
       advancedCurrentPage,
       perPageState || 30,
-      totalCardsState
+      totalCardsState,
     );
   }, [advancedCurrentPage, perPageState, totalCardsState, useAdvancedFilters]);
 
@@ -349,34 +380,57 @@ export const CardFinder = ({
       "relative",
       layoutVariant === "embedded"
         ? "px-4 pb-6 pt-4 sm:px-5"
-        : "px-4 pb-10 pt-6 sm:px-6 min-h-[100vh] bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg"
+        : "px-4 pb-10 pt-6 sm:px-6 min-h-[100vh] bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg",
     );
 
     return (
       <div className={advancedContainerClassName}>
-        <CardFiltersSidebar
-          propertiesCards={propertiesCards}
-          panelOpen={panelOpen}
-          onPanelToggle={() => setPanelOpen((value) => !value)}
-          onClosePanel={() => setPanelOpen(false)}
-          initialFilters={initialSelections}
-          onFiltersChange={handleSidebarFiltersChange}
-          statsRange={statsRange}
-        />
-        <div className="overflow-hidden">
-          <motion.div
-            ref={gridWrapperRef}
-            animate={{ x: panelOpen && isDesktop ? FILTER_PANEL_WIDTH + 24 : 0 }}
-            transition={{ type: "tween", duration: 0.35 }}
-            style={
-              panelOpen && isDesktop
-                ? { width: `calc(100% - ${FILTER_PANEL_WIDTH + 24}px)` }
-                : undefined
-            }
-          >
-            {gridContent}
-          </motion.div>
+        {showMobileToggle && (
+          <div className="mb-3 flex items-center">
+            <button
+              type="button"
+              onClick={toggleFiltersCollapse}
+              className="inline-flex items-center gap-2 rounded-lg border border-purple-400 bg-white px-4 py-2 text-sm font-semibold text-purple-600 transition hover:border-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-purple-300"
+              aria-expanded={!filtersCollapsed}
+            >
+              {filtersCollapsed ? "Mostrar filtros" : "Ocultar filtros"}
+              {filtersCollapsed ? (
+                <IoChevronDownOutline className="h-4 w-4" />
+              ) : (
+                <IoChevronUpOutline className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        )}
+        <div className={hideEmbeddedContent ? "hidden" : ""}>
+          <CardFiltersSidebar
+            propertiesCards={propertiesCards}
+            panelOpen={panelOpen}
+            onPanelToggle={() => setPanelOpen((value) => !value)}
+            onClosePanel={() => setPanelOpen(false)}
+            initialFilters={initialSelections}
+            onFiltersChange={handleSidebarFiltersChange}
+            statsRange={statsRange}
+          />
         </div>
+        {!hideEmbeddedContent && (
+          <div className="overflow-hidden">
+            <motion.div
+              ref={gridWrapperRef}
+              animate={{
+                x: panelOpen && isDesktop ? FILTER_PANEL_WIDTH + 24 : 0,
+              }}
+              transition={{ type: "tween", duration: 0.35 }}
+              style={
+                panelOpen && isDesktop
+                  ? { width: `calc(100% - ${FILTER_PANEL_WIDTH + 24}px)` }
+                  : undefined
+              }
+            >
+              {gridContent}
+            </motion.div>
+          </div>
+        )}
       </div>
     );
   }

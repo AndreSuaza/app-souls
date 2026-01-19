@@ -22,30 +22,30 @@ export const CardItemList = ({card, count, dropCard, addCard}:Props) => {
 
   return (
     <div className="flex relative">
-    <div className="absolute top-8 -right-1 z-10">
+      <Image
+        src={`/cards/${card.code}-${card.idd}.webp`}
+        className="rounded-md"
+        alt={card.name}
+        width={500}
+        height={718}
+      />
+      <div className="absolute top-8 -right-1 z-0">
         <div className="w-6 h-6 bg-lime-600 rounded text-white text-center font-bold">
           {count}
         </div>
-        { addCard && 
-        <IoAddCircleOutline 
-          className="w-6 h-6 mt-1 bg-indigo-600 text-white p-0.5 rounded select-none cursor-pointer"
-          onClick={() =>addCard(card)}
-        />
-        }
-        { dropCard && 
-        <IoCloseCircleOutline  
-          className="w-6 h-6 mt-1 bg-orange-600 text-white p-0.5 rounded select-none cursor-pointer"
-          onClick={()=>dropCard(card)}
-        />
-        }
+        {addCard && (
+          <IoAddCircleOutline
+            className="w-6 h-6 mt-1 bg-indigo-600 text-white p-0.5 rounded select-none cursor-pointer"
+            onClick={() => addCard(card)}
+          />
+        )}
+        {dropCard && (
+          <IoCloseCircleOutline
+            className="w-6 h-6 mt-1 bg-orange-600 text-white p-0.5 rounded select-none cursor-pointer"
+            onClick={() => dropCard(card)}
+          />
+        )}
+      </div>
     </div>
-    <Image
-      src={`/cards/${card.code}-${card.idd}.webp`}
-      className="rounded-md"
-      alt={card.name}
-      width={500}
-      height={718}
-    />
-    </div>
-  )
+  );
 }
