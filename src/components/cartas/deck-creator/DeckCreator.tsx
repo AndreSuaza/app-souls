@@ -273,13 +273,13 @@ export const DeckCreator = ({
       {/* min-h-0 permite que cada columna tenga su propio scroll en el layout flex. */}
       <section
         className={clsx(
-          "flex min-h-0 min-w-0 flex-col h-full overflow-y-auto",
+          "flex min-h-0 min-w-0 flex-col h-full overflow-visible",
           isFinderCollapsed
             ? "flex-none w-0 overflow-hidden opacity-0"
             : "flex-1 w-1/2",
         )}
       >
-        <div className="min-h-full md:px-2 lg:pl-2 lg:pr-0 md:pt-3 pb-10">
+        <div className="min-h-full overflow-y-auto md:px-2 lg:pl-2 lg:pr-0 md:pt-3 pb-10">
           <CardFinder
             cards={cardsState}
             propertiesCards={propertiesCards}
@@ -303,8 +303,8 @@ export const DeckCreator = ({
         </div>
       </section>
 
-      <div className="relative flex items-center justify-center">
-        <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-slate-200 dark:bg-tournament-dark-border" />
+      <div className="relative flex w-4 shrink-0 items-center justify-center md:w-0">
+        <div className="absolute w-px inset-y-0 left-1/2 -translate-x-1/2 bg-slate-200 dark:bg-tournament-dark-border" />
       </div>
 
       <section

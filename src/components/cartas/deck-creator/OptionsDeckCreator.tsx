@@ -126,16 +126,16 @@ export const OptionsDeckCreator = ({
   const actionButtonClass =
     "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300";
   const primaryActionButtonClass =
-    "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-amber-100 p-2 text-amber-700 shadow-md transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-amber-400/10 dark:text-amber-300";
+    "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-amber-100 p-2 text-amber-700 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-amber-400/10 dark:text-amber-300";
   const shareIconButtonClass =
-    "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200";
+    "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200";
 
   const whatsappShareLink = deckList
     ? `https://wa.me/?text=${encodeURIComponent(deckList)}`
     : "https://wa.me/";
   const facebookShareLink = deckList
     ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        deckList
+        deckList,
       )}`
     : "https://www.facebook.com/sharer/sharer.php?u=";
   const xShareLink = deckList
@@ -144,7 +144,7 @@ export const OptionsDeckCreator = ({
 
   return (
     <>
-      <div className="mb-3 flex flex-wrap gap-2">
+      <div className="mb-3 flex flex-wrap gap-1 sm:gap-2">
         {/* {session?.user && 
             <button
                 className="btn-short"

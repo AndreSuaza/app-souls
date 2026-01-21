@@ -336,7 +336,12 @@ export const CardFinder = ({
 
   const gridContent = (
     <Pagination {...paginationProps}>
-      <div className={isGridReady ? "" : "invisible"}>
+      <div
+        className={clsx(
+          isGridReady ? "" : "invisible",
+          layoutVariant === "embedded" ? "pr-3 sm:pr-0" : "",
+        )}
+      >
         <CardGrid
           cards={cardsSource}
           addCard={addCard}
@@ -385,7 +390,7 @@ export const CardFinder = ({
           />
         </div>
         {!hideEmbeddedContent && (
-          <div className="overflow-hidden">
+          <div className="overflow-visible">
             <motion.div
               ref={gridWrapperRef}
               animate={{

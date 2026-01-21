@@ -20,30 +20,6 @@ interface Props {
   onOpenDetail?: (cards: Card[], index: number) => void;
 }
 
-const initialCounts = { und: 0, arm: 0, con: 0, ent: 0 };
-const typeMap: Record<string, keyof typeof initialCounts> = {
-  Unidad: "und",
-  Arma: "arm",
-  Conjuro: "con",
-  Ente: "ent",
-};
-
-// const buildDeckStats = (decklist: Decklist[]) => {
-//   const totals = decklist.reduce(
-//     (acc, deck) => {
-//       deck.card.types.forEach((type) => {
-//         const key = typeMap[type.name];
-//         if (key) acc[key] += deck.count;
-//       });
-//       acc.total += deck.count;
-//       return acc;
-//     },
-//     { ...initialCounts, total: 0 },
-//   );
-
-//   return totals;
-// };
-
 const GRID_CARD_MIN_WIDTH = 120;
 const GRID_GAP_PX = 8;
 
@@ -187,7 +163,7 @@ export const ShowDeck = ({
       chevron: "text-sky-500 dark:text-sky-300",
     },
   };
-  const statsWrapperClass = "flex flex-wrap items-center gap-2 min-w-0";
+  // const statsWrapperClass = "flex flex-wrap items-center gap-2 min-w-0";
   const sectionBodyClass = "px-3 pb-3 pt-3 sm:px-4 sm:pb-4";
 
   return (
@@ -243,18 +219,16 @@ export const ShowDeck = ({
                 className={gridClassName}
               >
                 {limboDeck.map((deck, index) => (
-                    <motion.div key={deck.card.id + index} layout>
-                      <CardItemList
-                        card={deck.card}
-                        count={deck.count}
-                        dropCard={dropCard}
-                        addCard={addCard}
-                        onOpenDetail={() =>
-                          onOpenDetail?.(limboCards, index)
-                        }
-                      />
-                    </motion.div>
-                  ))}
+                  <motion.div key={deck.card.id + index} layout>
+                    <CardItemList
+                      card={deck.card}
+                      count={deck.count}
+                      dropCard={dropCard}
+                      addCard={addCard}
+                      onOpenDetail={() => onOpenDetail?.(limboCards, index)}
+                    />
+                  </motion.div>
+                ))}
               </motion.div>
             )}
           </AnimatePresence>
@@ -311,18 +285,16 @@ export const ShowDeck = ({
                 className={gridClassName}
               >
                 {mainDeck.map((deck, index) => (
-                    <motion.div key={deck.card.id + index} layout>
-                      <CardItemList
-                        card={deck.card}
-                        count={deck.count}
-                        dropCard={dropCard}
-                        addCard={addCard}
-                        onOpenDetail={() =>
-                          onOpenDetail?.(mainCards, index)
-                        }
-                      />
-                    </motion.div>
-                  ))}
+                  <motion.div key={deck.card.id + index} layout>
+                    <CardItemList
+                      card={deck.card}
+                      count={deck.count}
+                      dropCard={dropCard}
+                      addCard={addCard}
+                      onOpenDetail={() => onOpenDetail?.(mainCards, index)}
+                    />
+                  </motion.div>
+                ))}
               </motion.div>
             )}
           </AnimatePresence>
@@ -379,18 +351,16 @@ export const ShowDeck = ({
                 className={gridClassName}
               >
                 {sideDeck.map((deck, index) => (
-                    <motion.div key={deck.card.id + index} layout>
-                      <CardItemList
-                        card={deck.card}
-                        count={deck.count}
-                        dropCard={dropCardSide}
-                        addCard={addCardSide}
-                        onOpenDetail={() =>
-                          onOpenDetail?.(sideCards, index)
-                        }
-                      />
-                    </motion.div>
-                  ))}
+                  <motion.div key={deck.card.id + index} layout>
+                    <CardItemList
+                      card={deck.card}
+                      count={deck.count}
+                      dropCard={dropCardSide}
+                      addCard={addCardSide}
+                      onOpenDetail={() => onOpenDetail?.(sideCards, index)}
+                    />
+                  </motion.div>
+                ))}
               </motion.div>
             )}
           </AnimatePresence>

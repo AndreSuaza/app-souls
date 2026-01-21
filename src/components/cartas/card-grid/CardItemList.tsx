@@ -1,16 +1,15 @@
 import type { MouseEvent } from "react";
 import { Card } from "@/interfaces";
 import Image from "next/image";
-import { IoAddCircleOutline, IoCloseCircleOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoRemoveCircleOutline } from "react-icons/io5";
 
 interface Props {
-    count: number;
-    card: Card;
-    dropCard?: (c: Card) => void
-    addCard?: (c: Card) => void
-    onOpenDetail?: () => void;
+  count: number;
+  card: Card;
+  dropCard?: (c: Card) => void;
+  addCard?: (c: Card) => void;
+  onOpenDetail?: () => void;
 }
-
 
 export const CardItemList = ({
   card,
@@ -19,12 +18,12 @@ export const CardItemList = ({
   addCard,
   onOpenDetail,
 }: Props) => {
-  const handleAdd = (event: MouseEvent<SVGElement>) => {
+  const handleAdd = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     addCard?.(card);
   };
 
-  const handleDrop = (event: MouseEvent<SVGElement>) => {
+  const handleDrop = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     dropCard?.(card);
   };
@@ -36,6 +35,11 @@ export const CardItemList = ({
   //     openCardDetail();
   //     detailCard(index);
   // }
+
+  const actionButtonClass =
+    "flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/90 text-purple-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-purple-200";
+  const removeButtonClass =
+    "flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/90 text-amber-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-amber-200";
 
   return (
     <div
@@ -51,23 +55,31 @@ export const CardItemList = ({
         width={500}
         height={718}
       />
-      <div className="absolute top-8 -right-1 z-0">
-        <div className="w-6 h-6 bg-lime-600 rounded text-white text-center font-bold">
+      <div className="absolute top-8 -right-2 z-[1] flex flex-col items-center gap-1">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/90 text-emerald-600 text-xs font-semibold shadow-sm backdrop-blur dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-emerald-200">
           {count}
         </div>
         {addCard && (
-          <IoAddCircleOutline
-            className="w-6 h-6 mt-1 bg-indigo-600 text-white p-0.5 rounded select-none cursor-pointer"
+          <button
+            type="button"
+            className={actionButtonClass}
+            title="Anadir carta"
             onClick={handleAdd}
-          />
+          >
+            <IoAddCircleOutline className="h-5 w-5" />
+          </button>
         )}
         {dropCard && (
-          <IoCloseCircleOutline
-            className="w-6 h-6 mt-1 bg-orange-600 text-white p-0.5 rounded select-none cursor-pointer"
+          <button
+            type="button"
+            className={removeButtonClass}
+            title="Quitar carta"
             onClick={handleDrop}
-          />
+          >
+            <IoRemoveCircleOutline className="h-5 w-5" />
+          </button>
         )}
       </div>
     </div>
   );
-}
+};
