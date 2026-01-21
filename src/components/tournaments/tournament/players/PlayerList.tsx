@@ -20,7 +20,7 @@ export const PlayerList = () => {
   const { players, rounds, tournament, addPlayerByUserId, deletePlayer } =
     useTournamentStore();
   const openAlertConfirmation = useAlertConfirmationStore(
-    (s) => s.openAlertConfirmation
+    (s) => s.openAlertConfirmation,
   );
   const showLoading = useUIStore((s) => s.showLoading);
   const hideLoading = useUIStore((s) => s.hideLoading);
@@ -34,6 +34,13 @@ export const PlayerList = () => {
 
   // Cuando se selecciona un usuario desde PlayerSearchInput
   const handleSelect = async (user: UserSummaryInterface) => {
+    if (isFinished) {
+      showToast(
+        "El torneo ya finalizo, no se pueden registrar jugadores.",
+        "info",
+      );
+      return;
+    }
     const firstRoundStarted = !!rounds[0]?.startedAt;
 
     // Solo solicitar puntos iniciales cuando la primera ronda ya inicio.
@@ -50,7 +57,7 @@ export const PlayerList = () => {
         user.name,
         user.lastname,
         user.image,
-        0
+        0,
       );
       showToast("Jugador agregado al torneo", "success");
     } catch {
@@ -82,7 +89,7 @@ export const PlayerList = () => {
         selectedUser.name,
         selectedUser.lastname,
         selectedUser.image,
-        points
+        points,
       );
 
       showToast("Jugador agregado al torneo", "success");
@@ -126,6 +133,8 @@ export const PlayerList = () => {
         <PlayerSearchInput
           existingPlayersIds={players.map((p) => p.userId)}
           onSelectUser={handleSelect}
+          disabled={isFinished}
+          disabledMessage="Registro cerrado"
         />
       )}
 
@@ -135,7 +144,7 @@ export const PlayerList = () => {
           "transition-all duration-300",
           showPlayers
             ? "max-h-[530px] overflow-y-auto opacity-100"
-            : "max-h-0 overflow-hidden opacity-0"
+            : "max-h-0 overflow-hidden opacity-0",
         )}
       >
         <PlayerListView

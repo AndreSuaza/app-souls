@@ -10,11 +10,15 @@ import { UserSummaryInterface } from "@/interfaces";
 export type PlayerSearchInputProps = {
   existingPlayersIds: string[]; // IDs de jugadores ya inscritos
   onSelectUser: (user: UserSummaryInterface) => void;
+  disabled?: boolean;
+  disabledMessage?: string;
 };
 
 export const PlayerSearchInput = ({
   existingPlayersIds,
   onSelectUser,
+  disabled = false,
+  disabledMessage = "El torneo ya finalizo",
 }: PlayerSearchInputProps) => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,6 +30,7 @@ export const PlayerSearchInput = ({
 
   const runSearch = useCallback(
     async (value: string) => {
+      if (disabled) return;
       const search = value.trim();
       if (search.length < 1) {
         setSuggestions([]);
@@ -37,24 +42,32 @@ export const PlayerSearchInput = ({
 
       const results = await searchUsersAction({ search });
       const filtered = results.filter(
-        (u) => !existingPlayersIds.includes(u.id)
+        (u) => !existingPlayersIds.includes(u.id),
       );
 
       setSuggestions(filtered);
       setLoading(false);
       setShowDropdown(true);
     },
-    [existingPlayersIds]
+    [existingPlayersIds, disabled],
   );
 
-  // Debounce para búsqueda 300ms
+  // Debounce para busqueda 300ms
   useEffect(() => {
+    if (disabled) return;
     const timeout = setTimeout(() => {
       runSearch(query);
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [query, runSearch]);
+  }, [query, runSearch, disabled]);
+
+  useEffect(() => {
+    if (!disabled) return;
+    setShowDropdown(false);
+    setSuggestions([]);
+    setHighlightedIndex(-1);
+  }, [disabled]);
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
@@ -73,6 +86,7 @@ export const PlayerSearchInput = ({
 
   // Cuando se selecciona un usuario
   function handleSelect(user: { id: string; nickname: string }) {
+    if (disabled) return;
     onSelectUser(user);
     setSuggestions([]);
     setShowDropdown(false);
@@ -80,19 +94,20 @@ export const PlayerSearchInput = ({
 
   // Navegación con flechas
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (disabled) return;
     if (!showDropdown || suggestions.length === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setHighlightedIndex((prev) =>
-        prev < suggestions.length - 1 ? prev + 1 : 0
+        prev < suggestions.length - 1 ? prev + 1 : 0,
       );
     }
 
     if (e.key === "ArrowUp") {
       e.preventDefault();
       setHighlightedIndex((prev) =>
-        prev > 0 ? prev - 1 : suggestions.length - 1
+        prev > 0 ? prev - 1 : suggestions.length - 1,
       );
     }
 
@@ -116,9 +131,16 @@ export const PlayerSearchInput = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="w-full rounded-lg border border-tournament-dark-accent bg-white py-1 pl-8 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
-          placeholder="Escribe el nombre o nickname"
+          disabled={disabled}
+          className={clsx(
+            "w-full rounded-lg border border-tournament-dark-accent bg-white py-1 pl-8 pr-8 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500",
+            disabled && "cursor-not-allowed opacity-60",
+          )}
+          placeholder={
+            disabled ? disabledMessage : "Escribe el nombre o nickname"
+          }
           onFocus={() => {
+            if (disabled) return;
             if (query.trim().length > 0) {
               runSearch(query);
             }
@@ -127,7 +149,7 @@ export const PlayerSearchInput = ({
       </div>
 
       {/* Botón limpiar */}
-      {query.length > 0 && (
+      {!disabled && query.length > 0 && (
         <button
           onClick={() => setQuery("")}
           className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
@@ -137,7 +159,7 @@ export const PlayerSearchInput = ({
       )}
 
       {/* Dropdown */}
-      {showDropdown && (
+      {!disabled && showDropdown && (
         <div className="absolute left-0 top-full mt-1 w-full rounded-lg border border-tournament-dark-accent bg-white shadow-lg z-20 max-h-56 overflow-auto dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
           {/* Loading */}
           {loading && (
@@ -165,7 +187,7 @@ export const PlayerSearchInput = ({
                   "px-3 py-2 cursor-pointer flex items-center gap-3",
                   highlightedIndex === index
                     ? "bg-purple-600/10 dark:bg-purple-600/20"
-                    : "hover:bg-slate-100 dark:hover:bg-tournament-dark-muted"
+                    : "hover:bg-slate-100 dark:hover:bg-tournament-dark-muted",
                 )}
               >
                 {/* Avatar */}

@@ -50,21 +50,21 @@ type TournamentStoreState = {
     name?: string | null,
     lastname?: string | null,
     image?: string | null,
-    pointsInitial?: number
+    pointsInitial?: number,
   ) => Promise<void>;
 
   generateRound: () => Promise<void>;
   saveMatchResult: (
     matchId: string,
     result: "P1" | "P2" | "DRAW",
-    player2Nickname: string | null
+    player2Nickname: string | null,
   ) => Promise<void>;
   finalizeRound: () => Promise<void>;
   finalizeTournament: () => Promise<void>;
   deletePlayer: (playerId: string) => Promise<boolean>;
   editRoundResults: (
     roundNumber: number,
-    updatedMatches: MatchInterface[]
+    updatedMatches: MatchInterface[],
   ) => Promise<void>;
   startCurrentRound: () => Promise<void>;
   recalculateCurrentRound: () => Promise<boolean>;
@@ -169,10 +169,19 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     name: string | null | undefined,
     lastname: string | null | undefined,
     image: string | null | undefined,
-    pointsInitial: number = 0
+    pointsInitial: number = 0,
   ) => {
-    const { tournamentId } = get();
-    if (!tournamentId) return;
+    const { tournamentId, tournament } = get();
+    if (!tournamentId || !tournament) return;
+    if (tournament.status === "finished") {
+      // Evita registros cuando el torneo ya finalizo.
+      set({
+        error: "El torneo ya finalizo, no se pueden registrar jugadores.",
+      });
+      throw new Error(
+        "El torneo ya finalizo, no se pueden registrar jugadores.",
+      );
+    }
 
     const newPlayer = await addPlayerAction({
       tournamentId,
@@ -292,7 +301,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           {
             ...currentRound,
             matches: currentRound.matches.map((m) =>
-              m.id === matchId ? { ...m, result } : m
+              m.id === matchId ? { ...m, result } : m,
             ),
           },
         ],
@@ -350,7 +359,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     try {
       // Construye el mapa playerId -> userId para contar victorias por usuario.
       const playerIdToUserId = new Map(
-        state.players.map((p) => [p.id, p.userId])
+        state.players.map((p) => [p.id, p.userId]),
       );
       // Inicializa los contadores en 0 para todos los inscritos.
       const winsByUserId = new Map(state.players.map((p) => [p.userId, 0]));
@@ -421,7 +430,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       if (currentRound && roundIsOpen) {
         // Buscar el match donde participa el jugador a eliminar.
         const match = currentRound.matches.find(
-          (m) => m.player1Id === playerId || m.player2Id === playerId
+          (m) => m.player1Id === playerId || m.player2Id === playerId,
         );
 
         if (match) {
@@ -490,7 +499,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
                         player2Nickname: matchUpdate!.player2Nickname,
                         result: matchUpdate!.result,
                       }
-                    : m
+                    : m,
                 ),
               };
             }
@@ -529,7 +538,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
 
   editRoundResults: async (
     roundNumber: number,
-    updatedMatches: MatchInterface[]
+    updatedMatches: MatchInterface[],
   ) => {
     const state = get();
     const { tournamentId } = state;
@@ -537,7 +546,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
 
     // Encontrar la ronda
     const roundIndex = state.rounds.findIndex(
-      (round) => round.roundNumber === roundNumber
+      (round) => round.roundNumber === roundNumber,
     );
     if (roundIndex === -1) return;
 
@@ -551,7 +560,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       if (updatedMatch.player2Id === null) return;
 
       const oldMatch = currentRound.matches.find(
-        (m) => m.id === updatedMatch.id
+        (m) => m.id === updatedMatch.id,
       );
 
       if (!oldMatch || oldMatch.result === updatedMatch.result) return;
@@ -598,7 +607,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     set((state) => ({
       players: updatedPlayers,
       rounds: state.rounds.map((round, idx) =>
-        idx === roundIndex ? { ...round, matches: updatedMatches } : round
+        idx === roundIndex ? { ...round, matches: updatedMatches } : round,
       ),
     }));
 
@@ -701,7 +710,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     try {
       await deleteTournamentAction(
         tournamentId,
-        tournament?.status ?? "pending"
+        tournament?.status ?? "pending",
       );
 
       set({
