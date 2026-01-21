@@ -86,8 +86,6 @@ export const CardFinder = ({
   onSearch,
   useAdvancedFilters = false,
   layoutVariant = "page",
-  layoutColumns,
-  layoutColumnsOpen,
   disableUrlSync = false,
   disableGridAnimations = false,
 }: Props) => {
@@ -127,7 +125,7 @@ export const CardFinder = ({
   );
   const [perPageState, setPerPageState] = useState(perPage ?? 30);
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
-  const [autoColumns, setAutoColumns] = useState<number | null>(null);
+  const [autoColumns, setAutoColumns] = useState(1);
 
   useEffect(() => {
     // Detecta viewport md+ para mantener el layout actual en pantallas grandes.
@@ -161,7 +159,6 @@ export const CardFinder = ({
   ]);
 
   useEffect(() => {
-    if (!useAdvancedFilters || layoutVariant !== "embedded") return;
     const element = gridWrapperRef.current;
     if (!element) return;
 
@@ -191,7 +188,7 @@ export const CardFinder = ({
     return () => {
       observer.disconnect();
     };
-  }, [useAdvancedFilters, layoutVariant]);
+  }, [layoutVariant, useAdvancedFilters]);
 
   // Sincroniza filtros con la URL sin disparar navegacion de Next.
   const updateUrlWithFilters = useCallback(
@@ -278,13 +275,6 @@ export const CardFinder = ({
     [handleAdvancedSearch, updateUrlWithFilters],
   );
 
-  const columns = useMemo(() => {
-    if (useAdvancedFilters) {
-      return panelOpen ? 4 : 6;
-    }
-    return cols;
-  }, [panelOpen, useAdvancedFilters, cols]);
-
   const cardsSource = useAdvancedFilters ? cardsState : cards;
   const paginationProps = useAdvancedFilters
     ? {
@@ -318,49 +308,13 @@ export const CardFinder = ({
     });
   };
 
-  const embeddedMdColumns = layoutColumns?.md ?? 2;
-  const embeddedLgColumns = layoutColumns?.lg ?? 4;
-  const embeddedXlColumns = layoutColumns?.xl ?? 6;
-  const mdColumnsValue = useAdvancedFilters
-    ? isEmbedded
-      ? embeddedMdColumns
-      : panelOpen
-        ? 2
-        : 4
-    : 4;
-  const lgColumnsValue = useAdvancedFilters
-    ? isEmbedded
-      ? panelOpen
-        ? (layoutColumnsOpen?.lg ?? embeddedLgColumns)
-        : embeddedLgColumns
-      : panelOpen
-        ? 4
-        : 6
-    : columns;
-  const xlColumnsValue = useAdvancedFilters
-    ? isEmbedded
-      ? panelOpen
-        ? (layoutColumnsOpen?.xl ?? embeddedXlColumns)
-        : embeddedXlColumns
-      : panelOpen
-        ? 6
-        : 8
-    : Math.max(columns, 8);
-  const resolvedAutoColumns = useAdvancedFilters
-    ? (autoColumns ?? undefined)
-    : undefined;
-
   const gridContent = (
     <Pagination {...paginationProps}>
       <CardGrid
         cards={cardsSource}
         addCard={addCard}
         addCardSidedeck={addCardSidedeck}
-        smColumns={2}
-        mdColumns={mdColumnsValue}
-        lgColumns={lgColumnsValue}
-        xlColumns={xlColumnsValue}
-        autoColumns={resolvedAutoColumns}
+        autoColumns={autoColumns}
         disableAnimations={disableGridAnimations}
       />
     </Pagination>
@@ -446,7 +400,7 @@ export const CardFinder = ({
       ) : (
         <CardFinderLab propertiesCards={propertiesCards} cols={cols} />
       )}
-      {gridContent}
+      <div ref={gridWrapperRef}>{gridContent}</div>
     </div>
   );
 };
