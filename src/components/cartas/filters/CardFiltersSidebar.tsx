@@ -48,6 +48,7 @@ interface CardFiltersSidebarProps {
   statsRange?: string;
   forceDesktopLayout?: boolean;
   onCompactSearchLayoutChange?: (isCompact: boolean) => void;
+  stackPanelLayout?: boolean;
 }
 
 const LIMIT_OPTIONS = [{ label: "Legendaria", value: "legendaria" }];
@@ -77,6 +78,7 @@ export function CardFiltersSidebar({
   statsRange,
   forceDesktopLayout = false,
   onCompactSearchLayoutChange,
+  stackPanelLayout = false,
 }: CardFiltersSidebarProps) {
   const [filters, setFilters] = useState<FilterSelections>(
     () => initialFilters ?? getDefaultFilters(),
@@ -281,7 +283,9 @@ export function CardFiltersSidebar({
   }, [filters, onFiltersChange]);
 
   useEffect(() => {
-    if (!forceDesktopLayout) {
+    const shouldMeasureSearchLayout = forceDesktopLayout || stackPanelLayout;
+
+    if (!shouldMeasureSearchLayout) {
       setIsCompactSearchLayout(false);
       return;
     }
@@ -311,24 +315,29 @@ export function CardFiltersSidebar({
     return () => {
       observer.disconnect();
     };
-  }, [forceDesktopLayout]);
+  }, [forceDesktopLayout, stackPanelLayout]);
 
   useEffect(() => {
     onCompactSearchLayoutChange?.(isCompactSearchLayout);
   }, [isCompactSearchLayout, onCompactSearchLayoutChange]);
 
   const statsRangeText = statsRange ?? "0-0 de 0";
+  const shouldStackPanel = Boolean(stackPanelLayout);
   // Fuerza el layout tipo escritorio cuando se requiere mantener el comportamiento lg.
-  const panelLayoutClassName = forceDesktopLayout
-    ? isCompactSearchLayout
+  const panelLayoutClassName = shouldStackPanel
+    ? "mt-3 w-full"
+    : forceDesktopLayout && isCompactSearchLayout
       ? "absolute left-0 top-full mt-3 w-full"
-      : "absolute left-0 top-full mt-3 w-[320px]"
-    : "mt-3 w-full md:absolute md:left-0 md:top-full md:mt-3 md:w-[320px]";
-  const panelVisibilityClassName = forceDesktopLayout
-    ? "block"
-    : panelOpen
+      : "absolute left-0 top-full mt-3 w-[320px]";
+  const panelVisibilityClassName = shouldStackPanel
+    ? panelOpen
       ? "block"
-      : "hidden md:block";
+      : "hidden"
+    : forceDesktopLayout
+      ? "block"
+      : panelOpen
+        ? "block"
+        : "hidden md:block";
   // Ajusta el layout cuando no cabe el buscador con el boton en una sola fila.
   const searchRowClassName = isCompactSearchLayout
     ? "flex w-full flex-col items-stretch gap-2"

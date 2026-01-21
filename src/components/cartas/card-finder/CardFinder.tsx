@@ -27,7 +27,10 @@ const formatStatsRange = (page: number, perPage: number, total: number) => {
 };
 
 const GRID_CARD_MIN_WIDTH = 160;
+// Umbral minimo para permitir una columna cuando el panel esta abierto.
+const GRID_CARD_STACK_MIN_WIDTH = 120;
 const GRID_GAP_PX = 16;
+const PANEL_GAP_PX = 24;
 
 //Mover a interface
 
@@ -106,7 +109,6 @@ export const CardFinder = ({
   }, [searchParams]);
   const [panelOpen, setPanelOpen] = useState(false);
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [cardsState, setCardsState] = useState(cards);
   const [totalPagesState, setTotalPagesState] = useState(totalPage);
@@ -124,17 +126,10 @@ export const CardFinder = ({
   );
   const [perPageState, setPerPageState] = useState(perPage ?? 30);
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
+  const layoutContainerRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState(1);
   const [isCompactSearchLayout, setIsCompactSearchLayout] = useState(false);
-
-  useEffect(() => {
-    // Detecta viewport md+ para mantener el layout actual en pantallas grandes.
-    const media = window.matchMedia("(min-width: 768px)");
-    const handleChange = () => setIsDesktop(media.matches);
-    handleChange();
-    media.addEventListener("change", handleChange);
-    return () => media.removeEventListener("change", handleChange);
-  }, []);
+  const [shouldStackPanel, setShouldStackPanel] = useState(false);
 
   useEffect(() => {
     // Mantiene el comportamiento original en lg+ y evita ocultar filtros alli.
@@ -290,16 +285,48 @@ export const CardFinder = ({
 
   const isEmbedded = layoutVariant === "embedded";
   const forceDesktopLayout = isEmbedded;
-  const isDesktopLayout = forceDesktopLayout ? true : isDesktop;
   const isLargeScreenLayout = forceDesktopLayout ? true : isLargeScreen;
   const showMobileToggle = isEmbedded && !isLargeScreenLayout;
   const hideEmbeddedContent = showMobileToggle && filtersCollapsed;
+  const stackPanelLayout = panelOpen && shouldStackPanel;
+  const shouldShiftGrid = panelOpen && !stackPanelLayout;
 
   useEffect(() => {
     if (!showMobileToggle && filtersCollapsed) {
       setFiltersCollapsed(false);
     }
   }, [showMobileToggle, filtersCollapsed]);
+
+  useEffect(() => {
+    if (!useAdvancedFilters) {
+      setShouldStackPanel(false);
+      return;
+    }
+
+    const element = layoutContainerRef.current;
+    if (!element) return;
+
+    // Determina si hay espacio real para mostrar filtros y cartas en la misma fila.
+    const updateLayout = (width: number) => {
+      const gridWidth = width - (FILTER_PANEL_WIDTH + PANEL_GAP_PX);
+      const nextValue = gridWidth < GRID_CARD_STACK_MIN_WIDTH;
+      setShouldStackPanel((prev) => (prev === nextValue ? prev : nextValue));
+    };
+
+    updateLayout(element.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
+        updateLayout(entry.contentRect.width);
+      });
+    });
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [useAdvancedFilters]);
 
   const gridContent = (
     <Pagination {...paginationProps}>
@@ -333,7 +360,7 @@ export const CardFinder = ({
     );
 
     return (
-      <div className={advancedContainerClassName}>
+      <div ref={layoutContainerRef} className={advancedContainerClassName}>
         <div className={hideEmbeddedContent ? "hidden" : ""}>
           <CardFiltersSidebar
             propertiesCards={propertiesCards}
@@ -345,6 +372,7 @@ export const CardFinder = ({
             statsRange={statsRange}
             forceDesktopLayout={forceDesktopLayout}
             onCompactSearchLayoutChange={setIsCompactSearchLayout}
+            stackPanelLayout={stackPanelLayout}
           />
         </div>
         {!hideEmbeddedContent && (
@@ -352,12 +380,16 @@ export const CardFinder = ({
             <motion.div
               ref={gridWrapperRef}
               animate={{
-                x: panelOpen && isDesktopLayout ? FILTER_PANEL_WIDTH + 24 : 0,
+                x: shouldShiftGrid ? FILTER_PANEL_WIDTH + PANEL_GAP_PX : 0,
               }}
               transition={{ type: "tween", duration: 0.35 }}
               style={
-                panelOpen && isDesktopLayout
-                  ? { width: `calc(100% - ${FILTER_PANEL_WIDTH + 24}px)` }
+                shouldShiftGrid
+                  ? {
+                      width: `calc(100% - ${
+                        FILTER_PANEL_WIDTH + PANEL_GAP_PX
+                      }px)`,
+                    }
                   : undefined
               }
             >

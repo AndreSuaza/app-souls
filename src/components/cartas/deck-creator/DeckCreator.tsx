@@ -320,7 +320,7 @@ export const DeckCreator = ({
         )}
       >
         <div className="min-h-full md:px-2 lg:px-4 md:pt-3 pb-10">
-          <div className="my-5 w-full">
+          <div className="mt-4 mb-5 w-full">
             <OptionsDeckCreator
               deckListMain={deckListMain}
               deckListLimbo={deckListLimbo}
