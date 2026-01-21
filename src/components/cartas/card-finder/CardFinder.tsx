@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { IoChevronDownOutline, IoChevronUpOutline } from "react-icons/io5";
 import clsx from "clsx";
 import { CardFinderLab, Pagination } from "@/components";
 import { Card, PaginationFilters, FilterSelections } from "@/interfaces";
@@ -126,6 +125,7 @@ export const CardFinder = ({
   const [perPageState, setPerPageState] = useState(perPage ?? 30);
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState(1);
+  const [isCompactSearchLayout, setIsCompactSearchLayout] = useState(false);
 
   useEffect(() => {
     // Detecta viewport md+ para mantener el layout actual en pantallas grandes.
@@ -289,7 +289,10 @@ export const CardFinder = ({
       };
 
   const isEmbedded = layoutVariant === "embedded";
-  const showMobileToggle = isEmbedded && !isLargeScreen;
+  const forceDesktopLayout = isEmbedded;
+  const isDesktopLayout = forceDesktopLayout ? true : isDesktop;
+  const isLargeScreenLayout = forceDesktopLayout ? true : isLargeScreen;
+  const showMobileToggle = isEmbedded && !isLargeScreenLayout;
   const hideEmbeddedContent = showMobileToggle && filtersCollapsed;
 
   useEffect(() => {
@@ -297,16 +300,6 @@ export const CardFinder = ({
       setFiltersCollapsed(false);
     }
   }, [showMobileToggle, filtersCollapsed]);
-
-  const toggleFiltersCollapse = () => {
-    setFiltersCollapsed((prev) => {
-      const nextValue = !prev;
-      if (nextValue) {
-        setPanelOpen(false);
-      }
-      return nextValue;
-    });
-  };
 
   const gridContent = (
     <Pagination {...paginationProps}>
@@ -333,29 +326,14 @@ export const CardFinder = ({
     const advancedContainerClassName = clsx(
       "relative",
       layoutVariant === "embedded"
-        ? "px-4 pb-6 pt-4 sm:px-5"
-        : "px-4 pb-10 pt-6 sm:px-6 min-h-[100vh] bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg",
+        ? isCompactSearchLayout
+          ? "pl-2 pr-0 pb-6 pt-4 sm:pl-5 sm:pr-0"
+          : "px-4 pb-6 pt-4 sm:px-5"
+        : "px-4 pb-10 pt-5 sm:px-6 min-h-[100vh] bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg",
     );
 
     return (
       <div className={advancedContainerClassName}>
-        {showMobileToggle && (
-          <div className="mb-3 flex items-center">
-            <button
-              type="button"
-              onClick={toggleFiltersCollapse}
-              className="inline-flex items-center gap-2 rounded-lg border border-purple-400 bg-white px-4 py-2 text-sm font-semibold text-purple-600 transition hover:border-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-purple-300"
-              aria-expanded={!filtersCollapsed}
-            >
-              {filtersCollapsed ? "Mostrar filtros" : "Ocultar filtros"}
-              {filtersCollapsed ? (
-                <IoChevronDownOutline className="h-4 w-4" />
-              ) : (
-                <IoChevronUpOutline className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-        )}
         <div className={hideEmbeddedContent ? "hidden" : ""}>
           <CardFiltersSidebar
             propertiesCards={propertiesCards}
@@ -365,6 +343,8 @@ export const CardFinder = ({
             initialFilters={initialSelections}
             onFiltersChange={handleSidebarFiltersChange}
             statsRange={statsRange}
+            forceDesktopLayout={forceDesktopLayout}
+            onCompactSearchLayoutChange={setIsCompactSearchLayout}
           />
         </div>
         {!hideEmbeddedContent && (
@@ -372,11 +352,11 @@ export const CardFinder = ({
             <motion.div
               ref={gridWrapperRef}
               animate={{
-                x: panelOpen && isDesktop ? FILTER_PANEL_WIDTH + 24 : 0,
+                x: panelOpen && isDesktopLayout ? FILTER_PANEL_WIDTH + 24 : 0,
               }}
               transition={{ type: "tween", duration: 0.35 }}
               style={
-                panelOpen && isDesktop
+                panelOpen && isDesktopLayout
                   ? { width: `calc(100% - ${FILTER_PANEL_WIDTH + 24}px)` }
                   : undefined
               }

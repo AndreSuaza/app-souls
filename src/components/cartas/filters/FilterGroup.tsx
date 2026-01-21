@@ -25,14 +25,12 @@ export function FilterGroup({
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center justify-between text-left gap-3 text-slate-700 dark:text-slate-200 font-semibold"
+        className="w-full text-xs sm:text-base flex items-center justify-between text-left gap-3 text-slate-700 dark:text-slate-200 font-semibold"
       >
         <div className="flex items-center gap-2">
-          <span className="text-lg text-purple-600">{icon}</span>
+          <span className="text-purple-600 text-xs sm:text-lg">{icon}</span>
           <span>{label}</span>
-          {hasSelection && (
-            <HiFunnel className="text-purple-500" size={14} />
-          )}
+          {hasSelection && <HiFunnel className="text-purple-500" size={14} />}
         </div>
         <HiChevronDown
           className={`transition-transform ${

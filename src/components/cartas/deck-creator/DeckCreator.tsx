@@ -1,6 +1,5 @@
 "use client";
 
-import type { Card } from "@/interfaces";
 import { useEffect, useState, useCallback, useRef } from "react";
 import clsx from "clsx";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
@@ -9,7 +8,7 @@ import { Decklist } from "@/interfaces/decklist.interface";
 import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
 import { getPaginatedCards } from "@/actions";
-import type { PaginationFilters } from "@/interfaces";
+import type { PaginationFilters, Card } from "@/interfaces";
 
 interface Propertie {
   id: string;
@@ -113,7 +112,6 @@ export const DeckCreator = ({
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
   const [deckListSide, setDeckListSide] = useState<Decklist[]>([]);
-  const [viewList, setViewList] = useState(false);
   // Controla el colapso del panel de busqueda para pantallas grandes.
   const [isFinderCollapsed, setIsFinderCollapsed] = useState(false);
 
@@ -254,27 +252,20 @@ export const DeckCreator = ({
     setDeckListSide([]);
   };
 
-  const changeViewList = () => {
-    setViewList(!viewList);
-  };
-
   return (
     <div
-      className={clsx(
-        "flex h-full flex-col gap-4 overflow-y-auto lg:flex-row lg:gap-0 lg:overflow-hidden",
-        className,
-      )}
+      className={clsx("flex h-full flex-row gap-0 overflow-hidden", className)}
     >
       {/* min-h-0 permite que cada columna tenga su propio scroll en el layout flex. */}
       <section
         className={clsx(
-          "flex min-h-0 min-w-0 flex-col lg:h-full lg:overflow-y-auto",
+          "flex min-h-0 min-w-0 flex-col h-full overflow-y-auto",
           isFinderCollapsed
-            ? "lg:flex-none lg:w-0 lg:overflow-hidden lg:opacity-0"
-            : "lg:flex-1 lg:w-1/2",
+            ? "flex-none w-0 overflow-hidden opacity-0"
+            : "flex-1 w-1/2",
         )}
       >
-        <div className="min-h-0 px-4 pt-4 pb-6 lg:min-h-full lg:pb-10">
+        <div className="min-h-full md:px-2 lg:px-4 md:pt-3 pb-10">
           <CardFinder
             cards={cardsState}
             propertiesCards={propertiesCards}
@@ -297,7 +288,7 @@ export const DeckCreator = ({
         </div>
       </section>
 
-      <div className="relative hidden w-10 items-center justify-center lg:flex">
+      <div className="relative flex w-4 sm:w-10 items-center justify-center">
         <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-slate-200 dark:bg-tournament-dark-border" />
         <button
           type="button"
@@ -307,7 +298,7 @@ export const DeckCreator = ({
               ? "Expandir buscador de cartas"
               : "Contraer buscador de cartas"
           }
-          className="relative z-10 flex h-10 w-10 items-center justify-center rounded-lg border border-purple-400 bg-purple-600 text-white shadow-md transition hover:bg-purple-500 dark:border-purple-300 dark:bg-purple-500"
+          className="absolute left-1/2 top-1/2 z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-400 bg-purple-600 text-white shadow-md transition hover:bg-purple-500 dark:border-purple-300 dark:bg-purple-500 sm:relative sm:left-auto sm:top-auto sm:h-10 sm:w-10 sm:translate-x-0 sm:translate-y-0"
           aria-label={
             isFinderCollapsed
               ? "Expandir buscador de cartas"
@@ -315,28 +306,26 @@ export const DeckCreator = ({
           }
         >
           {isFinderCollapsed ? (
-            <IoChevronForwardOutline className="h-5 w-5" />
+            <IoChevronForwardOutline className="h-4 w-4 sm:h-5 sm:w-5" />
           ) : (
-            <IoChevronBackOutline className="h-5 w-5" />
+            <IoChevronBackOutline className="h-4 w-4 sm:h-5 sm:w-5" />
           )}
         </button>
       </div>
 
       <section
         className={clsx(
-          "flex min-h-0 min-w-0 flex-col pb-6 lg:h-full lg:overflow-y-auto lg:pb-10",
-          isFinderCollapsed ? "lg:flex-1 lg:w-auto" : "lg:flex-1 lg:w-1/2",
+          "flex min-h-0 min-w-0 flex-col pb-10 h-full overflow-y-auto",
+          isFinderCollapsed ? "flex-1 w-auto" : "flex-1 w-1/2",
         )}
       >
-        <div className="min-h-0 px-4 pt-4 pb-6 lg:min-h-full lg:pb-10">
-          <div className="my-3 w-full">
+        <div className="min-h-full md:px-2 lg:px-4 md:pt-3 pb-10">
+          <div className="my-5 w-full">
             <OptionsDeckCreator
               deckListMain={deckListMain}
               deckListLimbo={deckListLimbo}
               deckListSide={deckListSide}
               clearDecklist={clearDecklist}
-              changeViewList={changeViewList}
-              viewList={viewList}
             />
           </div>
           <ShowDeck

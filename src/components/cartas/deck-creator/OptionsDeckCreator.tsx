@@ -4,10 +4,8 @@ import { Card } from "@/interfaces";
 import { useState } from "react";
 import {
   IoCopyOutline,
-  IoGrid,
   IoHandRightOutline,
   IoImageOutline,
-  IoListSharp,
   IoShareSocialOutline,
   IoTrashOutline,
 } from "react-icons/io5";
@@ -26,8 +24,6 @@ interface Props {
   deckListLimbo: Decklist[];
   deckListSide: Decklist[];
   clearDecklist: () => void;
-  changeViewList: () => void;
-  viewList: boolean;
 }
 
 export const OptionsDeckCreator = ({
@@ -35,8 +31,6 @@ export const OptionsDeckCreator = ({
   deckListLimbo,
   deckListSide,
   clearDecklist,
-  changeViewList,
-  viewList,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -139,22 +133,10 @@ export const OptionsDeckCreator = ({
 
         <button
           className={actionButtonClass}
-          title="Cambiar Vista del Mazo"
-          onClick={changeViewList}
-        >
-          {viewList ? (
-            <IoListSharp className="w-6 h-6 -mb-0.5 text-indigo-600" />
-          ) : (
-            <IoGrid className="w-6 h-6 -mb-0.5 text-indigo-600" />
-          )}
-        </button>
-
-        <button
-          className={actionButtonClass}
           title="Exportar Mazo"
           onClick={createCodeDeck}
         >
-          <IoShareSocialOutline className="w-6 h-6 -mb-0.5" />
+          <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
         </button>
 
         <button
@@ -162,21 +144,21 @@ export const OptionsDeckCreator = ({
           title="Exportar Imagen"
           onClick={() => setShowDeckImage(true)}
         >
-          <IoImageOutline className="w-6 h-6 -mb-0.5" />
+          <IoImageOutline className="w-4 h-4 sm:w-6 sm:h-6" />
         </button>
         <button
           className={actionButtonClass}
           title="Prueba Manos"
           onClick={handTest}
         >
-          <IoHandRightOutline className="w-6 h-6 -mb-0.5" />
+          <IoHandRightOutline className="w-4 h-4 sm:w-6 sm:h-6" />
         </button>
         <button
           className={actionButtonClass}
           title="Limpiar Mazo"
           onClick={clearDecklist}
         >
-          <IoTrashOutline className="w-6 h-6 -mb-0.5" />
+          <IoTrashOutline className="w-4 h-4 sm:w-6 sm:h-6" />
         </button>
         {/* <span className="flex flex-row py-2 px-2 font-bold col-span-2">
                 <IoLogoUsd className="w-6 h-6 -mb-0.5" /> {priceDeck()}
