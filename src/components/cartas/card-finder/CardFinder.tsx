@@ -128,6 +128,8 @@ export const CardFinder = ({
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const layoutContainerRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState(1);
+  // Evita el parpadeo inicial ocultando el grid hasta medir columnas.
+  const [isGridReady, setIsGridReady] = useState(false);
   const [isCompactSearchLayout, setIsCompactSearchLayout] = useState(false);
   const [shouldStackPanel, setShouldStackPanel] = useState(false);
 
@@ -156,6 +158,7 @@ export const CardFinder = ({
   useEffect(() => {
     const element = gridWrapperRef.current;
     if (!element) return;
+    setIsGridReady(false);
 
     const calculateColumns = (width: number) => {
       const nextColumns = Math.floor(
@@ -168,6 +171,7 @@ export const CardFinder = ({
     const updateColumns = (width: number) => {
       const nextValue = calculateColumns(width);
       setAutoColumns((prev) => (prev === nextValue ? prev : nextValue));
+      setIsGridReady((prev) => (prev ? prev : true));
     };
 
     updateColumns(element.getBoundingClientRect().width);
@@ -330,13 +334,15 @@ export const CardFinder = ({
 
   const gridContent = (
     <Pagination {...paginationProps}>
-      <CardGrid
-        cards={cardsSource}
-        addCard={addCard}
-        addCardSidedeck={addCardSidedeck}
-        autoColumns={autoColumns}
-        disableAnimations={disableGridAnimations}
-      />
+      <div className={isGridReady ? "" : "invisible"}>
+        <CardGrid
+          cards={cardsSource}
+          addCard={addCard}
+          addCardSidedeck={addCardSidedeck}
+          autoColumns={autoColumns}
+          disableAnimations={disableGridAnimations}
+        />
+      </div>
     </Pagination>
   );
 

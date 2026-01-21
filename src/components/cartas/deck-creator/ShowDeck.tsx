@@ -1,11 +1,11 @@
 "use client";
 
+import clsx from "clsx";
+import { IoChevronDownOutline, IoChevronUpOutline } from "react-icons/io5";
 import { CardItemList } from "../card-grid/CardItemList";
 import { Card, Decklist } from "@/interfaces";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { IoChevronDownOutline, IoChevronUpOutline } from "react-icons/io5";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import clsx from "clsx";
 
 interface Props {
   deckListMain: Decklist[];
@@ -27,21 +27,21 @@ const typeMap: Record<string, keyof typeof initialCounts> = {
   Ente: "ent",
 };
 
-const buildDeckStats = (decklist: Decklist[]) => {
-  const totals = decklist.reduce(
-    (acc, deck) => {
-      deck.card.types.forEach((type) => {
-        const key = typeMap[type.name];
-        if (key) acc[key] += deck.count;
-      });
-      acc.total += deck.count;
-      return acc;
-    },
-    { ...initialCounts, total: 0 }
-  );
+// const buildDeckStats = (decklist: Decklist[]) => {
+//   const totals = decklist.reduce(
+//     (acc, deck) => {
+//       deck.card.types.forEach((type) => {
+//         const key = typeMap[type.name];
+//         if (key) acc[key] += deck.count;
+//       });
+//       acc.total += deck.count;
+//       return acc;
+//     },
+//     { ...initialCounts, total: 0 },
+//   );
 
-  return totals;
-};
+//   return totals;
+// };
 
 const GRID_CARD_MIN_WIDTH = 120;
 const GRID_GAP_PX = 8;
@@ -65,19 +65,13 @@ export const ShowDeck = ({
     side: true,
   });
 
-  // Calcula estadísticas por sección para mostrar los contadores.
-  const mainStats = useMemo(
-    () => buildDeckStats(deckListMain),
-    [deckListMain]
-  );
-  const limboStats = useMemo(
-    () => buildDeckStats(deckListLimbo),
-    [deckListLimbo]
-  );
-  const sideStats = useMemo(
-    () => buildDeckStats(deckListSide),
-    [deckListSide]
-  );
+  // Calcula estadisticas por seccion para mostrar los contadores.
+  // const mainStats = useMemo(() => buildDeckStats(deckListMain), [deckListMain]);
+  // const limboStats = useMemo(
+  //   () => buildDeckStats(deckListLimbo),
+  //   [deckListLimbo],
+  // );
+  // const sideStats = useMemo(() => buildDeckStats(deckListSide), [deckListSide]);
 
   const toggleSection = (section: keyof typeof sectionsOpen) => {
     setSectionsOpen((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -89,7 +83,7 @@ export const ShowDeck = ({
 
     const calculateColumns = (width: number) => {
       const nextColumns = Math.floor(
-        (width + GRID_GAP_PX) / (GRID_CARD_MIN_WIDTH + GRID_GAP_PX)
+        (width + GRID_GAP_PX) / (GRID_CARD_MIN_WIDTH + GRID_GAP_PX),
       );
       return Math.max(1, Math.min(8, nextColumns));
     };
@@ -157,49 +151,77 @@ export const ShowDeck = ({
         getGridClass("xl", columnsXl),
       );
 
-  const renderStats = (stats: ReturnType<typeof buildDeckStats>) => (
-    <ul className="mb-2 flex flex-row flex-wrap gap-2 rounded-lg bg-slate-900/90 px-2 py-1 text-xs text-white dark:bg-tournament-dark-muted sm:text-sm">
-      <li>
-        <span className="font-bold">T:</span> {stats.total}
-      </li>
-      <li>
-        <span className="font-bold text-red-600">U:</span> {stats.und}
-      </li>
-      <li>
-        <span className="font-bold text-purple-700">C:</span> {stats.con}
-      </li>
-      <li>
-        <span className="font-bold text-gray-400">A:</span> {stats.arm}
-      </li>
-      <li>
-        <span className="font-bold text-yellow-500">E:</span> {stats.ent}
-      </li>
-    </ul>
-  );
+  const sectionBaseContainerClass =
+    "rounded-lg border border-l-4 bg-slate-100/80 text-slate-800 overflow-hidden dark:bg-tournament-dark-surface/90 dark:text-slate-100";
+  const sectionBaseHeaderClass =
+    "relative flex w-full flex-wrap items-start gap-2 border-b bg-slate-200/50 px-3 py-2 pr-6 text-left text-xs font-bold uppercase tracking-wide text-slate-700 transition hover:bg-slate-200/90 dark:bg-tournament-dark-muted/70 dark:text-slate-100 dark:hover:bg-purple-500/10 sm:text-sm";
+  const sectionStyles = {
+    limbo: {
+      container:
+        "border-amber-200/80 border-l-amber-500 shadow-[inset_4px_0_10px_rgba(245,158,11,0.2)] dark:border-amber-500/30 dark:border-l-amber-400 dark:shadow-[inset_4px_0_12px_rgba(245,158,11,0.35)]",
+      header: "border-b-amber-200/80 dark:border-b-amber-500/30",
+      title: "text-amber-600 dark:text-amber-300",
+      chevron: "text-amber-500 dark:text-amber-300",
+    },
+    main: {
+      container:
+        "border-purple-200/80 border-l-purple-500 shadow-[inset_4px_0_10px_rgba(139,92,246,0.2)] dark:border-purple-500/30 dark:border-l-purple-400 dark:shadow-[inset_4px_0_12px_rgba(139,92,246,0.35)]",
+      header: "border-b-purple-200/80 dark:border-b-purple-500/30",
+      title: "text-purple-600 dark:text-purple-300",
+      chevron: "text-purple-500 dark:text-purple-300",
+    },
+    side: {
+      container:
+        "border-sky-200/80 border-l-sky-500 shadow-[inset_4px_0_10px_rgba(56,189,248,0.2)] dark:border-sky-500/30 dark:border-l-sky-400 dark:shadow-[inset_4px_0_12px_rgba(56,189,248,0.35)]",
+      header: "border-b-sky-200/80 dark:border-b-sky-500/30",
+      title: "text-sky-600 dark:text-sky-300",
+      chevron: "text-sky-500 dark:text-sky-300",
+    },
+  };
+  const statsWrapperClass = "flex flex-wrap items-center gap-2 min-w-0";
+  const sectionBodyClass = "px-3 pb-3 pt-3 sm:px-4 sm:pb-4";
 
   return (
-    <>
-      <div
-        ref={gridWrapperRef}
-        className="mb-6 rounded-lg border border-slate-200 bg-white p-3 text-slate-900 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-100"
+    <div ref={gridWrapperRef} className="mb-6 flex flex-col gap-4">
+      <section
+        className={clsx(
+          sectionBaseContainerClass,
+          sectionStyles.limbo.container,
+        )}
       >
-        <div className="flex flex-col">
-          <button
-            type="button"
-            onClick={() => toggleSection("limbo")}
-            className="mb-2 flex w-full items-center justify-between rounded-lg bg-amber-500/90 px-3 py-1 text-left text-xs font-bold uppercase text-white transition hover:bg-amber-500 sm:text-sm md:text-base"
-            aria-label="Mostrar u ocultar mazo limbo"
-          >
-            <span>Mazo Limbo</span>
-            {sectionsOpen.limbo ? (
-              <IoChevronUpOutline className="h-4 w-4" />
-            ) : (
-              <IoChevronDownOutline className="h-4 w-4" />
-            )}
-          </button>
-          {renderStats(limboStats)}
+        <button
+          type="button"
+          onClick={() => toggleSection("limbo")}
+          className={clsx(sectionBaseHeaderClass, sectionStyles.limbo.header)}
+          aria-label="Mostrar u ocultar mazo limbo"
+        >
+          <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+            <span className={clsx("shrink-0", sectionStyles.limbo.title)}>
+              Mazo Limbo
+            </span>
+            {/* <div className={statsWrapperClass}>
+              <DeckStatsChips stats={limboStats} />
+            </div> */}
+          </div>
+          {sectionsOpen.limbo ? (
+            <IoChevronUpOutline
+              className={clsx(
+                "absolute right-2 top-2 h-4 w-4",
+                sectionStyles.limbo.chevron,
+              )}
+            />
+          ) : (
+            <IoChevronDownOutline
+              className={clsx(
+                "absolute right-2 top-2 h-4 w-4",
+                sectionStyles.limbo.chevron,
+              )}
+            />
+          )}
+        </button>
 
-          {/* Animación para mantener la misma sensación del grid de /cartas. */}
+        <div className={sectionBodyClass}>
+          {/* Animacion para mantener la misma sensacion del grid de /cartas. */}
           <AnimatePresence initial={false}>
             {sectionsOpen.limbo && (
               <motion.div
@@ -227,93 +249,144 @@ export const ShowDeck = ({
               </motion.div>
             )}
           </AnimatePresence>
-
-          <button
-            type="button"
-            onClick={() => toggleSection("main")}
-            className="my-2 flex w-full items-center justify-between rounded-lg bg-purple-600 px-3 py-1 text-left text-xs font-bold uppercase text-white transition hover:bg-purple-500 sm:text-sm md:text-base"
-            aria-label="Mostrar u ocultar mazo principal"
-          >
-            <span>Mazo Principal</span>
-            {sectionsOpen.main ? (
-              <IoChevronUpOutline className="h-4 w-4" />
-            ) : (
-              <IoChevronDownOutline className="h-4 w-4" />
-            )}
-          </button>
-          {renderStats(mainStats)}
         </div>
-        <AnimatePresence initial={false}>
-          {sectionsOpen.main && (
-            <motion.div
-              key="main-grid"
-              layout
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-              className={gridClassName}
-            >
-              {deckListMain
-                .slice()
-                .reverse()
-                .map((deck, index) => (
-                  <motion.div key={deck.card.id + index} layout>
-                    <CardItemList
-                      card={deck.card}
-                      count={deck.count}
-                      dropCard={dropCard}
-                      addCard={addCard}
-                    />
-                  </motion.div>
-                ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      </section>
 
+      <section
+        className={clsx(
+          sectionBaseContainerClass,
+          sectionStyles.main.container,
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => toggleSection("main")}
+          className={clsx(sectionBaseHeaderClass, sectionStyles.main.header)}
+          aria-label="Mostrar u ocultar mazo principal"
+        >
+          <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+            <span className={clsx("shrink-0", sectionStyles.main.title)}>
+              Mazo Principal
+            </span>
+            {/* <div className={statsWrapperClass}>
+              <DeckStatsChips stats={mainStats} />
+            </div> */}
+          </div>
+          {sectionsOpen.main ? (
+            <IoChevronUpOutline
+              className={clsx(
+                "absolute right-2 top-2 h-4 w-4",
+                sectionStyles.main.chevron,
+              )}
+            />
+          ) : (
+            <IoChevronDownOutline
+              className={clsx(
+                "absolute right-2 top-2 h-4 w-4",
+                sectionStyles.main.chevron,
+              )}
+            />
+          )}
+        </button>
+
+        <div className={sectionBodyClass}>
+          <AnimatePresence initial={false}>
+            {sectionsOpen.main && (
+              <motion.div
+                key="main-grid"
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className={gridClassName}
+              >
+                {deckListMain
+                  .slice()
+                  .reverse()
+                  .map((deck, index) => (
+                    <motion.div key={deck.card.id + index} layout>
+                      <CardItemList
+                        card={deck.card}
+                        count={deck.count}
+                        dropCard={dropCard}
+                        addCard={addCard}
+                      />
+                    </motion.div>
+                  ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
+
+      <section
+        className={clsx(
+          sectionBaseContainerClass,
+          sectionStyles.side.container,
+        )}
+      >
         <button
           type="button"
           onClick={() => toggleSection("side")}
-          className="my-2 flex w-full items-center justify-between rounded-lg bg-sky-600 px-3 py-1 text-left text-xs font-bold uppercase text-white transition hover:bg-sky-500 sm:text-sm md:text-base"
+          className={clsx(sectionBaseHeaderClass, sectionStyles.side.header)}
           aria-label="Mostrar u ocultar mazo apoyo"
         >
-          <span>Mazo Apoyo</span>
+          <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+            <span className={clsx("shrink-0", sectionStyles.side.title)}>
+              Mazo Apoyo
+            </span>
+            {/* <div className={statsWrapperClass}>
+              <DeckStatsChips stats={sideStats} />
+            </div> */}
+          </div>
           {sectionsOpen.side ? (
-            <IoChevronUpOutline className="h-4 w-4" />
+            <IoChevronUpOutline
+              className={clsx(
+                "absolute right-2 top-2 h-4 w-4",
+                sectionStyles.side.chevron,
+              )}
+            />
           ) : (
-            <IoChevronDownOutline className="h-4 w-4" />
+            <IoChevronDownOutline
+              className={clsx(
+                "absolute right-2 top-2 h-4 w-4",
+                sectionStyles.side.chevron,
+              )}
+            />
           )}
         </button>
-        {renderStats(sideStats)}
 
-        <AnimatePresence initial={false}>
-          {sectionsOpen.side && (
-            <motion.div
-              key="side-grid"
-              layout
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-              className={gridClassName}
-            >
-              {deckListSide
-                .slice()
-                .reverse()
-                .map((deck, index) => (
-                  <motion.div key={deck.card.id + index} layout>
-                    <CardItemList
-                      card={deck.card}
-                      count={deck.count}
-                      dropCard={dropCardSide}
-                      addCard={addCardSide}
-                    />
-                  </motion.div>
-                ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
+        <div className={sectionBodyClass}>
+          <AnimatePresence initial={false}>
+            {sectionsOpen.side && (
+              <motion.div
+                key="side-grid"
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className={gridClassName}
+              >
+                {deckListSide
+                  .slice()
+                  .reverse()
+                  .map((deck, index) => (
+                    <motion.div key={deck.card.id + index} layout>
+                      <CardItemList
+                        card={deck.card}
+                        count={deck.count}
+                        dropCard={dropCardSide}
+                        addCard={addCardSide}
+                      />
+                    </motion.div>
+                  ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
+    </div>
   );
 };
