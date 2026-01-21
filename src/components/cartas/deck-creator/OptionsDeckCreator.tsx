@@ -7,12 +7,15 @@ import {
   IoHandRightOutline,
   IoImageOutline,
   IoShareSocialOutline,
-  IoTrashOutline,
 } from "react-icons/io5";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { RiFullscreenExitLine, RiFullscreenLine } from "react-icons/ri";
+import { RiEraserLine } from "react-icons/ri";
 import { Modal, Decklistimage, SaveDeckForm } from "@/components";
 import Link from "next/link";
 import Image from "next/image";
+import { useAlertConfirmationStore } from "@/store";
 
 interface Decklist {
   count: number;
@@ -24,6 +27,8 @@ interface Props {
   deckListLimbo: Decklist[];
   deckListSide: Decklist[];
   clearDecklist: () => void;
+  isFinderCollapsed: boolean;
+  onToggleFinderCollapse: () => void;
 }
 
 export const OptionsDeckCreator = ({
@@ -31,6 +36,8 @@ export const OptionsDeckCreator = ({
   deckListLimbo,
   deckListSide,
   clearDecklist,
+  isFinderCollapsed,
+  onToggleFinderCollapse,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -39,6 +46,9 @@ export const OptionsDeckCreator = ({
   const [deckList, setDeckList] = useState("");
   const [copyState, setCopyState] = useState(false);
   const [mazoTest, setMazoText] = useState<Card[]>([]);
+  const openAlertConfirmation = useAlertConfirmationStore(
+    (state) => state.openAlertConfirmation,
+  );
 
   const copyToClipboard = () => {
     setCopyState(true);
@@ -97,16 +107,40 @@ export const OptionsDeckCreator = ({
     setShowHandTest(true);
   };
 
+  const handleClearDecklist = () => {
+    // Evita limpiezas accidentales del mazo al confirmar la accion.
+    openAlertConfirmation({
+      text: "¿Deseas limpiar el mazo?",
+      description: "Se eliminaran todas las cartas del mazo actual.",
+      action: async () => {
+        clearDecklist();
+        return true;
+      },
+    });
+  };
+
   const closeDeckImage = () => {
     setShowDeckImage(false);
   };
 
   const actionButtonClass =
     "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300";
+  const primaryActionButtonClass =
+    "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-amber-100 p-2 text-amber-700 shadow-md transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-amber-400/10 dark:text-amber-300";
+  const shareIconButtonClass =
+    "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200";
 
   const whatsappShareLink = deckList
     ? `https://wa.me/?text=${encodeURIComponent(deckList)}`
     : "https://wa.me/";
+  const facebookShareLink = deckList
+    ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        deckList
+      )}`
+    : "https://www.facebook.com/sharer/sharer.php?u=";
+  const xShareLink = deckList
+    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(deckList)}`
+    : "https://twitter.com/intent/tweet";
 
   return (
     <>
@@ -130,6 +164,22 @@ export const OptionsDeckCreator = ({
                 <IoSaveOutline className="w-6 h-6 -mb-0.5" />
             </button>
             } */}
+
+        <button
+          className={primaryActionButtonClass}
+          title={
+            isFinderCollapsed
+              ? "Salir de pantalla completa de mazos"
+              : "Pantalla completa de mazos"
+          }
+          onClick={onToggleFinderCollapse}
+        >
+          {isFinderCollapsed ? (
+            <RiFullscreenExitLine className="h-4 w-4 sm:h-6 sm:w-6" />
+          ) : (
+            <RiFullscreenLine className="h-4 w-4 sm:h-6 sm:w-6" />
+          )}
+        </button>
 
         <button
           className={actionButtonClass}
@@ -156,9 +206,9 @@ export const OptionsDeckCreator = ({
         <button
           className={actionButtonClass}
           title="Limpiar Mazo"
-          onClick={clearDecklist}
+          onClick={handleClearDecklist}
         >
-          <IoTrashOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+          <RiEraserLine className="w-4 h-4 sm:w-6 sm:h-6" />
         </button>
         {/* <span className="flex flex-row py-2 px-2 font-bold col-span-2">
                 <IoLogoUsd className="w-6 h-6 -mb-0.5" /> {priceDeck()}
@@ -175,7 +225,7 @@ export const OptionsDeckCreator = ({
       )}
       {showSharedDeck && (
         <Modal
-          className="top-6 left-1/2 w-[92%] max-w-xl -translate-x-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:top-24 overflow-hidden"
+          className="left-1/2 top-1/2 w-[92%] max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface overflow-hidden"
           close={() => setSharedDeck(false)}
         >
           <div className="flex max-h-[80vh] w-full flex-col overflow-hidden">
@@ -188,7 +238,7 @@ export const OptionsDeckCreator = ({
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 sm:text-base">
                 Comparte el enlace de tu mazo con tus amigos.
               </p>
-              <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <div className="flex flex-col items-center justify-center gap-3">
                 <button
                   className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-500"
                   onClick={copyToClipboard}
@@ -196,15 +246,38 @@ export const OptionsDeckCreator = ({
                   <IoCopyOutline className="h-5 w-5" />
                   Copiar enlace
                 </button>
-                <Link
-                  href={whatsappShareLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-600 transition hover:bg-emerald-500 hover:text-white dark:border-emerald-400 dark:text-emerald-300"
-                >
-                  <FaWhatsapp className="h-5 w-5" />
-                  Compartir en WhatsApp
-                </Link>
+                <div className="flex items-center justify-center gap-3">
+                  <Link
+                    href={whatsappShareLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Compartir en WhatsApp"
+                    aria-label="Compartir en WhatsApp"
+                    className={shareIconButtonClass}
+                  >
+                    <FaWhatsapp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  </Link>
+                  <Link
+                    href={facebookShareLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Compartir en Facebook"
+                    aria-label="Compartir en Facebook"
+                    className={shareIconButtonClass}
+                  >
+                    <FaFacebookF className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </Link>
+                  <Link
+                    href={xShareLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Compartir en X"
+                    aria-label="Compartir en X"
+                    className={shareIconButtonClass}
+                  >
+                    <FaXTwitter className="h-5 w-5 text-slate-900 dark:text-white" />
+                  </Link>
+                </div>
               </div>
               {copyState && (
                 <p className="text-sm font-semibold text-lime-600 dark:text-lime-400">
@@ -223,7 +296,7 @@ export const OptionsDeckCreator = ({
       )}
       {showHandTest && (
         <Modal
-          className="top-6 left-1/2 w-[94%] max-w-4xl -translate-x-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:top-20 overflow-hidden"
+          className="left-1/2 top-1/2 w-[94%] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface overflow-hidden"
           close={() => setShowHandTest(false)}
         >
           <div className="flex max-h-[80vh] w-full flex-col overflow-hidden text-center">

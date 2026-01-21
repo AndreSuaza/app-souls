@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { Card } from "@/interfaces/cards.interface";
 import { IoAddCircleOutline, IoMedkitOutline } from "react-icons/io5";
-import { useCardDetailStore } from "@/store";
 
 interface Props {
   card: Card;
@@ -20,10 +19,7 @@ export const CardItem = ({
   addCard,
   addCardSidedeck,
 }: Props) => {
-  const openCardDetail = useCardDetailStore((state) => state.openCardDetail);
-
   const openDetail = () => {
-    openCardDetail();
     detailCard(index);
   };
 

@@ -16,9 +16,16 @@ import { CardDetailProductCard } from "./CardDetailProductCard";
 interface Props {
   cards: Card[];
   indexList: number;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export const CardDetail = ({ cards, indexList }: Props) => {
+export const CardDetail = ({
+  cards,
+  indexList,
+  isOpen,
+  onClose,
+}: Props) => {
   const [deckList] = useState(cards);
   const [card, setCard] = useState(deckList[indexList]);
   const [indexCard, setIndexCard] = useState(indexList);
@@ -27,16 +34,26 @@ export const CardDetail = ({ cards, indexList }: Props) => {
     (state) => state.isCardDetailOpen,
   );
   const closeCardDetail = useCardDetailStore((state) => state.closeCardDetail);
+  const isDetailOpen = typeof isOpen === "boolean" ? isOpen : isCardDetailOpen;
+  const handleClose = onClose ?? closeCardDetail;
 
   useEffect(() => {
-    if (!isCardDetailOpen) return;
+    if (!isDetailOpen) return;
     const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
     // Bloquea el scroll del body mientras el modal esta abierto.
     document.body.style.overflow = "hidden";
+    // Evita el salto visual al ocultar el scrollbar.
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
     };
-  }, [isCardDetailOpen]);
+  }, [isDetailOpen]);
 
   useEffect(() => {
     // Evita renderizar el portal antes de que exista document.
@@ -114,13 +131,13 @@ export const CardDetail = ({ cards, indexList }: Props) => {
       .filter((item) => item.value.length > 0);
   }, [typeText, archetypeText, rarityText, card]);
 
-  if (!isCardDetailOpen || !isMounted) return null;
+  if (!isDetailOpen || !isMounted) return null;
 
   const modalContent = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm fade-in"
-        onClick={closeCardDetail}
+        onClick={handleClose}
       />
 
       <div className="relative z-10 h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[80vh] sm:w-full sm:max-w-6xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg lg:w-3/5 lg:max-w-none">
@@ -132,7 +149,7 @@ export const CardDetail = ({ cards, indexList }: Props) => {
           <button
             type="button"
             aria-label="Cerrar detalle de carta"
-            onClick={closeCardDetail}
+            onClick={handleClose}
             className="flex h-11 w-11 items-center justify-center rounded-lg border border-gray-300 bg-white text-slate-600 transition hover:border-purple-400 hover:text-purple-600 dark:border dark:border-tournament-dark-border dark:bg-slate-950/80 dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
           >
             <IoCloseOutline className="h-6 w-6" />

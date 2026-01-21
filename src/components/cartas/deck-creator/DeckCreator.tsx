@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import clsx from "clsx";
-import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
 import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
+import { CardDetail } from "../card-detail/CardDetail";
 import { getPaginatedCards } from "@/actions";
 import type { PaginationFilters, Card } from "@/interfaces";
 
@@ -114,6 +114,10 @@ export const DeckCreator = ({
   const [deckListSide, setDeckListSide] = useState<Decklist[]>([]);
   // Controla el colapso del panel de busqueda para pantallas grandes.
   const [isFinderCollapsed, setIsFinderCollapsed] = useState(false);
+  // Centraliza el modal de detalle para evitar duplicados entre buscador y mazos.
+  const [detailCards, setDetailCards] = useState<Card[]>([]);
+  const [detailIndex, setDetailIndex] = useState(0);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const importDeck = useCallback(() => {
     const hasIncomingDeck =
@@ -252,6 +256,16 @@ export const DeckCreator = ({
     setDeckListSide([]);
   };
 
+  const openDetail = useCallback((cardsList: Card[], index: number) => {
+    setDetailCards(cardsList);
+    setDetailIndex(index);
+    setIsDetailOpen(true);
+  }, []);
+
+  const closeDetail = useCallback(() => {
+    setIsDetailOpen(false);
+  }, []);
+
   return (
     <div
       className={clsx("flex h-full flex-row gap-0 overflow-hidden", className)}
@@ -265,7 +279,7 @@ export const DeckCreator = ({
             : "flex-1 w-1/2",
         )}
       >
-        <div className="min-h-full md:px-2 lg:px-4 md:pt-3 pb-10">
+        <div className="min-h-full md:px-2 lg:pl-2 lg:pr-0 md:pt-3 pb-10">
           <CardFinder
             cards={cardsState}
             propertiesCards={propertiesCards}
@@ -284,33 +298,13 @@ export const DeckCreator = ({
             layoutColumnsOpen={{ lg: 1, xl: 2 }}
             disableUrlSync
             disableGridAnimations
+            onOpenDetail={openDetail}
           />
         </div>
       </section>
 
-      <div className="relative flex w-4 sm:w-10 items-center justify-center">
+      <div className="relative flex items-center justify-center">
         <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-slate-200 dark:bg-tournament-dark-border" />
-        <button
-          type="button"
-          onClick={() => setIsFinderCollapsed((prev) => !prev)}
-          title={
-            isFinderCollapsed
-              ? "Expandir buscador de cartas"
-              : "Contraer buscador de cartas"
-          }
-          className="absolute left-1/2 top-1/2 z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-lg border-2 border-purple-400 bg-purple-600 text-white shadow-md transition hover:bg-purple-500 dark:border-purple-300 dark:bg-purple-500 sm:relative sm:left-auto sm:top-auto sm:h-10 sm:w-10 sm:translate-x-0 sm:translate-y-0"
-          aria-label={
-            isFinderCollapsed
-              ? "Expandir buscador de cartas"
-              : "Contraer buscador de cartas"
-          }
-        >
-          {isFinderCollapsed ? (
-            <IoChevronForwardOutline className="h-4 w-4 sm:h-5 sm:w-5" />
-          ) : (
-            <IoChevronBackOutline className="h-4 w-4 sm:h-5 sm:w-5" />
-          )}
-        </button>
       </div>
 
       <section
@@ -319,13 +313,17 @@ export const DeckCreator = ({
           isFinderCollapsed ? "flex-1 w-auto" : "flex-1 w-1/2",
         )}
       >
-        <div className="min-h-full pr-2 md:pr-0 md:px-2 lg:px-4 md:pt-3 pb-10">
+        <div className="min-h-full pr-2 md:pr-0 md:px-2 lg:pl-6 lg:pr-4  md:pt-3 pb-10">
           <div className="mt-4 mb-5 w-full">
             <OptionsDeckCreator
               deckListMain={deckListMain}
               deckListLimbo={deckListLimbo}
               deckListSide={deckListSide}
               clearDecklist={clearDecklist}
+              isFinderCollapsed={isFinderCollapsed}
+              onToggleFinderCollapse={() =>
+                setIsFinderCollapsed((prev) => !prev)
+              }
             />
           </div>
           <ShowDeck
@@ -338,10 +336,19 @@ export const DeckCreator = ({
             dropCardSide={dropCardSideDeck}
             columnsLg={isFinderCollapsed ? 6 : 4}
             columnsXl={isFinderCollapsed ? 8 : 4}
+            onOpenDetail={openDetail}
           />
           <div className="h-6" aria-hidden />
         </div>
       </section>
+      {isDetailOpen && detailCards.length > 0 && (
+        <CardDetail
+          cards={detailCards}
+          indexList={detailIndex}
+          isOpen={isDetailOpen}
+          onClose={closeDetail}
+        />
+      )}
     </div>
   );
 };

@@ -2,7 +2,6 @@
 
 import type { Card } from "@/interfaces";
 import { CardItem } from "./CardItem";
-import { useCardDetailStore } from "@/store";
 import { CardDetail } from "../card-detail/CardDetail";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -19,6 +18,7 @@ interface Props {
   addCard?: (c: Card) => void;
   addCardSidedeck?: (c: Card) => void;
   disableAnimations?: boolean;
+  onOpenDetail?: (cards: Card[], index: number) => void;
 }
 
 const getGridClass = (
@@ -77,16 +77,22 @@ export const CardGrid = ({
   addCard,
   addCardSidedeck,
   disableAnimations = false,
+  onOpenDetail,
 }: Props) => {
-  const isCardDetailOpen = useCardDetailStore(
-    (state) => state.isCardDetailOpen
-  );
   const [indexDeck, setIndexDeck] = useState(0);
-  const openCardDetail = useCardDetailStore((state) => state.openCardDetail);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const detailCard = (index: number) => {
+    if (onOpenDetail) {
+      onOpenDetail(cards, index);
+      return;
+    }
     setIndexDeck(index);
-    openCardDetail();
+    setIsDetailOpen(true);
+  };
+
+  const closeDetail = () => {
+    setIsDetailOpen(false);
   };
 
   const gridClassName = autoColumns
@@ -143,7 +149,14 @@ export const CardGrid = ({
           </motion.ul>
         )}
       </div>
-      {isCardDetailOpen && <CardDetail cards={cards} indexList={indexDeck} />}
+      {!onOpenDetail && isDetailOpen && (
+        <CardDetail
+          cards={cards}
+          indexList={indexDeck}
+          isOpen={isDetailOpen}
+          onClose={closeDetail}
+        />
+      )}
     </>
   );
 };

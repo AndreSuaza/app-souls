@@ -72,6 +72,7 @@ interface Props {
   };
   disableUrlSync?: boolean;
   disableGridAnimations?: boolean;
+  onOpenDetail?: (cards: Card[], index: number) => void;
 }
 
 export const CardFinder = ({
@@ -90,6 +91,7 @@ export const CardFinder = ({
   layoutVariant = "page",
   disableUrlSync = false,
   disableGridAnimations = false,
+  onOpenDetail,
 }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -341,6 +343,7 @@ export const CardFinder = ({
           addCardSidedeck={addCardSidedeck}
           autoColumns={autoColumns}
           disableAnimations={disableGridAnimations}
+          onOpenDetail={onOpenDetail}
         />
       </div>
     </Pagination>

@@ -17,6 +17,7 @@ interface Props {
   addCardSide?: (c: Card) => void;
   columnsLg?: number;
   columnsXl?: number;
+  onOpenDetail?: (cards: Card[], index: number) => void;
 }
 
 const initialCounts = { und: 0, arm: 0, con: 0, ent: 0 };
@@ -56,6 +57,7 @@ export const ShowDeck = ({
   addCardSide,
   columnsLg = 4,
   columnsXl = 6,
+  onOpenDetail,
 }: Props) => {
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState<number | null>(null);
@@ -151,6 +153,13 @@ export const ShowDeck = ({
         getGridClass("xl", columnsXl),
       );
 
+  const limboDeck = deckListLimbo.slice().reverse();
+  const mainDeck = deckListMain.slice().reverse();
+  const sideDeck = deckListSide.slice().reverse();
+  const limboCards = limboDeck.map((deck) => deck.card);
+  const mainCards = mainDeck.map((deck) => deck.card);
+  const sideCards = sideDeck.map((deck) => deck.card);
+
   const sectionBaseContainerClass =
     "rounded-lg border border-l-4 bg-slate-100/80 text-slate-800 overflow-hidden dark:bg-tournament-dark-surface/90 dark:text-slate-100";
   const sectionBaseHeaderClass =
@@ -233,16 +242,16 @@ export const ShowDeck = ({
                 transition={{ duration: 0.2 }}
                 className={gridClassName}
               >
-                {deckListLimbo
-                  .slice()
-                  .reverse()
-                  .map((deck, index) => (
+                {limboDeck.map((deck, index) => (
                     <motion.div key={deck.card.id + index} layout>
                       <CardItemList
                         card={deck.card}
                         count={deck.count}
                         dropCard={dropCard}
                         addCard={addCard}
+                        onOpenDetail={() =>
+                          onOpenDetail?.(limboCards, index)
+                        }
                       />
                     </motion.div>
                   ))}
@@ -301,16 +310,16 @@ export const ShowDeck = ({
                 transition={{ duration: 0.2 }}
                 className={gridClassName}
               >
-                {deckListMain
-                  .slice()
-                  .reverse()
-                  .map((deck, index) => (
+                {mainDeck.map((deck, index) => (
                     <motion.div key={deck.card.id + index} layout>
                       <CardItemList
                         card={deck.card}
                         count={deck.count}
                         dropCard={dropCard}
                         addCard={addCard}
+                        onOpenDetail={() =>
+                          onOpenDetail?.(mainCards, index)
+                        }
                       />
                     </motion.div>
                   ))}
@@ -369,16 +378,16 @@ export const ShowDeck = ({
                 transition={{ duration: 0.2 }}
                 className={gridClassName}
               >
-                {deckListSide
-                  .slice()
-                  .reverse()
-                  .map((deck, index) => (
+                {sideDeck.map((deck, index) => (
                     <motion.div key={deck.card.id + index} layout>
                       <CardItemList
                         card={deck.card}
                         count={deck.count}
                         dropCard={dropCardSide}
                         addCard={addCardSide}
+                        onOpenDetail={() =>
+                          onOpenDetail?.(sideCards, index)
+                        }
                       />
                     </motion.div>
                   ))}

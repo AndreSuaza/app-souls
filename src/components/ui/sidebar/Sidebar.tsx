@@ -51,7 +51,7 @@ export const Sidebar = () => {
           "fixed p-5 right-0 top-0 w-4/6 h-screen bg-slate-900 text-white z-30 shadow-2xl transform transition-all duration-200",
           {
             "translate-x-full": !isSideMenuOpen,
-          }
+          },
         )}
       >
         <IoCloseOutline
@@ -61,14 +61,14 @@ export const Sidebar = () => {
         />
 
         <div className="flex flex-col mt-12">
-          <Link
+          {/* <Link
             className="flex m-2 p-2 transition-all uppercase text-yellow-400 font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
             href="/nacional"
             onClick={closeMenu}
           >
             <IoTrophyOutline className="w-6 h-6 mr-3" />
             Torneo Nacional
-          </Link>
+          </Link> */}
           <Link
             className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
             href="/como-jugar"
@@ -77,10 +77,14 @@ export const Sidebar = () => {
             <IoFlashOutline className="w-6 h-6 mr-3" />
             Como Jugar
           </Link>
-          {/* <Link className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600" href="/torneos"  onClick={ closeMenu }>
-                    <IoTrophyOutline className="w-6 h-6 mr-3"/>
-                    Torneos
-                </Link> */}
+          <Link
+            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+            href="/torneos"
+            onClick={closeMenu}
+          >
+            <IoTrophyOutline className="w-6 h-6 mr-3" />
+            Torneos
+          </Link>
           <Link
             className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
             href="/preguntas-frecuentes"

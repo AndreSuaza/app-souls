@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Footer, Sidebar, TopMenu } from "@/components";
+import { ConfirmationModalHost, Footer, Sidebar, TopMenu } from "@/components";
 
 interface Props {
   children: ReactNode;
@@ -12,6 +12,7 @@ export default function Layout({ children }: Props) {
       <Sidebar />
       <div className="h-[calc(100vh-4.5rem)] min-h-0">{children}</div>
       <Footer />
+      <ConfirmationModalHost />
     </main>
   );
 }

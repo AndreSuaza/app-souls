@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { Card } from "@/interfaces";
 import Image from "next/image";
 import { IoAddCircleOutline, IoCloseCircleOutline } from "react-icons/io5";
@@ -7,10 +8,26 @@ interface Props {
     card: Card;
     dropCard?: (c: Card) => void
     addCard?: (c: Card) => void
+    onOpenDetail?: () => void;
 }
 
 
-export const CardItemList = ({card, count, dropCard, addCard}:Props) => {
+export const CardItemList = ({
+  card,
+  count,
+  dropCard,
+  addCard,
+  onOpenDetail,
+}: Props) => {
+  const handleAdd = (event: MouseEvent<SVGElement>) => {
+    event.stopPropagation();
+    addCard?.(card);
+  };
+
+  const handleDrop = (event: MouseEvent<SVGElement>) => {
+    event.stopPropagation();
+    dropCard?.(card);
+  };
 
   // const openCardDetail = useCardDetailStore( state => state.openCardDetail);
   // const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
@@ -21,7 +38,12 @@ export const CardItemList = ({card, count, dropCard, addCard}:Props) => {
   // }
 
   return (
-    <div className="flex relative">
+    <div
+      className="flex relative transition-all hover:-mt-2"
+      onClick={onOpenDetail}
+      role={onOpenDetail ? "button" : undefined}
+      tabIndex={onOpenDetail ? 0 : undefined}
+    >
       <Image
         src={`/cards/${card.code}-${card.idd}.webp`}
         className="rounded-md"
@@ -36,13 +58,13 @@ export const CardItemList = ({card, count, dropCard, addCard}:Props) => {
         {addCard && (
           <IoAddCircleOutline
             className="w-6 h-6 mt-1 bg-indigo-600 text-white p-0.5 rounded select-none cursor-pointer"
-            onClick={() => addCard(card)}
+            onClick={handleAdd}
           />
         )}
         {dropCard && (
           <IoCloseCircleOutline
             className="w-6 h-6 mt-1 bg-orange-600 text-white p-0.5 rounded select-none cursor-pointer"
-            onClick={() => dropCard(card)}
+            onClick={handleDrop}
           />
         )}
       </div>
