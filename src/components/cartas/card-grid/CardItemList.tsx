@@ -37,9 +37,9 @@ export const CardItemList = ({
   // }
 
   const actionButtonClass =
-    "flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/90 text-purple-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-purple-200";
+    "flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/30 text-purple-600 shadow-sm backdrop-blur-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-purple-200";
   const removeButtonClass =
-    "flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/90 text-amber-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-amber-200";
+    "flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/40 text-amber-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-amber-200";
 
   return (
     <div
@@ -56,7 +56,7 @@ export const CardItemList = ({
         height={718}
       />
       <div className="absolute top-8 -right-2 z-[1] flex flex-col items-center gap-1">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/90 text-emerald-600 text-xs font-semibold shadow-sm backdrop-blur dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-emerald-200">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/30 text-emerald-700 text-xs font-semibold shadow-sm backdrop-blur-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-emerald-200">
           {count}
         </div>
         {addCard && (

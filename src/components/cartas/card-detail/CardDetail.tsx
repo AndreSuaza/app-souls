@@ -20,12 +20,7 @@ interface Props {
   onClose?: () => void;
 }
 
-export const CardDetail = ({
-  cards,
-  indexList,
-  isOpen,
-  onClose,
-}: Props) => {
+export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
   const [deckList] = useState(cards);
   const [card, setCard] = useState(deckList[indexList]);
   const [indexCard, setIndexCard] = useState(indexList);
@@ -99,11 +94,11 @@ export const CardDetail = ({
   }, [card]);
 
   const keywordsText = useMemo(() => {
-    if (!card?.keywords?.length) return "Sin palabras clave";
+    if (!card?.keywords?.length) return "";
     const keywordNames = card.keywords
       .map((keyword: Keyword) => keyword.name?.trim())
       .filter((name): name is string => !!name);
-    if (keywordNames.length === 0) return "Sin palabras clave";
+    if (keywordNames.length === 0) return "";
     return keywordNames.join(", ");
   }, [card]);
 
@@ -173,7 +168,7 @@ export const CardDetail = ({
           <IoChevronForward className="h-6 w-6" />
         </button>
 
-        <div className="grid h-[calc(100vh-72px)] grid-cols-1 overflow-y-auto px-4 sm:h-auto sm:max-h-[calc(80vh-72px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+        <div className="grid h-[calc(100vh-72px)] grid-cols-1 overflow-y-auto px-4 pb-6 sm:h-auto sm:max-h-[calc(80vh-72px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
           <div className="relative flex flex-col items-center gap-5 border-b border-purple-600 py-6 lg:border-b-0 dark:border-tournament-dark-border">
             <div className="relative w-full max-w-[380px]">
               <div className="overflow-hidden rounded-lg bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
@@ -199,14 +194,16 @@ export const CardDetail = ({
               ))}
             </div>
 
-            <div className="space-y-2">
-              <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                Palabras clave
-              </p>
-              <p className="text-sm text-slate-700 dark:text-slate-200">
-                {keywordsText}
-              </p>
-            </div>
+            {keywordsText && (
+              <div className="space-y-2">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                  Palabras clave
+                </p>
+                <p className="text-sm text-slate-700 dark:text-slate-200">
+                  {keywordsText}
+                </p>
+              </div>
+            )}
 
             <div className="rounded-lg border border-purple-600 bg-white p-5 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:shadow-inner">
               <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">

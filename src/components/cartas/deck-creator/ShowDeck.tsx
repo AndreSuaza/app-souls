@@ -135,6 +135,9 @@ export const ShowDeck = ({
   const limboCards = limboDeck.map((deck) => deck.card);
   const mainCards = mainDeck.map((deck) => deck.card);
   const sideCards = sideDeck.map((deck) => deck.card);
+  const limboCount = deckListLimbo.reduce((acc, deck) => acc + deck.count, 0);
+  const mainCount = deckListMain.reduce((acc, deck) => acc + deck.count, 0);
+  const sideCount = deckListSide.reduce((acc, deck) => acc + deck.count, 0);
 
   const sectionBaseContainerClass =
     "rounded-lg border border-l-4 bg-slate-100/80 text-slate-800 overflow-hidden dark:bg-tournament-dark-surface/90 dark:text-slate-100";
@@ -180,9 +183,18 @@ export const ShowDeck = ({
           className={clsx(sectionBaseHeaderClass, sectionStyles.limbo.header)}
           aria-label="Mostrar u ocultar mazo limbo"
         >
-          <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+          <div className="flex flex-1 flex-wrap items-center gap-1 sm:gap-2 min-w-0">
             <span className={clsx("shrink-0", sectionStyles.limbo.title)}>
               Mazo Limbo
+            </span>
+            <span
+              className={clsx(
+                "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold dark:shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
+                sectionStyles.limbo.title,
+                "border-amber-300/70 dark:border-tournament-dark-border",
+              )}
+            >
+              {limboCount}
             </span>
             {/* <div className={statsWrapperClass}>
               <DeckStatsChips stats={limboStats} />
@@ -251,6 +263,15 @@ export const ShowDeck = ({
             <span className={clsx("shrink-0", sectionStyles.main.title)}>
               Mazo Principal
             </span>
+            <span
+              className={clsx(
+                "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
+                sectionStyles.main.title,
+                "border-purple-300/70 dark:border-tournament-dark-border",
+              )}
+            >
+              {mainCount}
+            </span>
             {/* <div className={statsWrapperClass}>
               <DeckStatsChips stats={mainStats} />
             </div> */}
@@ -316,6 +337,15 @@ export const ShowDeck = ({
           <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
             <span className={clsx("shrink-0", sectionStyles.side.title)}>
               Mazo Apoyo
+            </span>
+            <span
+              className={clsx(
+                "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
+                sectionStyles.side.title,
+                "border-sky-300/70 dark:border-tournament-dark-border",
+              )}
+            >
+              {sideCount}
             </span>
             {/* <div className={statsWrapperClass}>
               <DeckStatsChips stats={sideStats} />

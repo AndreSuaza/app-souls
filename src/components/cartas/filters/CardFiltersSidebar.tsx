@@ -134,10 +134,12 @@ export function CardFiltersSidebar({
         key: "keywords" as const,
         label: "Palabras clave",
         icon: <RiHashtag className="text-xl" />,
-        options: propertiesCards.keywords.map((item) => ({
-          label: item.name?.trim() ? item.name : "Sin palabras clave",
-          value: item.id,
-        })),
+        options: propertiesCards.keywords
+          .filter((item) => item.name?.trim())
+          .map((item) => ({
+            label: item.name.trim(),
+            value: item.id,
+          })),
       },
       {
         key: "rarities" as const,

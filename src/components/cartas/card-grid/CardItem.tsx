@@ -52,7 +52,7 @@ export const CardItem = ({
               <>
                 <button
                   type="button"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/90 text-purple-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-purple-200"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/30 text-purple-600 shadow-sm backdrop-blur-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-purple-200"
                   title="Anadir carta"
                   onClick={() => addCard && addCard(card)}
                 >
@@ -60,7 +60,7 @@ export const CardItem = ({
                 </button>
                 <button
                   type="button"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/90 text-sky-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-sky-200"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/40 text-sky-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-sky-200"
                   title="Anadir carta mazo apoyo"
                   onClick={() => addCardSidedeck && addCardSidedeck(card)}
                 >
