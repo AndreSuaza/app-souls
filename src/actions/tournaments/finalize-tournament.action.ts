@@ -5,7 +5,7 @@ import { FinalizeTournamentSchema } from "@/schemas";
 
 export async function finalizeTournamentAction(input: {
   tournamentId: string;
-  players: { userId: string; wins: number }[];
+  players: { userId: string; wins: number; matches: number }[];
 }) {
   try {
     const data = FinalizeTournamentSchema.parse(input);
@@ -23,6 +23,7 @@ export async function finalizeTournamentAction(input: {
           data: {
             victoryPoints: { increment: player.wins },
             eloPoints: { increment: player.wins },
+            matchesPlayed: { increment: player.matches },
             tournamentsPlayed: { increment: 1 },
           },
         })

@@ -364,9 +364,24 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       // Inicializa los contadores en 0 para todos los inscritos.
       const winsByUserId = new Map(state.players.map((p) => [p.userId, 0]));
 
+      // Contador de matches jugados por usuario.
+      const matchesByUserId = new Map(state.players.map((p) => [p.userId, 0]));
+
       // Suma 1 victoria por match ganado (P1/P2); empates no cuentan.
       state.rounds.forEach((round) => {
         round.matches.forEach((match) => {
+          // Cuenta el match jugado para ambos jugadores.
+          const incrementUserMatch = (playerId: string | null | undefined) => {
+            if (!playerId) return;
+            const userId = playerIdToUserId.get(playerId);
+            if (!userId) return;
+
+            matchesByUserId.set(userId, (matchesByUserId.get(userId) ?? 0) + 1);
+          };
+
+          incrementUserMatch(match.player1Id);
+          incrementUserMatch(match.player2Id);
+
           if (match.result === "P1") {
             const userId = playerIdToUserId.get(match.player1Id);
             if (userId) {
@@ -387,6 +402,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       const players = state.players.map((p) => ({
         userId: p.userId,
         wins: winsByUserId.get(p.userId) ?? 0,
+        matches: matchesByUserId.get(p.userId) ?? 0,
       }));
 
       // Actualiza el torneo y los usuarios en el backend.

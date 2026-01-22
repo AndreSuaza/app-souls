@@ -2,10 +2,24 @@
 
 import { prisma } from "@/lib/prisma";
 import { TournamentPlayerSchema, TournamentPlayerInput } from "@/schemas";
+import { Role } from "@prisma/client";
 
 export async function addPlayerAction(input: TournamentPlayerInput) {
   try {
     const data = TournamentPlayerSchema.parse(input);
+
+    const user = await prisma.user.findUnique({
+      where: { id: data.userId },
+      select: { role: true },
+    });
+
+    if (!user) {
+      throw new Error("El jugador no existe");
+    }
+
+    if (user.role !== Role.player) {
+      throw new Error("Solo usuarios con rol player pueden registrarse");
+    }
 
     const exists = await prisma.tournamentPlayer.findFirst({
       where: {

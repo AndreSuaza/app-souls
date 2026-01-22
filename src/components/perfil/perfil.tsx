@@ -133,14 +133,17 @@ export const Pefil = ({
     setSelectedAvatar(baseAvatar);
   };
 
+  const isPlayer = user.role === "player";
   const hasBaseTournament =
     Boolean(activeTournamentState?.currentTournament) ||
     Boolean(activeTournamentState?.lastTournament);
   const hasSelectedTournament = Boolean(selectedTournament);
 
-  const tabs: TabKey[] = hasBaseTournament
-    ? ["current", "history"]
-    : ["history"];
+  const tabs: TabKey[] = isPlayer
+    ? hasBaseTournament
+      ? ["current", "history"]
+      : ["history"]
+    : [];
 
   if (hasSelectedTournament) {
     tabs.push("selected");
@@ -328,31 +331,33 @@ export const Pefil = ({
         )}
 
         {/* Tabs */}
-        <div className="flex mt-10 border-b border-slate-200 dark:border-tournament-dark-border w-full justify-center md:justify-start">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => handleTabChange(tab)}
-              className={`px-6 py-2 text-sm font-semibold transition ${
-                activeTab === tab
-                  ? "text-purple-600 border-b-2 border-purple-600"
-                  : "text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-300"
-              }`}
-            >
-              {tab === "current"
-                ? currentTabLabel
-                : tab === "history"
-                ? "Historial de torneos"
-                : tab === "selected"
-                ? "Torneo"
-                : "Mis mazos"}
-            </button>
-          ))}
-        </div>
+        {isPlayer && (
+          <div className="flex mt-10 border-b border-slate-200 dark:border-tournament-dark-border w-full justify-center md:justify-start">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={`px-6 py-2 text-sm font-semibold transition ${
+                  activeTab === tab
+                    ? "text-purple-600 border-b-2 border-purple-600"
+                    : "text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-300"
+                }`}
+              >
+                {tab === "current"
+                  ? currentTabLabel
+                  : tab === "history"
+                  ? "Historial de torneos"
+                  : tab === "selected"
+                  ? "Torneo"
+                  : "Mis mazos"}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Contenido */}
         <div className="mt-8 w-full">
-          {activeTab === "current" && activeTournamentState && (
+          {isPlayer && activeTab === "current" && activeTournamentState && (
             <ProfileCurrentTournament
               data={activeTournamentState}
               hasShownInProgressWarning={hasShownInProgressWarning}
@@ -363,7 +368,8 @@ export const Pefil = ({
             />
           )}
 
-          {activeTab === "selected" &&
+          {isPlayer &&
+            activeTab === "selected" &&
             activeTournamentState &&
             selectedTournament && (
               <ProfileCurrentTournament
@@ -377,7 +383,7 @@ export const Pefil = ({
               />
             )}
 
-          {activeTab === "history" && (
+          {isPlayer && activeTab === "history" && (
             <ProfileTournamentHistory
               tournaments={tournaments}
               onSelectTournament={handleHistorySelect}
