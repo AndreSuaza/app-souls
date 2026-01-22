@@ -12,7 +12,11 @@ interface WhereClause {
     defense?: { in: string[] };
     raritiesIds?: { hasEvery: string[] };
     limit?: { in: string[] };
-    OR?: Array<{ effect?: { contains: string }; idd?: string; name?: { contains: string } }>;
+    OR?: Array<{
+        effect?: { contains: string; mode: "insensitive" };
+        idd?: { equals: string; mode: "insensitive" };
+        name?: { contains: string; mode: "insensitive" };
+    }>;
     
 }
 
@@ -67,7 +71,13 @@ export const getPaginatedCards = async({
             if(costs) { where.cost = {in: costs.split(',').map(item => Number.parseInt(item.trim()))}}
             if(forces) { where.force = {in: forces.split(',').map(item => item.trim())}}
             if(defenses) { where.defense = {in: defenses.split(',').map(item => item.trim())}}
-            if(text) {where.OR = [{ effect: { contains: text } },{ idd: text }, {name: {contains: text}}]}
+            if(text) {
+                where.OR = [
+                    { effect: { contains: text, mode: "insensitive" } },
+                    { idd: { equals: text, mode: "insensitive" } },
+                    { name: { contains: text, mode: "insensitive" } },
+                ]
+            }
             if(rarities) { where.raritiesIds = {hasEvery: rarities.split(',').map(item => item.trim())}}
             if(limit) { where.limit = {in: limit.split(',').map(item => item.trim())}}
             return where;
@@ -131,6 +141,8 @@ export const getPaginatedCards = async({
         return {
             currentPage: page,
             totalPage: totalPages,
+            totalCount,
+            perPage: take,
             cards: cards.map( card => ({
                 ...card,
                 price: card.price.map(p => {return {price: p.price, rarity: p.rarity.name}})

@@ -1,119 +1,151 @@
-'use client';
+"use client";
 
 import { Card } from "@/interfaces";
 import { useState } from "react";
 import {
-    IoCopyOutline,
-    IoGrid,
-    IoHandRightOutline,
-    IoImageOutline,
-    IoListSharp,
-    IoShareSocialOutline,
-    IoTrashOutline,
+  IoCopyOutline,
+  IoHandRightOutline,
+  IoImageOutline,
+  IoShareSocialOutline,
 } from "react-icons/io5";
+import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { RiFullscreenExitLine, RiFullscreenLine } from "react-icons/ri";
+import { RiEraserLine } from "react-icons/ri";
 import { Modal, Decklistimage, SaveDeckForm } from "@/components";
 import Link from "next/link";
 import Image from "next/image";
+import { useAlertConfirmationStore } from "@/store";
 
 interface Decklist {
-    count: number;
-    card: Card;
+  count: number;
+  card: Card;
 }
 
 interface Props {
-    deckListMain: Decklist[];
-    deckListLimbo: Decklist[];
-    deckListSide: Decklist[];
-    clearDecklist: () => void;
-    changeViewList: () => void;
-    viewList: boolean;
+  deckListMain: Decklist[];
+  deckListLimbo: Decklist[];
+  deckListSide: Decklist[];
+  clearDecklist: () => void;
+  isFinderCollapsed: boolean;
+  onToggleFinderCollapse: () => void;
 }
 
 export const OptionsDeckCreator = ({
-    deckListMain,
-    deckListLimbo,
-    deckListSide,
-    clearDecklist,
-    changeViewList,
-    viewList
+  deckListMain,
+  deckListLimbo,
+  deckListSide,
+  clearDecklist,
+  isFinderCollapsed,
+  onToggleFinderCollapse,
 }: Props) => {
+  const [showDeckImage, setShowDeckImage] = useState(false);
+  const [showSaveDeck, setShowSaveDeck] = useState(false);
+  const [showSharedDeck, setSharedDeck] = useState(false);
+  const [showHandTest, setShowHandTest] = useState(false);
+  const [deckList, setDeckList] = useState("");
+  const [copyState, setCopyState] = useState(false);
+  const [mazoTest, setMazoText] = useState<Card[]>([]);
+  const openAlertConfirmation = useAlertConfirmationStore(
+    (state) => state.openAlertConfirmation,
+  );
 
-    const [showDeckImage, setShowDeckImage] = useState(false);
-    const [showSaveDeck, setShowSaveDeck] = useState(false);
-    const [showSharedDeck, setSharedDeck] = useState(false);
-    const [showHandTest, setShowHandTest] = useState(false);
-    const [deckList, setDeckList] = useState("");
-    const [copyState, setCopyState] = useState(false);
-    const [mazoTest, setMazoText] = useState<Card[]>([]); 
+  const copyToClipboard = () => {
+    setCopyState(true);
+    navigator.clipboard.writeText(deckList);
+  };
 
-    const copyToClipboard = () => {
-        setCopyState(true);
-        navigator.clipboard.writeText(deckList);
+  // const priceDeck = () => {
+  //     const main = deckListMain.reduce(
+  //         (acc, deck) => acc + deck.card.price[0].price * deck.count,
+  //         0
+  //     );
+  //     const limbo = deckListLimbo.reduce(
+  //         (acc, deck) => acc + deck.card.price[0].price * deck.count,
+  //         0
+  //     );
+
+  //     return main + limbo;
+  // };
+
+  const deckListText = () => {
+    // Función auxiliar para convertir una lista en string
+    const formatDeckList = (deckList: typeof deckListMain) =>
+      deckList.map((deck) => `${deck.card.idd}%2C${deck.count}%2C`).join("");
+
+    // Construir cada sección
+    const exportText =
+      formatDeckList(deckListMain) + formatDeckList(deckListLimbo);
+    const exportSide = formatDeckList(deckListSide);
+
+    // Construir URL final
+    return `https://soulsinxtinction.com/laboratorio?decklist=${exportText}|${exportSide}`;
+  };
+
+  const deckImage = () => {
+    if (deckListMain.length > 0) {
+      return deckListMain[0].card.code + deckListMain[0].card.idd;
     }
 
-    // const priceDeck = () => {
-    //     const main = deckListMain.reduce(
-    //         (acc, deck) => acc + deck.card.price[0].price * deck.count,
-    //         0
-    //     );
-    //     const limbo = deckListLimbo.reduce(
-    //         (acc, deck) => acc + deck.card.price[0].price * deck.count,
-    //         0
-    //     );
+    return "";
+  };
 
-    //     return main + limbo;
-    // };
+  const createCodeDeck = () => {
+    // Actualizar estados
+    setDeckList(deckListText);
+    setCopyState(false);
+    setSharedDeck(true);
+  };
 
-    const deckListText = () => {
-        // Función auxiliar para convertir una lista en string
-        const formatDeckList = (deckList: typeof deckListMain) =>
-            deckList.map(deck => `${deck.card.idd}%2C${deck.count}%2C`).join("");
+  const shuffleDeck = () => {
+    const cards = deckListMain.map((card) => card.card);
+    setMazoText(cards.sort(() => 0.5 - Math.random()));
+  };
 
-        // Construir cada sección
-        const exportText = formatDeckList(deckListMain) + formatDeckList(deckListLimbo);
-        const exportSide = formatDeckList(deckListSide);
+  const handTest = () => {
+    shuffleDeck();
+    setShowHandTest(true);
+  };
 
-        // Construir URL final
-        return `https://soulsinxtinction.com/laboratorio?decklist=${exportText}|${exportSide}`;
-    }
+  const handleClearDecklist = () => {
+    // Evita limpiezas accidentales del mazo al confirmar la accion.
+    openAlertConfirmation({
+      text: "¿Deseas limpiar el mazo?",
+      description: "Se eliminaran todas las cartas del mazo actual.",
+      action: async () => {
+        clearDecklist();
+        return true;
+      },
+    });
+  };
 
-    const deckImage = () => {
+  const closeDeckImage = () => {
+    setShowDeckImage(false);
+  };
 
-       if(deckListMain.length > 0) {
-        return deckListMain[0].card.code+deckListMain[0].card.idd;
-       } 
-        
-       return "";
-       
-    }
+  const actionButtonClass =
+    "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300";
+  const primaryActionButtonClass =
+    "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-amber-100 p-2 text-amber-700 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-amber-400/10 dark:text-amber-300";
+  const shareIconButtonClass =
+    "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200";
 
-    const createCodeDeck = () => {
-        // Actualizar estados
-        setDeckList(deckListText);
-        setCopyState(false);
-        setSharedDeck(true);
-    };
+  const whatsappShareLink = deckList
+    ? `https://wa.me/?text=${encodeURIComponent(deckList)}`
+    : "https://wa.me/";
+  const facebookShareLink = deckList
+    ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        deckList,
+      )}`
+    : "https://www.facebook.com/sharer/sharer.php?u=";
+  const xShareLink = deckList
+    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(deckList)}`
+    : "https://twitter.com/intent/tweet";
 
-    
-
-    const shuffleDeck = () => {
-        const cards = deckListMain.map(card =>  card.card)
-        setMazoText(cards.sort(() => 0.5 - Math.random()));
-    }  
-
-    const handTest = () => {
-        shuffleDeck();
-        setShowHandTest(true);
-    };
-
-    const closeDeckImage = () => {
-        setShowDeckImage(false);
-    }
-
-    return (
-        <>
-        <div className="grid grid-cols-4 md:grid-cols-8 gap-1 mb-2 -mt-2">
-            {/* {session?.user && 
+  return (
+    <>
+      <div className="mb-3 flex flex-wrap gap-1 sm:gap-2">
+        {/* {session?.user && 
             <button
                 className="btn-short"
                 title="Nuevo Mazo"
@@ -133,119 +165,198 @@ export const OptionsDeckCreator = ({
             </button>
             } */}
 
-             <button
-                className="btn-short"
-                title="Cambiar Vista del Mazo"
-                onClick={changeViewList}
-            >
-                {
-                    viewList 
-                    ? <IoListSharp className="w-6 h-6 -mb-0.5 text-indigo-600" />
-                    : <IoGrid className="w-6 h-6 -mb-0.5 text-indigo-600" />
-                }
-                
-            </button>
+        <button
+          className={primaryActionButtonClass}
+          title={
+            isFinderCollapsed
+              ? "Salir de pantalla completa de mazos"
+              : "Pantalla completa de mazos"
+          }
+          onClick={onToggleFinderCollapse}
+        >
+          {isFinderCollapsed ? (
+            <RiFullscreenExitLine className="h-4 w-4 sm:h-6 sm:w-6" />
+          ) : (
+            <RiFullscreenLine className="h-4 w-4 sm:h-6 sm:w-6" />
+          )}
+        </button>
 
-            <button
-                className="btn-short"
-                title="Exportar Mazo"
-                onClick={createCodeDeck}
-            >
-                <IoShareSocialOutline className="w-6 h-6 -mb-0.5" />
-            </button>
-           
-            <button className="btn-short" title="Exportar Imagen" onClick={() => setShowDeckImage(true)}>
-                <IoImageOutline className="w-6 h-6 -mb-0.5" />
-            </button>
-            <button
-                className="btn-short"
-                title="Prueba Manos"
-                onClick={handTest}
-            >
-                <IoHandRightOutline className="w-6 h-6 -mb-0.5" />
-            </button>
-            <button
-                className="btn-short"
-                title="Limpiar Mazo"
-                onClick={clearDecklist}
-            >
-                <IoTrashOutline className="w-6 h-6 -mb-0.5" />
-            </button>
-            {/* <span className="flex flex-row py-2 px-2 font-bold col-span-2">
+        <button
+          className={actionButtonClass}
+          title="Exportar Mazo"
+          onClick={createCodeDeck}
+        >
+          <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+        </button>
+
+        <button
+          className={actionButtonClass}
+          title="Exportar Imagen"
+          onClick={() => setShowDeckImage(true)}
+        >
+          <IoImageOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+        </button>
+        <button
+          className={actionButtonClass}
+          title="Prueba Manos"
+          onClick={handTest}
+        >
+          <IoHandRightOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+        </button>
+        <button
+          className={actionButtonClass}
+          title="Limpiar Mazo"
+          onClick={handleClearDecklist}
+        >
+          <RiEraserLine className="w-4 h-4 sm:w-6 sm:h-6" />
+        </button>
+        {/* <span className="flex flex-row py-2 px-2 font-bold col-span-2">
                 <IoLogoUsd className="w-6 h-6 -mb-0.5" /> {priceDeck()}
             </span> */}
-            
+      </div>
+      {showDeckImage && (
+        <div className="w-full overflow-auto">
+          <Decklistimage
+            maindeck={deckListMain}
+            limbodeck={deckListLimbo}
+            close={closeDeckImage}
+          />
         </div>
-        { showDeckImage && 
-            <div className="w-full overflow-auto">
-            <Decklistimage maindeck={deckListMain} limbodeck={deckListLimbo} close={closeDeckImage}/>
+      )}
+      {showSharedDeck && (
+        <Modal
+          className="left-1/2 top-1/2 w-[92%] max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface overflow-hidden"
+          close={() => setSharedDeck(false)}
+        >
+          <div className="flex max-h-[80vh] w-full flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white sm:text-2xl">
+                Enlace de tu mazo
+              </h1>
             </div>
-        }
-        { showSharedDeck && 
-            <Modal 
-                className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:h-2/5 md:top-28"
-                close={() => setSharedDeck(false)}
-            >
-            <div className="overflow-auto w-full text-center">
-                <div className=" text-gray-100 py-4 bg-slate-950"> 
-                    <h1 className="font-bold text-2xl md:text-4xl">Enlace de tu Mazo</h1>
+            <div className="flex flex-col gap-4 px-5 pb-6 pt-5 text-center">
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 sm:text-base">
+                Comparte el enlace de tu mazo con tus amigos.
+              </p>
+              <div className="flex flex-col items-center justify-center gap-3">
+                <button
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-500"
+                  onClick={copyToClipboard}
+                >
+                  <IoCopyOutline className="h-5 w-5" />
+                  Copiar enlace
+                </button>
+                <div className="flex items-center justify-center gap-3">
+                  <Link
+                    href={whatsappShareLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Compartir en WhatsApp"
+                    aria-label="Compartir en WhatsApp"
+                    className={shareIconButtonClass}
+                  >
+                    <FaWhatsapp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  </Link>
+                  <Link
+                    href={facebookShareLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Compartir en Facebook"
+                    aria-label="Compartir en Facebook"
+                    className={shareIconButtonClass}
+                  >
+                    <FaFacebookF className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </Link>
+                  <Link
+                    href={xShareLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Compartir en X"
+                    aria-label="Compartir en X"
+                    className={shareIconButtonClass}
+                  >
+                    <FaXTwitter className="h-5 w-5 text-slate-900 dark:text-white" />
+                  </Link>
                 </div>
-               <p className="font-bold text-lg mt-4">Comparte el Link de tu mazo con tus amigos.</p>
-               <button className="px-4 py-2 bg-indigo-600 text-white rounded-md mt-2" onClick={copyToClipboard}><div className="flex flex-row"><IoCopyOutline className="w-6 h-6 mr-2" />Copiar Mazo</div></button>
-               {copyState && <p className="transition-transform text-lime-600 mt-2 font-bold px-5"> ¡Tu estrategia está lista! El mazo fue copiado al portapapeles.</p>}
-               <div className="border-2 bg-slate-200 p-4 m-4 font-bold  text-indigo-600 text-center">
-                <Link href={deckList}>
-                    <p className="break-words mx-4">{deckList}</p>
+              </div>
+              {copyState && (
+                <p className="text-sm font-semibold text-lime-600 dark:text-lime-400">
+                  ¡Tu estrategia está lista! El mazo fue copiado al
+                  portapapeles.
+                </p>
+              )}
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200">
+                <Link href={deckList} className="break-words">
+                  {deckList}
                 </Link>
-               </div>
-               
+              </div>
             </div>
-            </Modal>
-        }
-        { showHandTest && 
-            <Modal 
-                className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/2 md:left-1/4 md:h-3/5 md:top-28"
-                close={() => setShowHandTest(false)}
-            >
-            <div className="overflow-auto w-full text-center">
-                <div className=" text-gray-100 py-4 bg-slate-950"> 
-                    <h1 className="font-bold text-2xl md:text-2xl">Prueba las manos de tu mazo</h1>
-                </div>
+          </div>
+        </Modal>
+      )}
+      {showHandTest && (
+        <Modal
+          className="left-1/2 top-1/2 w-[94%] max-w-4xl -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface overflow-hidden"
+          close={() => setShowHandTest(false)}
+        >
+          <div className="flex max-h-[80vh] w-full flex-col overflow-hidden text-center">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white sm:text-xl">
+                Prueba las manos de tu mazo
+              </h1>
+            </div>
 
-                <div className="grid lg:grid-cols-6 md:grid-cols-6 grid-cols-3 mt-12 mb-6 gap-1 mx-6">
-                {mazoTest.slice(0, 6).map((card) => 
+            <div className="px-5 pb-6 pt-6">
+              {mazoTest.length === 0 ? (
+                <div className="rounded-lg border border-slate-200 bg-slate-50 py-10 text-sm font-semibold text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200">
+                  No hay cartas en el mazo para mostrar una mano.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
+                  {mazoTest.slice(0, 6).map((card) => (
                     <div key={card.id}>
-                        <Image 
-                            width={500} 
-                            height={718} 
-                            src={`/cards/${card.code}-${card.idd}.webp`} 
-                            alt={card.name} 
-                            title={card.name}
-                            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
-                            placeholder="blur" 
-                            className="rounded drop-shadow-md m-auto sm:w-screen mx-2"
-                            />
-                    </div>  
-                )}
+                      <Image
+                        width={500}
+                        height={718}
+                        src={`/cards/${card.code}-${card.idd}.webp`}
+                        alt={card.name}
+                        title={card.name}
+                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
+                        placeholder="blur"
+                        className="rounded-lg drop-shadow-md"
+                      />
+                    </div>
+                  ))}
                 </div>
+              )}
+            </div>
 
-              <button className="px-4 py-2 bg-indigo-600 text-white rounded-md mb-6" onClick={shuffleDeck}>Volver a robar cartas</button>
+            <div className="px-5 pb-6">
+              <button
+                className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-500"
+                onClick={shuffleDeck}
+              >
+                Volver a robar cartas
+              </button>
             </div>
-            </Modal>
-        }
-        { showSaveDeck && 
-            <Modal 
-                className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:top-28"
-                close={() => setShowSaveDeck(false)}
-            >
-            <div className="overflow-auto w-full text-center">
-            <div className=" text-gray-100 py-4 bg-slate-950"> 
-                <h1 className="font-bold text-2xl md:text-2xl uppercase">Crear Mazo</h1>
+          </div>
+        </Modal>
+      )}
+      {showSaveDeck && (
+        <Modal
+          className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:top-28"
+          close={() => setShowSaveDeck(false)}
+        >
+          <div className="overflow-auto w-full text-center">
+            <div className=" text-gray-100 py-4 bg-slate-950">
+              <h1 className="font-bold text-2xl md:text-2xl uppercase">
+                Crear Mazo
+              </h1>
             </div>
-            <SaveDeckForm deck={deckListText()} imgDeck={deckImage()}/>
-            </div>
-            </Modal>
-        }
-        </>
-    );
+            <SaveDeckForm deck={deckListText()} imgDeck={deckImage()} />
+          </div>
+        </Modal>
+      )}
+    </>
+  );
 };

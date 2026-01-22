@@ -1,5 +1,7 @@
 "use client";
 
+import clsx from "clsx";
+import { useEffect } from "react";
 import { useAlertConfirmationStore } from "@/store";
 
 interface Props {
@@ -10,6 +12,15 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
   const { text, description, closeAlertConfirmation, runAction } =
     useAlertConfirmationStore();
 
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    // Evita el scroll de fondo mientras el modal este abierto.
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   const handleConfirm = async () => {
     await runAction();
   };
@@ -19,59 +30,43 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
       {/* Overlay */}
       <div
         onClick={closeAlertConfirmation}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
       />
 
       {/* Modal */}
       <div
-        className={`
-          relative bg-white shadow-2xl rounded-xl border border-gray-200 
-          p-6 w-[380px] animate-fadeIn 
-          ${className}
-        `}
+        className={clsx(
+          "relative w-[92%] max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-2xl",
+          "text-slate-900 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white space-y-4",
+          className,
+        )}
       >
-        <p className="text-center text-gray-800 font-semibold text-lg mb-4 leading-snug">
+        <p className="text-center text-lg font-semibold leading-snug text-slate-900 dark:text-white">
           {text}
         </p>
 
         {description && (
-          <p className="text-center text-sm text-gray-600 mb-6 leading-relaxed">
+          <p className="mb-6 text-center text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             {description}
           </p>
         )}
 
-        <div className="flex justify-center gap-4">
+        <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <button
             onClick={closeAlertConfirmation}
-            className="px-5 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white font-medium shadow-sm transition"
+            className="rounded-lg border border-slate-400 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
           >
             Cancelar
           </button>
 
           <button
             onClick={handleConfirm}
-            className="px-5 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-sm transition"
+            className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-500"
           >
             Confirmar
           </button>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

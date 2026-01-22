@@ -1,41 +1,72 @@
-'use client';
+"use client";
 
-import { redirect, usePathname, useSearchParams } from 'next/navigation';
-import { ReactNode } from 'react';
-import { PaginationLine } from './paginationLine';
-
+import { redirect, usePathname, useSearchParams } from "next/navigation";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import { ReactNode } from "react";
+import { PaginationLine } from "./paginationLine";
 
 interface Props {
   children: ReactNode;
-  totalPages: number;  
+  totalPages: number;
   currentPage?: number;
   onPageChange?: (page: number) => void;
 }
 
+const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
 
-export const Pagination = ({ children, totalPages, currentPage, onPageChange }: Props) => {
+const PaginationControlled = ({
+  children,
+  totalPages,
+  currentPage,
+  onPageChange,
+}: Props) => {
+  const resolvedPage = currentPage ?? 1;
 
+  // Mantiene estable el HTML en paginacion controlada evitando depender de la URL.
+  return (
+    <div className="space-y-10">
+      {children}
+      <PaginationLine
+        currentPage={resolvedPage}
+        pathname=""
+        searchParams={EMPTY_SEARCH_PARAMS}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
+    </div>
+  );
+};
+
+const PaginationUncontrolled = ({ children, totalPages }: Props) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const isControlled = typeof currentPage === "number" && !!onPageChange;
+  const pageString = searchParams.get("page") ?? 1;
+  const resolvedPage = isNaN(+pageString) ? 1 : +pageString;
 
-  const pageString = searchParams.get('page') ?? 1;
-  const resolvedPage = isControlled
-    ? currentPage ?? 1
-    : isNaN(+pageString)
-      ? 1
-      : +pageString;
-
-  if (!isControlled && (resolvedPage < 1 || isNaN(+pageString))) {
-    redirect( pathname );
+  if (resolvedPage < 1 || isNaN(+pageString)) {
+    redirect(pathname);
   }
-  
+
   return (
-    <>
-    <PaginationLine className='hidden sm:block' currentPage={resolvedPage} pathname={pathname} searchParams={searchParams} totalPages={totalPages} onPageChange={onPageChange}/>
-    {children}
-    <PaginationLine currentPage={resolvedPage} pathname={pathname} searchParams={searchParams} totalPages={totalPages} onPageChange={onPageChange}/>
-    </>
-    
+    <div className="space-y-10">
+      {children}
+      <PaginationLine
+        currentPage={resolvedPage}
+        pathname={pathname}
+        searchParams={searchParams}
+        totalPages={totalPages}
+      />
+    </div>
   );
-}
+};
+
+export const Pagination = (props: Props) => {
+  const isControlled =
+    typeof props.currentPage === "number" && !!props.onPageChange;
+
+  return isControlled ? (
+    <PaginationControlled {...props} />
+  ) : (
+    <PaginationUncontrolled {...props} />
+  );
+};
