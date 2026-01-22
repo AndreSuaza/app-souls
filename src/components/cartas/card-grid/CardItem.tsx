@@ -25,7 +25,7 @@ export const CardItem = ({
 
   return (
     <div key={card.id} className="flex flex-col transition-all hover:-mt-2">
-      <div className="relative rounded-lg bg-slate-950/70 shadow-sm shadow-gray-600 fade-in dark:bg-tournament-dark-muted-strong/40 dark:shadow-white">
+      <div className="relative rounded-lg bg-slate-950/70 fade-in dark:bg-tournament-dark-muted-strong/40">
         <div className="overflow-hidden rounded-lg">
           <button
             type="button"

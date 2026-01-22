@@ -83,6 +83,8 @@ export default async function Cards({ searchParams }: Props) {
       totalCards={totalCount}
       perPage={perPage}
       useAdvancedFilters
+      disableGridInitialAnimation
+      disableGridAnimations
     />
   );
 }

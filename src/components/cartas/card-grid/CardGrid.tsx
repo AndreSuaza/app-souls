@@ -18,6 +18,7 @@ interface Props {
   addCard?: (c: Card) => void;
   addCardSidedeck?: (c: Card) => void;
   disableAnimations?: boolean;
+  disableInitialAnimation?: boolean;
   onOpenDetail?: (cards: Card[], index: number) => void;
 }
 
@@ -77,6 +78,7 @@ export const CardGrid = ({
   addCard,
   addCardSidedeck,
   disableAnimations = false,
+  disableInitialAnimation = false,
   onOpenDetail,
 }: Props) => {
   const [indexDeck, setIndexDeck] = useState(0);
@@ -130,7 +132,8 @@ export const CardGrid = ({
           <motion.ul
             layout
             className={gridClassName}
-            initial={{ opacity: 0, y: 10 }}
+            // Evita la animacion de entrada en el primer render cuando se solicita.
+            initial={disableInitialAnimation ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.3 }}

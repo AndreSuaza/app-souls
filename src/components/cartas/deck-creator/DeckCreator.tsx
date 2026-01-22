@@ -279,7 +279,7 @@ export const DeckCreator = ({
             : "flex-1 w-1/2",
         )}
       >
-        <div className="min-h-full overflow-y-auto md:px-2 lg:pl-2 lg:pr-0 md:pt-3 pb-10">
+        <div className="min-h-full overflow-y-auto pr-2 md:px-2 lg:pl-2 lg:pr-0 md:pt-3 pb-10">
           <CardFinder
             cards={cardsState}
             propertiesCards={propertiesCards}
@@ -303,7 +303,7 @@ export const DeckCreator = ({
         </div>
       </section>
 
-      <div className="relative flex w-4 shrink-0 items-center justify-center md:w-0">
+      <div className="relative flex shrink-0 items-center justify-center w-0">
         <div className="absolute w-px inset-y-0 left-1/2 -translate-x-1/2 bg-slate-200 dark:bg-tournament-dark-border" />
       </div>
 
@@ -313,7 +313,7 @@ export const DeckCreator = ({
           isFinderCollapsed ? "flex-1 w-auto" : "flex-1 w-1/2",
         )}
       >
-        <div className="min-h-full pr-2 md:pr-0 md:px-2 lg:pl-6 lg:pr-4  md:pt-3 pb-10">
+        <div className="min-h-full px-2 lg:pl-6 lg:pr-4  md:pt-3 pb-10">
           <div className="mt-4 mb-5 w-full">
             <OptionsDeckCreator
               deckListMain={deckListMain}

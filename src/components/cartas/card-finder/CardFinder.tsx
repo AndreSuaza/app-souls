@@ -72,6 +72,7 @@ interface Props {
   };
   disableUrlSync?: boolean;
   disableGridAnimations?: boolean;
+  disableGridInitialAnimation?: boolean;
   onOpenDetail?: (cards: Card[], index: number) => void;
 }
 
@@ -91,6 +92,7 @@ export const CardFinder = ({
   layoutVariant = "page",
   disableUrlSync = false,
   disableGridAnimations = false,
+  disableGridInitialAnimation = false,
   onOpenDetail,
 }: Props) => {
   const searchParams = useSearchParams();
@@ -348,6 +350,7 @@ export const CardFinder = ({
           addCardSidedeck={addCardSidedeck}
           autoColumns={autoColumns}
           disableAnimations={disableGridAnimations}
+          disableInitialAnimation={disableGridInitialAnimation}
           onOpenDetail={onOpenDetail}
         />
       </div>
