@@ -4,7 +4,6 @@ import type { Card } from "@/interfaces";
 import { CardItem } from "./CardItem";
 import { CardDetail } from "../card-detail/CardDetail";
 import { useState } from "react";
-import { motion } from "framer-motion";
 import clsx from "clsx";
 
 interface Props {
@@ -78,7 +77,6 @@ export const CardGrid = ({
   addCard,
   addCardSidedeck,
   disableAnimations = false,
-  disableInitialAnimation = false,
   onOpenDetail,
 }: Props) => {
   const [indexDeck, setIndexDeck] = useState(0);
@@ -129,17 +127,9 @@ export const CardGrid = ({
             ))}
           </ul>
         ) : (
-          <motion.ul
-            layout
-            className={gridClassName}
-            // Evita la animacion de entrada en el primer render cuando se solicita.
-            initial={disableInitialAnimation ? false : { opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
+          <ul className={gridClassName}>
             {cards.map((card, index) => (
-              <motion.li key={card.id} layout>
+              <li key={card.id}>
                 <CardItem
                   card={card}
                   addCard={addCard}
@@ -147,9 +137,9 @@ export const CardGrid = ({
                   index={index}
                   detailCard={detailCard}
                 />
-              </motion.li>
+              </li>
             ))}
-          </motion.ul>
+          </ul>
         )}
       </div>
       {!onOpenDetail && isDetailOpen && (

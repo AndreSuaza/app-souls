@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
 import clsx from "clsx";
 import { CardFinderLab, Pagination } from "@/components";
 import { Card, PaginationFilters, FilterSelections } from "@/interfaces";
@@ -74,6 +73,7 @@ interface Props {
   disableGridAnimations?: boolean;
   disableGridInitialAnimation?: boolean;
   onOpenDetail?: (cards: Card[], index: number) => void;
+  enableCompactSearchLayout?: boolean;
 }
 
 export const CardFinder = ({
@@ -94,6 +94,7 @@ export const CardFinder = ({
   disableGridAnimations = false,
   disableGridInitialAnimation = false,
   onOpenDetail,
+  enableCompactSearchLayout = false,
 }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -390,28 +391,29 @@ export const CardFinder = ({
             forceDesktopLayout={forceDesktopLayout}
             onCompactSearchLayoutChange={setIsCompactSearchLayout}
             stackPanelLayout={stackPanelLayout}
+            enableCompactSearchLayout={enableCompactSearchLayout}
           />
         </div>
         {!hideEmbeddedContent && (
           <div className="overflow-visible">
-            <motion.div
+            <div
               ref={gridWrapperRef}
-              animate={{
-                x: shouldShiftGrid ? FILTER_PANEL_WIDTH + PANEL_GAP_PX : 0,
-              }}
-              transition={{ type: "tween", duration: 0.35 }}
+              className="transition-[width,transform] duration-300 ease-out"
               style={
                 shouldShiftGrid
                   ? {
+                      transform: `translateX(${FILTER_PANEL_WIDTH + PANEL_GAP_PX}px)`,
                       width: `calc(100% - ${
                         FILTER_PANEL_WIDTH + PANEL_GAP_PX
                       }px)`,
                     }
-                  : undefined
+                  : {
+                      transform: "translateX(0px)",
+                    }
               }
             >
               {gridContent}
-            </motion.div>
+            </div>
           </div>
         )}
       </div>

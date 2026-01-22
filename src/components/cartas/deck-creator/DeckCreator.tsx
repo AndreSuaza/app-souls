@@ -298,6 +298,7 @@ export const DeckCreator = ({
             layoutColumnsOpen={{ lg: 1, xl: 2 }}
             disableUrlSync
             disableGridAnimations
+            enableCompactSearchLayout
             onOpenDetail={openDetail}
           />
         </div>

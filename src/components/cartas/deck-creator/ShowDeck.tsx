@@ -5,7 +5,6 @@ import { IoChevronDownOutline, IoChevronUpOutline } from "react-icons/io5";
 import { CardItemList } from "../card-grid/CardItemList";
 import { Card, Decklist } from "@/interfaces";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 
 interface Props {
   deckListMain: Decklist[];
@@ -218,32 +217,21 @@ export const ShowDeck = ({
         </button>
 
         <div className={sectionBodyClass}>
-          {/* Animacion para mantener la misma sensacion del grid de /cartas. */}
-          <AnimatePresence initial={false}>
-            {sectionsOpen.limbo && (
-              <motion.div
-                key="limbo-grid"
-                layout
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className={gridClassName}
-              >
-                {limboDeck.map((deck, index) => (
-                  <motion.div key={deck.card.id + index} layout>
-                    <CardItemList
-                      card={deck.card}
-                      count={deck.count}
-                      dropCard={dropCard}
-                      addCard={addCard}
-                      onOpenDetail={() => onOpenDetail?.(limboCards, index)}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {sectionsOpen.limbo && (
+            <div className={gridClassName}>
+              {limboDeck.map((deck, index) => (
+                <div key={deck.card.id + index}>
+                  <CardItemList
+                    card={deck.card}
+                    count={deck.count}
+                    dropCard={dropCard}
+                    addCard={addCard}
+                    onOpenDetail={() => onOpenDetail?.(limboCards, index)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -294,31 +282,21 @@ export const ShowDeck = ({
         </button>
 
         <div className={sectionBodyClass}>
-          <AnimatePresence initial={false}>
-            {sectionsOpen.main && (
-              <motion.div
-                key="main-grid"
-                layout
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className={gridClassName}
-              >
-                {mainDeck.map((deck, index) => (
-                  <motion.div key={deck.card.id + index} layout>
-                    <CardItemList
-                      card={deck.card}
-                      count={deck.count}
-                      dropCard={dropCard}
-                      addCard={addCard}
-                      onOpenDetail={() => onOpenDetail?.(mainCards, index)}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {sectionsOpen.main && (
+            <div className={gridClassName}>
+              {mainDeck.map((deck, index) => (
+                <div key={deck.card.id + index}>
+                  <CardItemList
+                    card={deck.card}
+                    count={deck.count}
+                    dropCard={dropCard}
+                    addCard={addCard}
+                    onOpenDetail={() => onOpenDetail?.(mainCards, index)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -369,31 +347,21 @@ export const ShowDeck = ({
         </button>
 
         <div className={sectionBodyClass}>
-          <AnimatePresence initial={false}>
-            {sectionsOpen.side && (
-              <motion.div
-                key="side-grid"
-                layout
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className={gridClassName}
-              >
-                {sideDeck.map((deck, index) => (
-                  <motion.div key={deck.card.id + index} layout>
-                    <CardItemList
-                      card={deck.card}
-                      count={deck.count}
-                      dropCard={dropCardSide}
-                      addCard={addCardSide}
-                      onOpenDetail={() => onOpenDetail?.(sideCards, index)}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {sectionsOpen.side && (
+            <div className={gridClassName}>
+              {sideDeck.map((deck, index) => (
+                <div key={deck.card.id + index}>
+                  <CardItemList
+                    card={deck.card}
+                    count={deck.count}
+                    dropCard={dropCardSide}
+                    addCard={addCardSide}
+                    onOpenDetail={() => onOpenDetail?.(sideCards, index)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>

@@ -49,9 +49,10 @@ interface CardFiltersSidebarProps {
   forceDesktopLayout?: boolean;
   onCompactSearchLayoutChange?: (isCompact: boolean) => void;
   stackPanelLayout?: boolean;
+  enableCompactSearchLayout?: boolean;
 }
 
-const LIMIT_OPTIONS = [{ label: "Legendaria", value: "legendaria" }];
+const LIMIT_OPTIONS = [{ label: "Legendaria", value: "1" }];
 const FILTER_SELECTION_KEYS: FilterKey[] = [
   "products",
   "types",
@@ -79,6 +80,7 @@ export function CardFiltersSidebar({
   forceDesktopLayout = false,
   onCompactSearchLayoutChange,
   stackPanelLayout = false,
+  enableCompactSearchLayout = false,
 }: CardFiltersSidebarProps) {
   const [filters, setFilters] = useState<FilterSelections>(
     () => initialFilters ?? getDefaultFilters(),
@@ -285,7 +287,8 @@ export function CardFiltersSidebar({
   }, [filters, onFiltersChange]);
 
   useEffect(() => {
-    const shouldMeasureSearchLayout = forceDesktopLayout || stackPanelLayout;
+    const shouldMeasureSearchLayout =
+      enableCompactSearchLayout && (forceDesktopLayout || stackPanelLayout);
 
     if (!shouldMeasureSearchLayout) {
       setIsCompactSearchLayout(false);
@@ -317,7 +320,7 @@ export function CardFiltersSidebar({
     return () => {
       observer.disconnect();
     };
-  }, [forceDesktopLayout, stackPanelLayout]);
+  }, [forceDesktopLayout, stackPanelLayout, enableCompactSearchLayout]);
 
   useEffect(() => {
     onCompactSearchLayoutChange?.(isCompactSearchLayout);
@@ -346,7 +349,7 @@ export function CardFiltersSidebar({
     : "flex items-center gap-3";
   const searchInputWrapperClassName = isCompactSearchLayout
     ? "relative w-full"
-    : "relative min-w-[250px] sm:min-w-[260px] max-w-[360px]";
+    : "relative min-w-[240px] sm:min-w-[260px] max-w-[360px]";
 
   return (
     <div className="relative z-10">
