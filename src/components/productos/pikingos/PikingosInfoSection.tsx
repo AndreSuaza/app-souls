@@ -11,13 +11,10 @@ export function PikingosInfoSection() {
         <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 py-16 lg:grid-cols-[1fr_1.1fr] lg:px-10 lg:py-20">
           <div className="space-y-6 text-center lg:text-left">
             <h2 className="text-2xl font-black uppercase tracking-wide sm:text-4xl">
-              Draft Night
+              ¿Por qué jugar Pikingos?
             </h2>
             <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer
-              scelerisque, lorem non tempor faucibus, justo ipsum iaculis neque,
-              sit amet suscipit mi mauris eu purus. Duis finibus ex at urna
-              tincidunt, vitae consequat odio viverra.
+              Este mazo estructurado está diseñado para jugadores que disfrutan un estilo agresivo y táctico, combinando unidades resistentes con efectos que castigan el campo rival. Los Pikingos destacan por su capacidad de demoler estructuras, generar ventaja a través del desgaste y mantener la agresividad turno tras turno.
             </p>
             <Link
               href="https://wa.me/573125580644?text=Hola%2C+me+gustar%C3%ADa+conocer+m%C3%A1s+de+sus+productos+de+la+colecci%C3%B3n+Pikingos."

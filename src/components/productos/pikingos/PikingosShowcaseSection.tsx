@@ -91,13 +91,10 @@ export function PikingosShowcaseSection() {
 
           <div className="order-1 text-center lg:order-none lg:text-left px-4 sm:px-10 lg:px-0">
             <h2 className="text-2xl font-black uppercase tracking-wide text-white sm:text-4xl">
-              Descubre un portador de floramargas seriado
+              Unidades tenaces en la batalla por alcanzar el val Ala. 
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-slate-200 sm:text-base">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
-              pharetra, augue at tincidunt vehicula, enim justo malesuada arcu,
-              vitae volutpat eros massa a est. Vivamus elementum varius sem, non
-              viverra lacus tristique vel.
+              Desde territorios marcados por el acero y la conquista, los Pikingos descienden como una fuerza despiadada. No llegan por azar ni por gloria: llegan a reclamar y establecer dominio.
             </p>
           </div>
         </div>
