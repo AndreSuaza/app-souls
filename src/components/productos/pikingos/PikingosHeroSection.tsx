@@ -2,29 +2,38 @@ import Image from "next/image";
 
 export function PikingosHeroSection() {
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg">
-      <div className="relative h-full w-full">
-        <div className="relative z-10 flex h-full w-full lg:w-1/2">
-          <div className="polygon-right flex h-full w-full flex-col justify-start gap-6 border border-purple-200/60 bg-white px-6 py-10 pr-10 text-center text-slate-900 shadow-2xl dark:border-purple-500/30 dark:bg-tournament-dark-surface dark:text-slate-100 lg:px-12 lg:py-16 lg:pr-28 lg:pt-28">
-            <div className="space-y-4">
-              <h1 className="text-4xl font-black uppercase tracking-wide text-purple-700 dark:text-purple-200 sm:text-5xl lg:text-6xl">
-                Pikingos
-              </h1>
-              <p className="text-base font-semibold uppercase tracking-widest text-slate-700 dark:text-slate-200 sm:text-lg">
-                Regresa a la tierra de la luz y la sombra
-              </p>
-              <p className="mx-auto max-w-xl text-sm text-slate-600 dark:text-slate-300 sm:text-base">
-                Atrévete a entrar en el plano en constante cambio de Pikingos y
-                descubre tu yo interior.
-              </p>
+    <section className="relative h-auto w-full overflow-hidden bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg lg:min-h-screen">
+      <div className="relative flex w-full flex-col lg:block lg:h-screen">
+        <div className="order-2 -mt-16 relative z-10 flex w-full lg:order-none lg:mt-0 lg:h-full lg:w-1/2">
+          <div className="pikingos-hero-cut flex w-full flex-col justify-start gap-6 bg-white px-6 py-10 pr-10 text-center text-slate-900 shadow-2xl dark:bg-tournament-dark-surface dark:text-slate-100 lg:h-full lg:px-12 lg:py-16 lg:pr-28 lg:pt-14">
+            <div>
+              <div className="mx-auto w-full max-w-[135px] sm:max-w-[220px]">
+                <Image
+                  src="/products/pikingos/logo_pik.webp"
+                  alt="Logo Pikingos"
+                  width={350}
+                  height={150}
+                  className="h-auto w-full object-contain"
+                />
+              </div>
+              <div className="space-y-3 -mt-4 sm:-mt-6">
+                <p className="text-base font-semibold uppercase tracking-widest text-slate-700 dark:text-slate-200 sm:text-lg">
+                  No luchan por recursos. Luchan por dominio, por respeto... por
+                  imponer su ley.
+                </p>
+                <p className="mx-auto max-w-xl text-sm text-slate-600 dark:text-slate-300 sm:text-base">
+                  Un mazo agresivo, directo, donde cada ataque es un juramento
+                  que no se rompe.
+                </p>
+                <p className="text-xl font-black uppercase text-slate-900 dark:text-white sm:text-3xl">
+                  Ya disponible
+                </p>
+              </div>
             </div>
-            <p className="text-2xl font-black uppercase text-slate-900 dark:text-white sm:text-3xl">
-              Ya disponible
-            </p>
           </div>
         </div>
 
-        <div className="relative h-[360px] w-full sm:h-[440px] lg:absolute lg:inset-y-0 lg:right-0 lg:h-full lg:w-[60%]">
+        <div className="order-1 relative z-0 h-[360px] w-full sm:h-[440px] lg:absolute lg:inset-y-0 lg:right-0 lg:h-full lg:w-[60%]">
           <Image
             src="/products/pikingos/LokiWeb.webp"
             alt="Mazo Pikingos Loki"

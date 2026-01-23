@@ -226,6 +226,17 @@ h2 {
   clip-path: polygon(0 0, 84% 0, 100% 100%, 0 100%);
 }
 
+.pikingos-hero-cut {
+  overflow: hidden;
+  clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%);
+}
+
+@media (min-width: 1024px) {
+  .pikingos-hero-cut {
+    clip-path: polygon(0 0, 84% 0, 100% 100%, 0 100%);
+  }
+}
+
 .h-cal-200 {
   height: calc(100% - 200px);
 }
