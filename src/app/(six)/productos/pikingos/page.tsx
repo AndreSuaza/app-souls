@@ -1,5 +1,30 @@
 import { PikingosHeroSection } from "@/components/productos/pikingos/PikingosHeroSection";
 import { PikingosShowcaseSection } from "@/components/productos/pikingos/PikingosShowcaseSection";
+import { PikingosInfoSection } from "@/components/productos/pikingos/PikingosInfoSection";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Pikingos - Souls In Xtinction TCG",
+  description:
+    "Pikingos es una coleccion de Souls In Xtinction TCG inspirada en la mitologia nordica, con cartas agresivas y directas para imponer su ley.",
+  openGraph: {
+    title: "Pikingos - Souls In Xtinction TCG",
+    description:
+      "Pikingos es una coleccion de Souls In Xtinction TCG inspirada en la mitologia nordica, con cartas agresivas y directas para imponer su ley.",
+    url: "https://soulsinxtinction.com/productos/pikingos",
+    siteName: "Pikingos",
+    images: [
+      {
+        url: "https://soulsinxtinction.com/products/pikingos/logo_pik.webp",
+        width: 500,
+        height: 500,
+        alt: "Pikingos Souls In Xtinction TCG",
+      },
+    ],
+    locale: "en_ES",
+    type: "website",
+  },
+};
 
 export default function Page() {
   return (
@@ -7,6 +32,7 @@ export default function Page() {
       <div className="relative z-10">
         <PikingosHeroSection />
         <PikingosShowcaseSection />
+        <PikingosInfoSection />
       </div>
     </main>
   );

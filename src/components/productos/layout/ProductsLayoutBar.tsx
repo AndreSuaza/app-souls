@@ -12,7 +12,11 @@ export function ProductsLayoutBar() {
             <span className="hidden md:block">Tiendas oficiales</span>
           </button>
         </Link>
-        <Link href="https://wa.me/573125580644?text=Hola%2C+me+gustar%C3%ADa+conocer+m%C3%A1s+de+sus+productos">
+        <Link
+          href="https://wa.me/573125580644?text=Hola%2C+me+gustar%C3%ADa+conocer+m%C3%A1s+de+sus+productos"
+          target="_blank"
+          rel="noreferrer"
+        >
           <button className="flex flex-row ml-4 px-2 py-1 border-2 rounded-lg hover:bg-yellow-600">
             <IoLogoWhatsapp className="w-6 h-6 md:mr-1" />
             <span className="hidden md:block">Escríbenos</span>
