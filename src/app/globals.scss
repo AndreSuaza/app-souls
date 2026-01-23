@@ -221,6 +221,11 @@ h2 {
   clip-path: polygon(100% 100%, 100% 0px, 0 0px, 20% 100%,);
 }
 
+.polygon-right {
+  overflow: hidden;
+  clip-path: polygon(0 0, 84% 0, 100% 100%, 0 100%);
+}
+
 .h-cal-200 {
   height: calc(100% - 200px);
 }
