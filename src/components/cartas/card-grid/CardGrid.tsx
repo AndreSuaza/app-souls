@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { Card } from "@/interfaces";
 import { CardItem } from "./CardItem";
@@ -16,6 +16,9 @@ interface Props {
   autoColumns?: number;
   addCard?: (c: Card) => void;
   addCardSidedeck?: (c: Card) => void;
+  dropCard?: (c: Card) => void;
+  showDeckActions?: boolean;
+  cardCounts?: Record<string, number>;
   disableAnimations?: boolean;
   disableInitialAnimation?: boolean;
   onOpenDetail?: (cards: Card[], index: number) => void;
@@ -76,6 +79,9 @@ export const CardGrid = ({
   autoColumns,
   addCard,
   addCardSidedeck,
+  dropCard,
+  showDeckActions = false,
+  cardCounts,
   disableAnimations = false,
   onOpenDetail,
 }: Props) => {
@@ -120,6 +126,9 @@ export const CardGrid = ({
                   card={card}
                   addCard={addCard}
                   addCardSidedeck={addCardSidedeck}
+                  dropCard={dropCard}
+                  showDeckActions={showDeckActions}
+                  count={cardCounts?.[card.id]}
                   index={index}
                   detailCard={detailCard}
                 />
@@ -134,6 +143,9 @@ export const CardGrid = ({
                   card={card}
                   addCard={addCard}
                   addCardSidedeck={addCardSidedeck}
+                  dropCard={dropCard}
+                  showDeckActions={showDeckActions}
+                  count={cardCounts?.[card.id]}
                   index={index}
                   detailCard={detailCard}
                 />

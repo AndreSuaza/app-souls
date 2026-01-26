@@ -353,7 +353,7 @@ model Deck {
   description String?
   imagen      String
   cards       String
-  cardsNumber Int     @default(0)
+  cardsNumber Int     @default(0) // Solo visible al publico si tiene las 40 cartas
   visible     Boolean
 
   likesCount Int @default(0)

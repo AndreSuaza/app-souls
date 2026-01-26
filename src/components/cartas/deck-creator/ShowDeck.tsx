@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
-import clsx from "clsx";
-import { IoChevronDownOutline, IoChevronUpOutline } from "react-icons/io5";
-import { CardItemList } from "../card-grid/CardItemList";
-import { Card, Decklist } from "@/interfaces";
 import { useEffect, useRef, useState } from "react";
+import clsx from "clsx";
+import { CardGrid } from "../card-grid/CardGrid";
+import { Card, Decklist } from "@/interfaces";
+import { DeckSection } from "./DeckSection";
 
 interface Props {
   deckListMain: Decklist[];
@@ -86,48 +86,6 @@ export const ShowDeck = ({
     };
   }, []);
 
-  const getGridClass = (breakpoint: "lg" | "xl", value: number) => {
-    switch (value) {
-      case 4:
-        return `${breakpoint}:grid-cols-4`;
-      case 6:
-        return `${breakpoint}:grid-cols-6`;
-      case 8:
-        return `${breakpoint}:grid-cols-8`;
-      default:
-        return `${breakpoint}:grid-cols-4`;
-    }
-  };
-
-  const getBaseGridClass = (value: number) => {
-    switch (value) {
-      case 1:
-        return "grid-cols-1";
-      case 2:
-        return "grid-cols-2";
-      case 3:
-        return "grid-cols-3";
-      case 4:
-        return "grid-cols-4";
-      case 5:
-        return "grid-cols-5";
-      case 7:
-        return "grid-cols-7";
-      case 8:
-        return "grid-cols-8";
-      default:
-        return "grid-cols-6";
-    }
-  };
-
-  const gridClassName = autoColumns
-    ? clsx("grid gap-2", getBaseGridClass(autoColumns))
-    : clsx(
-        "grid grid-cols-1 gap-2 md:grid-cols-4",
-        getGridClass("lg", columnsLg),
-        getGridClass("xl", columnsXl),
-      );
-
   const limboDeck = deckListLimbo.slice().reverse();
   const mainDeck = deckListMain.slice().reverse();
   const sideDeck = deckListSide.slice().reverse();
@@ -137,6 +95,19 @@ export const ShowDeck = ({
   const limboCount = deckListLimbo.reduce((acc, deck) => acc + deck.count, 0);
   const mainCount = deckListMain.reduce((acc, deck) => acc + deck.count, 0);
   const sideCount = deckListSide.reduce((acc, deck) => acc + deck.count, 0);
+  // Mapa de conteos para renderizar los badges del mazo en CardGrid.
+  const limboCounts = limboDeck.reduce<Record<string, number>>((acc, deck) => {
+    acc[deck.card.id] = deck.count;
+    return acc;
+  }, {});
+  const mainCounts = mainDeck.reduce<Record<string, number>>((acc, deck) => {
+    acc[deck.card.id] = deck.count;
+    return acc;
+  }, {});
+  const sideCounts = sideDeck.reduce<Record<string, number>>((acc, deck) => {
+    acc[deck.card.id] = deck.count;
+    return acc;
+  }, {});
 
   const sectionBaseContainerClass =
     "rounded-lg border border-l-4 bg-slate-100/80 text-slate-800 overflow-hidden dark:bg-tournament-dark-surface/90 dark:text-slate-100";
@@ -170,200 +141,122 @@ export const ShowDeck = ({
 
   return (
     <div ref={gridWrapperRef} className="mb-6 flex flex-col gap-4">
-      <section
-        className={clsx(
+      <DeckSection
+        title="Mazo Limbo"
+        count={limboCount}
+        isOpen={sectionsOpen.limbo}
+        ariaLabel="Mostrar u ocultar mazo limbo"
+        onToggle={() => toggleSection("limbo")}
+        containerClassName={clsx(
           sectionBaseContainerClass,
           sectionStyles.limbo.container,
         )}
+        headerClassName={clsx(
+          sectionBaseHeaderClass,
+          sectionStyles.limbo.header,
+        )}
+        titleClassName={sectionStyles.limbo.title}
+        chevronClassName={sectionStyles.limbo.chevron}
+        countClassName={clsx(
+          "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold dark:shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
+          sectionStyles.limbo.title,
+          "border-amber-300/70 dark:border-tournament-dark-border",
+        )}
+        titleWrapperClassName="flex flex-1 flex-wrap items-center gap-1 min-w-0 sm:gap-2"
+        bodyClassName={sectionBodyClass}
       >
-        <button
-          type="button"
-          onClick={() => toggleSection("limbo")}
-          className={clsx(sectionBaseHeaderClass, sectionStyles.limbo.header)}
-          aria-label="Mostrar u ocultar mazo limbo"
-        >
-          <div className="flex flex-1 flex-wrap items-center gap-1 sm:gap-2 min-w-0">
-            <span className={clsx("shrink-0", sectionStyles.limbo.title)}>
-              Mazo Limbo
-            </span>
-            <span
-              className={clsx(
-                "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold dark:shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
-                sectionStyles.limbo.title,
-                "border-amber-300/70 dark:border-tournament-dark-border",
-              )}
-            >
-              {limboCount}
-            </span>
-            {/* <div className={statsWrapperClass}>
-              <DeckStatsChips stats={limboStats} />
-            </div> */}
-          </div>
-          {sectionsOpen.limbo ? (
-            <IoChevronUpOutline
-              className={clsx(
-                "absolute right-2 top-2 h-4 w-4",
-                sectionStyles.limbo.chevron,
-              )}
-            />
-          ) : (
-            <IoChevronDownOutline
-              className={clsx(
-                "absolute right-2 top-2 h-4 w-4",
-                sectionStyles.limbo.chevron,
-              )}
-            />
-          )}
-        </button>
+        {sectionsOpen.limbo && (
+          <CardGrid
+            cards={limboCards}
+            autoColumns={autoColumns ?? undefined}
+            lgColumns={columnsLg}
+            xlColumns={columnsXl}
+            addCard={addCard}
+            dropCard={dropCard}
+            showDeckActions
+            cardCounts={limboCounts}
+            onOpenDetail={onOpenDetail}
+          />
+        )}
+      </DeckSection>
 
-        <div className={sectionBodyClass}>
-          {sectionsOpen.limbo && (
-            <div className={gridClassName}>
-              {limboDeck.map((deck, index) => (
-                <div key={deck.card.id + index}>
-                  <CardItemList
-                    card={deck.card}
-                    count={deck.count}
-                    dropCard={dropCard}
-                    addCard={addCard}
-                    onOpenDetail={() => onOpenDetail?.(limboCards, index)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section
-        className={clsx(
+      <DeckSection
+        title="Mazo Principal"
+        count={mainCount}
+        isOpen={sectionsOpen.main}
+        ariaLabel="Mostrar u ocultar mazo principal"
+        onToggle={() => toggleSection("main")}
+        containerClassName={clsx(
           sectionBaseContainerClass,
           sectionStyles.main.container,
         )}
+        headerClassName={clsx(
+          sectionBaseHeaderClass,
+          sectionStyles.main.header,
+        )}
+        titleClassName={sectionStyles.main.title}
+        chevronClassName={sectionStyles.main.chevron}
+        countClassName={clsx(
+          "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
+          sectionStyles.main.title,
+          "border-purple-300/70 dark:border-tournament-dark-border",
+        )}
+        titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
+        bodyClassName={sectionBodyClass}
       >
-        <button
-          type="button"
-          onClick={() => toggleSection("main")}
-          className={clsx(sectionBaseHeaderClass, sectionStyles.main.header)}
-          aria-label="Mostrar u ocultar mazo principal"
-        >
-          <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
-            <span className={clsx("shrink-0", sectionStyles.main.title)}>
-              Mazo Principal
-            </span>
-            <span
-              className={clsx(
-                "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
-                sectionStyles.main.title,
-                "border-purple-300/70 dark:border-tournament-dark-border",
-              )}
-            >
-              {mainCount}
-            </span>
-            {/* <div className={statsWrapperClass}>
-              <DeckStatsChips stats={mainStats} />
-            </div> */}
-          </div>
-          {sectionsOpen.main ? (
-            <IoChevronUpOutline
-              className={clsx(
-                "absolute right-2 top-2 h-4 w-4",
-                sectionStyles.main.chevron,
-              )}
-            />
-          ) : (
-            <IoChevronDownOutline
-              className={clsx(
-                "absolute right-2 top-2 h-4 w-4",
-                sectionStyles.main.chevron,
-              )}
-            />
-          )}
-        </button>
+        {sectionsOpen.main && (
+          <CardGrid
+            cards={mainCards}
+            autoColumns={autoColumns ?? undefined}
+            lgColumns={columnsLg}
+            xlColumns={columnsXl}
+            addCard={addCard}
+            dropCard={dropCard}
+            showDeckActions
+            cardCounts={mainCounts}
+            onOpenDetail={onOpenDetail}
+          />
+        )}
+      </DeckSection>
 
-        <div className={sectionBodyClass}>
-          {sectionsOpen.main && (
-            <div className={gridClassName}>
-              {mainDeck.map((deck, index) => (
-                <div key={deck.card.id + index}>
-                  <CardItemList
-                    card={deck.card}
-                    count={deck.count}
-                    dropCard={dropCard}
-                    addCard={addCard}
-                    onOpenDetail={() => onOpenDetail?.(mainCards, index)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section
-        className={clsx(
+      <DeckSection
+        title="Mazo Apoyo"
+        count={sideCount}
+        isOpen={sectionsOpen.side}
+        ariaLabel="Mostrar u ocultar mazo apoyo"
+        onToggle={() => toggleSection("side")}
+        containerClassName={clsx(
           sectionBaseContainerClass,
           sectionStyles.side.container,
         )}
+        headerClassName={clsx(
+          sectionBaseHeaderClass,
+          sectionStyles.side.header,
+        )}
+        titleClassName={sectionStyles.side.title}
+        chevronClassName={sectionStyles.side.chevron}
+        countClassName={clsx(
+          "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
+          sectionStyles.side.title,
+          "border-sky-300/70 dark:border-tournament-dark-border",
+        )}
+        titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
+        bodyClassName={sectionBodyClass}
       >
-        <button
-          type="button"
-          onClick={() => toggleSection("side")}
-          className={clsx(sectionBaseHeaderClass, sectionStyles.side.header)}
-          aria-label="Mostrar u ocultar mazo apoyo"
-        >
-          <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
-            <span className={clsx("shrink-0", sectionStyles.side.title)}>
-              Mazo Apoyo
-            </span>
-            <span
-              className={clsx(
-                "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
-                sectionStyles.side.title,
-                "border-sky-300/70 dark:border-tournament-dark-border",
-              )}
-            >
-              {sideCount}
-            </span>
-            {/* <div className={statsWrapperClass}>
-              <DeckStatsChips stats={sideStats} />
-            </div> */}
-          </div>
-          {sectionsOpen.side ? (
-            <IoChevronUpOutline
-              className={clsx(
-                "absolute right-2 top-2 h-4 w-4",
-                sectionStyles.side.chevron,
-              )}
-            />
-          ) : (
-            <IoChevronDownOutline
-              className={clsx(
-                "absolute right-2 top-2 h-4 w-4",
-                sectionStyles.side.chevron,
-              )}
-            />
-          )}
-        </button>
-
-        <div className={sectionBodyClass}>
-          {sectionsOpen.side && (
-            <div className={gridClassName}>
-              {sideDeck.map((deck, index) => (
-                <div key={deck.card.id + index}>
-                  <CardItemList
-                    card={deck.card}
-                    count={deck.count}
-                    dropCard={dropCardSide}
-                    addCard={addCardSide}
-                    onOpenDetail={() => onOpenDetail?.(sideCards, index)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+        {sectionsOpen.side && (
+          <CardGrid
+            cards={sideCards}
+            autoColumns={autoColumns ?? undefined}
+            lgColumns={columnsLg}
+            xlColumns={columnsXl}
+            addCard={addCardSide}
+            dropCard={dropCardSide}
+            showDeckActions
+            cardCounts={sideCounts}
+            onOpenDetail={onOpenDetail}
+          />
+        )}
+      </DeckSection>
     </div>
   );
 };
