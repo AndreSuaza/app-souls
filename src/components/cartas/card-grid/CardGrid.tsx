@@ -19,6 +19,7 @@ interface Props {
   dropCard?: (c: Card) => void;
   showDeckActions?: boolean;
   cardCounts?: Record<string, number>;
+  showEmptyState?: boolean;
   disableAnimations?: boolean;
   disableInitialAnimation?: boolean;
   onOpenDetail?: (cards: Card[], index: number) => void;
@@ -82,6 +83,7 @@ export const CardGrid = ({
   dropCard,
   showDeckActions = false,
   cardCounts,
+  showEmptyState = true,
   disableAnimations = false,
   onOpenDetail,
 }: Props) => {
@@ -110,6 +112,10 @@ export const CardGrid = ({
         getGridClass("lg", lgColumns ?? columns),
         getGridClass("xl", xlColumns ?? columns)
       );
+
+  if (cards.length === 0 && !showEmptyState) {
+    return <div className="mt-4" />;
+  }
 
   return (
     <>

@@ -114,6 +114,9 @@ export const DeckCreator = ({
   const [deckListSide, setDeckListSide] = useState<Decklist[]>([]);
   // Controla el colapso del panel de busqueda para pantallas grandes.
   const [isFinderCollapsed, setIsFinderCollapsed] = useState(false);
+  // Evita transiciones costosas mientras se alterna la vista de pantalla completa.
+  const [isFullscreenToggling, setIsFullscreenToggling] = useState(false);
+  const fullscreenToggleRef = useRef<number | null>(null);
   // Centraliza el modal de detalle para evitar duplicados entre buscador y mazos.
   const [detailCards, setDetailCards] = useState<Card[]>([]);
   const [detailIndex, setDetailIndex] = useState(0);
@@ -155,6 +158,25 @@ export const DeckCreator = ({
     importDeck();
   }, [importDeck]);
 
+  useEffect(() => {
+    return () => {
+      if (fullscreenToggleRef.current !== null) {
+        window.clearTimeout(fullscreenToggleRef.current);
+      }
+    };
+  }, []);
+
+  const handleToggleFinderCollapse = useCallback(() => {
+    setIsFinderCollapsed((prev) => !prev);
+    setIsFullscreenToggling(true);
+    if (fullscreenToggleRef.current !== null) {
+      window.clearTimeout(fullscreenToggleRef.current);
+    }
+    fullscreenToggleRef.current = window.setTimeout(() => {
+      setIsFullscreenToggling(false);
+    }, 350);
+  }, []);
+
   const fetchCards = useCallback(
     async (filters: PaginationFilters, page: number) => {
       // Se consulta el mismo action desde cliente para filtrar/paginar sin recargar la ruta.
@@ -186,7 +208,35 @@ export const DeckCreator = ({
     [currentFilters, fetchCards],
   );
 
+  const getCardCountsByDeck = useCallback(
+    (cardId: string) => {
+      const countIn = (list: Decklist[]) =>
+        list.reduce(
+          (acc, deck) => (deck.card.id === cardId ? acc + deck.count : acc),
+          0,
+        );
+      return {
+        main: countIn(deckListMain),
+        limbo: countIn(deckListLimbo),
+        side: countIn(deckListSide),
+      };
+    },
+    [deckListMain, deckListLimbo, deckListSide],
+  );
+
   const addCard = (cardSeleted: Card) => {
+    const counts = getCardCountsByDeck(cardSeleted.id);
+    const totalCount = counts.main + counts.limbo + counts.side;
+    // Las legendarias solo pueden existir en un mazo a la vez, pero permiten 2 copias dentro del mismo.
+    if (cardSeleted.limit === "1") {
+      const isLimbo = cardSeleted.types.some((type) => type.name === "Limbo");
+      const hasOtherDeck = isLimbo
+        ? counts.main > 0 || counts.side > 0
+        : counts.limbo > 0 || counts.side > 0;
+      if (hasOtherDeck) return;
+    }
+    if (totalCount >= 2) return;
+
     if (cardSeleted.types.filter((type) => type.name === "Alma").length > 0) {
       return;
     }
@@ -236,6 +286,14 @@ export const DeckCreator = ({
   };
 
   const addCardSideDeck = (cardSeleted: Card) => {
+    const counts = getCardCountsByDeck(cardSeleted.id);
+    const totalCount = counts.main + counts.limbo + counts.side;
+    // Las legendarias solo pueden existir en un mazo a la vez, pero permiten 2 copias dentro del mismo.
+    if (cardSeleted.limit === "1") {
+      if (counts.main > 0 || counts.limbo > 0) return;
+    }
+    if (totalCount >= 2) return;
+
     if (cardSeleted.types.filter((type) => type.name === "Alma").length > 0) {
       return;
     }
@@ -300,6 +358,8 @@ export const DeckCreator = ({
             disableGridAnimations
             enableCompactSearchLayout
             onOpenDetail={openDetail}
+            isActive={!isFinderCollapsed}
+            disableGridTransitions={isFullscreenToggling}
           />
         </div>
       </section>
@@ -322,9 +382,7 @@ export const DeckCreator = ({
               deckListSide={deckListSide}
               clearDecklist={clearDecklist}
               isFinderCollapsed={isFinderCollapsed}
-              onToggleFinderCollapse={() =>
-                setIsFinderCollapsed((prev) => !prev)
-              }
+              onToggleFinderCollapse={handleToggleFinderCollapse}
             />
           </div>
           <ShowDeck

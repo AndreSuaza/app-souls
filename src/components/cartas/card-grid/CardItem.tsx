@@ -43,7 +43,7 @@ export const CardItem = ({
   return (
     <div key={card.id} className="flex flex-col transition-all hover:-mt-2">
       <div className="relative rounded-lg bg-slate-950/70 fade-in dark:bg-tournament-dark-muted-strong/40">
-        <div className="overflow-hidden rounded-lg">
+        <div className="content-visibility-auto overflow-hidden rounded-lg">
           <button
             type="button"
             className="block w-full cursor-pointer"
@@ -86,11 +86,6 @@ export const CardItem = ({
           </div>
         ) : (
           <div className="absolute top-16 -right-2 z-10 flex flex-col items-center gap-1">
-            {card.limit === "1" && (
-              <div className="rounded-md border border-amber-300 bg-amber-400/90 px-1.5 text-center text-sm font-semibold text-amber-950 shadow-sm">
-                1
-              </div>
-            )}
             {addCard &&
               card.types.filter((type) => type.name === "Alma").length ===
                 0 && (

@@ -19,7 +19,7 @@ interface Props {
   onOpenDetail?: (cards: Card[], index: number) => void;
 }
 
-const GRID_CARD_MIN_WIDTH = 120;
+const GRID_CARD_MIN_WIDTH = 150;
 const GRID_GAP_PX = 8;
 
 export const ShowDeck = ({
@@ -36,6 +36,7 @@ export const ShowDeck = ({
 }: Props) => {
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState<number | null>(null);
+  const autoColumnsRef = useRef<number | null>(null);
   const [sectionsOpen, setSectionsOpen] = useState({
     limbo: true,
     main: true,
@@ -68,14 +69,30 @@ export const ShowDeck = ({
     // Ajusta columnas segun el ancho real para que el mazo responda al espacio disponible.
     const updateColumns = (width: number) => {
       const nextValue = calculateColumns(width);
-      setAutoColumns((prev) => (prev === nextValue ? prev : nextValue));
+      if (autoColumnsRef.current !== nextValue) {
+        autoColumnsRef.current = nextValue;
+        setAutoColumns(nextValue);
+      }
     };
 
-    updateColumns(element.getBoundingClientRect().width);
+    let frameId: number | null = null;
+    let pendingWidth = element.getBoundingClientRect().width;
+
+    // Agrupa las mediciones para evitar recalculos por cada pixel del resize.
+    const requestUpdate = (width: number) => {
+      pendingWidth = width;
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateColumns(pendingWidth);
+      });
+    };
+
+    requestUpdate(element.getBoundingClientRect().width);
 
     const observer = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
-        updateColumns(entry.contentRect.width);
+        requestUpdate(entry.contentRect.width);
       });
     });
 
@@ -83,6 +100,9 @@ export const ShowDeck = ({
 
     return () => {
       observer.disconnect();
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
     };
   }, []);
 
@@ -110,7 +130,7 @@ export const ShowDeck = ({
   }, {});
 
   const sectionBaseContainerClass =
-    "rounded-lg border border-l-4 bg-slate-100/80 text-slate-800 overflow-hidden dark:bg-tournament-dark-surface/90 dark:text-slate-100";
+    "rounded-lg border border-l-4 bg-slate-100/80 text-slate-800 dark:bg-tournament-dark-surface/90 dark:text-slate-100";
   const sectionBaseHeaderClass =
     "relative flex w-full flex-wrap items-start gap-2 border-b bg-slate-200/50 px-3 py-2 pr-6 text-left text-xs font-bold uppercase tracking-wide text-slate-700 transition hover:bg-slate-200/90 dark:bg-tournament-dark-muted/70 dark:text-slate-100 dark:hover:bg-purple-500/10 sm:text-sm";
   const sectionStyles = {
@@ -175,6 +195,7 @@ export const ShowDeck = ({
             dropCard={dropCard}
             showDeckActions
             cardCounts={limboCounts}
+            showEmptyState={false}
             onOpenDetail={onOpenDetail}
           />
         )}
@@ -214,6 +235,7 @@ export const ShowDeck = ({
             dropCard={dropCard}
             showDeckActions
             cardCounts={mainCounts}
+            showEmptyState={false}
             onOpenDetail={onOpenDetail}
           />
         )}
@@ -253,6 +275,7 @@ export const ShowDeck = ({
             dropCard={dropCardSide}
             showDeckActions
             cardCounts={sideCounts}
+            showEmptyState={false}
             onOpenDetail={onOpenDetail}
           />
         )}
