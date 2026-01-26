@@ -102,6 +102,12 @@ h2 {
   animation-name: fadeIn;
 }
 
+// Optimiza el renderizado de listas largas de cartas sin cambiar su layout.
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 260px 380px;
+}
+
 
 .btn-primary {
   @apply bg-indigo-600 hover:bg-indigo-800 text-white py-2 px-4 rounded transition-all;

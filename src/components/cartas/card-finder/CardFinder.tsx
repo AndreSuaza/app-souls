@@ -74,6 +74,8 @@ interface Props {
   disableGridInitialAnimation?: boolean;
   onOpenDetail?: (cards: Card[], index: number) => void;
   enableCompactSearchLayout?: boolean;
+  isActive?: boolean;
+  disableGridTransitions?: boolean;
 }
 
 export const CardFinder = ({
@@ -95,6 +97,8 @@ export const CardFinder = ({
   disableGridInitialAnimation = false,
   onOpenDetail,
   enableCompactSearchLayout = false,
+  isActive = true,
+  disableGridTransitions = false,
 }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -133,10 +137,18 @@ export const CardFinder = ({
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const layoutContainerRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState(1);
+  const autoColumnsRef = useRef<number | null>(null);
   // Evita el parpadeo inicial ocultando el grid hasta medir columnas.
   const [isGridReady, setIsGridReady] = useState(false);
   const [isCompactSearchLayout, setIsCompactSearchLayout] = useState(false);
   const [shouldStackPanel, setShouldStackPanel] = useState(false);
+
+  useEffect(() => {
+    if (isActive) return;
+    // Reinicia la medicion cuando el buscador se colapsa para recalcular al volver.
+    autoColumnsRef.current = null;
+    setIsGridReady(false);
+  }, [isActive]);
 
   useEffect(() => {
     // Mantiene el comportamiento original en lg+ y evita ocultar filtros alli.
@@ -161,6 +173,7 @@ export const CardFinder = ({
   ]);
 
   useEffect(() => {
+    if (!isActive) return;
     const element = gridWrapperRef.current;
     if (!element) return;
     setIsGridReady(false);
@@ -175,15 +188,30 @@ export const CardFinder = ({
     // Ajusta columnas segun el ancho real para que el layout responda al espacio disponible.
     const updateColumns = (width: number) => {
       const nextValue = calculateColumns(width);
-      setAutoColumns((prev) => (prev === nextValue ? prev : nextValue));
+      if (autoColumnsRef.current !== nextValue) {
+        autoColumnsRef.current = nextValue;
+        setAutoColumns(nextValue);
+      }
       setIsGridReady((prev) => (prev ? prev : true));
     };
 
-    updateColumns(element.getBoundingClientRect().width);
+    let frameId: number | null = null;
+    let pendingWidth = element.getBoundingClientRect().width;
+
+    const requestUpdate = (width: number) => {
+      pendingWidth = width;
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateColumns(pendingWidth);
+      });
+    };
+
+    requestUpdate(element.getBoundingClientRect().width);
 
     const observer = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
-        updateColumns(entry.contentRect.width);
+        requestUpdate(entry.contentRect.width);
       });
     });
 
@@ -191,8 +219,11 @@ export const CardFinder = ({
 
     return () => {
       observer.disconnect();
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
     };
-  }, [layoutVariant, useAdvancedFilters]);
+  }, [layoutVariant, useAdvancedFilters, isActive]);
 
   // Sincroniza filtros con la URL sin disparar navegacion de Next.
   const updateUrlWithFilters = useCallback(
@@ -307,7 +338,7 @@ export const CardFinder = ({
   }, [showMobileToggle, filtersCollapsed]);
 
   useEffect(() => {
-    if (!useAdvancedFilters) {
+    if (!useAdvancedFilters || !isActive) {
       setShouldStackPanel(false);
       return;
     }
@@ -315,18 +346,30 @@ export const CardFinder = ({
     const element = layoutContainerRef.current;
     if (!element) return;
 
-    // Determina si hay espacio real para mostrar filtros y cartas en la misma fila.
+    // Agrupa mediciones para evitar recalculos constantes durante el resize.
     const updateLayout = (width: number) => {
       const gridWidth = width - (FILTER_PANEL_WIDTH + PANEL_GAP_PX);
       const nextValue = gridWidth < GRID_CARD_STACK_MIN_WIDTH;
       setShouldStackPanel((prev) => (prev === nextValue ? prev : nextValue));
     };
 
-    updateLayout(element.getBoundingClientRect().width);
+    let frameId: number | null = null;
+    let pendingWidth = element.getBoundingClientRect().width;
+
+    const requestUpdate = (width: number) => {
+      pendingWidth = width;
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateLayout(pendingWidth);
+      });
+    };
+
+    requestUpdate(element.getBoundingClientRect().width);
 
     const observer = new ResizeObserver((entries) => {
       entries.forEach((entry) => {
-        updateLayout(entry.contentRect.width);
+        requestUpdate(entry.contentRect.width);
       });
     });
 
@@ -334,10 +377,13 @@ export const CardFinder = ({
 
     return () => {
       observer.disconnect();
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
     };
-  }, [useAdvancedFilters]);
+  }, [useAdvancedFilters, isActive]);
 
-  const gridContent = (
+  const gridContent = isActive ? (
     <Pagination {...paginationProps}>
       <div
         className={clsx(
@@ -356,7 +402,7 @@ export const CardFinder = ({
         />
       </div>
     </Pagination>
-  );
+  ) : null;
 
   const statsRange = useMemo(() => {
     if (!useAdvancedFilters) return undefined;
@@ -398,7 +444,11 @@ export const CardFinder = ({
           <div className="overflow-visible">
             <div
               ref={gridWrapperRef}
-              className="transition-[width,transform] duration-300 ease-out"
+              className={clsx(
+                disableGridTransitions
+                  ? ""
+                  : "transition-[width,transform] duration-300 ease-out",
+              )}
               style={
                 shouldShiftGrid
                   ? {
