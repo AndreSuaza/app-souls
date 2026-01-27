@@ -7,6 +7,8 @@ import {
 import { DeckCreator } from "@/components";
 import { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title:
     "Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG",
