@@ -42,6 +42,8 @@ export * from "./decks/saveDeck";
 export * from "./decks/getDecks";
 export * from "./decks/getDecksByUser";
 export * from "./decks/getDeckById";
+export * from "./decks/getDecksFiltered";
+export * from "./decks/getDeckFilters";
 
 export * from "./profile/avatars";
 export * from "./profile/edit-user-session";
