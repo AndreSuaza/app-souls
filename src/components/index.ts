@@ -25,6 +25,7 @@ export * from "./eventos/event-grid/TournamentItem";
 
 export * from "./ui/pagination/pagination";
 export * from "./ui/pagination/paginationLine";
+export * from "./ui/pagination/PaginationStats";
 export * from "./ui/top-menu/TopMenu";
 export * from "./ui/top-menu/AdminTopMenu";
 export * from "./ui/not-fount/PageNotFound";
@@ -55,6 +56,7 @@ export * from "./mazos/deck-detail/DeckDetail";
 export * from "./mazos/deck-card/DeckCard";
 export * from "./mazos/deck-save/SaveDeckForm";
 export * from "./mazos/deck-filters/DeckFiltersBar";
+export * from "./mazos/deck-library/DeckLibrary";
 
 export * from "./login/ButtonSocial";
 export * from "./login/ButtonLogOut";

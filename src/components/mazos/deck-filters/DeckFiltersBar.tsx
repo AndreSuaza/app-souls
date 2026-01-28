@@ -1,16 +1,28 @@
 'use client';
 
 import clsx from 'clsx';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
+import { PaginationStats } from '@/components/ui/pagination/PaginationStats';
 
 interface ArchetypeOption {
   id: string;
   name: string | null;
 }
 
+export type DeckFiltersState = {
+  tournament: 'all' | 'with' | 'without';
+  date: 'recent' | 'old';
+  archetypeId: string;
+  likes: '' | '1';
+};
+
 interface Props {
   archetypes: ArchetypeOption[];
+  filters: DeckFiltersState;
+  onChange: (nextFilters: DeckFiltersState) => void;
+  isLoading?: boolean;
+  statsRangeText?: string;
+  statsEntityLabel?: string;
 }
 
 const tournamentOptions = [
@@ -24,17 +36,14 @@ const dateOptions = [
   { value: 'old', label: 'Mas antiguos' },
 ] as const;
 
-export function DeckFiltersBar({ archetypes }: Props) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // La URL es la fuente de verdad para los filtros, igual que en /cartas.
-  const currentTournament = searchParams.get('tournament') ?? 'all';
-  const currentDate = searchParams.get('date') ?? 'recent';
-  const currentArchetype = searchParams.get('archetype') ?? '';
-  const hasLikesFilter = searchParams.get('likes') === '1';
-
+export function DeckFiltersBar({
+  archetypes,
+  filters,
+  onChange,
+  isLoading = false,
+  statsRangeText,
+  statsEntityLabel = 'mazos',
+}: Props) {
   const archetypeOptions = useMemo(
     () =>
       archetypes
@@ -46,130 +55,126 @@ export function DeckFiltersBar({ archetypes }: Props) {
     [archetypes],
   );
 
-  const updateParams = useCallback(
-    (updates: Record<string, string | undefined>) => {
-      const params = new URLSearchParams(searchParams.toString());
-
-      Object.entries(updates).forEach(([key, value]) => {
-        if (!value || value === 'all') {
-          params.delete(key);
-          return;
-        }
-        params.set(key, value);
-      });
-
-      const query = params.toString();
-      const nextUrl = query ? `${pathname}?${query}` : pathname;
-      router.replace(nextUrl, { scroll: false });
-    },
-    [pathname, router, searchParams],
-  );
-
-  const resetFilters = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    ['tournament', 'archetype', 'date', 'likes'].forEach((key) =>
-      params.delete(key),
-    );
-    const query = params.toString();
-    const nextUrl = query ? `${pathname}?${query}` : pathname;
-    router.replace(nextUrl, { scroll: false });
-  }, [pathname, router, searchParams]);
-
-  const filterButtonClass =
-    'flex h-9 shrink-0 items-center justify-center rounded-lg px-4 text-sm font-medium transition-colors';
+  const labelClass =
+    'text-xs font-semibold text-slate-500 dark:text-slate-400';
+  const selectClass =
+    'mt-1 w-full lg:w-auto min-w-0 lg:min-w-[180px] max-w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30';
+  const loadingClass = isLoading ? 'opacity-70' : '';
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface/80">
-      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-200">
-          Filtros de mazos
-        </div>
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
-        >
-          Limpiar filtros
-        </button>
-      </div>
-
-      <div className="grid gap-3 lg:grid-cols-[auto_auto_1fr_auto] lg:items-center">
-        <div className="flex flex-wrap gap-2">
-          {tournamentOptions.map((option) => {
-            const isActive = currentTournament === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => updateParams({ tournament: option.value })}
-                className={clsx(
-                  filterButtonClass,
-                  isActive
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white',
-                )}
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {dateOptions.map((option) => {
-            const isActive = currentDate === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => updateParams({ date: option.value })}
-                className={clsx(
-                  filterButtonClass,
-                  isActive
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white',
-                )}
-              >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <label className="flex w-full flex-col gap-1 text-sm font-medium text-slate-700 dark:text-slate-200">
-          <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Arquetipo
-          </span>
+    <section className="py-1">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] lg:flex lg:flex-wrap lg:items-end">
+        <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
+          <span className={labelClass}>Torneo</span>
           <select
-            value={currentArchetype}
+              value={filters.tournament}
+              onChange={(event) =>
+                onChange({
+                  ...filters,
+                  tournament: event.target.value as DeckFiltersState['tournament'],
+                })
+              }
+              className={clsx(
+                selectClass,
+                loadingClass,
+                filters.tournament !== 'all' && 'border-purple-600',
+              )}
+              title="Filtrar por torneo"
+            disabled={isLoading}
+          >
+            {tournamentOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
+          <span className={labelClass}>Fecha</span>
+          <select
+            value={filters.date}
             onChange={(event) =>
-              updateParams({
-                archetype: event.target.value || undefined,
+              onChange({
+                ...filters,
+                date: event.target.value as DeckFiltersState['date'],
               })
             }
-            className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-purple-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-100"
+            className={clsx(
+              selectClass,
+              loadingClass,
+              filters.date !== 'recent' && 'border-purple-600',
+            )}
+            title="Ordenar por fecha"
+            disabled={isLoading}
           >
-            <option value="">Todos los arquetipos</option>
+            {dateOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
+          <span className={labelClass}>Arquetipo</span>
+          <select
+            value={filters.archetypeId}
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                archetypeId: event.target.value,
+              })
+            }
+            className={clsx(
+              selectClass,
+              loadingClass,
+              filters.archetypeId && 'border-purple-600',
+            )}
+            title="Filtrar por arquetipo"
+            disabled={isLoading}
+          >
+            <option value="">Todos</option>
             {archetypeOptions.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.name}
               </option>
             ))}
           </select>
-        </label>
+        </div>
 
-        <button
-          type="button"
-          onClick={() => updateParams({ likes: hasLikesFilter ? undefined : '1' })}
-          className={clsx(
-            filterButtonClass,
-            hasLikesFilter
-              ? 'bg-purple-600 text-white shadow-sm'
-              : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white',
-          )}
-        >
-          Con likes
-        </button>
+        <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
+          <span className={labelClass}>Relevancia</span>
+          <select
+            value={filters.likes}
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                likes: event.target.value as DeckFiltersState['likes'],
+              })
+            }
+            className={clsx(
+              selectClass,
+              loadingClass,
+              filters.likes === '1' && 'border-purple-600',
+            )}
+            title="Ordenar por relevancia"
+            disabled={isLoading}
+          >
+            <option value="">Normal</option>
+            <option value="1">Mas votados</option>
+          </select>
+        </div>
+
+        {statsRangeText && (
+          <PaginationStats
+            rangeText={statsRangeText}
+            entityLabel={statsEntityLabel}
+            className="order-last col-span-2 w-full pb-1 text-left sm:col-span-1 sm:col-start-3 sm:w-auto sm:justify-self-end sm:self-end sm:text-right lg:ml-auto lg:flex-1"
+            isLoading={isLoading}
+            loadingText="Actualizando mazos..."
+          />
+        )}
       </div>
     </section>
   );

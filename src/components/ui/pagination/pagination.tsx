@@ -4,6 +4,7 @@ import { redirect, usePathname, useSearchParams } from "next/navigation";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { ReactNode } from "react";
 import { PaginationLine } from "./paginationLine";
+export { PaginationStats } from "./PaginationStats";
 
 interface Props {
   children: ReactNode;
