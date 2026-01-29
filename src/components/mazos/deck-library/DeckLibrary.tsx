@@ -21,6 +21,7 @@ import {
 interface Props {
   initialDecks: Deck[];
   initialPagination: DeckPagination;
+  initialLikedDeckIds: string[];
   archetypes: ArchetypeOption[];
   initialFilters: DeckFiltersState;
   hasSession: boolean;
@@ -73,6 +74,7 @@ const formatStatsRange = (page: number, perPage: number, total: number) => {
 export function DeckLibrary({
   initialDecks,
   initialPagination,
+  initialLikedDeckIds,
   archetypes,
   initialFilters,
   hasSession,
@@ -84,11 +86,13 @@ export function DeckLibrary({
   const [totalPages, setTotalPages] = useState(initialPagination.totalPages);
   const [currentPage, setCurrentPage] = useState(initialPagination.currentPage);
   const [perPage, setPerPage] = useState(initialPagination.perPage);
+  const [likedDeckIds, setLikedDeckIds] = useState(initialLikedDeckIds);
   const [isPending, startTransition] = useTransition();
   const requestIdRef = useRef(0);
-  const gridRef = useRef<HTMLUListElement | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
   const autoColumnsRef = useRef<number | null>(null);
   const [autoColumns, setAutoColumns] = useState(1);
+  const [isGridReady, setIsGridReady] = useState(false);
 
   useEffect(() => {
     setDecks(initialDecks);
@@ -97,11 +101,13 @@ export function DeckLibrary({
     setTotalPages(initialPagination.totalPages);
     setCurrentPage(initialPagination.currentPage);
     setPerPage(initialPagination.perPage);
-  }, [initialDecks, initialFilters, initialPagination]);
+    setLikedDeckIds(initialLikedDeckIds);
+  }, [initialDecks, initialFilters, initialPagination, initialLikedDeckIds]);
 
   useEffect(() => {
     const element = gridRef.current;
     if (!element) return;
+    setIsGridReady(false);
 
     const calculateColumns = (width: number) => {
       const nextColumns = Math.floor(
@@ -117,6 +123,7 @@ export function DeckLibrary({
         autoColumnsRef.current = nextValue;
         setAutoColumns(nextValue);
       }
+      setIsGridReady((prev) => (prev ? prev : true));
     };
 
     let frameId: number | null = null;
@@ -205,6 +212,7 @@ export function DeckLibrary({
         setTotalPages(result.totalPages);
         setCurrentPage(result.currentPage);
         setPerPage(result.perPage);
+        setLikedDeckIds(result.likedDeckIds);
       });
     },
     [],
@@ -253,9 +261,21 @@ export function DeckLibrary({
     return `${range} de ${totalCount}`;
   }, [currentPage, perPage, totalCount]);
 
+  const likedDecksSet = useMemo(() => new Set(likedDeckIds), [likedDeckIds]);
+
+  const handleLikedChange = useCallback((deckId: string, liked: boolean) => {
+    setLikedDeckIds((prev) => {
+      if (liked) {
+        if (prev.includes(deckId)) return prev;
+        return [...prev, deckId];
+      }
+      return prev.filter((id) => id !== deckId);
+    });
+  }, []);
+
   const emptyState = useMemo(
     () => (
-      <div className="rounded-lg border border-slate-200 bg-white/70 p-6 text-sm text-slate-600 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70 dark:text-slate-300">
+      <div className="rounded-lg border border-slate-200 bg-white/70 p-6 text-sm text-slate-600 shadow-sm text-center dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70 dark:text-slate-300">
         No hay mazos que coincidan con los filtros actuales.
       </div>
     ),
@@ -278,23 +298,31 @@ export function DeckLibrary({
         onPageChange={handlePageChange}
       >
         <section>
-          {decks.length === 0 ? (
-            emptyState
-          ) : (
-            <ul
-              ref={gridRef}
-              className="grid gap-3 justify-center sm:justify-normal"
-              style={{
-                gridTemplateColumns: `repeat(${autoColumns}, minmax(0, 1fr))`,
-              }}
-            >
-              {decks.map((deck) => (
-                <li key={deck.id} className="h-full">
-                  <DeckCard mazo={deck} hasSession={hasSession} />
-                </li>
-              ))}
-            </ul>
-          )}
+          <div ref={gridRef}>
+            {decks.length === 0 ? (
+              emptyState
+            ) : (
+              <div className={isGridReady ? "" : "invisible"}>
+                <ul
+                  className="grid gap-3 justify-center sm:justify-normal"
+                  style={{
+                    gridTemplateColumns: `repeat(${autoColumns}, minmax(0, 1fr))`,
+                  }}
+                >
+                  {decks.map((deck) => (
+                    <li key={deck.id} className="h-full">
+                      <DeckCard
+                        mazo={deck}
+                        hasSession={hasSession}
+                        isLiked={likedDecksSet.has(deck.id)}
+                        onLikedChange={handleLikedChange}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </section>
       </Pagination>
     </div>

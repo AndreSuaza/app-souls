@@ -38,12 +38,13 @@ export * from "./auth/register";
 export * from "./auth/request-password-reset";
 export * from "./auth/reset-password";
 
-export * from "./decks/saveDeck";
-export * from "./decks/getDecks";
-export * from "./decks/getDecksByUser";
-export * from "./decks/getDeckById";
-export * from "./decks/getDecksFiltered";
-export * from "./decks/getDeckFilters";
+export * from "./decks/save-deck.action";
+export * from "./decks/get-decks.action";
+export * from "./decks/get-decks-by-user.action";
+export * from "./decks/get-deck-by-id.action";
+export * from "./decks/get-decks-filtered.action";
+export * from "./decks/get-deck-filters.action";
+export * from "./decks/toggle-deck-like.action";
 
 export * from "./profile/avatars";
 export * from "./profile/edit-user-session";

@@ -17,9 +17,10 @@ type FormInputs = {
 
 interface FormLoginProps {
   isVerified: boolean;
+  callbackUrl?: string;
 }
 
-export const LoginForm = ({ isVerified }: FormLoginProps) => {
+export const LoginForm = ({ isVerified, callbackUrl }: FormLoginProps) => {
   const {
     register,
     handleSubmit,
@@ -38,7 +39,9 @@ export const LoginForm = ({ isVerified }: FormLoginProps) => {
         setError(resp.message);
       } else {
         await update();
-        router.push("/");
+        const nextUrl = callbackUrl && callbackUrl.trim() ? callbackUrl : "/";
+        // Mantiene el flujo normal si no se recibe callbackUrl.
+        router.push(nextUrl);
       }
     });
   };

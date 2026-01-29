@@ -4,17 +4,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { IoHeart, IoHeartOutline, IoTrophy } from "react-icons/io5";
 import clsx from "clsx";
-import { useMemo, useState, type MouseEvent } from "react";
+import { useMemo, useState, type MouseEvent, useEffect, useTransition } from "react";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { toggleDeckLikeAction } from "@/actions";
 import type { Deck } from "@/interfaces";
 
 interface Props {
   mazo: Deck;
   hasSession?: boolean;
+  isLiked?: boolean;
+  onLikedChange?: (deckId: string, liked: boolean) => void;
 }
 
-export const DeckCard = ({ mazo }: Props) => {
+export const DeckCard = ({
+  mazo,
+  hasSession = false,
+  isLiked = false,
+  onLikedChange,
+}: Props) => {
   // Like solo visual; no persiste.
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(isLiked);
+  const [isPending, startTransition] = useTransition();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const archetypeName = mazo.archetype?.name ?? "";
   const hasArchetype = archetypeName.trim().length > 0;
   const formattedDate = useMemo(() => {
@@ -26,10 +39,43 @@ export const DeckCard = ({ mazo }: Props) => {
     });
   }, [mazo.createdAt]);
 
+  useEffect(() => {
+    setLiked(isLiked);
+  }, [isLiked]);
+
   const handleLikeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    setLiked((prev) => !prev);
+    if (!hasSession) {
+      const query = searchParams?.toString();
+      const currentUrl = query ? `${pathname}?${query}` : pathname;
+      // Redirige al login preservando la ruta actual para volver despues de autenticar.
+      router.push(
+        `/auth/login?callbackUrl=${encodeURIComponent(currentUrl)}`,
+      );
+      return;
+    }
+    const nextLiked = !liked;
+    setLiked(nextLiked);
+    onLikedChange?.(mazo.id, nextLiked);
+
+    startTransition(async () => {
+      try {
+        const result = await toggleDeckLikeAction({
+          deckId: mazo.id,
+          like: nextLiked,
+        });
+        setLiked(result.liked);
+        onLikedChange?.(mazo.id, result.liked);
+      } catch {
+        // Revierte el estado visual si falla el guardado en DB.
+        setLiked((prev) => {
+          const reverted = !prev;
+          onLikedChange?.(mazo.id, reverted);
+          return reverted;
+        });
+      }
+    });
   };
 
   return (
@@ -39,7 +85,11 @@ export const DeckCard = ({ mazo }: Props) => {
         onClick={handleLikeClick}
         title="Marcar como favorito"
         aria-label="Marcar como favorito"
-        className="absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-purple-950/70 text-slate-100 shadow-sm transition hover:border-purple-400 hover:text-purple-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+        className={clsx(
+          "absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-purple-950/70 text-slate-100 shadow-sm transition hover:border-purple-400 hover:text-purple-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
+          isPending && "opacity-70 cursor-not-allowed",
+        )}
+        disabled={isPending}
       >
         <span className="relative block h-5 w-5">
           <IoHeart

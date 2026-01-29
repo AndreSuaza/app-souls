@@ -9,3 +9,4 @@ export * from "./auth/register.schema";
 export * from "./profile/tournament.schema";
 
 export * from "./decks/deck-filters.schema";
+export * from "./decks/deck-like.schema";

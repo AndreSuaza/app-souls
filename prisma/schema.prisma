@@ -325,14 +325,6 @@ model VerificationToken {
   expires    DateTime
 }
 
-model TypeLike {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  createDate DateTime @default(now())
-
-  likes Like[]
-}
-
 model Like {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -341,8 +333,8 @@ model Like {
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
 
-  typeLikeId String   @db.ObjectId
-  typeLike   TypeLike @relation(fields: [typeLikeId], references: [id])
+  deckId String @db.ObjectId
+  deck   Deck   @relation(fields: [deckId], references: [id])
 
   createdAt DateTime @default(now())
 }
@@ -369,6 +361,7 @@ model Deck {
 
   archetypeId String    @db.ObjectId
   archetype   Archetype @relation(fields: [archetypeId], references: [id])
+  likes       Like[]
 }
 
 enum AvatarRarity {

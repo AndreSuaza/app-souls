@@ -96,6 +96,7 @@ export default async function Page({ searchParams }: PageProps) {
             currentPage: decksResult.currentPage,
             perPage: decksResult.perPage,
           }}
+          initialLikedDeckIds={decksResult.likedDeckIds}
           archetypes={filters.archetypes}
           initialFilters={initialFilters}
           hasSession={hasSession}

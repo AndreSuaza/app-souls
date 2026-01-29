@@ -3,11 +3,11 @@ import { LoginForm } from "@/components";
 import Link from "next/link";
 
 interface Props {
-  searchParams: Promise<{ verified: string; error: string }>;
+  searchParams: Promise<{ verified: string; error: string; callbackUrl?: string }>;
 }
 
 export default async function LogInPage({ searchParams }: Props) {
-  const { verified } = await searchParams;
+  const { verified, callbackUrl } = await searchParams;
   const isVerified = verified === "true";
 
   return (
@@ -29,7 +29,7 @@ export default async function LogInPage({ searchParams }: Props) {
 
         <div className="mx-10 mt-4 sm:mt-0 rounded-2xl border border-white/35 bg-white/95 px-8 py-8 shadow-[0_28px_70px_rgba(15,23,42,0.35)] backdrop-blur space-y-4">
           <p className="text-2xl font-semibold text-center">Iniciar sesión</p>
-          <LoginForm isVerified={isVerified} />
+          <LoginForm isVerified={isVerified} callbackUrl={callbackUrl} />
         </div>
       </div>
     </div>

@@ -1,9 +1,10 @@
-'use server';
+"use server";
 
-import type { Prisma } from '@prisma/client';
-import type { DeckFilteredResult } from '@/interfaces';
-import { prisma } from '@/lib/prisma';
-import { DeckFiltersSchema, type DeckFiltersInput } from '@/schemas';
+import type { Prisma } from "@prisma/client";
+import type { DeckFilteredResult } from "@/interfaces";
+import { prisma } from "@/lib/prisma";
+import { DeckFiltersSchema, type DeckFiltersInput } from "@/schemas";
+import { auth } from "@/auth";
 
 export async function getDecksFilteredAction(
   input: DeckFiltersInput,
@@ -17,17 +18,14 @@ export async function getDecksFilteredAction(
     cardsNumber: { gte: 40 },
   };
 
-  if (filters.tournament === 'with') {
+  if (filters.tournament === "with") {
     where.tournamentId = { not: null };
   }
 
-  if (filters.tournament === 'without') {
+  if (filters.tournament === "without") {
     // En Mongo, "null" no siempre cubre documentos donde el campo no existe.
     // Cubrimos ambos casos para que "Sin torneo" funcione de forma consistente.
-    where.OR = [
-      { tournamentId: null },
-      { tournamentId: { isSet: false } },
-    ];
+    where.OR = [{ tournamentId: null }, { tournamentId: { isSet: false } }];
   }
 
   if (filters.archetypeId) {
@@ -40,11 +38,13 @@ export async function getDecksFilteredAction(
   }
 
   const orderBy = filters.likes
-    ? [
-        { likesCount: 'desc' as const },
-        { createdAt: 'desc' as const },
-      ]
-    : [{ createdAt: filters.date === 'old' ? ('asc' as const) : ('desc' as const) }];
+    ? [{ likesCount: "desc" as const }, { createdAt: "desc" as const }]
+    : [
+        {
+          createdAt:
+            filters.date === "old" ? ("asc" as const) : ("desc" as const),
+        },
+      ];
 
   const totalCount = await prisma.deck.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
@@ -71,12 +71,27 @@ export async function getDecksFilteredAction(
     },
   });
 
+  const session = await auth();
+  const userId = session?.user?.idd;
+
+  const likedDeckIds = userId
+    ? (
+        await prisma.like.findMany({
+          where: {
+            userId,
+            deckId: { in: decks.map((deck) => deck.id) },
+          },
+          select: { deckId: true },
+        })
+      ).map((like) => like.deckId)
+    : [];
+
   return {
     decks,
     totalCount,
     totalPages,
     currentPage,
     perPage,
+    likedDeckIds,
   };
 }
-

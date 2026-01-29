@@ -34,4 +34,5 @@ export interface DeckPagination {
 
 export interface DeckFilteredResult extends DeckPagination {
   decks: Deck[];
+  likedDeckIds: string[];
 }
