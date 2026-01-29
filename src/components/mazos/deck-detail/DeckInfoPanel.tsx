@@ -8,7 +8,6 @@ import {
   type MouseEvent,
 } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -41,10 +40,14 @@ export const DeckInfoPanel = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const playerName = useMemo(() => {
-    const name = `${deck.user.name ?? ""} ${deck.user.lastname ?? ""}`.trim();
-    return name.length > 0 ? name : "Sin nombre";
-  }, [deck.user.name, deck.user.lastname]);
+  const formattedDate = useMemo(() => {
+    const date = new Date(deck.createdAt);
+    return date.toLocaleDateString("es-CO", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  }, [deck.createdAt]);
 
   const nickname = deck.user.nickname ?? "Sin jugador";
   const archetypeName = deck.archetype?.name?.trim() || "Sin arquetipo";
@@ -104,15 +107,6 @@ export const DeckInfoPanel = ({
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="relative h-6 w-6">
-              <Image
-                src="/global/jinjan.svg"
-                alt="Souls In Xtinction"
-                fill
-                sizes="24px"
-                className="object-contain"
-              />
-            </div>
             <h1 className={`text-xl font-semibold ${infoTextClass}`}>
               {deck.name}
             </h1>
@@ -128,7 +122,7 @@ export const DeckInfoPanel = ({
               onClick={handleLikeClick}
               title="Marcar como favorito"
               aria-label="Marcar como favorito"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-purple-300/70 bg-purple-100/70 text-purple-700 shadow-sm transition hover:border-purple-400 hover:text-purple-800 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100"
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-purple-300/70 bg-purple-100/70 px-2 text-purple-700 shadow-sm transition hover:border-purple-400 hover:text-purple-800 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100"
             >
               <span className="relative block h-5 w-5">
                 <IoHeart
@@ -144,29 +138,14 @@ export const DeckInfoPanel = ({
                   )}
                 />
               </span>
+              <span className={subTextClass}>{likesCount}</span>
             </button>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className={`flex items-center gap-3 ${subTextClass}`}>
-            <p>{playerName}</p>
-            <span className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
-            <p className="flex items-center gap-2">
-              <span className="relative block h-4 w-4">
-                <IoHeart
-                  className={`absolute inset-0 h-4 w-4 text-purple-600 dark:text-white ${
-                    deck.likesCount > 0 ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-                <IoHeartOutline
-                  className={`absolute inset-0 h-4 w-4 text-purple-600 dark:text-white ${
-                    deck.likesCount > 0 ? "opacity-0" : "opacity-100"
-                  }`}
-                />
-              </span>
-              {likesCount} favoritos
-            </p>
+            <p>{formattedDate}</p>
             <span className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
             <button
               type="button"

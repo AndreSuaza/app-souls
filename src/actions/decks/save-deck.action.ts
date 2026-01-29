@@ -35,6 +35,29 @@ export async function saveDeck(input: SaveDeckInput) {
       };
     }
 
+    if (data.deckId) {
+      const existingDeck = await prisma.deck.findUnique({
+        where: { id: data.deckId },
+        select: { id: true, userId: true },
+      });
+
+      if (existingDeck && existingDeck.userId === session.user.idd) {
+        await prisma.deck.update({
+          where: { id: existingDeck.id },
+          data: {
+            name: data.name,
+            description: data.description,
+            archetypeId: data.archetypesId,
+            imagen: data.imgDeck,
+            cards: data.deckList,
+            visible: data.visible,
+            cardsNumber: data.cardsNumber,
+          },
+        });
+        return { success: true };
+      }
+    }
+
     // verificar si existe el usuario en la base de datos
     const decksNumber = await prisma.deck.count({
       where: {
@@ -42,7 +65,7 @@ export async function saveDeck(input: SaveDeckInput) {
       },
     });
 
-    if (decksNumber <= 20) {
+    if (decksNumber < 12) {
       await prisma.deck.create({
         data: {
           userId: session.user.idd,
@@ -58,7 +81,7 @@ export async function saveDeck(input: SaveDeckInput) {
       return { success: true };
     }
 
-    return { success: false, message: "L\u00edmite de 20 mazos alcanzado" };
+    return { success: false, message: "L\u00edmite de 12 mazos alcanzado" };
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: error.cause?.err?.message };

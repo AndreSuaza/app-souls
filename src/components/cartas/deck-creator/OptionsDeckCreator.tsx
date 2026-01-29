@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Card, ArchetypeOption } from "@/interfaces";
 import { useState } from "react";
@@ -43,6 +43,7 @@ interface Props {
   showSaveButton?: boolean;
   showEditButton?: boolean;
   showCloneButton?: boolean;
+  deckId?: string;
 }
 
 export const OptionsDeckCreator = ({
@@ -63,6 +64,7 @@ export const OptionsDeckCreator = ({
   showSaveButton = true,
   showEditButton = true,
   showCloneButton = false,
+  deckId,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -97,22 +99,26 @@ export const OptionsDeckCreator = ({
   // };
 
   const deckListText = () => {
-    // Función auxiliar para convertir una lista en string
+    // Funcion auxiliar para convertir una lista en string
     const formatDeckList = (deckList: typeof deckListMain) =>
       deckList.map((deck) => `${deck.card.idd}%2C${deck.count}%2C`).join("");
 
-    // Construir cada sección
+    // Construir cada seccion
     const exportText =
       formatDeckList(deckListMain) + formatDeckList(deckListLimbo);
     const exportSide = formatDeckList(deckListSide);
 
-    // Construir URL final
-    return `https://soulsinxtinction.com/laboratorio?decklist=${exportText}|${exportSide}`;
+    return `${exportText}|${exportSide}`;
+  };
+
+  const deckShareUrl = () => {
+    const deckCode = deckListText();
+    return `https://soulsinxtinction.com/laboratorio?decklist=${deckCode}`;
   };
 
   const deckImage = () => {
     if (deckListMain.length > 0) {
-      return deckListMain[0].card.code + deckListMain[0].card.idd;
+      return `${deckListMain[0].card.code}-${deckListMain[0].card.idd}`;
     }
 
     return "";
@@ -125,7 +131,7 @@ export const OptionsDeckCreator = ({
 
   const createCodeDeck = () => {
     // Actualizar estados
-    setDeckList(deckListText);
+    setDeckList(deckShareUrl());
     setCopyState(false);
     setSharedDeck(true);
   };
@@ -143,7 +149,7 @@ export const OptionsDeckCreator = ({
   const handleClearDecklist = () => {
     // Evita limpiezas accidentales del mazo al confirmar la accion.
     openAlertConfirmation({
-      text: "¿Deseas limpiar el mazo?",
+      text: "Â¿Deseas limpiar el mazo?",
       description: "Se eliminaran todas las cartas del mazo actual.",
       action: async () => {
         clearDecklist();
@@ -366,7 +372,7 @@ export const OptionsDeckCreator = ({
               </div>
               {copyState && (
                 <p className="text-sm font-semibold text-lime-600 dark:text-lime-400">
-                  ¡Tu estrategia está lista! El mazo fue copiado al
+                  Â¡Tu estrategia estÃ¡ lista! El mazo fue copiado al
                   portapapeles.
                 </p>
               )}
@@ -444,6 +450,8 @@ export const OptionsDeckCreator = ({
                 imgDeck={deckImage()}
                 archetypes={archetypes}
                 mainDeckCount={mainDeckCount}
+                onClose={() => setShowSaveDeck(false)}
+                deckId={deckId}
               />
             </div>
           </div>
@@ -452,3 +460,5 @@ export const OptionsDeckCreator = ({
     </>
   );
 };
+
+

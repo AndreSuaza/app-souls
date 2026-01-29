@@ -15,6 +15,7 @@ export const SaveDeckSchema = z.object({
   cardsNumber: z.number().min(0),
   deckList: z.string().min(1),
   imgDeck: z.string().min(1),
+  deckId: z.string().optional(),
 });
 
 export type SaveDeckInput = z.infer<typeof SaveDeckSchema>;

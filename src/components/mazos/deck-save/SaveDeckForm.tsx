@@ -1,12 +1,11 @@
-"use client";
+﻿"use client";
 
 import clsx from "clsx";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { saveDeck } from "@/actions";
 import type { ArchetypeOption } from "@/interfaces";
-import { useAlertConfirmationStore } from "@/store";
+import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { MdError } from "react-icons/md";
 
 type FormInputs = {
@@ -16,6 +15,7 @@ type FormInputs = {
   cards: string;
   visible: boolean;
   image: string;
+  deckId?: string;
 };
 
 interface Props {
@@ -23,6 +23,8 @@ interface Props {
   imgDeck: string;
   archetypes?: ArchetypeOption[];
   mainDeckCount?: number;
+  onClose?: () => void;
+  deckId?: string;
 }
 
 export const SaveDeckForm = ({
@@ -30,6 +32,8 @@ export const SaveDeckForm = ({
   imgDeck,
   archetypes = [],
   mainDeckCount = 0,
+  onClose,
+  deckId,
 }: Props) => {
   const {
     register,
@@ -38,10 +42,12 @@ export const SaveDeckForm = ({
     watch,
   } = useForm<FormInputs>();
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const openAlertConfirmation = useAlertConfirmationStore(
     (state) => state.openAlertConfirmation,
   );
+  const showToast = useToastStore((state) => state.showToast);
+  const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
   const isPrivate = watch("visible");
   const shouldWarnPublic = !isPrivate && mainDeckCount < 40;
 
@@ -50,6 +56,10 @@ export const SaveDeckForm = ({
       setError(
         "Para publicar un mazo debe tener 40 cartas en el mazo principal.",
       );
+      showToast(
+        "Para publicar el mazo debes tener 40 cartas en el mazo principal.",
+        "warning",
+      );
       return;
     }
 
@@ -57,20 +67,26 @@ export const SaveDeckForm = ({
       text: "¿Deseas guardar este mazo?",
       description: "Se guardará el mazo con la configuración actual.",
       action: async () => {
+        showLoading("Guardando mazo...");
         const resp = await saveDeck({
           ...data,
           deckList: deck,
           imgDeck,
           cardsNumber: mainDeckCount,
           visible: !data.visible,
+          deckId,
         });
+        hideLoading();
 
         if (resp && resp?.message) {
           setError(resp.message);
+          showToast(resp.message, "warning");
+          onClose?.();
           return false;
         }
 
-        router.push("/perfil");
+        showToast("Mazo guardado correctamente.", "success");
+        onClose?.();
         return true;
       },
     });
@@ -164,7 +180,7 @@ export const SaveDeckForm = ({
           {...register("description", {
             maxLength: {
               value: 500,
-              message: "La descripción no puede superar 500 caracteres",
+              message: "La Descripción no puede superar 500 caracteres",
             },
           })}
           rows={4}
@@ -195,3 +211,4 @@ export const SaveDeckForm = ({
     </form>
   );
 };
+

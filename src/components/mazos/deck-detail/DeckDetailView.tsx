@@ -193,6 +193,7 @@ export const DeckDetailView = ({
           columnsLg={4}
           columnsXl={6}
           allowEdit={false}
+          highlightLegendaryCount
         />
       </section>
     </div>

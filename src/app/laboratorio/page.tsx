@@ -1,6 +1,7 @@
 import {
   getDeckById,
   getDecksByIds,
+  getDeckFiltersAction,
   getPaginatedCards,
   getPropertiesCards,
 } from "@/actions";
@@ -70,9 +71,10 @@ export default async function Cards({ searchParams }: Props) {
   } = await searchParams;
   const page2 = page ? parseInt(page) : 1;
 
-  const [propertiesCards, session] = await Promise.all([
+  const [propertiesCards, session, deckFilters] = await Promise.all([
     getPropertiesCards(),
     auth(),
+    getDeckFiltersAction(),
   ]);
   const { cards, totalPage, totalCount, perPage } = await getPaginatedCards({
     page: page2,
@@ -126,6 +128,8 @@ export default async function Cards({ searchParams }: Props) {
         limit,
       }}
       hasSession={Boolean(session?.user)}
+      archetypes={deckFilters.archetypes}
+      deckId={deckUser?.id}
     />
   );
 }

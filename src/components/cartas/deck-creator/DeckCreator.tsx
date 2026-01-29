@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import clsx from "clsx";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
@@ -8,7 +8,7 @@ import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
 import { CardDetail } from "../card-detail/CardDetail";
 import { getPaginatedCards } from "@/actions";
-import type { PaginationFilters, Card } from "@/interfaces";
+import type { PaginationFilters, Card, ArchetypeOption } from "@/interfaces";
 
 interface Propertie {
   id: string;
@@ -35,6 +35,8 @@ interface Props {
   initialFilters?: PaginationFilters;
   initialPage?: number;
   hasSession?: boolean;
+  archetypes?: ArchetypeOption[];
+  deckId?: string;
 }
 
 const addCardLogic = (
@@ -103,6 +105,8 @@ export const DeckCreator = ({
   initialPage = 1,
   className,
   hasSession = false,
+  archetypes = [],
+  deckId,
 }: Props) => {
   const hasImportedRef = useRef(false);
   const [cardsState, setCardsState] = useState(cards);
@@ -229,13 +233,15 @@ export const DeckCreator = ({
   const addCard = (cardSeleted: Card) => {
     const counts = getCardCountsByDeck(cardSeleted.id);
     const totalCount = counts.main + counts.limbo + counts.side;
-    // Las legendarias solo pueden existir en un mazo a la vez, pero permiten 2 copias dentro del mismo.
+    // Las legendarias solo permiten 1 copia y no pueden estar en otro mazo.
     if (cardSeleted.limit === "1") {
       const isLimbo = cardSeleted.types.some((type) => type.name === "Limbo");
       const hasOtherDeck = isLimbo
         ? counts.main > 0 || counts.side > 0
         : counts.limbo > 0 || counts.side > 0;
       if (hasOtherDeck) return;
+      const hasSameInDeck = isLimbo ? counts.limbo > 0 : counts.main > 0;
+      if (hasSameInDeck) return;
     }
     if (totalCount >= 2) return;
 
@@ -290,9 +296,9 @@ export const DeckCreator = ({
   const addCardSideDeck = (cardSeleted: Card) => {
     const counts = getCardCountsByDeck(cardSeleted.id);
     const totalCount = counts.main + counts.limbo + counts.side;
-    // Las legendarias solo pueden existir en un mazo a la vez, pero permiten 2 copias dentro del mismo.
+    // Las legendarias solo permiten 1 copia y no pueden estar en otro mazo.
     if (cardSeleted.limit === "1") {
-      if (counts.main > 0 || counts.limbo > 0) return;
+      if (counts.main > 0 || counts.limbo > 0 || counts.side > 0) return;
     }
     if (totalCount >= 2) return;
 
@@ -331,6 +337,19 @@ export const DeckCreator = ({
     deckListLimbo.reduce((acc, deck) => acc + deck.count, 0) +
     deckListSide.reduce((acc, deck) => acc + deck.count, 0);
 
+  const cardCounts = useMemo(() => {
+    const totals: Record<string, number> = {};
+    const addCounts = (list: Decklist[]) => {
+      list.forEach((deck) => {
+        totals[deck.card.id] = (totals[deck.card.id] ?? 0) + deck.count;
+      });
+    };
+    addCounts(deckListMain);
+    addCounts(deckListLimbo);
+    addCounts(deckListSide);
+    return totals;
+  }, [deckListMain, deckListLimbo, deckListSide]);
+
   return (
     <div
       className={clsx("flex h-full flex-row gap-0 overflow-hidden", className)}
@@ -367,6 +386,8 @@ export const DeckCreator = ({
             onOpenDetail={openDetail}
             isActive={!isFinderCollapsed}
             disableGridTransitions={isFullscreenToggling}
+            cardCounts={cardCounts}
+            highlightLegendaryCount
           />
         </div>
       </section>
@@ -392,6 +413,8 @@ export const DeckCreator = ({
               onToggleFinderCollapse={handleToggleFinderCollapse}
               showSaveControls
               hasSession={hasSession}
+              archetypes={archetypes}
+              deckId={deckId}
               showSaveButton={totalCardsInDecks > 0}
               showEditButton={false}
               showCloneButton={false}
@@ -408,6 +431,7 @@ export const DeckCreator = ({
             columnsLg={isFinderCollapsed ? 6 : 4}
             columnsXl={isFinderCollapsed ? 8 : 4}
             onOpenDetail={openDetail}
+            highlightLegendaryCount
           />
           <div className="h-6" aria-hidden />
         </div>

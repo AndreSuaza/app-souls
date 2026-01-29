@@ -18,6 +18,7 @@ interface Props {
   columnsXl?: number;
   onOpenDetail?: (cards: Card[], index: number) => void;
   allowEdit?: boolean;
+  highlightLegendaryCount?: boolean;
 }
 
 const GRID_CARD_MIN_WIDTH = 150;
@@ -35,6 +36,7 @@ export const ShowDeck = ({
   columnsXl = 6,
   onOpenDetail,
   allowEdit = true,
+  highlightLegendaryCount = false,
 }: Props) => {
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState<number | null>(null);
@@ -199,6 +201,7 @@ export const ShowDeck = ({
             cardCounts={limboCounts}
             showEmptyState={false}
             onOpenDetail={onOpenDetail}
+            highlightLegendaryCount={highlightLegendaryCount}
           />
         )}
       </DeckSection>
@@ -239,6 +242,7 @@ export const ShowDeck = ({
             cardCounts={mainCounts}
             showEmptyState={false}
             onOpenDetail={onOpenDetail}
+            highlightLegendaryCount={highlightLegendaryCount}
           />
         )}
       </DeckSection>
@@ -279,6 +283,7 @@ export const ShowDeck = ({
             cardCounts={sideCounts}
             showEmptyState={false}
             onOpenDetail={onOpenDetail}
+            highlightLegendaryCount={highlightLegendaryCount}
           />
         )}
       </DeckSection>
