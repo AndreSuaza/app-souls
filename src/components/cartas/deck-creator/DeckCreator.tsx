@@ -34,6 +34,7 @@ interface Props {
   className?: string;
   initialFilters?: PaginationFilters;
   initialPage?: number;
+  hasSession?: boolean;
 }
 
 const addCardLogic = (
@@ -101,6 +102,7 @@ export const DeckCreator = ({
   initialFilters,
   initialPage = 1,
   className,
+  hasSession = false,
 }: Props) => {
   const hasImportedRef = useRef(false);
   const [cardsState, setCardsState] = useState(cards);
@@ -324,6 +326,11 @@ export const DeckCreator = ({
     setIsDetailOpen(false);
   }, []);
 
+  const totalCardsInDecks =
+    deckListMain.reduce((acc, deck) => acc + deck.count, 0) +
+    deckListLimbo.reduce((acc, deck) => acc + deck.count, 0) +
+    deckListSide.reduce((acc, deck) => acc + deck.count, 0);
+
   return (
     <div
       className={clsx("flex h-full flex-row gap-0 overflow-hidden", className)}
@@ -383,6 +390,11 @@ export const DeckCreator = ({
               clearDecklist={clearDecklist}
               isFinderCollapsed={isFinderCollapsed}
               onToggleFinderCollapse={handleToggleFinderCollapse}
+              showSaveControls
+              hasSession={hasSession}
+              showSaveButton={totalCardsInDecks > 0}
+              showEditButton={false}
+              showCloneButton={false}
             />
           </div>
           <ShowDeck

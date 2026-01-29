@@ -1,5 +1,7 @@
 export interface DeckUser {
   nickname: string | null;
+  name?: string | null;
+  lastname?: string | null;
 }
 
 export interface DeckArchetype {
@@ -16,11 +18,13 @@ export interface ArchetypeOption {
 export interface Deck {
   id: string;
   name: string;
+  description?: string | null;
   imagen: string;
   cards: string;
   likesCount: number;
   createdAt: Date | string;
   tournamentId?: string | null;
+  userId?: string;
   user: DeckUser;
   archetype: DeckArchetype;
 }

@@ -46,12 +46,13 @@ export function DeckFiltersBar({
 }: Props) {
   const archetypeOptions = useMemo(
     () =>
-      archetypes
-        .filter((item) => Boolean(item.name))
-        .map((item) => ({
-          id: item.id,
-          name: item.name as string,
-        })),
+      archetypes.map((item) => ({
+        id: item.id,
+        name:
+          item.name && item.name.trim().length > 0
+            ? item.name
+            : "Sin arquetipo",
+      })),
     [archetypes],
   );
 

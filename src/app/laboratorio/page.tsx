@@ -4,6 +4,7 @@ import {
   getPaginatedCards,
   getPropertiesCards,
 } from "@/actions";
+import { auth } from "@/auth";
 import { DeckCreator } from "@/components";
 import { Metadata } from "next";
 
@@ -69,7 +70,10 @@ export default async function Cards({ searchParams }: Props) {
   } = await searchParams;
   const page2 = page ? parseInt(page) : 1;
 
-  const propertiesCards = await getPropertiesCards();
+  const [propertiesCards, session] = await Promise.all([
+    getPropertiesCards(),
+    auth(),
+  ]);
   const { cards, totalPage, totalCount, perPage } = await getPaginatedCards({
     page: page2,
     text,
@@ -121,6 +125,7 @@ export default async function Cards({ searchParams }: Props) {
         rarities,
         limit,
       }}
+      hasSession={Boolean(session?.user)}
     />
   );
 }

@@ -3,60 +3,66 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AuthError } from "next-auth";
+import { SaveDeckSchema, type SaveDeckInput } from "@/schemas";
 
-type FormInputs = {
-    name: string;
-    description: string;
-    archetypesId: string;
-    cards: string;
-    visible: boolean;
-    image: string;
-}
+export async function saveDeck(input: SaveDeckInput) {
+  const session = await auth();
 
-export async function saveDeck(formData: FormInputs, deckList: string, imgDeck: string) {
+  try {
+    const data = SaveDeckSchema.parse(input);
 
-   const session = await auth();
-   
+    if (!session) {
+      return {
+        success: false,
+        message:
+          "No tienes una sesi\u00f3n activa. Por favor, inicia sesi\u00f3n para continuar",
+      };
+    }
 
- try {
+    if (!session.user.idd) {
+      return {
+        success: false,
+        message:
+          "Error en la sesi\u00f3n activa. Por favor, vuelva a iniciar sesi\u00f3n para continuar",
+      };
+    }
 
-   if(!session) { 
+    if (data.visible && data.cardsNumber < 40) {
+      return {
+        success: false,
+        message:
+          "Para publicar un mazo debe tener 40 cartas en el mazo principal.",
+      };
+    }
 
-      return { success: false, message: "No tienes una sesión activa. Por favor, inicia sesión para continuar"};
-   }
- 
-   if(!session.user.idd) {
-      return { success: false, message: "Error en la sesión activa. Por favor, vuelva a iniciar sesión para continuar"};
-   }
-   // verificar si existe el usuario en la base de datos
-   const decksNumber = await prisma.deck.count({
+    // verificar si existe el usuario en la base de datos
+    const decksNumber = await prisma.deck.count({
       where: {
-      userId: session?.user.id,
+        userId: session.user.idd,
       },
-   }); 
-      
-   if(decksNumber<=20) {
+    });
+
+    if (decksNumber <= 20) {
       await prisma.deck.create({
-         data: {
-            userId: session.user.idd,
-            name: formData.name,
-            description: formData.description,
-            archetypeId: formData.archetypesId,
-            imagen: imgDeck,
-            cards: deckList,
-            visible: !formData.visible,
-         },
+        data: {
+          userId: session.user.idd,
+          name: data.name,
+          description: data.description,
+          archetypeId: data.archetypesId,
+          imagen: data.imgDeck,
+          cards: data.deckList,
+          visible: data.visible,
+          cardsNumber: data.cardsNumber,
+        },
       });
+      return { success: true };
+    }
 
-   } else {
-      return { success: false, message: "Límite de 20 mazos alcanzado" };
-   }
-
- } catch (error) {
+    return { success: false, message: "L\u00edmite de 20 mazos alcanzado" };
+  } catch (error) {
     if (error instanceof AuthError) {
       return { error: error.cause?.err?.message };
     }
     return { error: "error 500" };
- }
-
+  }
 }

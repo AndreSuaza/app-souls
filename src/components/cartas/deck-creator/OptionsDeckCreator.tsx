@@ -1,12 +1,14 @@
 "use client";
 
-import { Card } from "@/interfaces";
+import { Card, ArchetypeOption } from "@/interfaces";
 import { useState } from "react";
 import {
   IoCopyOutline,
   IoHandRightOutline,
   IoImageOutline,
   IoShareSocialOutline,
+  IoCreateOutline,
+  IoSaveOutline,
 } from "react-icons/io5";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -16,6 +18,7 @@ import { Modal, Decklistimage, SaveDeckForm } from "@/components";
 import Link from "next/link";
 import Image from "next/image";
 import { useAlertConfirmationStore } from "@/store";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface Decklist {
   count: number;
@@ -29,6 +32,17 @@ interface Props {
   clearDecklist: () => void;
   isFinderCollapsed: boolean;
   onToggleFinderCollapse: () => void;
+  showSaveControls?: boolean;
+  editDeckUrl?: string;
+  cloneDeckUrl?: string;
+  hasSession?: boolean;
+  loginCallbackUrl?: string;
+  archetypes?: ArchetypeOption[];
+  showFullscreenToggle?: boolean;
+  showClearDeck?: boolean;
+  showSaveButton?: boolean;
+  showEditButton?: boolean;
+  showCloneButton?: boolean;
 }
 
 export const OptionsDeckCreator = ({
@@ -38,6 +52,17 @@ export const OptionsDeckCreator = ({
   clearDecklist,
   isFinderCollapsed,
   onToggleFinderCollapse,
+  showSaveControls = false,
+  editDeckUrl,
+  cloneDeckUrl,
+  hasSession = false,
+  loginCallbackUrl,
+  archetypes = [],
+  showFullscreenToggle = true,
+  showClearDeck = true,
+  showSaveButton = true,
+  showEditButton = true,
+  showCloneButton = false,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -49,6 +74,9 @@ export const OptionsDeckCreator = ({
   const openAlertConfirmation = useAlertConfirmationStore(
     (state) => state.openAlertConfirmation,
   );
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const copyToClipboard = () => {
     setCopyState(true);
@@ -90,6 +118,11 @@ export const OptionsDeckCreator = ({
     return "";
   };
 
+  const mainDeckCount = deckListMain.reduce(
+    (acc, deck) => acc + deck.count,
+    0,
+  );
+
   const createCodeDeck = () => {
     // Actualizar estados
     setDeckList(deckListText);
@@ -119,14 +152,28 @@ export const OptionsDeckCreator = ({
     });
   };
 
+  const handleOpenSave = () => {
+    if (!hasSession) {
+      const query = searchParams?.toString();
+      const currentUrl = loginCallbackUrl
+        ? loginCallbackUrl
+        : query
+          ? `${pathname}?${query}`
+          : pathname;
+      router.push(`/auth/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
+      return;
+    }
+    setShowSaveDeck(true);
+  };
+
   const closeDeckImage = () => {
     setShowDeckImage(false);
   };
 
   const actionButtonClass =
-    "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300";
+    "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300";
   const primaryActionButtonClass =
-    "inline-flex items-center justify-center rounded-lg border border-slate-200 bg-amber-100 p-2 text-amber-700 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-amber-400/10 dark:text-amber-300";
+    "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-amber-100 p-2 text-amber-700 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-amber-400/10 dark:text-amber-300";
   const shareIconButtonClass =
     "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200";
 
@@ -144,8 +191,9 @@ export const OptionsDeckCreator = ({
 
   return (
     <>
-      <div className="mb-3 flex flex-wrap gap-1 sm:gap-2">
-        {/* {session?.user && 
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3 sm:gap-4">
+        <div className="flex flex-wrap gap-1 sm:gap-2">
+          {/* {session?.user && 
             <button
                 className="btn-short"
                 title="Nuevo Mazo"
@@ -165,54 +213,91 @@ export const OptionsDeckCreator = ({
             </button>
             } */}
 
-        <button
-          className={primaryActionButtonClass}
-          title={
-            isFinderCollapsed
-              ? "Salir de pantalla completa de mazos"
-              : "Pantalla completa de mazos"
-          }
-          onClick={onToggleFinderCollapse}
-        >
-          {isFinderCollapsed ? (
-            <RiFullscreenExitLine className="h-4 w-4 sm:h-6 sm:w-6" />
-          ) : (
-            <RiFullscreenLine className="h-4 w-4 sm:h-6 sm:w-6" />
+          {showFullscreenToggle && (
+            <button
+              className={primaryActionButtonClass}
+              title={
+                isFinderCollapsed
+                  ? "Salir de pantalla completa de mazos"
+                  : "Pantalla completa de mazos"
+              }
+              onClick={onToggleFinderCollapse}
+            >
+              {isFinderCollapsed ? (
+                <RiFullscreenExitLine className="h-4 w-4 sm:h-6 sm:w-6" />
+              ) : (
+                <RiFullscreenLine className="h-4 w-4 sm:h-6 sm:w-6" />
+              )}
+            </button>
           )}
-        </button>
 
-        <button
-          className={actionButtonClass}
-          title="Exportar Mazo"
-          onClick={createCodeDeck}
-        >
-          <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
-        </button>
+          <button
+            className={actionButtonClass}
+            title="Exportar Mazo"
+            onClick={createCodeDeck}
+          >
+            <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+          </button>
 
-        <button
-          className={actionButtonClass}
-          title="Exportar Imagen"
-          onClick={() => setShowDeckImage(true)}
-        >
-          <IoImageOutline className="w-4 h-4 sm:w-6 sm:h-6" />
-        </button>
-        <button
-          className={actionButtonClass}
-          title="Prueba Manos"
-          onClick={handTest}
-        >
-          <IoHandRightOutline className="w-4 h-4 sm:w-6 sm:h-6" />
-        </button>
-        <button
-          className={actionButtonClass}
-          title="Limpiar Mazo"
-          onClick={handleClearDecklist}
-        >
-          <RiEraserLine className="w-4 h-4 sm:w-6 sm:h-6" />
-        </button>
-        {/* <span className="flex flex-row py-2 px-2 font-bold col-span-2">
+          <button
+            className={actionButtonClass}
+            title="Exportar Imagen"
+            onClick={() => setShowDeckImage(true)}
+          >
+            <IoImageOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+          </button>
+          <button
+            className={actionButtonClass}
+            title="Prueba Manos"
+            onClick={handTest}
+          >
+            <IoHandRightOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+          </button>
+          {showClearDeck && (
+            <button
+              className={actionButtonClass}
+              title="Limpiar Mazo"
+              onClick={handleClearDecklist}
+            >
+              <RiEraserLine className="w-4 h-4 sm:w-6 sm:h-6" />
+            </button>
+          )}
+          {/* <span className="flex flex-row py-2 px-2 font-bold col-span-2">
                 <IoLogoUsd className="w-6 h-6 -mb-0.5" /> {priceDeck()}
             </span> */}
+        </div>
+        {showSaveControls && (
+          <div className="flex items-center gap-2 h-full">
+            {showEditButton && editDeckUrl && (
+              <Link
+                href={editDeckUrl}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-blue-500 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-200"
+              >
+                Editar
+                <IoCreateOutline className="h-4 w-4" />
+              </Link>
+            )}
+            {showCloneButton && cloneDeckUrl && (
+              <Link
+                href={cloneDeckUrl}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-purple-200 bg-purple-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-purple-500 dark:border-purple-500/40 dark:bg-purple-500/20 dark:text-purple-200"
+              >
+                Clonar
+                <IoCopyOutline className="h-4 w-4" />
+              </Link>
+            )}
+            {showSaveButton && (
+              <button
+                type="button"
+                onClick={handleOpenSave}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-200"
+              >
+                Guardar
+                <IoSaveOutline className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
       {showDeckImage && (
         <div className="w-full overflow-auto">
@@ -344,16 +429,23 @@ export const OptionsDeckCreator = ({
       )}
       {showSaveDeck && (
         <Modal
-          className="top-0 left-0 flex justify-center bg-gray-100 z-20 transition-all w-full md:w-1/3 md:left-1/3 md:top-28"
+          className="left-1/2 top-1/2 w-[92%] max-w-xl -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface overflow-hidden"
           close={() => setShowSaveDeck(false)}
         >
-          <div className="overflow-auto w-full text-center">
-            <div className=" text-gray-100 py-4 bg-slate-950">
-              <h1 className="font-bold text-2xl md:text-2xl uppercase">
-                Crear Mazo
+          <div className="flex max-h-[80vh] w-full flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white sm:text-2xl">
+                Guardar mazo
               </h1>
             </div>
-            <SaveDeckForm deck={deckListText()} imgDeck={deckImage()} />
+            <div className="overflow-auto">
+              <SaveDeckForm
+                deck={deckListText()}
+                imgDeck={deckImage()}
+                archetypes={archetypes}
+                mainDeckCount={mainDeckCount}
+              />
+            </div>
           </div>
         </Modal>
       )}

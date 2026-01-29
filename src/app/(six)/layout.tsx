@@ -1,4 +1,4 @@
-import { Sidebar, TopMenu, Footer } from "@/components";
+import { ConfirmationModalHost, Footer, Sidebar, TopMenu } from "@/components";
 import moment from 'moment';
 import 'moment/locale/es';
 
@@ -11,6 +11,7 @@ export default function SixLayout({
   return (
     <>
     <main className="">
+        <ConfirmationModalHost />
         <TopMenu/>
         <Sidebar/>
         <div className="px-0">

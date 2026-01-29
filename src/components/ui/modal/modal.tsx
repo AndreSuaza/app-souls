@@ -1,6 +1,7 @@
 "use client";
 
 import { JSX, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { IoCloseOutline } from "react-icons/io5";
 
 interface Props {
@@ -19,11 +20,13 @@ export const Modal = ({ children, className, close }: Props) => {
     };
   }, []);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <>
       <div
         onClick={close}
-        className="fade-in fixed top-0 left-0 z-10 h-screen w-screen bg-black/40 backdrop-blur-sm"
+        className="fade-in fixed inset-0 z-10 bg-black/40 backdrop-blur-sm"
       />
 
       <div className={`fixed z-20 ${className}`}>
@@ -37,6 +40,7 @@ export const Modal = ({ children, className, close }: Props) => {
         </button>
         {children}
       </div>
-    </>
+    </>,
+    document.body,
   );
 };

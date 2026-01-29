@@ -10,3 +10,4 @@ export * from "./profile/tournament.schema";
 
 export * from "./decks/deck-filters.schema";
 export * from "./decks/deck-like.schema";
+export * from "./decks/save-deck.schema";

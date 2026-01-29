@@ -107,10 +107,7 @@ export const DeckCard = ({
         </span>
       </button>
 
-      <Link
-        href={`/laboratorio?id=${mazo.id}`}
-        className="block h-full rounded-lg"
-      >
+      <Link href={`/mazos/${mazo.id}`} className="block h-full rounded-lg">
         <div className="relative h-56 w-full overflow-hidden">
           <Image
             src={`/cards/${mazo.imagen}.webp`}
