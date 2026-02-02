@@ -122,18 +122,18 @@ export const DeckInfoPanel = ({
               onClick={handleLikeClick}
               title="Marcar como favorito"
               aria-label="Marcar como favorito"
-              className="inline-flex h-8 items-center gap-2 rounded-md border border-purple-300/70 bg-purple-100/70 px-2 text-purple-700 shadow-sm transition hover:border-purple-400 hover:text-purple-800 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100"
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-purple-300/70 bg-purple-100/70 px-2 text-purple-700 shadow-sm transition hover:border-purple-00 hover:text-purple-800 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100"
             >
               <span className="relative block h-5 w-5">
                 <IoHeart
                   className={clsx(
-                    "absolute inset-0 h-5 w-5 text-purple-700 transition-all duration-200 ease-out dark:text-white",
+                    "absolute inset-0 h-5 w-5 text-[#ff3040] transition-all duration-200 ease-out",
                     liked ? "scale-110 opacity-100" : "scale-75 opacity-0",
                   )}
                 />
                 <IoHeartOutline
                   className={clsx(
-                    "absolute inset-0 h-5 w-5 text-purple-700 transition-all duration-200 ease-out dark:text-white",
+                    "absolute inset-0 h-5 w-5 transition-all duration-200 ease-out",
                     liked ? "scale-75 opacity-0" : "scale-100 opacity-100",
                   )}
                 />

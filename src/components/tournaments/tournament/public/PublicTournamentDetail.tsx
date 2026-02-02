@@ -82,7 +82,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
         error instanceof Error
           ? error.message
           : "No se pudo actualizar el torneo",
-        "error"
+        "error",
       );
     } finally {
       hideLoading();
@@ -231,15 +231,15 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                         tournament.status === "in_progress"
                           ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
                           : tournament.status === "finished"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
-                          : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
+                            : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
                       }`}
                     >
                       {tournament.status === "in_progress"
                         ? "En progreso"
                         : tournament.status === "finished"
-                        ? "Finalizado"
-                        : "Pendiente"}
+                          ? "Finalizado"
+                          : "Pendiente"}
                     </span>
                   </div>
                 </div>
@@ -279,7 +279,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
         {tournament && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
-              Clasificacion general
+              Clasificación general
             </h3>
 
             <TournamentRankingPanel

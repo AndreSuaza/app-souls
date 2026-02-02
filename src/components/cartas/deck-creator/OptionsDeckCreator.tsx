@@ -46,6 +46,7 @@ interface Props {
   showEditButton?: boolean;
   showCloneButton?: boolean;
   deckId?: string;
+  showUserDecksButton?: boolean;
 }
 
 export const OptionsDeckCreator = ({
@@ -67,6 +68,7 @@ export const OptionsDeckCreator = ({
   showEditButton = true,
   showCloneButton = false,
   deckId,
+  showUserDecksButton = false,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -128,10 +130,7 @@ export const OptionsDeckCreator = ({
     return "";
   };
 
-  const mainDeckCount = deckListMain.reduce(
-    (acc, deck) => acc + deck.count,
-    0,
-  );
+  const mainDeckCount = deckListMain.reduce((acc, deck) => acc + deck.count, 0);
 
   const createCodeDeck = () => {
     // Actualizar estados
@@ -153,7 +152,7 @@ export const OptionsDeckCreator = ({
   const handleClearDecklist = () => {
     // Evita limpiezas accidentales del mazo al confirmar la accion.
     openAlertConfirmation({
-      text: "Â¿Deseas limpiar el mazo?",
+      text: "¿Deseas limpiar el mazo?",
       description: "Se eliminaran todas las cartas del mazo actual.",
       action: async () => {
         clearDecklist();
@@ -249,7 +248,7 @@ export const OptionsDeckCreator = ({
             <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
           </button>
 
-          {hasSession && (
+          {hasSession && showUserDecksButton && (
             <button
               className={actionButtonClass}
               title="Ver mis mazos"
@@ -386,7 +385,7 @@ export const OptionsDeckCreator = ({
               </div>
               {copyState && (
                 <p className="text-sm font-semibold text-lime-600 dark:text-lime-400">
-                  Â¡Tu estrategia estÃ¡ lista! El mazo fue copiado al
+                  ¡Tu estrategia está lista! El mazo fue copiado al
                   portapapeles.
                 </p>
               )}
@@ -498,5 +497,3 @@ export const OptionsDeckCreator = ({
     </>
   );
 };
-
-

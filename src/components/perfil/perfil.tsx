@@ -80,10 +80,10 @@ export const Pefil = ({
   const [activeTournamentState, setActiveTournamentState] =
     useState<ActiveTournamentData | null>(activeTournament);
   const hasCurrentTournament = Boolean(
-    activeTournamentState?.currentTournament
+    activeTournamentState?.currentTournament,
   );
   const [activeTab, setActiveTab] = useState<TabKey>(
-    activeTournament ? "current" : "history"
+    activeTournament ? "current" : "history",
   );
   const [selectedTournament, setSelectedTournament] =
     useState<TournamentSnapshot | null>(null);
@@ -122,7 +122,7 @@ export const Pefil = ({
         error instanceof Error
           ? error.message
           : "No se pudo actualizar el avatar",
-        "error"
+        "error",
       );
     } finally {
       hideLoading();
@@ -185,7 +185,7 @@ export const Pefil = ({
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : "No se pudo cargar el torneo",
-        "error"
+        "error",
       );
     } finally {
       hideLoading();
@@ -203,7 +203,7 @@ export const Pefil = ({
           error instanceof Error
             ? error.message
             : "No se pudo actualizar el torneo",
-          "error"
+          "error",
         );
       } finally {
         hideLoading();
@@ -219,7 +219,7 @@ export const Pefil = ({
         error instanceof Error
           ? error.message
           : "No se pudo actualizar el torneo",
-        "error"
+        "error",
       );
     } finally {
       hideLoading();
@@ -265,7 +265,7 @@ export const Pefil = ({
             <h1 className="text-3xl font-bold text-purple-600 dark:text-purple-300">
               {user.nickname}
             </h1>
-            {/* <p className="text-gray-300 italic">â€œNo soy un mazo... soy un monstruo.</p> */}
+            {/* <p className="text-gray-300 italic">No soy un mazo... soy un monstruo.</p> */}
 
             {/* Barra de experiencia */}
             {/* <div className="mt-4">
@@ -295,7 +295,7 @@ export const Pefil = ({
                 </p>
                 <p className="font-semibold">{user.email}</p>
               </div>
-               <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
+              <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
                 <p className="text-slate-500 dark:text-slate-400 text-xs">
                   Puntos
                 </p>
@@ -346,10 +346,10 @@ export const Pefil = ({
                 {tab === "current"
                   ? currentTabLabel
                   : tab === "history"
-                  ? "Historial de torneos"
-                  : tab === "selected"
-                  ? "Torneo"
-                  : "Mis mazos"}
+                    ? "Historial de torneos"
+                    : tab === "selected"
+                      ? "Torneo"
+                      : "Mis mazos"}
               </button>
             ))}
           </div>

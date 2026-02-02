@@ -40,7 +40,7 @@ export const ProfileCurrentTournament = ({
   const currentRound =
     rounds.length > 0 ? rounds[rounds.length - 1] : undefined;
   const currentPlayer = players.find(
-    (player) => player.userId === currentUserId
+    (player) => player.userId === currentUserId,
   );
 
   // Ubica el match del usuario en la ronda actual para destacarlo primero.
@@ -48,7 +48,7 @@ export const ProfileCurrentTournament = ({
     ? currentRound.matches.findIndex(
         (match) =>
           match.player1Id === currentPlayer?.id ||
-          match.player2Id === currentPlayer?.id
+          match.player2Id === currentPlayer?.id,
       )
     : -1;
 
@@ -168,15 +168,15 @@ export const ProfileCurrentTournament = ({
                       tournament.status === "in_progress"
                         ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
                         : tournament.status === "finished"
-                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
-                        : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
+                          : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
                     }`}
                   >
                     {tournament.status === "in_progress"
                       ? "En progreso"
                       : tournament.status === "finished"
-                      ? "Finalizado"
-                      : "Pendiente"}
+                        ? "Finalizado"
+                        : "Pendiente"}
                   </span>
                 </div>
               </div>
@@ -217,7 +217,7 @@ export const ProfileCurrentTournament = ({
       {tournament && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
-            Clasificacion general
+            Clasificación general
           </h3>
 
           <TournamentRankingPanel

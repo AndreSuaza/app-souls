@@ -4,7 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { IoHeart, IoHeartOutline, IoTrophy } from "react-icons/io5";
 import clsx from "clsx";
-import { useMemo, useState, type MouseEvent, useEffect, useTransition } from "react";
+import {
+  useMemo,
+  useState,
+  type MouseEvent,
+  useEffect,
+  useTransition,
+} from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { toggleDeckLikeAction } from "@/actions";
 import type { Deck } from "@/interfaces";
@@ -30,6 +36,7 @@ export const DeckCard = ({
 }: Props) => {
   // Like solo visual; no persiste.
   const [liked, setLiked] = useState(isLiked);
+  const [likesCount, setLikesCount] = useState(mazo.likesCount);
   const [isPending, startTransition] = useTransition();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -49,6 +56,10 @@ export const DeckCard = ({
     setLiked(isLiked);
   }, [isLiked]);
 
+  useEffect(() => {
+    setLikesCount(mazo.likesCount);
+  }, [mazo.likesCount]);
+
   const handleLikeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -56,13 +67,15 @@ export const DeckCard = ({
       const query = searchParams?.toString();
       const currentUrl = query ? `${pathname}?${query}` : pathname;
       // Redirige al login preservando la ruta actual para volver despues de autenticar.
-      router.push(
-        `/auth/login?callbackUrl=${encodeURIComponent(currentUrl)}`,
-      );
+      router.push(`/auth/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
       return;
     }
     const nextLiked = !liked;
     setLiked(nextLiked);
+    setLikesCount((prev) => {
+      const nextCount = nextLiked ? prev + 1 : prev - 1;
+      return Math.max(0, nextCount);
+    });
     onLikedChange?.(mazo.id, nextLiked);
 
     startTransition(async () => {
@@ -77,6 +90,10 @@ export const DeckCard = ({
         // Revierte el estado visual si falla el guardado en DB.
         setLiked((prev) => {
           const reverted = !prev;
+          setLikesCount((count) => {
+            const nextCount = reverted ? count + 1 : count - 1;
+            return Math.max(0, nextCount);
+          });
           onLikedChange?.(mazo.id, reverted);
           return reverted;
         });
@@ -93,7 +110,7 @@ export const DeckCard = ({
           title="Marcar como favorito"
           aria-label="Marcar como favorito"
           className={clsx(
-            "absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-purple-950/70 text-slate-100 shadow-sm transition hover:border-purple-400 hover:text-purple-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
+            "absolute right-2 top-2 z-20 inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-200/80 px-2 text-purple-700 w-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
             isPending && "opacity-70 cursor-not-allowed",
           )}
           disabled={isPending}
@@ -101,7 +118,7 @@ export const DeckCard = ({
           <span className="relative block h-5 w-5">
             <IoHeart
               className={clsx(
-                "absolute inset-0 h-5 w-5 text-white transition-all duration-200 ease-out",
+                "absolute inset-0 h-5 w-5 text-[#ff3040] transition-all duration-200 ease-out",
                 liked ? "scale-110 opacity-100" : "scale-75 opacity-0",
               )}
             />
@@ -112,15 +129,18 @@ export const DeckCard = ({
               )}
             />
           </span>
+          <span className="text-[10px] font-semibold leading-none">
+            {likesCount}
+          </span>
         </button>
       )}
 
       <Link
         href={href ?? `/mazos/${mazo.id}`}
-        className="block h-full rounded-lg"
+        className="flex h-full flex-col rounded-lg"
         onClick={() => onCardClick?.(mazo)}
       >
-        <div className="relative h-56 w-full overflow-hidden">
+        <div className="relative h-56 w-full shrink-0 overflow-hidden">
           <Image
             src={`/cards/${mazo.imagen}.webp`}
             alt={mazo.name}
@@ -132,31 +152,35 @@ export const DeckCard = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
         </div>
 
-        <div className="bg-purple-950/70 px-3 py-3 shadow-sm dark:bg-tournament-dark-surface/80">
+        <div className="flex flex-1 flex-col bg-slate-200/80 px-3 py-3 shadow-sm dark:bg-tournament-dark-surface/80">
           <div className="flex items-start justify-between gap-3">
-            <div className="space-y-1">
-              <h3 className="line-clamp-2 text-xs font-semibold tracking-[0.12em] text-slate-100">
-                {mazo.name}
-              </h3>
-              <p className="text-xs text-slate-300">
-                {mazo.user.nickname ?? "Sin jugador"}
-              </p>
-              <p className="text-xs text-slate-300">{formattedDate}</p>
-            </div>
-
-            <div className="flex min-w-[96px] flex-col items-end justify-between gap-2 self-stretch">
-              <div className="rounded-md border border-purple-300/60 bg-purple-300/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-purple-100">
+            <h3 className="line-clamp-2 text-xs font-semibold tracking-[0.12em] text-slate-800 dark:text-slate-100">
+              {mazo.name}
+            </h3>
+            <div className="flex min-w-[96px] justify-end">
+              <div className="rounded-md border border-purple-300 bg-purple-200/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-purple-700 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100">
                 {hasArchetype ? archetypeName : "Sin arquetipo"}
               </div>
-              {mazo.tournamentId ? (
-                <div
-                  className="inline-flex h-8 w-8 items-center justify-center"
-                  title="Mazo usado en torneo"
-                >
-                  <IoTrophy className="h-5 w-5 text-amber-400" />
-                </div>
-              ) : null}
             </div>
+          </div>
+
+          <div className="mt-auto flex items-end justify-between gap-3 pt-2">
+            <div className="space-y-1">
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                {mazo.user.nickname ?? "Sin jugador"}
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-300">
+                {formattedDate}
+              </p>
+            </div>
+            {mazo.tournamentId ? (
+              <div
+                className="inline-flex h-8 w-8 items-center justify-center"
+                title="Mazo usado en torneo"
+              >
+                <IoTrophy className="h-5 w-5 text-amber-400" />
+              </div>
+            ) : null}
           </div>
         </div>
       </Link>

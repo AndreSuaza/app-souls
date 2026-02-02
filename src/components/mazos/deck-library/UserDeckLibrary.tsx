@@ -52,6 +52,7 @@ export function UserDeckLibrary({ archetypes, hasSession, onSelect }: Props) {
       fetchDecksAction={fetchDecks}
       disableUrlSync
       showLikeButton={false}
+      hideFilters
       getDeckHref={(deck) => `/laboratorio?id=${deck.id}`}
       onDeckSelect={onSelect ? () => onSelect() : undefined}
       isLoading={isLoading}

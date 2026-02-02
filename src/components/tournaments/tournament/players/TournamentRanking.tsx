@@ -46,7 +46,7 @@ export const TournamentRanking = () => {
   return (
     <div className="w-full rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
       <h2 className="mb-4 text-left text-lg font-bold text-slate-900 dark:text-white">
-        Clasificacion general
+        Clasificación general
       </h2>
 
       <RankingDesktopTable

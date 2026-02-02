@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import clsx from 'clsx';
-import { useMemo } from 'react';
-import { PaginationStats } from '@/components/ui/pagination/PaginationStats';
+import clsx from "clsx";
+import { useMemo } from "react";
+import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 
 interface ArchetypeOption {
   id: string;
@@ -10,10 +10,10 @@ interface ArchetypeOption {
 }
 
 export type DeckFiltersState = {
-  tournament: 'all' | 'with' | 'without';
-  date: 'recent' | 'old';
+  tournament: "all" | "with" | "without";
+  date: "recent" | "old";
   archetypeId: string;
-  likes: '' | '1';
+  likes: "" | "1";
 };
 
 interface Props {
@@ -26,14 +26,13 @@ interface Props {
 }
 
 const tournamentOptions = [
-  { value: 'all', label: 'Todos' },
-  { value: 'with', label: 'Con torneo' },
-  { value: 'without', label: 'Sin torneo' },
+  { value: "all", label: "Todos" },
+  { value: "with", label: "Jugados en torneos" },
 ] as const;
 
 const dateOptions = [
-  { value: 'recent', label: 'Mas recientes' },
-  { value: 'old', label: 'Mas antiguos' },
+  { value: "recent", label: "Mas recientes" },
+  { value: "old", label: "Mas antiguos" },
 ] as const;
 
 export function DeckFiltersBar({
@@ -42,7 +41,7 @@ export function DeckFiltersBar({
   onChange,
   isLoading = false,
   statsRangeText,
-  statsEntityLabel = 'mazos',
+  statsEntityLabel = "mazos",
 }: Props) {
   const archetypeOptions = useMemo(
     () =>
@@ -56,11 +55,10 @@ export function DeckFiltersBar({
     [archetypes],
   );
 
-  const labelClass =
-    'text-xs font-semibold text-slate-500 dark:text-slate-400';
+  const labelClass = "text-xs font-semibold text-slate-500 dark:text-slate-400";
   const selectClass =
-    'mt-1 w-full lg:w-auto min-w-0 lg:min-w-[180px] max-w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30';
-  const loadingClass = isLoading ? 'opacity-70' : '';
+    "mt-1 w-full lg:w-auto min-w-0 lg:min-w-[180px] max-w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30";
+  const loadingClass = isLoading ? "opacity-70" : "";
 
   return (
     <section className="py-1">
@@ -68,19 +66,20 @@ export function DeckFiltersBar({
         <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
           <span className={labelClass}>Torneo</span>
           <select
-              value={filters.tournament}
-              onChange={(event) =>
-                onChange({
-                  ...filters,
-                  tournament: event.target.value as DeckFiltersState['tournament'],
-                })
-              }
-              className={clsx(
-                selectClass,
-                loadingClass,
-                filters.tournament !== 'all' && 'border-purple-600',
-              )}
-              title="Filtrar por torneo"
+            value={filters.tournament}
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                tournament: event.target
+                  .value as DeckFiltersState["tournament"],
+              })
+            }
+            className={clsx(
+              selectClass,
+              loadingClass,
+              filters.tournament !== "all" && "border-purple-600",
+            )}
+            title="Filtrar por torneo"
             disabled={isLoading}
           >
             {tournamentOptions.map((option) => (
@@ -98,13 +97,13 @@ export function DeckFiltersBar({
             onChange={(event) =>
               onChange({
                 ...filters,
-                date: event.target.value as DeckFiltersState['date'],
+                date: event.target.value as DeckFiltersState["date"],
               })
             }
             className={clsx(
               selectClass,
               loadingClass,
-              filters.date !== 'recent' && 'border-purple-600',
+              filters.date !== "recent" && "border-purple-600",
             )}
             title="Ordenar por fecha"
             disabled={isLoading}
@@ -130,7 +129,7 @@ export function DeckFiltersBar({
             className={clsx(
               selectClass,
               loadingClass,
-              filters.archetypeId && 'border-purple-600',
+              filters.archetypeId && "border-purple-600",
             )}
             title="Filtrar por arquetipo"
             disabled={isLoading}
@@ -151,13 +150,13 @@ export function DeckFiltersBar({
             onChange={(event) =>
               onChange({
                 ...filters,
-                likes: event.target.value as DeckFiltersState['likes'],
+                likes: event.target.value as DeckFiltersState["likes"],
               })
             }
             className={clsx(
               selectClass,
               loadingClass,
-              filters.likes === '1' && 'border-purple-600',
+              filters.likes === "1" && "border-purple-600",
             )}
             title="Ordenar por relevancia"
             disabled={isLoading}

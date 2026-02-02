@@ -435,6 +435,7 @@ export const DeckCreator = ({
               hasSession={hasSession}
               archetypes={archetypes}
               deckId={deckId}
+              showUserDecksButton
               showSaveButton={totalCardsInDecks > 0}
               showEditButton={false}
               showCloneButton={false}

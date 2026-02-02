@@ -9,6 +9,7 @@ import type {
 } from "@/interfaces";
 import type { DeckFiltersInput } from "@/schemas";
 import { Pagination } from "@/components/ui/pagination/pagination";
+import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 import { usePathname } from "next/navigation";
 import {
   useCallback,
@@ -37,6 +38,7 @@ interface Props {
   getDeckHref?: (deck: Deck) => string;
   onDeckSelect?: (deck: Deck) => void;
   isLoading?: boolean;
+  hideFilters?: boolean;
 }
 
 const FILTER_KEYS = [
@@ -96,6 +98,7 @@ export function DeckLibrary({
   getDeckHref,
   onDeckSelect,
   isLoading = false,
+  hideFilters = false,
 }: Props) {
   const pathname = usePathname();
   const [decks, setDecks] = useState(initialDecks);
@@ -305,14 +308,25 @@ export function DeckLibrary({
 
   return (
     <div className="space-y-6">
-      <DeckFiltersBar
-        archetypes={archetypes}
-        filters={filters}
-        onChange={handleFiltersChange}
-        isLoading={isPending}
-        statsRangeText={statsRangeText}
-        isLoading={isLoading || isPending}
-      />
+      {hideFilters ? (
+        <div className="flex items-end justify-end pb-1">
+          <PaginationStats
+            rangeText={statsRangeText}
+            entityLabel="mazos"
+            className="w-full text-left sm:w-auto sm:text-right"
+            isLoading={isLoading || isPending}
+            loadingText="Actualizando mazos..."
+          />
+        </div>
+      ) : (
+        <DeckFiltersBar
+          archetypes={archetypes}
+          filters={filters}
+          onChange={handleFiltersChange}
+          isLoading={isLoading || isPending}
+          statsRangeText={statsRangeText}
+        />
+      )}
 
       <Pagination
         totalPages={totalPages}
