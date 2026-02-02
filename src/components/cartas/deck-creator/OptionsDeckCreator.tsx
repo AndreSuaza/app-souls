@@ -1,7 +1,7 @@
 ﻿"use client";
 
-import { Card, ArchetypeOption } from "@/interfaces";
-import { useState } from "react";
+import { Card, ArchetypeOption, Deck } from "@/interfaces";
+import { useMemo, useState } from "react";
 import {
   IoCopyOutline,
   IoHandRightOutline,
@@ -11,6 +11,7 @@ import {
   IoCreateOutline,
   IoSaveOutline,
 } from "react-icons/io5";
+import { VscSaveAll } from "react-icons/vsc";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { RiFullscreenExitLine, RiFullscreenLine } from "react-icons/ri";
@@ -19,8 +20,9 @@ import { Modal, Decklistimage, SaveDeckForm } from "@/components";
 import { UserDeckLibrary } from "@/components/mazos/deck-library/UserDeckLibrary";
 import Link from "next/link";
 import Image from "next/image";
-import { useAlertConfirmationStore, useUIStore } from "@/store";
+import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { saveDeck } from "@/actions";
 
 interface Decklist {
   count: number;
@@ -47,6 +49,8 @@ interface Props {
   showCloneButton?: boolean;
   deckId?: string;
   showUserDecksButton?: boolean;
+  deckData?: Deck | null;
+  isOwnerDeck?: boolean;
 }
 
 export const OptionsDeckCreator = ({
@@ -69,22 +73,91 @@ export const OptionsDeckCreator = ({
   showCloneButton = false,
   deckId,
   showUserDecksButton = false,
+  deckData,
+  isOwnerDeck = false,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
   const [showSharedDeck, setSharedDeck] = useState(false);
   const [showHandTest, setShowHandTest] = useState(false);
   const [showUserDecks, setShowUserDecks] = useState(false);
+  const [saveMode, setSaveMode] = useState<"create" | "edit" | "clone">(
+    "create",
+  );
+  const [saveInitialValues, setSaveInitialValues] = useState<{
+    name?: string;
+    description?: string | null;
+    isPrivate?: boolean;
+  } | null>(null);
   const [deckList, setDeckList] = useState("");
   const [copyState, setCopyState] = useState(false);
   const [mazoTest, setMazoText] = useState<Card[]>([]);
   const openAlertConfirmation = useAlertConfirmationStore(
     (state) => state.openAlertConfirmation,
   );
+  const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const SIN_ARQUETIPO_ID = "67c5d1595d56151173f8f23b";
+
+  const archetypeIdByName = useMemo(() => {
+    const map = new Map<string, string>();
+    archetypes.forEach((item) => {
+      const name = item.name?.trim().toLowerCase();
+      if (name && item.id) {
+        map.set(name, item.id);
+      }
+    });
+    return map;
+  }, [archetypes]);
+
+  const resolvedArchetypeId = useMemo(() => {
+    const allCards = [...deckListMain, ...deckListLimbo, ...deckListSide];
+    let total = 0;
+    let noArchetypeCount = 0;
+    const counts: Record<string, number> = {};
+
+    const resolveCardArchetypeId = (card: Card) => {
+      const entry = card.archetypes.find((arch) => {
+        const name = arch.name?.trim();
+        return Boolean(name);
+      });
+      if (!entry) return undefined;
+      if (entry.id) return entry.id;
+      const name = entry.name?.trim().toLowerCase();
+      if (name) return archetypeIdByName.get(name);
+      return undefined;
+    };
+
+    allCards.forEach((deckItem) => {
+      const count = deckItem.count;
+      total += count;
+      const archetypeId = resolveCardArchetypeId(deckItem.card);
+      if (!archetypeId) {
+        noArchetypeCount += count;
+        return;
+      }
+      counts[archetypeId] = (counts[archetypeId] ?? 0) + count;
+    });
+
+    if (total === 0) return SIN_ARQUETIPO_ID;
+    if (noArchetypeCount / total > 0.5) return SIN_ARQUETIPO_ID;
+
+    let maxId = "";
+    let maxCount = -1;
+    Object.entries(counts).forEach(([id, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        maxId = id;
+      }
+    });
+
+    return maxId || SIN_ARQUETIPO_ID;
+  }, [deckListMain, deckListLimbo, deckListSide, archetypeIdByName]);
 
   const copyToClipboard = () => {
     setCopyState(true);
@@ -172,7 +245,49 @@ export const OptionsDeckCreator = ({
       router.push(`/auth/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
       return;
     }
+    setSaveMode("create");
+    setSaveInitialValues(null);
     setShowSaveDeck(true);
+  };
+
+  const openSaveModal = (mode: "edit" | "clone") => {
+    setSaveMode(mode);
+    setSaveInitialValues({
+      name: deckData?.name ?? "",
+      description: deckData?.description ?? "",
+      isPrivate: deckData ? !deckData.visible : false,
+    });
+    setShowSaveDeck(true);
+  };
+
+  const handleQuickSave = () => {
+    if (!deckData) return;
+    openAlertConfirmation({
+      text: "¿Deseas guardar los cambios del mazo?",
+      description: "Se guardarán los cambios en las cartas actuales.",
+      action: async () => {
+        showLoading("Guardando mazo...");
+        const resp = await saveDeck({
+          name: deckData.name,
+          description: deckData.description ?? "",
+          archetypesId: resolvedArchetypeId,
+          visible: deckData.visible ?? false,
+          cardsNumber: mainDeckCount,
+          deckList: deckListText(),
+          imgDeck: deckImage(),
+          deckId: deckData.id,
+        });
+        hideLoading();
+
+        if (resp && resp.message) {
+          showToast(resp.message, "warning");
+          return false;
+        }
+
+        showToast("Mazo guardado correctamente.", "success");
+        return true;
+      },
+    });
   };
 
   const closeDeckImage = () => {
@@ -197,6 +312,9 @@ export const OptionsDeckCreator = ({
   const xShareLink = deckList
     ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(deckList)}`
     : "https://twitter.com/intent/tweet";
+
+  const resolvedDeckId =
+    saveMode === "clone" ? undefined : saveMode === "edit" ? deckData?.id : deckId;
 
   return (
     <>
@@ -287,33 +405,70 @@ export const OptionsDeckCreator = ({
         </div>
         {showSaveControls && (
           <div className="flex items-center gap-2 h-full">
-            {showEditButton && editDeckUrl && (
-              <Link
-                href={editDeckUrl}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-blue-500 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-200"
-              >
-                Editar
-                <IoCreateOutline className="h-4 w-4" />
-              </Link>
-            )}
-            {showCloneButton && cloneDeckUrl && (
-              <Link
-                href={cloneDeckUrl}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-purple-200 bg-purple-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-purple-500 dark:border-purple-500/40 dark:bg-purple-500/20 dark:text-purple-200"
-              >
-                Clonar
-                <IoCopyOutline className="h-4 w-4" />
-              </Link>
-            )}
-            {showSaveButton && (
-              <button
-                type="button"
-                onClick={handleOpenSave}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-200"
-              >
-                Guardar
-                <IoSaveOutline className="h-4 w-4" />
-              </button>
+            {isOwnerDeck ? (
+              <>
+                {showEditButton && (
+                  <button
+                    type="button"
+                    onClick={() => openSaveModal("edit")}
+                    title="Editar mazo"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-blue-200 bg-blue-600 text-white shadow-sm transition hover:bg-blue-500 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-200"
+                  >
+                    <IoCreateOutline className="h-4 w-4" />
+                  </button>
+                )}
+                {showCloneButton && (
+                  <button
+                    type="button"
+                    onClick={() => openSaveModal("clone")}
+                    title="Clonar mazo"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-purple-200 bg-purple-600 text-white shadow-sm transition hover:bg-purple-500 dark:border-purple-500/40 dark:bg-purple-500/20 dark:text-purple-200"
+                  >
+                    <VscSaveAll className="h-4 w-4" />
+                  </button>
+                )}
+                {showSaveButton && (
+                  <button
+                    type="button"
+                    onClick={handleQuickSave}
+                    title="Guardar cambios"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-600 text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-200"
+                  >
+                    <IoSaveOutline className="h-4 w-4" />
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                {showEditButton && editDeckUrl && (
+                  <Link
+                    href={editDeckUrl}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-blue-500 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-200"
+                  >
+                    Editar
+                    <IoCreateOutline className="h-4 w-4" />
+                  </Link>
+                )}
+                {showCloneButton && cloneDeckUrl && (
+                  <Link
+                    href={cloneDeckUrl}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-purple-200 bg-purple-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-purple-500 dark:border-purple-500/40 dark:bg-purple-500/20 dark:text-purple-200"
+                  >
+                    Clonar
+                    <IoCopyOutline className="h-4 w-4" />
+                  </Link>
+                )}
+                {showSaveButton && (
+                  <button
+                    type="button"
+                    onClick={handleOpenSave}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-200"
+                  >
+                    Guardar
+                    <IoSaveOutline className="h-4 w-4" />
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}
@@ -454,17 +609,23 @@ export const OptionsDeckCreator = ({
           <div className="flex max-h-[80vh] w-full flex-col overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
               <h1 className="text-lg font-bold text-slate-900 dark:text-white sm:text-2xl">
-                Guardar mazo
+                {saveMode === "edit"
+                  ? "Editar mazo"
+                  : saveMode === "clone"
+                    ? "Clonar mazo"
+                    : "Guardar mazo"}
               </h1>
             </div>
             <div className="overflow-auto">
               <SaveDeckForm
                 deck={deckListText()}
                 imgDeck={deckImage()}
-                archetypes={archetypes}
                 mainDeckCount={mainDeckCount}
                 onClose={() => setShowSaveDeck(false)}
-                deckId={deckId}
+                deckId={resolvedDeckId}
+                initialValues={saveInitialValues ?? undefined}
+                mode={saveMode}
+                autoArchetypeId={resolvedArchetypeId}
               />
             </div>
           </div>

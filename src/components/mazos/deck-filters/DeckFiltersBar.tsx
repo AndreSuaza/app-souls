@@ -27,7 +27,7 @@ interface Props {
 
 const tournamentOptions = [
   { value: "all", label: "Todos" },
-  { value: "with", label: "Jugados en torneos" },
+  { value: "with", label: "Competitivos" },
 ] as const;
 
 const dateOptions = [

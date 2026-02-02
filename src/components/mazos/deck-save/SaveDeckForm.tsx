@@ -2,45 +2,63 @@
 
 import clsx from "clsx";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { saveDeck } from "@/actions";
-import type { ArchetypeOption } from "@/interfaces";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { MdError } from "react-icons/md";
 
 type FormInputs = {
   name: string;
   description: string;
-  archetypesId: string;
   cards: string;
   visible: boolean;
   image: string;
   deckId?: string;
 };
 
+interface InitialValues {
+  name?: string;
+  description?: string | null;
+  isPrivate?: boolean;
+}
+
 interface Props {
   deck: string;
   imgDeck: string;
-  archetypes?: ArchetypeOption[];
   mainDeckCount?: number;
   onClose?: () => void;
   deckId?: string;
+  initialValues?: InitialValues;
+  mode?: "create" | "edit" | "clone";
+  autoArchetypeId?: string;
 }
+
+const SIN_ARQUETIPO_ID = "67c5d1595d56151173f8f23b";
 
 export const SaveDeckForm = ({
   deck,
   imgDeck,
-  archetypes = [],
   mainDeckCount = 0,
   onClose,
   deckId,
+  initialValues,
+  mode = "create",
+  autoArchetypeId,
 }: Props) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
     watch,
-  } = useForm<FormInputs>();
+    reset,
+  } = useForm<FormInputs>({
+    defaultValues: {
+      name: initialValues?.name ?? "",
+      description: initialValues?.description ?? "",
+      // "visible" en el form representa el checkbox de privado.
+      visible: initialValues?.isPrivate ?? false,
+    },
+  });
   const [error, setError] = useState<string | null>(null);
   const openAlertConfirmation = useAlertConfirmationStore(
     (state) => state.openAlertConfirmation,
@@ -50,6 +68,15 @@ export const SaveDeckForm = ({
   const hideLoading = useUIStore((state) => state.hideLoading);
   const isPrivate = watch("visible");
   const shouldWarnPublic = !isPrivate && mainDeckCount < 40;
+
+  useEffect(() => {
+    if (!initialValues) return;
+    reset({
+      name: initialValues.name ?? "",
+      description: initialValues.description ?? "",
+      visible: initialValues.isPrivate ?? false,
+    });
+  }, [initialValues, reset]);
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     if (shouldWarnPublic) {
@@ -63,13 +90,29 @@ export const SaveDeckForm = ({
       return;
     }
 
+    const confirmationText =
+      mode === "edit"
+        ? "¿Deseas guardar los cambios del mazo?"
+        : mode === "clone"
+          ? "¿Deseas clonar este mazo?"
+          : "¿Deseas guardar este mazo?";
+    const confirmationDescription =
+      mode === "edit"
+        ? "Se guardará la información y las cartas que acabas de modificar."
+        : mode === "clone"
+          ? "Se creará un nuevo mazo con las mismas cartas."
+          : "Se guardará el mazo con la configuración actual.";
+
+    const resolvedArchetypeId = autoArchetypeId ?? SIN_ARQUETIPO_ID;
+
     openAlertConfirmation({
-      text: "¿Deseas guardar este mazo?",
-      description: "Se guardará el mazo con la configuración actual.",
+      text: confirmationText,
+      description: confirmationDescription,
       action: async () => {
         showLoading("Guardando mazo...");
         const resp = await saveDeck({
           ...data,
+          archetypesId: resolvedArchetypeId,
           deckList: deck,
           imgDeck,
           cardsNumber: mainDeckCount,
@@ -132,42 +175,6 @@ export const SaveDeckForm = ({
           <div className="flex items-center gap-1 text-xs text-red-500">
             <MdError size={14} />
             <span>{errors.name.message}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-xs font-semibold tracking-[0.12em] text-slate-500">
-          Arquetipo Principal
-        </label>
-        <select
-          className={clsx(
-            "w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500",
-            {
-              "border-red-500": errors.archetypesId,
-              "border-tournament-dark-accent": !errors.archetypesId,
-            },
-          )}
-          {...register("archetypesId", {
-            required: {
-              value: true,
-              message: "El campo 'Arquetipo' es requerido",
-            },
-          })}
-        >
-          <option value="">-- Selecciona --</option>
-          {archetypes.map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.name && option.name.trim().length > 0
-                ? option.name
-                : "Sin arquetipo"}
-            </option>
-          ))}
-        </select>
-        {errors.archetypesId && (
-          <div className="flex items-center gap-1 text-xs text-red-500">
-            <MdError size={14} />
-            <span>{errors.archetypesId.message}</span>
           </div>
         )}
       </div>

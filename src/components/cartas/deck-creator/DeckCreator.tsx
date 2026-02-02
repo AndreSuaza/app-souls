@@ -8,7 +8,7 @@ import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
 import { CardDetail } from "../card-detail/CardDetail";
 import { getPaginatedCards } from "@/actions";
-import type { PaginationFilters, Card, ArchetypeOption } from "@/interfaces";
+import type { PaginationFilters, Card, ArchetypeOption, Deck } from "@/interfaces";
 import { useUIStore } from "@/store";
 
 interface Propertie {
@@ -38,6 +38,8 @@ interface Props {
   hasSession?: boolean;
   archetypes?: ArchetypeOption[];
   deckId?: string;
+  deckData?: Deck | null;
+  isOwnerDeck?: boolean;
 }
 
 const addCardLogic = (
@@ -108,6 +110,8 @@ export const DeckCreator = ({
   hasSession = false,
   archetypes = [],
   deckId,
+  deckData,
+  isOwnerDeck = false,
 }: Props) => {
   const hideLoading = useUIStore((state) => state.hideLoading);
   const hasImportedRef = useRef(false);
@@ -437,8 +441,10 @@ export const DeckCreator = ({
               deckId={deckId}
               showUserDecksButton
               showSaveButton={totalCardsInDecks > 0}
-              showEditButton={false}
-              showCloneButton={false}
+              showEditButton={isOwnerDeck}
+              showCloneButton={isOwnerDeck}
+              deckData={deckData}
+              isOwnerDeck={isOwnerDeck}
             />
           </div>
           <ShowDeck

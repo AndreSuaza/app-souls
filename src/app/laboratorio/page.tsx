@@ -103,6 +103,8 @@ export default async function Cards({ searchParams }: Props) {
   }
 
   const { mainDeck, sideDeck } = await getDecksByIds(decklistCards);
+  const isOwnerDeck =
+    Boolean(session?.user?.idd) && deckUser?.userId === session?.user?.idd;
 
   return (
     <DeckCreator
@@ -130,6 +132,8 @@ export default async function Cards({ searchParams }: Props) {
       hasSession={Boolean(session?.user)}
       archetypes={deckFilters.archetypes}
       deckId={deckUser?.id}
+      deckData={deckUser}
+      isOwnerDeck={isOwnerDeck}
     />
   );
 }

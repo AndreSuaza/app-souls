@@ -23,6 +23,7 @@ export interface Deck {
   cards: string;
   likesCount: number;
   createdAt: Date | string;
+  visible?: boolean;
   tournamentId?: string | null;
   userId?: string;
   user: DeckUser;
