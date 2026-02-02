@@ -1,7 +1,13 @@
 "use client";
 
 import { getDecksFilteredAction } from "@/actions";
-import type { ArchetypeOption, Deck, DeckPagination } from "@/interfaces";
+import type {
+  ArchetypeOption,
+  Deck,
+  DeckFilteredResult,
+  DeckPagination,
+} from "@/interfaces";
+import type { DeckFiltersInput } from "@/schemas";
 import { Pagination } from "@/components/ui/pagination/pagination";
 import { usePathname } from "next/navigation";
 import {
@@ -25,6 +31,12 @@ interface Props {
   archetypes: ArchetypeOption[];
   initialFilters: DeckFiltersState;
   hasSession: boolean;
+  fetchDecksAction?: (input: DeckFiltersInput) => Promise<DeckFilteredResult>;
+  disableUrlSync?: boolean;
+  showLikeButton?: boolean;
+  getDeckHref?: (deck: Deck) => string;
+  onDeckSelect?: (deck: Deck) => void;
+  isLoading?: boolean;
 }
 
 const FILTER_KEYS = [
@@ -78,6 +90,12 @@ export function DeckLibrary({
   archetypes,
   initialFilters,
   hasSession,
+  fetchDecksAction,
+  disableUrlSync = false,
+  showLikeButton = true,
+  getDeckHref,
+  onDeckSelect,
+  isLoading = false,
 }: Props) {
   const pathname = usePathname();
   const [decks, setDecks] = useState(initialDecks);
@@ -158,6 +176,7 @@ export function DeckLibrary({
 
   const updateUrlWithState = useCallback(
     (nextFilters: DeckFiltersState, page: number) => {
+      if (disableUrlSync) return;
       if (typeof window === "undefined") return;
 
       const params = new URLSearchParams(window.location.search);
@@ -188,16 +207,17 @@ export function DeckLibrary({
       const nextUrl = query ? `${pathname}?${query}` : pathname;
       window.history.replaceState(null, "", nextUrl);
     },
-    [pathname],
+    [pathname, disableUrlSync],
   );
 
   const fetchDecks = useCallback(
     (nextFilters: DeckFiltersState, page: number) => {
       const nextRequestId = requestIdRef.current + 1;
       requestIdRef.current = nextRequestId;
+      const fetchAction = fetchDecksAction ?? getDecksFilteredAction;
 
       startTransition(async () => {
-        const result = await getDecksFilteredAction({
+        const result = await fetchAction({
           tournament: nextFilters.tournament,
           archetypeId: nextFilters.archetypeId || undefined,
           date: nextFilters.date,
@@ -215,7 +235,7 @@ export function DeckLibrary({
         setLikedDeckIds(result.likedDeckIds);
       });
     },
-    [],
+    [fetchDecksAction],
   );
 
   const handleFiltersChange = useCallback(
@@ -240,6 +260,7 @@ export function DeckLibrary({
   );
 
   useEffect(() => {
+    if (disableUrlSync) return;
     if (typeof window === "undefined") return;
 
     const handlePopState = () => {
@@ -254,7 +275,7 @@ export function DeckLibrary({
     // Mantiene filtros/datos sincronizados al navegar con back/forward.
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [fetchDecks]);
+  }, [fetchDecks, disableUrlSync]);
 
   const statsRangeText = useMemo(() => {
     const range = formatStatsRange(currentPage, perPage, totalCount);
@@ -290,6 +311,7 @@ export function DeckLibrary({
         onChange={handleFiltersChange}
         isLoading={isPending}
         statsRangeText={statsRangeText}
+        isLoading={isLoading || isPending}
       />
 
       <Pagination
@@ -316,6 +338,9 @@ export function DeckLibrary({
                         hasSession={hasSession}
                         isLiked={likedDecksSet.has(deck.id)}
                         onLikedChange={handleLikedChange}
+                        showLikeButton={showLikeButton}
+                        href={getDeckHref ? getDeckHref(deck) : undefined}
+                        onCardClick={onDeckSelect}
                       />
                     </li>
                   ))}

@@ -9,6 +9,7 @@ import { ShowDeck } from "./ShowDeck";
 import { CardDetail } from "../card-detail/CardDetail";
 import { getPaginatedCards } from "@/actions";
 import type { PaginationFilters, Card, ArchetypeOption } from "@/interfaces";
+import { useUIStore } from "@/store";
 
 interface Propertie {
   id: string;
@@ -108,7 +109,9 @@ export const DeckCreator = ({
   archetypes = [],
   deckId,
 }: Props) => {
+  const hideLoading = useUIStore((state) => state.hideLoading);
   const hasImportedRef = useRef(false);
+  const lastDeckSignatureRef = useRef<string | null>(null);
   const [cardsState, setCardsState] = useState(cards);
   const [totalPagesState, setTotalPagesState] = useState(totalPages);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -131,9 +134,24 @@ export const DeckCreator = ({
   const importDeck = useCallback(() => {
     const hasIncomingDeck =
       (mainDeck?.length ?? 0) > 0 || (sideDeck?.length ?? 0) > 0;
+    const nextSignature = JSON.stringify({
+      main: (mainDeck ?? []).map((item) => ({
+        id: item.card.id,
+        count: item.count,
+      })),
+      side: (sideDeck ?? []).map((item) => ({
+        id: item.card.id,
+        count: item.count,
+      })),
+    });
 
     // Evita sobrescribir el mazo del usuario cuando cambian los filtros/busquedas.
-    if (hasImportedRef.current || !hasIncomingDeck) return;
+    if (!hasIncomingDeck) return;
+    if (lastDeckSignatureRef.current !== nextSignature) {
+      hasImportedRef.current = false;
+      lastDeckSignatureRef.current = nextSignature;
+    }
+    if (hasImportedRef.current) return;
 
     if (mainDeck) {
       const main = mainDeck.filter(
@@ -158,7 +176,9 @@ export const DeckCreator = ({
     }
 
     hasImportedRef.current = true;
-  }, [mainDeck, sideDeck]);
+    // Oculta el overlay cuando el mazo seleccionado ya fue importado.
+    hideLoading();
+  }, [mainDeck, sideDeck, hideLoading]);
 
   useEffect(() => {
     importDeck();

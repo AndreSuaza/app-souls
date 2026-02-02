@@ -6,6 +6,7 @@ import {
   IoCopyOutline,
   IoHandRightOutline,
   IoImageOutline,
+  IoLibraryOutline,
   IoShareSocialOutline,
   IoCreateOutline,
   IoSaveOutline,
@@ -15,9 +16,10 @@ import { FaXTwitter } from "react-icons/fa6";
 import { RiFullscreenExitLine, RiFullscreenLine } from "react-icons/ri";
 import { RiEraserLine } from "react-icons/ri";
 import { Modal, Decklistimage, SaveDeckForm } from "@/components";
+import { UserDeckLibrary } from "@/components/mazos/deck-library/UserDeckLibrary";
 import Link from "next/link";
 import Image from "next/image";
-import { useAlertConfirmationStore } from "@/store";
+import { useAlertConfirmationStore, useUIStore } from "@/store";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface Decklist {
@@ -70,12 +72,14 @@ export const OptionsDeckCreator = ({
   const [showSaveDeck, setShowSaveDeck] = useState(false);
   const [showSharedDeck, setSharedDeck] = useState(false);
   const [showHandTest, setShowHandTest] = useState(false);
+  const [showUserDecks, setShowUserDecks] = useState(false);
   const [deckList, setDeckList] = useState("");
   const [copyState, setCopyState] = useState(false);
   const [mazoTest, setMazoText] = useState<Card[]>([]);
   const openAlertConfirmation = useAlertConfirmationStore(
     (state) => state.openAlertConfirmation,
   );
+  const showLoading = useUIStore((state) => state.showLoading);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -244,6 +248,16 @@ export const OptionsDeckCreator = ({
           >
             <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
           </button>
+
+          {hasSession && (
+            <button
+              className={actionButtonClass}
+              title="Ver mis mazos"
+              onClick={() => setShowUserDecks(true)}
+            >
+              <IoLibraryOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+            </button>
+          )}
 
           <button
             className={actionButtonClass}
@@ -452,6 +466,30 @@ export const OptionsDeckCreator = ({
                 mainDeckCount={mainDeckCount}
                 onClose={() => setShowSaveDeck(false)}
                 deckId={deckId}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+      {showUserDecks && (
+        <Modal
+          className="left-1/2 top-1/2 w-[94%] max-w-5xl -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface overflow-hidden"
+          close={() => setShowUserDecks(false)}
+        >
+          <div className="flex max-h-[80vh] w-full flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white sm:text-2xl">
+                Mis mazos
+              </h1>
+            </div>
+            <div className="overflow-auto px-5 pb-6 pt-5">
+              <UserDeckLibrary
+                archetypes={archetypes}
+                hasSession={hasSession}
+                onSelect={() => {
+                  showLoading("Cargando mazo...");
+                  setShowUserDecks(false);
+                }}
               />
             </div>
           </div>

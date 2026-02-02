@@ -14,6 +14,9 @@ interface Props {
   hasSession?: boolean;
   isLiked?: boolean;
   onLikedChange?: (deckId: string, liked: boolean) => void;
+  showLikeButton?: boolean;
+  href?: string;
+  onCardClick?: (deck: Deck) => void;
 }
 
 export const DeckCard = ({
@@ -21,6 +24,9 @@ export const DeckCard = ({
   hasSession = false,
   isLiked = false,
   onLikedChange,
+  showLikeButton = true,
+  href,
+  onCardClick,
 }: Props) => {
   // Like solo visual; no persiste.
   const [liked, setLiked] = useState(isLiked);
@@ -80,34 +86,40 @@ export const DeckCard = ({
 
   return (
     <article className="group relative h-full w-full border-2 border-slate-200 bg-transparent rounded-lg shadow-sm transition-all hover:shadow-md dark:border-tournament-dark-border overflow-hidden hover:-mt-2 duration-300">
-      <button
-        type="button"
-        onClick={handleLikeClick}
-        title="Marcar como favorito"
-        aria-label="Marcar como favorito"
-        className={clsx(
-          "absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-purple-950/70 text-slate-100 shadow-sm transition hover:border-purple-400 hover:text-purple-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
-          isPending && "opacity-70 cursor-not-allowed",
-        )}
-        disabled={isPending}
-      >
-        <span className="relative block h-5 w-5">
-          <IoHeart
-            className={clsx(
-              "absolute inset-0 h-5 w-5 text-white transition-all duration-200 ease-out",
-              liked ? "scale-110 opacity-100" : "scale-75 opacity-0",
-            )}
-          />
-          <IoHeartOutline
-            className={clsx(
-              "absolute inset-0 h-5 w-5 transition-all duration-200 ease-out",
-              liked ? "scale-75 opacity-0" : "scale-100 opacity-100",
-            )}
-          />
-        </span>
-      </button>
+      {showLikeButton && (
+        <button
+          type="button"
+          onClick={handleLikeClick}
+          title="Marcar como favorito"
+          aria-label="Marcar como favorito"
+          className={clsx(
+            "absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-purple-950/70 text-slate-100 shadow-sm transition hover:border-purple-400 hover:text-purple-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
+            isPending && "opacity-70 cursor-not-allowed",
+          )}
+          disabled={isPending}
+        >
+          <span className="relative block h-5 w-5">
+            <IoHeart
+              className={clsx(
+                "absolute inset-0 h-5 w-5 text-white transition-all duration-200 ease-out",
+                liked ? "scale-110 opacity-100" : "scale-75 opacity-0",
+              )}
+            />
+            <IoHeartOutline
+              className={clsx(
+                "absolute inset-0 h-5 w-5 transition-all duration-200 ease-out",
+                liked ? "scale-75 opacity-0" : "scale-100 opacity-100",
+              )}
+            />
+          </span>
+        </button>
+      )}
 
-      <Link href={`/mazos/${mazo.id}`} className="block h-full rounded-lg">
+      <Link
+        href={href ?? `/mazos/${mazo.id}`}
+        className="block h-full rounded-lg"
+        onClick={() => onCardClick?.(mazo)}
+      >
         <div className="relative h-56 w-full overflow-hidden">
           <Image
             src={`/cards/${mazo.imagen}.webp`}
