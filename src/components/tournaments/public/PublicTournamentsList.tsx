@@ -1,13 +1,14 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { IoCalendarOutline } from "react-icons/io5";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PaginationLine } from "@/components/ui";
 import { PublicTournamentsFilters } from "./PublicTournamentsFilters";
 import { PublicTournamentsTable } from "./PublicTournamentsTable";
 import { PublicTournamentsMobileList } from "./PublicTournamentsMobileList";
 
-type TournamentStatus = "pending" | "in_progress";
+type TournamentStatus = "pending" | "in_progress" | "finished";
 
 type TournamentItem = {
   id: string;
@@ -54,6 +55,7 @@ const filters: Array<{ value: FilterKey; label: string }> = [
   { value: "all", label: "Todos" },
   { value: "in_progress", label: "En progreso" },
   { value: "pending", label: "Programados" },
+  { value: "finished", label: "Finalizados" },
 ];
 
 export function PublicTournamentsList({ tournaments }: Props) {
@@ -61,22 +63,57 @@ export function PublicTournamentsList({ tournaments }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [selectedDate, setSelectedDate] = useState("");
   const prevFilterRef = useRef(activeFilter);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+
+  const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const minDate = "2025-12-01";
+
+  const handleDatePickerOpen = () => {
+    const input = dateInputRef.current;
+    if (!input) return;
+
+    // Abrimos el selector desde el contenedor para que toda el área sea clicable.
+    const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
+    if (typeof pickerInput.showPicker === "function") {
+      pickerInput.showPicker();
+      return;
+    }
+
+    input.focus();
+    input.click();
+  };
 
   const ordered = useMemo(() => {
-    // Mantiene el orden con torneos en progreso primero.
+    // Mantiene los finalizados al final cuando se muestran todos.
     return [...tournaments].sort((a, b) => {
-      const weightA = a.status === "in_progress" ? 0 : 1;
-      const weightB = b.status === "in_progress" ? 0 : 1;
+      const weight = (status: TournamentStatus) => {
+        if (status === "in_progress") return 0;
+        if (status === "pending") return 1;
+        return 2;
+      };
+      const weightA = weight(a.status);
+      const weightB = weight(b.status);
       if (weightA !== weightB) return weightA - weightB;
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
   }, [tournaments]);
 
   const filtered = useMemo(() => {
-    if (activeFilter === "all") return ordered;
-    return ordered.filter((tournament) => tournament.status === activeFilter);
-  }, [activeFilter, ordered]);
+    const byStatus =
+      activeFilter === "all"
+        ? ordered
+        : ordered.filter((tournament) => tournament.status === activeFilter);
+
+    if (!selectedDate) return byStatus;
+    return byStatus.filter((tournament) => {
+      const tournamentDay = new Date(tournament.date)
+        .toISOString()
+        .slice(0, 10);
+      return tournamentDay === selectedDate;
+    });
+  }, [activeFilter, ordered, selectedDate]);
 
   const pageParam = Number(searchParams.get("page") ?? 1);
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
@@ -89,14 +126,14 @@ export function PublicTournamentsList({ tournaments }: Props) {
     // Reinicia la pagina cuando cambia el filtro.
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
-    router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [activeFilter, pathname, router, searchParams]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
       const params = new URLSearchParams(searchParams);
       params.set("page", totalPages.toString());
-      router.replace(`${pathname}?${params.toString()}`);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
   }, [currentPage, totalPages, pathname, router, searchParams]);
 
@@ -116,6 +153,33 @@ export function PublicTournamentsList({ tournaments }: Props) {
           filters={filters}
           activeFilter={activeFilter}
           onChange={setActiveFilter}
+          leading={
+            <div className="relative">
+              <input
+                ref={dateInputRef}
+                id="public-tournaments-date"
+                type="date"
+                value={selectedDate}
+                min={minDate}
+                max={todayIso}
+                onChange={(event) => setSelectedDate(event.target.value)}
+                title="Filtrar por fecha"
+                aria-label="Filtrar por fecha"
+                className="sr-only"
+              />
+              <button
+                type="button"
+                onClick={handleDatePickerOpen}
+                aria-label="Seleccionar fecha"
+                className="flex h-9 items-center gap-2 rounded-lg bg-slate-100 px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white"
+              >
+                {selectedDate && (
+                  <span className="text-xs font-semibold">{selectedDate}</span>
+                )}
+                <IoCalendarOutline className="h-4 w-4" />
+              </button>
+            </div>
+          }
         />
       </div>
 

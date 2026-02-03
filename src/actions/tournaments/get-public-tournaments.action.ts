@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 
-type PublicTournamentStatus = "pending" | "in_progress";
+type PublicTournamentStatus = "pending" | "in_progress" | "finished";
 
 export const getPublicTournaments = async () => {
   try {
@@ -30,7 +30,7 @@ export const getPublicTournaments = async () => {
       prisma.tournament.findMany({
         where: {
           status: {
-            in: ["in_progress", "pending"],
+            in: ["in_progress", "pending", "finished"],
           },
           typeTournament: {
             name: "Tier 3",
@@ -55,8 +55,13 @@ export const getPublicTournaments = async () => {
     ]);
 
     const ordered = [...tournaments].sort((a, b) => {
-      const weightA = a.status === "in_progress" ? 0 : 1;
-      const weightB = b.status === "in_progress" ? 0 : 1;
+      const weight = (status: PublicTournamentStatus) => {
+        if (status === "in_progress") return 0;
+        if (status === "pending") return 1;
+        return 2;
+      };
+      const weightA = weight(a.status as PublicTournamentStatus);
+      const weightB = weight(b.status as PublicTournamentStatus);
 
       if (weightA !== weightB) return weightA - weightB;
       return b.date.getTime() - a.date.getTime();

@@ -107,6 +107,7 @@ export const PaginationLine = ({
       <Link
         className={className}
         href={createPageUrl(pageNumber)}
+        scroll={false}
         aria-current={isActive ? "page" : undefined}
       >
         {pageNumber}
@@ -135,7 +136,7 @@ export const PaginationLine = ({
     }
 
     return (
-      <Link className={sharedClass} href={createPageUrl(targetPage)}>
+      <Link className={sharedClass} href={createPageUrl(targetPage)} scroll={false}>
         {icon}
       </Link>
     );
