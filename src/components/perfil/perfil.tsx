@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { IoImageOutline } from "react-icons/io5";
+import { IoAddOutline, IoImageOutline } from "react-icons/io5";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
 import {
@@ -18,6 +19,7 @@ import {
 } from "@/interfaces";
 import { ProfileCurrentTournament } from "./ProfileCurrentTournament";
 import { ProfileTournamentHistory } from "./ProfileTournamentHistory";
+import { UserDeckLibrary } from "../mazos/deck-library/UserDeckLibrary";
 
 interface User {
   name?: string | null;
@@ -77,13 +79,19 @@ export const Pefil = ({
   activeTournament,
   tournaments,
 }: Props) => {
+  // Mantiene el limite alineado con save-deck.action.ts para no ofrecer mas mazos de los permitidos.
+  const MAX_USER_DECKS = 12;
   const [activeTournamentState, setActiveTournamentState] =
     useState<ActiveTournamentData | null>(activeTournament);
   const hasCurrentTournament = Boolean(
     activeTournamentState?.currentTournament,
   );
   const [activeTab, setActiveTab] = useState<TabKey>(
-    activeTournament ? "current" : "history",
+    user.role === "player"
+      ? activeTournament
+        ? "current"
+        : "history"
+      : "mazos",
   );
   const [selectedTournament, setSelectedTournament] =
     useState<TournamentSnapshot | null>(null);
@@ -102,7 +110,8 @@ export const Pefil = ({
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
-  const { update } = useSession();
+  const { data: session, update } = useSession();
+  const hasSession = Boolean(session?.user?.idd ?? user.email);
 
   const handleSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar.imageUrl);
@@ -148,7 +157,7 @@ export const Pefil = ({
   if (hasSelectedTournament) {
     tabs.push("selected");
   }
-  // "mazos" queda oculto temporalmente para activarlo en futuro.
+  tabs.push("mazos");
 
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab);
@@ -331,7 +340,7 @@ export const Pefil = ({
         )}
 
         {/* Tabs */}
-        {isPlayer && (
+        {tabs.length > 0 && (
           <div className="flex mt-10 border-b border-slate-200 dark:border-tournament-dark-border w-full justify-center md:justify-start">
             {tabs.map((tab) => (
               <button
@@ -365,6 +374,8 @@ export const Pefil = ({
                 setHasShownInProgressWarning(true)
               }
               onRefreshTournament={handleRefreshTournament}
+              enableDeckAssociation
+              hasSession={hasSession}
             />
           )}
 
@@ -380,6 +391,8 @@ export const Pefil = ({
                   setHasShownInProgressWarning(true)
                 }
                 onRefreshTournament={handleRefreshTournament}
+                enableDeckAssociation
+                hasSession={hasSession}
               />
             )}
 
@@ -387,6 +400,26 @@ export const Pefil = ({
             <ProfileTournamentHistory
               tournaments={tournaments}
               onSelectTournament={handleHistorySelect}
+            />
+          )}
+
+          {activeTab === "mazos" && (
+            <UserDeckLibrary
+              archetypes={[]}
+              hasSession={hasSession}
+              renderStatsAction={({ totalCount, hasLoaded }) => {
+                if (!hasSession || !hasLoaded) return null;
+                if (totalCount >= MAX_USER_DECKS) return null;
+                return (
+                  <Link
+                    href="/laboratorio"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
+                  >
+                    <IoAddOutline className="h-4 w-4" />
+                    Crear mazo
+                  </Link>
+                );
+              }}
             />
           )}
 

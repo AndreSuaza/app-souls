@@ -25,7 +25,6 @@ export * from "./eventos/event-grid/TournamentItem";
 
 export * from "./ui/pagination/pagination";
 export * from "./ui/pagination/paginationLine";
-export * from "./ui/pagination/PaginationStats";
 export * from "./ui/top-menu/TopMenu";
 export * from "./ui/top-menu/AdminTopMenu";
 export * from "./ui/not-fount/PageNotFound";

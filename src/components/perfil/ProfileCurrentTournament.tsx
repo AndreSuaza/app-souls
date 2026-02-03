@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import {
   ActiveTournamentData,
+  Deck,
   MatchInterface,
   TournamentSnapshot,
 } from "@/interfaces";
@@ -10,8 +12,16 @@ import { MatchCard } from "../tournaments/tournament/current-round/MarchCard";
 import { RoundHistoryCardBase } from "../tournaments/tournament/hisotry/RoundHistoryCardBase";
 import { ResultButton } from "../tournaments/tournament/current-round/ResultButton";
 import { TournamentRankingPanel } from "./TournamentRankingPanel";
-import { useToastStore } from "@/store";
+import {
+  useAlertConfirmationStore,
+  useToastStore,
+  useUIStore,
+} from "@/store";
+import { associateDeckToTournamentAction } from "@/actions";
 import { FiRefreshCw } from "react-icons/fi";
+import { IoEyeOutline, IoLinkOutline } from "react-icons/io5";
+import { Modal } from "../ui/modal/modal";
+import { UserDeckLibrary } from "../mazos/deck-library/UserDeckLibrary";
 
 const EMPTY_ROUNDS: [] = [];
 
@@ -21,6 +31,8 @@ type Props = {
   hasShownInProgressWarning?: boolean;
   onInProgressWarningShown?: () => void;
   onRefreshTournament?: (tournamentId: string) => void;
+  enableDeckAssociation?: boolean;
+  hasSession?: boolean;
 };
 
 export const ProfileCurrentTournament = ({
@@ -29,6 +41,8 @@ export const ProfileCurrentTournament = ({
   hasShownInProgressWarning = false,
   onInProgressWarningShown,
   onRefreshTournament,
+  enableDeckAssociation = false,
+  hasSession = false,
 }: Props) => {
   const { currentTournament, lastTournament, currentUserId } = data;
   const displayTournament =
@@ -37,11 +51,24 @@ export const ProfileCurrentTournament = ({
   const players = displayTournament?.players ?? [];
   const rounds = displayTournament?.rounds ?? EMPTY_ROUNDS;
   const showToast = useToastStore((state) => state.showToast);
-  const currentRound =
-    rounds.length > 0 ? rounds[rounds.length - 1] : undefined;
+  const openAlertConfirmation = useAlertConfirmationStore(
+    (state) => state.openAlertConfirmation,
+  );
+  const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
   const currentPlayer = players.find(
     (player) => player.userId === currentUserId,
   );
+  const [associatedDeckId, setAssociatedDeckId] = useState<string | null>(
+    currentPlayer?.deckId ?? null,
+  );
+  const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
+  const currentRound =
+    rounds.length > 0 ? rounds[rounds.length - 1] : undefined;
+
+  useEffect(() => {
+    setAssociatedDeckId(currentPlayer?.deckId ?? null);
+  }, [currentPlayer?.deckId]);
 
   // Ubica el match del usuario en la ronda actual para destacarlo primero.
   const currentMatchIndex = currentRound
@@ -79,6 +106,58 @@ export const ProfileCurrentTournament = ({
     data.inProgressCount > 1 &&
     tournament?.status === "in_progress" &&
     !hasShownInProgressWarning;
+
+  const hasAssociatedDeck = Boolean(associatedDeckId);
+  const canAssociateDeck =
+    enableDeckAssociation &&
+    hasSession &&
+    Boolean(currentPlayer) &&
+    tournament?.status === "finished" &&
+    !hasAssociatedDeck;
+  const canViewDeck =
+    enableDeckAssociation && Boolean(currentPlayer) && hasAssociatedDeck;
+
+  const handleOpenDeckModal = () => {
+    setIsDeckModalOpen(true);
+  };
+
+  const handleDeckSelect = (
+    deck: Deck,
+    event: MouseEvent<HTMLAnchorElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!tournament) return;
+
+    openAlertConfirmation({
+      text: "\u00bfDeseas asociar este mazo al torneo?",
+      description:
+        "Se duplicar\u00e1 el mazo seleccionado y quedar\u00e1 asociado a este torneo.",
+      action: async () => {
+        showLoading("Asociando mazo...");
+        try {
+          const result = await associateDeckToTournamentAction({
+            tournamentId: tournament.id,
+            deckId: deck.id,
+          });
+          setAssociatedDeckId(result.deckId);
+          setIsDeckModalOpen(false);
+          showToast("Mazo asociado correctamente.", "success");
+          return true;
+        } catch (error) {
+          showToast(
+            error instanceof Error
+              ? error.message
+              : "No se pudo asociar el mazo.",
+            "error",
+          );
+          return false;
+        } finally {
+          hideLoading();
+        }
+      },
+    });
+  };
 
   useEffect(() => {
     if (!shouldShowWarning) return;
@@ -152,6 +231,29 @@ export const ProfileCurrentTournament = ({
                   </h2>
                 </div>
                 <div className="flex items-center gap-2">
+                  {canAssociateDeck && (
+                    <button
+                      type="button"
+                      title="Asociar mazo"
+                      aria-label="Asociar mazo"
+                      onClick={handleOpenDeckModal}
+                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
+                    >
+                      <IoLinkOutline className="h-4 w-4" />
+                      Asociar mazo
+                    </button>
+                  )}
+                  {canViewDeck && associatedDeckId && (
+                    <Link
+                      href={`/laboratorio?id=${associatedDeckId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
+                    >
+                      <IoEyeOutline className="h-4 w-4" />
+                      Ver mazo
+                    </Link>
+                  )}
                   {tournament.status === "in_progress" &&
                     onRefreshTournament && (
                       <button
@@ -272,6 +374,28 @@ export const ProfileCurrentTournament = ({
           </div>
         )}
       </div>
+
+      {isDeckModalOpen && (
+        <Modal
+          className="left-1/2 top-1/2 w-[94%] max-w-5xl -translate-x-1/2 -translate-y-1/2 rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface overflow-hidden"
+          close={() => setIsDeckModalOpen(false)}
+        >
+          <div className="flex max-h-[80vh] w-full flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white sm:text-2xl">
+                Mis mazos
+              </h1>
+            </div>
+            <div className="overflow-auto px-5 pb-6 pt-5">
+              <UserDeckLibrary
+                archetypes={[]}
+                hasSession={hasSession}
+                onSelect={handleDeckSelect}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

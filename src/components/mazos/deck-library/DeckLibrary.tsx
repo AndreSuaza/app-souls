@@ -19,6 +19,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { DeckCard } from "../deck-card/DeckCard";
 import {
   DeckFiltersBar,
@@ -36,9 +37,10 @@ interface Props {
   disableUrlSync?: boolean;
   showLikeButton?: boolean;
   getDeckHref?: (deck: Deck) => string;
-  onDeckSelect?: (deck: Deck) => void;
+  onDeckSelect?: (deck: Deck, event: MouseEvent<HTMLAnchorElement>) => void;
   isLoading?: boolean;
   hideFilters?: boolean;
+  statsAction?: ReactNode;
 }
 
 const FILTER_KEYS = [
@@ -99,6 +101,7 @@ export function DeckLibrary({
   onDeckSelect,
   isLoading = false,
   hideFilters = false,
+  statsAction,
 }: Props) {
   const pathname = usePathname();
   const [decks, setDecks] = useState(initialDecks);
@@ -309,15 +312,28 @@ export function DeckLibrary({
   return (
     <div className="space-y-6">
       {hideFilters ? (
-        <div className="flex items-end justify-end pb-1">
-          <PaginationStats
-            rangeText={statsRangeText}
-            entityLabel="mazos"
-            className="w-full text-left sm:w-auto sm:text-right"
-            isLoading={isLoading || isPending}
-            loadingText="Actualizando mazos..."
-          />
-        </div>
+        statsAction ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
+            <div className="flex items-center">{statsAction}</div>
+            <PaginationStats
+              rangeText={statsRangeText}
+              entityLabel="mazos"
+              className="text-left sm:text-right"
+              isLoading={isLoading || isPending}
+              loadingText="Actualizando mazos..."
+            />
+          </div>
+        ) : (
+          <div className="flex items-end justify-end pb-1">
+            <PaginationStats
+              rangeText={statsRangeText}
+              entityLabel="mazos"
+              className="w-full text-left sm:w-auto sm:text-right"
+              isLoading={isLoading || isPending}
+              loadingText="Actualizando mazos..."
+            />
+          </div>
+        )
       ) : (
         <DeckFiltersBar
           archetypes={archetypes}

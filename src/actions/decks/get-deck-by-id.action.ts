@@ -19,6 +19,12 @@ export const getDeckById = async (id: string) => {
             name: true,
           },
         },
+        tournamentPlayers: {
+          select: {
+            userId: true,
+            deckAssignedAt: true,
+          },
+        },
       },
       where: {
         id: id,

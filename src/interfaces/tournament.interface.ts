@@ -66,6 +66,8 @@ export interface TournamentPlayerInterface {
   hadBye: boolean;
   buchholz: number;
   rivals: string[];
+  deckId?: string;
+  deckAssignedAt?: string;
 }
 
 export interface MatchInterface {

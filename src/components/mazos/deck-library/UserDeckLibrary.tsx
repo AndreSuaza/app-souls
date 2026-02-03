@@ -1,7 +1,8 @@
 "use client";
 
+import type { MouseEvent, ReactNode } from "react";
 import { useEffect } from "react";
-import type { ArchetypeOption } from "@/interfaces";
+import type { ArchetypeOption, Deck } from "@/interfaces";
 import { DeckLibrary } from "./DeckLibrary";
 import type { DeckFiltersState } from "../deck-filters/DeckFiltersBar";
 import { useUserDecksStore } from "@/store";
@@ -9,10 +10,20 @@ import { useUserDecksStore } from "@/store";
 interface Props {
   archetypes: ArchetypeOption[];
   hasSession: boolean;
-  onSelect?: () => void;
+  onSelect?: (deck: Deck, event: MouseEvent<HTMLAnchorElement>) => void;
+  renderStatsAction?: (params: {
+    totalCount: number;
+    isLoading: boolean;
+    hasLoaded: boolean;
+  }) => ReactNode;
 }
 
-export function UserDeckLibrary({ archetypes, hasSession, onSelect }: Props) {
+export function UserDeckLibrary({
+  archetypes,
+  hasSession,
+  onSelect,
+  renderStatsAction,
+}: Props) {
   const {
     decks,
     pagination,
@@ -36,6 +47,14 @@ export function UserDeckLibrary({ archetypes, hasSession, onSelect }: Props) {
     );
   }
 
+  const statsAction = renderStatsAction
+    ? renderStatsAction({
+        totalCount: pagination.totalCount,
+        isLoading,
+        hasLoaded,
+      })
+    : undefined;
+
   return (
     <DeckLibrary
       initialDecks={decks}
@@ -53,8 +72,9 @@ export function UserDeckLibrary({ archetypes, hasSession, onSelect }: Props) {
       disableUrlSync
       showLikeButton={false}
       hideFilters
+      statsAction={statsAction}
       getDeckHref={(deck) => `/laboratorio?id=${deck.id}`}
-      onDeckSelect={onSelect ? () => onSelect() : undefined}
+      onDeckSelect={onSelect}
       isLoading={isLoading}
     />
   );

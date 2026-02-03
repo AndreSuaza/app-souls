@@ -1,4 +1,5 @@
 export * from "./tournament/actions.schema";
+export * from "./tournament/deck-association.schema";
 export * from "./tournament/match.schema";
 export * from "./tournament/player.schema";
 export * from "./tournament/round.schema";

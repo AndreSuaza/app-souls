@@ -29,8 +29,22 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+const isHeroTournament = (
+  tournament: Awaited<ReturnType<typeof getPublicTournaments>>["heroTournament"],
+): tournament is NonNullable<
+  Awaited<ReturnType<typeof getPublicTournaments>>["heroTournament"]
+> & {
+  status: "pending" | "in_progress";
+} => {
+  if (!tournament) return false;
+  return tournament.status === "pending" || tournament.status === "in_progress";
+};
+
 export default async function EventosPage() {
   const { tournaments, heroTournament } = await getPublicTournaments();
+  const resolvedHeroTournament = isHeroTournament(heroTournament)
+    ? heroTournament
+    : null;
   const listTournaments = tournaments.map((tournament) => ({
     id: tournament.id,
     title: tournament.title,
@@ -45,12 +59,12 @@ export default async function EventosPage() {
         <div className="px-0 sm:px-6 md:px-10 lg:px-16">
           <PublicTournamentsHero
             tournament={
-              heroTournament
+              resolvedHeroTournament
                 ? {
-                    id: heroTournament.id,
-                    title: heroTournament.title,
-                    date: heroTournament.date.toISOString(),
-                    status: heroTournament.status,
+                    id: resolvedHeroTournament.id,
+                    title: resolvedHeroTournament.title,
+                    date: resolvedHeroTournament.date.toISOString(),
+                    status: resolvedHeroTournament.status,
                   }
                 : null
             }

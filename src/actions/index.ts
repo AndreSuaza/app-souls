@@ -9,6 +9,7 @@ export * from "./products/products-pagination";
 export * from "./products/product-url";
 
 export * from "./tournaments/add-player.action";
+export * from "./tournaments/associate-deck-to-tournament.action";
 export * from "./tournaments/create-tournament.action";
 export * from "./tournaments/delete-player.action";
 export * from "./tournaments/delete-tournament.action";

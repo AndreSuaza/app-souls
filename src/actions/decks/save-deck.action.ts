@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { AuthError } from "next-auth";
 import { SaveDeckSchema, type SaveDeckInput } from "@/schemas";
 
+const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
+
 export async function saveDeck(input: SaveDeckInput) {
   const session = await auth();
 
@@ -38,10 +40,35 @@ export async function saveDeck(input: SaveDeckInput) {
     if (data.deckId) {
       const existingDeck = await prisma.deck.findUnique({
         where: { id: data.deckId },
-        select: { id: true, userId: true },
+        select: { id: true, userId: true, tournamentId: true, createdAt: true },
       });
 
       if (existingDeck && existingDeck.userId === session.user.idd) {
+        if (existingDeck.tournamentId) {
+          const tournamentPlayer = await prisma.tournamentPlayer.findFirst({
+            where: {
+              deckId: existingDeck.id,
+              userId: session.user.idd,
+            },
+            select: {
+              deckAssignedAt: true,
+            },
+          });
+
+          // Bloquea edición del mazo de torneo cuando ya pasó la ventana permitida.
+          const lockStart =
+            tournamentPlayer?.deckAssignedAt ?? existingDeck.createdAt;
+          const deadline = new Date(lockStart);
+          deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
+          if (new Date() > deadline) {
+            return {
+              success: false,
+              message:
+                "Ya no puedes editar este mazo porque superaste el tiempo permitido.",
+            };
+          }
+        }
+
         await prisma.deck.update({
           where: { id: existingDeck.id },
           data: {

@@ -105,6 +105,22 @@ export default async function Cards({ searchParams }: Props) {
   const { mainDeck, sideDeck } = await getDecksByIds(decklistCards);
   const isOwnerDeck =
     Boolean(session?.user?.idd) && deckUser?.userId === session?.user?.idd;
+  const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
+  const assignedAt =
+    deckUser?.tournamentId && session?.user?.idd
+      ? (deckUser.tournamentPlayers?.find(
+          (player) => player.userId === session.user.idd,
+        )?.deckAssignedAt ?? deckUser.createdAt)
+      : null;
+  const canEditDeck =
+    !deckUser?.tournamentId || !assignedAt
+      ? true
+      : (() => {
+          // Respeta la ventana de edición para mazos asociados a torneos.
+          const deadline = new Date(assignedAt);
+          deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
+          return new Date() <= deadline;
+        })();
 
   return (
     <DeckCreator
@@ -134,6 +150,7 @@ export default async function Cards({ searchParams }: Props) {
       deckId={deckUser?.id}
       deckData={deckUser}
       isOwnerDeck={isOwnerDeck}
+      canEditDeck={canEditDeck}
     />
   );
 }

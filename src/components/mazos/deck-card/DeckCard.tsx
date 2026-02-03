@@ -22,7 +22,7 @@ interface Props {
   onLikedChange?: (deckId: string, liked: boolean) => void;
   showLikeButton?: boolean;
   href?: string;
-  onCardClick?: (deck: Deck) => void;
+  onCardClick?: (deck: Deck, event: MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export const DeckCard = ({
@@ -138,7 +138,7 @@ export const DeckCard = ({
       <Link
         href={href ?? `/mazos/${mazo.id}`}
         className="flex h-full flex-col rounded-lg"
-        onClick={() => onCardClick?.(mazo)}
+        onClick={(event) => onCardClick?.(mazo, event)}
       >
         <div className="relative h-56 w-full shrink-0 overflow-hidden">
           <Image

@@ -44,6 +44,8 @@ export const getProfileTournament = async (input: Input) => {
           image: true,
           points: true,
           buchholz: true,
+          deckId: true,
+          deckAssignedAt: true,
         },
       },
       tournamentRounds: {
@@ -87,6 +89,10 @@ export const getProfileTournament = async (input: Input) => {
       image: player.image ?? undefined,
       points: player.points,
       buchholz: player.buchholz,
+      deckId: player.deckId ?? undefined,
+      deckAssignedAt: player.deckAssignedAt
+        ? player.deckAssignedAt.toISOString()
+        : undefined,
       pointsInitial: 0,
       hadBye: false,
       rivals: [],

@@ -40,6 +40,7 @@ interface Props {
   deckId?: string;
   deckData?: Deck | null;
   isOwnerDeck?: boolean;
+  canEditDeck?: boolean;
 }
 
 const addCardLogic = (
@@ -112,6 +113,7 @@ export const DeckCreator = ({
   deckId,
   deckData,
   isOwnerDeck = false,
+  canEditDeck = true,
 }: Props) => {
   const hideLoading = useUIStore((state) => state.hideLoading);
   const hasImportedRef = useRef(false);
@@ -440,8 +442,8 @@ export const DeckCreator = ({
               archetypes={archetypes}
               deckId={deckId}
               showUserDecksButton
-              showSaveButton={totalCardsInDecks > 0}
-              showEditButton={isOwnerDeck}
+              showSaveButton={canEditDeck && totalCardsInDecks > 0}
+              showEditButton={isOwnerDeck && canEditDeck}
               showCloneButton={isOwnerDeck}
               deckData={deckData}
               isOwnerDeck={isOwnerDeck}
