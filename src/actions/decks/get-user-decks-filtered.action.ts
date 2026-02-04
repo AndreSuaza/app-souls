@@ -44,6 +44,10 @@ export async function getUserDecksFilteredAction(input: DeckFiltersInput) {
     where.likesCount = { gt: 0 };
   }
 
+  if (typeof filters.minCardsNumber === "number") {
+    where.cardsNumber = { gte: filters.minCardsNumber };
+  }
+
   const orderBy = filters.likes
     ? [{ likesCount: "desc" as const }, { createdAt: "desc" as const }]
     : [

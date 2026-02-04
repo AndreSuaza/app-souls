@@ -19,6 +19,8 @@ interface Props {
     isLoading: boolean;
     hasLoaded: boolean;
   }) => ReactNode;
+  minCardsNumber?: number;
+  tournamentFilter?: "all" | "with" | "without";
 }
 
 export function UserDeckLibrary({
@@ -29,6 +31,8 @@ export function UserDeckLibrary({
   onDeleteDeck,
   headerContent,
   renderStatsAction,
+  minCardsNumber,
+  tournamentFilter,
 }: Props) {
   const {
     decks,
@@ -43,13 +47,57 @@ export function UserDeckLibrary({
   } = useUserDecksStore();
 
   useEffect(() => {
+    if (!hasSession) {
+      void ensureLoaded(hasSession);
+      return;
+    }
+    if (typeof minCardsNumber === "number") {
+      const effectiveTournament = tournamentFilter ?? "all";
+      void fetchDecks({
+        tournament: effectiveTournament,
+        archetypeId: filters.archetypeId,
+        date: filters.date,
+        likes: filters.likes === "1",
+        page: 1,
+        minCardsNumber,
+      });
+      return;
+    }
     void ensureLoaded(hasSession);
-  }, [hasSession, ensureLoaded]);
+  }, [
+    hasSession,
+    ensureLoaded,
+    fetchDecks,
+    filters,
+    minCardsNumber,
+    tournamentFilter,
+  ]);
 
   useEffect(() => {
     if (!hasSession) return;
+    if (typeof minCardsNumber === "number") {
+      const effectiveTournament = tournamentFilter ?? "all";
+      void fetchDecks({
+        tournament: effectiveTournament,
+        archetypeId: filters.archetypeId,
+        date: filters.date,
+        likes: filters.likes === "1",
+        page: pagination.currentPage,
+        minCardsNumber,
+      });
+      return;
+    }
     void refreshDecks(hasSession);
-  }, [hasSession, refreshDecks, refreshToken]);
+  }, [
+    hasSession,
+    refreshDecks,
+    refreshToken,
+    fetchDecks,
+    filters,
+    minCardsNumber,
+    pagination.currentPage,
+    tournamentFilter,
+  ]);
 
   if (!hasLoaded) {
     return (

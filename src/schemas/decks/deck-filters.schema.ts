@@ -18,7 +18,14 @@ export const DeckFiltersSchema = z.object({
     (value) => value === true || value === "true" || value === "1",
     z.boolean().default(false)
   ),
+  minCardsNumber: z
+    .preprocess((value) => {
+      if (value === undefined || value === null || value === "") return undefined;
+      const parsed = Number(value);
+      if (Number.isNaN(parsed) || parsed < 0) return undefined;
+      return Math.floor(parsed);
+    }, z.number().int().min(0).optional())
+    .optional(),
 });
 
 export type DeckFiltersInput = z.input<typeof DeckFiltersSchema>;
-

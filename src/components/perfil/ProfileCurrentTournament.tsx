@@ -391,6 +391,8 @@ export const ProfileCurrentTournament = ({
                 archetypes={[]}
                 hasSession={hasSession}
                 onSelect={handleDeckSelect}
+                minCardsNumber={40}
+                tournamentFilter="all"
               />
             </div>
           </div>

@@ -117,7 +117,7 @@ export const DeckCard = ({
   };
 
   return (
-    <article className="group relative h-full w-full border-2 border-slate-200 bg-transparent rounded-lg shadow-sm transition-all hover:shadow-md dark:border-tournament-dark-border overflow-hidden hover:-mt-2 duration-300">
+    <article className="group relative h-full w-full border-2 border-slate-200 bg-transparent rounded-lg shadow-sm transition-all hover:shadow-md dark:border-tournament-dark-border overflow-hidden duration-300 transform-gpu hover:-translate-y-2">
       {(showLikeButton || showDeleteButton || !mazo.visible) && (
         <>
           {showDeleteButton && (
@@ -137,50 +137,54 @@ export const DeckCard = ({
           )}
 
           <div className="absolute right-2 top-2 z-20 flex flex-col items-end gap-1">
-          {showLikeButton && (
-            <button
-              type="button"
-              onClick={handleLikeClick}
-              title="Marcar como favorito"
-              aria-label="Marcar como favorito"
-              className={clsx(
-                "inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-200/80 px-2 text-purple-700 transition dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
-                disableLikeButton
-                  ? "opacity-80"
-                  : "hover:border-purple-400 hover:text-purple-600",
-                isPending && "opacity-70 cursor-not-allowed",
-              )}
-              disabled={isPending || disableLikeButton}
-            >
-              <span className="relative block h-5 w-5">
-                <IoHeart
-                  className={clsx(
-                    "absolute inset-0 h-5 w-5 text-[#ff3040] transition-all duration-200 ease-out",
-                    displayLiked ? "scale-110 opacity-100" : "scale-75 opacity-0",
-                  )}
-                />
-                <IoHeartOutline
-                  className={clsx(
-                    "absolute inset-0 h-5 w-5 transition-all duration-200 ease-out",
-                    displayLiked ? "scale-75 opacity-0" : "scale-100 opacity-100",
-                  )}
-                />
-              </span>
-              <span className="text-[10px] font-semibold leading-none">
-                {likesCount}
-              </span>
-            </button>
-          )}
+            {showLikeButton && (
+              <button
+                type="button"
+                onClick={handleLikeClick}
+                title="Marcar como favorito"
+                aria-label="Marcar como favorito"
+                className={clsx(
+                  "inline-flex h-9 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-200/80 px-2 text-purple-700 transition dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
+                  disableLikeButton
+                    ? "opacity-80"
+                    : "hover:border-purple-400 hover:text-purple-600",
+                  isPending && "opacity-70 cursor-not-allowed",
+                )}
+                disabled={isPending || disableLikeButton}
+              >
+                <span className="relative block h-5 w-5">
+                  <IoHeart
+                    className={clsx(
+                      "absolute inset-0 h-5 w-5 text-[#ff3040] transition-all duration-200 ease-out",
+                      displayLiked
+                        ? "scale-110 opacity-100"
+                        : "scale-75 opacity-0",
+                    )}
+                  />
+                  <IoHeartOutline
+                    className={clsx(
+                      "absolute inset-0 h-5 w-5 transition-all duration-200 ease-out",
+                      displayLiked
+                        ? "scale-75 opacity-0"
+                        : "scale-100 opacity-100",
+                    )}
+                  />
+                </span>
+                <span className="text-[10px] font-semibold leading-none">
+                  {likesCount}
+                </span>
+              </button>
+            )}
 
-          {mazo.visible === false && (
-            <span
-              title="Mazo privado"
-              aria-label="Mazo privado"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/80 text-amber-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-amber-300"
-            >
-              <IoLockClosed className="h-4 w-4" />
-            </span>
-          )}
+            {mazo.visible === false && (
+              <span
+                title="Mazo privado"
+                aria-label="Mazo privado"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/80 text-amber-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-amber-300"
+              >
+                <IoLockClosed className="h-4 w-4" />
+              </span>
+            )}
           </div>
         </>
       )}

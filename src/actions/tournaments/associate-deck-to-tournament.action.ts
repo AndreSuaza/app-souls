@@ -88,6 +88,12 @@ export async function associateDeckToTournamentAction(
     throw new Error("No se encontr\u00f3 el mazo seleccionado.");
   }
 
+  if (deck.cardsNumber < 40) {
+    throw new Error(
+      "El mazo debe tener al menos 40 cartas en el mazo principal para asociarse.",
+    );
+  }
+
   const now = new Date();
 
   // Duplica el mazo y asegura la asociación en una misma transacción.

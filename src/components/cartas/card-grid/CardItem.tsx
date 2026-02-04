@@ -49,7 +49,10 @@ export const CardItem = ({
     typeof count === "number" ? count : shouldHighlightLegendary ? 1 : null;
 
   return (
-    <div key={card.id} className="flex flex-col transition-all hover:-mt-2">
+    <div
+      key={card.id}
+      className="flex flex-col transform-gpu transition-transform hover:-translate-y-2"
+    >
       <div className="relative rounded-lg bg-slate-950/70 fade-in dark:bg-tournament-dark-muted-strong/40">
         <div className="content-visibility-auto overflow-hidden rounded-lg">
           <button
