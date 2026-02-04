@@ -2,9 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import clsx from "clsx";
 import { useSession } from "next-auth/react";
-import { IoAddOutline, IoImageOutline } from "react-icons/io5";
+import {
+  IoAddOutline,
+  IoImageOutline,
+  IoInformationCircleOutline,
+} from "react-icons/io5";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
 import {
@@ -12,7 +17,8 @@ import {
   getProfileTournament,
   updateUser,
 } from "@/actions";
-import { useToastStore, useUIStore } from "@/store";
+import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { useUserDecksStore } from "@/store";
 import {
   type ActiveTournamentData,
   type TournamentSnapshot,
@@ -79,6 +85,55 @@ export const Pefil = ({
   activeTournament,
   tournaments,
 }: Props) => {
+  const InfoTooltip = ({ text }: { text: string }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isDesktop, setIsDesktop] = useState(false);
+    const containerRef = useRef<HTMLSpanElement | null>(null);
+
+    useEffect(() => {
+      const media = window.matchMedia("(min-width: 1024px)");
+      const update = () => setIsDesktop(media.matches);
+      update();
+      media.addEventListener("change", update);
+      return () => media.removeEventListener("change", update);
+    }, []);
+
+    useEffect(() => {
+      if (!isOpen) return;
+
+      const handleClickOutside = (event: MouseEvent) => {
+        if (!containerRef.current) return;
+        if (containerRef.current.contains(event.target as Node)) return;
+        setIsOpen(false);
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isOpen]);
+
+    return (
+      <span ref={containerRef} className="relative inline-flex items-center">
+        <button
+          type="button"
+          title={text}
+          aria-label={text}
+          // Permite abrir el tooltip en mobile; en desktop solo funciona el hover nativo del title.
+          onClick={() => {
+            if (isDesktop) return;
+            setIsOpen((prev) => !prev);
+          }}
+          className="inline-flex cursor-pointer items-center justify-center text-slate-500 transition hover:text-purple-600 dark:text-slate-300"
+        >
+          <IoInformationCircleOutline className="h-4 w-4" />
+        </button>
+        {isOpen && (
+          <span className="absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200">
+            {text}
+          </span>
+        )}
+      </span>
+    );
+  };
   // Mantiene el limite alineado con save-deck.action.ts para no ofrecer mas mazos de los permitidos.
   const MAX_USER_DECKS = 12;
   const [activeTournamentState, setActiveTournamentState] =
@@ -108,10 +163,21 @@ export const Pefil = ({
     setSelectedAvatar(nextAvatar);
   }, [user.image]);
   const showToast = useToastStore((state) => state.showToast);
+  const openAlertConfirmation = useAlertConfirmationStore(
+    (state) => state.openAlertConfirmation,
+  );
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
+  const deleteDeck = useUserDecksStore((state) => state.deleteDeck);
+  const deckFilters = useUserDecksStore((state) => state.filters);
+  const setDeckFilters = useUserDecksStore((state) => state.setFilters);
+  const fetchDecks = useUserDecksStore((state) => state.fetchDecks);
+  const nonTournamentCount = useUserDecksStore(
+    (state) => state.nonTournamentCount,
+  );
   const { data: session, update } = useSession();
   const hasSession = Boolean(session?.user?.idd ?? user.email);
+  const [deckRefreshToken, setDeckRefreshToken] = useState(0);
 
   const handleSelect = (avatar: Avatar) => {
     setSelectedAvatar(avatar.imageUrl);
@@ -162,6 +228,12 @@ export const Pefil = ({
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab);
   };
+
+  useEffect(() => {
+    if (activeTab !== "mazos") return;
+    // Forzamos un refresh discreto cada vez que se entra al tab de mazos.
+    setDeckRefreshToken((prev) => prev + 1);
+  }, [activeTab]);
 
   const handleHistorySelect = async (tournamentId: string) => {
     showLoading("Cargando torneo...");
@@ -407,17 +479,98 @@ export const Pefil = ({
             <UserDeckLibrary
               archetypes={[]}
               hasSession={hasSession}
-              renderStatsAction={({ totalCount, hasLoaded }) => {
+              refreshToken={deckRefreshToken}
+              headerContent={
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    [
+                      { value: "without", label: "Mazos" },
+                      { value: "with", label: "Competitivos" },
+                    ] as const
+                  ).map((filter) => {
+                    const isActive = deckFilters.tournament === filter.value;
+                    return (
+                      <button
+                        key={filter.value}
+                        type="button"
+                        onClick={() => {
+                          const nextFilters = {
+                            ...deckFilters,
+                            tournament: filter.value,
+                          };
+                          setDeckFilters(nextFilters);
+                          fetchDecks({
+                            tournament: nextFilters.tournament,
+                            archetypeId: nextFilters.archetypeId,
+                            date: nextFilters.date,
+                            likes: nextFilters.likes === "1",
+                            page: 1,
+                          });
+                        }}
+                        className={clsx(
+                          "flex h-9 items-center justify-center rounded-lg px-4 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-purple-600 text-white shadow-sm"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white",
+                        )}
+                      >
+                        {filter.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              }
+              onDeleteDeck={(deckId) => {
+                openAlertConfirmation({
+                  text: "¿Deseas eliminar este mazo?",
+                  description: "Esta acción eliminará el mazo permanentemente.",
+                  action: async () => {
+                    showLoading("Eliminando mazo...");
+                    const success = await deleteDeck(deckId);
+                    hideLoading();
+                    if (success) {
+                      showToast("Mazo eliminado correctamente.", "success");
+                    } else {
+                      showToast(
+                        "No se pudo eliminar el mazo. Inténtalo de nuevo.",
+                        "error",
+                      );
+                    }
+                    return success;
+                  },
+                });
+              }}
+              renderStatsAction={({ hasLoaded }) => {
                 if (!hasSession || !hasLoaded) return null;
-                if (totalCount >= MAX_USER_DECKS) return null;
+                const tooltipText =
+                  "La cantidad máxima de mazos permitidos es 12.";
+                const hasReachedMax = nonTournamentCount >= MAX_USER_DECKS;
+                if (hasReachedMax) {
+                  return (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
+                      >
+                        <IoAddOutline className="h-4 w-4" />
+                        Crear mazo
+                      </button>
+                      <InfoTooltip text={tooltipText} />
+                    </div>
+                  );
+                }
                 return (
-                  <Link
-                    href="/laboratorio"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
-                  >
-                    <IoAddOutline className="h-4 w-4" />
-                    Crear mazo
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href="/laboratorio"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
+                    >
+                      <IoAddOutline className="h-4 w-4" />
+                      Crear mazo
+                    </Link>
+                    <InfoTooltip text={tooltipText} />
+                  </div>
                 );
               }}
             />

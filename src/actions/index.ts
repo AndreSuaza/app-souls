@@ -41,6 +41,7 @@ export * from "./auth/request-password-reset";
 export * from "./auth/reset-password";
 
 export * from "./decks/save-deck.action";
+export * from "./decks/delete-deck.action";
 export * from "./decks/get-decks.action";
 export * from "./decks/get-decks-by-user.action";
 export * from "./decks/get-deck-by-id.action";

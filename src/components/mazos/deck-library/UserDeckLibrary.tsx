@@ -11,6 +11,9 @@ interface Props {
   archetypes: ArchetypeOption[];
   hasSession: boolean;
   onSelect?: (deck: Deck, event: MouseEvent<HTMLAnchorElement>) => void;
+  refreshToken?: number;
+  onDeleteDeck?: (deckId: string) => void;
+  headerContent?: ReactNode;
   renderStatsAction?: (params: {
     totalCount: number;
     isLoading: boolean;
@@ -22,6 +25,9 @@ export function UserDeckLibrary({
   archetypes,
   hasSession,
   onSelect,
+  refreshToken,
+  onDeleteDeck,
+  headerContent,
   renderStatsAction,
 }: Props) {
   const {
@@ -33,11 +39,17 @@ export function UserDeckLibrary({
     isLoading,
     ensureLoaded,
     fetchDecks,
+    refreshDecks,
   } = useUserDecksStore();
 
   useEffect(() => {
     void ensureLoaded(hasSession);
   }, [hasSession, ensureLoaded]);
+
+  useEffect(() => {
+    if (!hasSession) return;
+    void refreshDecks(hasSession);
+  }, [hasSession, refreshDecks, refreshToken]);
 
   if (!hasLoaded) {
     return (
@@ -70,11 +82,15 @@ export function UserDeckLibrary({
       hasSession={hasSession}
       fetchDecksAction={fetchDecks}
       disableUrlSync
-      showLikeButton={false}
+      showLikeButton
+      disableLikeButton
       hideFilters
+      headerContent={headerContent}
       statsAction={statsAction}
       getDeckHref={(deck) => `/laboratorio?id=${deck.id}`}
       onDeckSelect={onSelect}
+      showDeleteButton={Boolean(onDeleteDeck)}
+      onDeleteDeck={onDeleteDeck}
       isLoading={isLoading}
     />
   );

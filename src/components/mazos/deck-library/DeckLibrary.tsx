@@ -36,10 +36,14 @@ interface Props {
   fetchDecksAction?: (input: DeckFiltersInput) => Promise<DeckFilteredResult>;
   disableUrlSync?: boolean;
   showLikeButton?: boolean;
+  disableLikeButton?: boolean;
+  showDeleteButton?: boolean;
+  onDeleteDeck?: (deckId: string) => void;
   getDeckHref?: (deck: Deck) => string;
   onDeckSelect?: (deck: Deck, event: MouseEvent<HTMLAnchorElement>) => void;
   isLoading?: boolean;
   hideFilters?: boolean;
+  headerContent?: ReactNode;
   statsAction?: ReactNode;
 }
 
@@ -97,10 +101,14 @@ export function DeckLibrary({
   fetchDecksAction,
   disableUrlSync = false,
   showLikeButton = true,
+  disableLikeButton = false,
+  showDeleteButton = false,
+  onDeleteDeck,
   getDeckHref,
   onDeckSelect,
   isLoading = false,
   hideFilters = false,
+  headerContent,
   statsAction,
 }: Props) {
   const pathname = usePathname();
@@ -312,28 +320,31 @@ export function DeckLibrary({
   return (
     <div className="space-y-6">
       {hideFilters ? (
-        statsAction ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
-            <div className="flex items-center">{statsAction}</div>
-            <PaginationStats
-              rangeText={statsRangeText}
-              entityLabel="mazos"
-              className="text-left sm:text-right"
-              isLoading={isLoading || isPending}
-              loadingText="Actualizando mazos..."
-            />
-          </div>
-        ) : (
-          <div className="flex items-end justify-end pb-1">
-            <PaginationStats
-              rangeText={statsRangeText}
-              entityLabel="mazos"
-              className="w-full text-left sm:w-auto sm:text-right"
-              isLoading={isLoading || isPending}
-              loadingText="Actualizando mazos..."
-            />
-          </div>
-        )
+        <div className="space-y-3">
+          {headerContent}
+          {statsAction ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
+              <div className="flex items-center">{statsAction}</div>
+              <PaginationStats
+                rangeText={statsRangeText}
+                entityLabel="mazos"
+                className="text-left sm:text-right"
+                isLoading={isLoading || isPending}
+                loadingText="Actualizando mazos..."
+              />
+            </div>
+          ) : (
+            <div className="flex items-end justify-end pb-1">
+              <PaginationStats
+                rangeText={statsRangeText}
+                entityLabel="mazos"
+                className="w-full text-left sm:w-auto sm:text-right"
+                isLoading={isLoading || isPending}
+                loadingText="Actualizando mazos..."
+              />
+            </div>
+          )}
+        </div>
       ) : (
         <DeckFiltersBar
           archetypes={archetypes}
@@ -369,6 +380,9 @@ export function DeckLibrary({
                         isLiked={likedDecksSet.has(deck.id)}
                         onLikedChange={handleLikedChange}
                         showLikeButton={showLikeButton}
+                        disableLikeButton={disableLikeButton}
+                        showDeleteButton={showDeleteButton}
+                        onDeleteClick={onDeleteDeck}
                         href={getDeckHref ? getDeckHref(deck) : undefined}
                         onCardClick={onDeckSelect}
                       />
