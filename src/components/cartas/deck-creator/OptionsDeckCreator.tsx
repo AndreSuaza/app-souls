@@ -10,6 +10,7 @@ import {
   IoShareSocialOutline,
   IoCreateOutline,
   IoSaveOutline,
+  IoTrash,
 } from "react-icons/io5";
 import { VscSaveAll } from "react-icons/vsc";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
@@ -22,7 +23,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { saveDeck } from "@/actions";
+import {
+  deleteDeckAction,
+  getUserDecksFilteredAction,
+  saveDeck,
+} from "@/actions";
 
 interface Decklist {
   count: number;
@@ -47,10 +52,12 @@ interface Props {
   showSaveButton?: boolean;
   showEditButton?: boolean;
   showCloneButton?: boolean;
+  showDeleteButton?: boolean;
   deckId?: string;
   showUserDecksButton?: boolean;
   deckData?: Deck | null;
   isOwnerDeck?: boolean;
+  archetypeName?: string | null;
 }
 
 export const OptionsDeckCreator = ({
@@ -71,10 +78,12 @@ export const OptionsDeckCreator = ({
   showSaveButton = true,
   showEditButton = true,
   showCloneButton = false,
+  showDeleteButton = false,
   deckId,
   showUserDecksButton = false,
   deckData,
   isOwnerDeck = false,
+  archetypeName,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -159,6 +168,13 @@ export const OptionsDeckCreator = ({
     return maxId || SIN_ARQUETIPO_ID;
   }, [deckListMain, deckListLimbo, deckListSide, archetypeIdByName]);
 
+  const resolvedArchetypeName = useMemo(() => {
+    // Prioriza el arquetipo derivado de las cartas cuando el deck recien creado aun no carga la relacion.
+    const found = archetypes.find((item) => item.id === resolvedArchetypeId);
+    const candidate = found?.name ?? archetypeName ?? "";
+    return candidate.trim().length > 0 ? candidate : "Sin arquetipo";
+  }, [archetypes, resolvedArchetypeId, archetypeName]);
+
   const copyToClipboard = () => {
     setCopyState(true);
     navigator.clipboard.writeText(deckList);
@@ -234,7 +250,7 @@ export const OptionsDeckCreator = ({
     });
   };
 
-  const handleOpenSave = () => {
+  const handleOpenSave = async () => {
     if (!hasSession) {
       const query = searchParams?.toString();
       const currentUrl = loginCallbackUrl
@@ -245,9 +261,70 @@ export const OptionsDeckCreator = ({
       router.push(`/auth/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
       return;
     }
+
+    const maxDecks = 12;
+    try {
+      // Evita abrir el modal si ya se alcanzó el límite de mazos sin torneo.
+      const countResult = await getUserDecksFilteredAction({
+        tournament: "without",
+        archetypeId: "",
+        date: "recent",
+        likes: false,
+        page: 1,
+      });
+      if (countResult.totalCount >= maxDecks) {
+        showToast(
+          "Ya alcanzaste el número máximo de mazos guardados permitidos (12).",
+          "warning",
+        );
+        return;
+      }
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudo validar el límite de mazos.",
+        "error",
+      );
+      return;
+    }
     setSaveMode("create");
     setSaveInitialValues(null);
     setShowSaveDeck(true);
+  };
+
+  const handleDeleteDeck = () => {
+    if (!deckData?.id) return;
+    openAlertConfirmation({
+      text: "¿Deseas eliminar este mazo?",
+      description: "Esta acción eliminará el mazo permanentemente.",
+      action: async () => {
+        let isNavigating = false;
+        showLoading("Eliminando mazo...");
+        try {
+          await deleteDeckAction({ deckId: deckData.id });
+          // Limpia el mazo actual para que la vista no muestre cartas huérfanas.
+          clearDecklist();
+          showToast("Mazo eliminado correctamente.", "success");
+          isNavigating = true;
+          showLoading("Cargando mazo...");
+          router.push("/laboratorio");
+          return true;
+        } catch (error) {
+          showToast(
+            error instanceof Error
+              ? error.message
+              : "No se pudo eliminar el mazo.",
+            "error",
+          );
+          return false;
+        } finally {
+          if (!isNavigating) {
+            hideLoading();
+          }
+        }
+      },
+    });
   };
 
   const openSaveModal = (mode: "edit" | "clone") => {
@@ -314,7 +391,11 @@ export const OptionsDeckCreator = ({
     : "https://twitter.com/intent/tweet";
 
   const resolvedDeckId =
-    saveMode === "clone" ? undefined : saveMode === "edit" ? deckData?.id : deckId;
+    saveMode === "clone"
+      ? undefined
+      : saveMode === "edit"
+        ? deckData?.id
+        : deckId;
 
   return (
     <>
@@ -407,6 +488,16 @@ export const OptionsDeckCreator = ({
           <div className="flex items-center gap-2 h-full">
             {isOwnerDeck ? (
               <>
+                {showDeleteButton && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteDeck}
+                    title="Eliminar mazo"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-red-200 bg-red-600 text-white shadow-sm transition hover:bg-red-500 dark:border-red-500/40 dark:bg-red-500/20 dark:text-red-200"
+                  >
+                    <IoTrash className="h-4 w-4" />
+                  </button>
+                )}
                 {showEditButton && (
                   <button
                     type="button"
@@ -626,6 +717,7 @@ export const OptionsDeckCreator = ({
                 initialValues={saveInitialValues ?? undefined}
                 mode={saveMode}
                 autoArchetypeId={resolvedArchetypeId}
+                archetypeName={resolvedArchetypeName}
               />
             </div>
           </div>

@@ -121,6 +121,7 @@ export default async function Cards({ searchParams }: Props) {
           deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
           return new Date() <= deadline;
         })();
+  const canDeleteDeck = Boolean(deckUser?.id) && isOwnerDeck && canEditDeck;
 
   return (
     <DeckCreator
@@ -151,6 +152,7 @@ export default async function Cards({ searchParams }: Props) {
       deckData={deckUser}
       isOwnerDeck={isOwnerDeck}
       canEditDeck={canEditDeck}
+      canDeleteDeck={canDeleteDeck}
     />
   );
 }

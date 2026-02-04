@@ -89,11 +89,13 @@ export async function saveDeck(input: SaveDeckInput) {
     const decksNumber = await prisma.deck.count({
       where: {
         userId: session.user.idd,
+        // Solo se consideran los mazos que no esten asociados a un torneo.
+        OR: [{ tournamentId: null }, { tournamentId: { isSet: false } }],
       },
     });
 
     if (decksNumber < 12) {
-      await prisma.deck.create({
+      const createdDeck = await prisma.deck.create({
         data: {
           userId: session.user.idd,
           name: data.name,
@@ -105,10 +107,10 @@ export async function saveDeck(input: SaveDeckInput) {
           cardsNumber: data.cardsNumber,
         },
       });
-      return { success: true };
+      return { success: true, deckId: createdDeck.id };
     }
 
-    return { success: false, message: "L\u00edmite de 12 mazos alcanzado" };
+    return { success: false, message: "Límite de 12 mazos alcanzado" };
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: error.cause?.err?.message };

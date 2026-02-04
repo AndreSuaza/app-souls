@@ -41,6 +41,7 @@ interface Props {
   deckData?: Deck | null;
   isOwnerDeck?: boolean;
   canEditDeck?: boolean;
+  canDeleteDeck?: boolean;
 }
 
 const addCardLogic = (
@@ -114,6 +115,7 @@ export const DeckCreator = ({
   deckData,
   isOwnerDeck = false,
   canEditDeck = true,
+  canDeleteDeck = false,
 }: Props) => {
   const hideLoading = useUIStore((state) => state.hideLoading);
   const hasImportedRef = useRef(false);
@@ -189,6 +191,11 @@ export const DeckCreator = ({
   useEffect(() => {
     importDeck();
   }, [importDeck]);
+
+  useEffect(() => {
+    // Asegura cerrar el overlay cuando cambia el mazo cargado en la vista.
+    hideLoading();
+  }, [deckId, hideLoading]);
 
   useEffect(() => {
     return () => {
@@ -445,8 +452,10 @@ export const DeckCreator = ({
               showSaveButton={canEditDeck && totalCardsInDecks > 0}
               showEditButton={isOwnerDeck && canEditDeck}
               showCloneButton={isOwnerDeck}
+              showDeleteButton={canDeleteDeck}
               deckData={deckData}
               isOwnerDeck={isOwnerDeck}
+              archetypeName={deckData?.archetype?.name ?? null}
             />
           </div>
           <ShowDeck

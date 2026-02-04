@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveDeck } from "@/actions";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { MdError } from "react-icons/md";
@@ -31,6 +32,7 @@ interface Props {
   initialValues?: InitialValues;
   mode?: "create" | "edit" | "clone";
   autoArchetypeId?: string;
+  archetypeName?: string | null;
 }
 
 const SIN_ARQUETIPO_ID = "67c5d1595d56151173f8f23b";
@@ -44,6 +46,7 @@ export const SaveDeckForm = ({
   initialValues,
   mode = "create",
   autoArchetypeId,
+  archetypeName,
 }: Props) => {
   const {
     register,
@@ -66,6 +69,7 @@ export const SaveDeckForm = ({
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
+  const router = useRouter();
   const isPrivate = watch("visible");
   const shouldWarnPublic = !isPrivate && mainDeckCount < 40;
 
@@ -119,17 +123,24 @@ export const SaveDeckForm = ({
           visible: !data.visible,
           deckId,
         });
-        hideLoading();
 
         if (resp && resp?.message) {
           setError(resp.message);
           showToast(resp.message, "warning");
           onClose?.();
+          hideLoading();
           return false;
         }
 
         showToast("Mazo guardado correctamente.", "success");
         onClose?.();
+        if ((mode === "clone" || mode === "create") && resp?.deckId) {
+          showLoading("Cargando mazo...");
+          router.push(`/laboratorio?id=${resp.deckId}`);
+          router.refresh();
+          return true;
+        }
+        hideLoading();
         return true;
       },
     });
@@ -177,6 +188,22 @@ export const SaveDeckForm = ({
             <span>{errors.name.message}</span>
           </div>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs font-semibold tracking-[0.12em] text-slate-500">
+          Arquetipo
+        </label>
+        <input
+          value={
+            archetypeName && archetypeName.trim().length > 0
+              ? archetypeName
+              : "Sin arquetipo"
+          }
+          readOnly
+          disabled
+          className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 p-2 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
+        />
       </div>
 
       <div className="space-y-2">
