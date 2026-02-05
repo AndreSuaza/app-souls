@@ -45,6 +45,7 @@ interface Props {
   hideFilters?: boolean;
   headerContent?: ReactNode;
   statsAction?: ReactNode;
+  emptyStateText?: string;
 }
 
 const FILTER_KEYS = [
@@ -110,6 +111,7 @@ export function DeckLibrary({
   hideFilters = false,
   headerContent,
   statsAction,
+  emptyStateText = "No hay mazos que coincidan con los filtros actuales.",
 }: Props) {
   const pathname = usePathname();
   const [decks, setDecks] = useState(initialDecks);
@@ -311,10 +313,10 @@ export function DeckLibrary({
   const emptyState = useMemo(
     () => (
       <div className="rounded-lg border border-slate-200 bg-white/70 p-6 text-sm text-slate-600 shadow-sm text-center dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70 dark:text-slate-300">
-        No hay mazos que coincidan con los filtros actuales.
+        {emptyStateText}
       </div>
     ),
-    [],
+    [emptyStateText],
   );
 
   return (

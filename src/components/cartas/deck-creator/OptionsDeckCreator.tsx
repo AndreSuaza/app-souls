@@ -718,6 +718,10 @@ export const OptionsDeckCreator = ({
                 mode={saveMode}
                 autoArchetypeId={resolvedArchetypeId}
                 archetypeName={resolvedArchetypeName}
+                // En mazos de torneo no se permite cambiar visibilidad al editar.
+                hideVisibilityToggle={
+                  Boolean(deckData?.tournamentId) && saveMode === "edit"
+                }
               />
             </div>
           </div>
@@ -742,6 +746,7 @@ export const OptionsDeckCreator = ({
                   showLoading("Cargando mazo...");
                   setShowUserDecks(false);
                 }}
+                emptyStateText="Aún no tienes mazos guardados."
               />
             </div>
           </div>

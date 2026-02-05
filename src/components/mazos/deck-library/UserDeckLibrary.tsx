@@ -21,6 +21,7 @@ interface Props {
   }) => ReactNode;
   minCardsNumber?: number;
   tournamentFilter?: "all" | "with" | "without";
+  emptyStateText?: string;
 }
 
 export function UserDeckLibrary({
@@ -33,6 +34,7 @@ export function UserDeckLibrary({
   renderStatsAction,
   minCardsNumber,
   tournamentFilter,
+  emptyStateText,
 }: Props) {
   const {
     decks,
@@ -135,6 +137,7 @@ export function UserDeckLibrary({
       hideFilters
       headerContent={headerContent}
       statsAction={statsAction}
+      emptyStateText={emptyStateText}
       getDeckHref={(deck) => `/laboratorio?id=${deck.id}`}
       onDeckSelect={onSelect}
       showDeleteButton={Boolean(onDeleteDeck)}

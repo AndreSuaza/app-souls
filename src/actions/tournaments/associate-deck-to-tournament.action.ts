@@ -106,7 +106,8 @@ export async function associateDeckToTournamentAction(
         imagen: deck.imagen,
         cards: deck.cards,
         cardsNumber: deck.cardsNumber,
-        visible: deck.visible,
+        // Los mazos asociados a torneos siempre deben quedar públicos.
+        visible: true,
         archetypeId: deck.archetypeId,
         tournamentId,
       },

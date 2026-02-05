@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { TbCardsFilled } from "react-icons/tb";
 import { TournamentPlayerInterface } from "@/interfaces";
 
 type Highlight = "blue" | "red" | "yellow";
@@ -9,28 +11,34 @@ interface Props {
   player: TournamentPlayerInterface;
   reverse?: boolean; // Invierte layout (avatar a la derecha)
   highlight?: Highlight; // Color UI para nickname + borde avatar
+  showDeckLink?: boolean;
 }
 
-export const PlayerCell = ({ player, reverse = false, highlight }: Props) => {
+export const PlayerCell = ({
+  player,
+  reverse = false,
+  highlight,
+  showDeckLink = false,
+}: Props) => {
   const imageName = player.image ?? "player";
 
   const highlightText =
     highlight === "blue"
       ? "text-blue-600 dark:text-blue-300"
       : highlight === "red"
-      ? "text-red-600 dark:text-red-300"
-      : highlight === "yellow"
-      ? "text-yellow-600 dark:text-yellow-300"
-      : "text-slate-900 dark:text-white";
+        ? "text-red-600 dark:text-red-300"
+        : highlight === "yellow"
+          ? "text-yellow-600 dark:text-yellow-300"
+          : "text-slate-900 dark:text-white";
 
   const highlightBorder =
     highlight === "blue"
       ? "border-blue-600 dark:border-blue-400 border-2"
       : highlight === "red"
-      ? "border-red-600 dark:border-red-400 border-2"
-      : highlight === "yellow"
-      ? "border-yellow-500 dark:border-yellow-400 border-2"
-      : "border-slate-200 dark:border-tournament-dark-border border-2";
+        ? "border-red-600 dark:border-red-400 border-2"
+        : highlight === "yellow"
+          ? "border-yellow-500 dark:border-yellow-400 border-2"
+          : "border-slate-200 dark:border-tournament-dark-border border-2";
 
   return (
     <div
@@ -59,6 +67,18 @@ export const PlayerCell = ({ player, reverse = false, highlight }: Props) => {
           </p>
         )}
       </div>
+
+      {showDeckLink && player.deckId && (
+        <Link
+          href={`/mazos/${player.deckId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Ver mazo jugado"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-purple-300"
+        >
+          <TbCardsFilled className="h-4 w-4" />
+        </Link>
+      )}
     </div>
   );
 };

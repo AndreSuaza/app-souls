@@ -33,6 +33,7 @@ interface Props {
   mode?: "create" | "edit" | "clone";
   autoArchetypeId?: string;
   archetypeName?: string | null;
+  hideVisibilityToggle?: boolean;
 }
 
 const SIN_ARQUETIPO_ID = "67c5d1595d56151173f8f23b";
@@ -47,6 +48,7 @@ export const SaveDeckForm = ({
   mode = "create",
   autoArchetypeId,
   archetypeName,
+  hideVisibilityToggle = false,
 }: Props) => {
   const {
     register,
@@ -230,14 +232,16 @@ export const SaveDeckForm = ({
         )}
       </div>
 
-      <label className="flex items-center gap-3 text-sm text-slate-600">
-        <input
-          type="checkbox"
-          {...register("visible")}
-          className="h-5 w-5 rounded accent-purple-600"
-        />
-        Deseo mantener mi mazo privado.
-      </label>
+      {!hideVisibilityToggle && (
+        <label className="flex items-center gap-3 text-sm text-slate-600">
+          <input
+            type="checkbox"
+            {...register("visible")}
+            className="h-5 w-5 rounded accent-purple-600"
+          />
+          Deseo mantener mi mazo privado.
+        </label>
+      )}
 
       <button className="w-full rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-500">
         Guardar
