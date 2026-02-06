@@ -39,6 +39,7 @@ export * from "./ui/footer/AdminFooter";
 export * from "./ui/date/dateformat";
 export * from "./ui/loading/LoadingOverlay";
 export * from "./ui/toast/ToastContainer";
+export * from "./ui/markdown/MarkdownContent";
 
 export * from "./stores/store-grid/StoreItem";
 export * from "./stores/store-grid/StoreItemSimple";

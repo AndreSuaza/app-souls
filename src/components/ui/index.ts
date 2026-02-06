@@ -6,7 +6,7 @@ export * from "./loading/LoadingOverlay";
 
 export * from "./modal/ConfirmationModal";
 export * from "./modal/modal";
-
+export * from "./markdown/MarkdownContent";
 export * from "./not-fount/PageNotFound";
 
 export * from "./pagination/pagination";
