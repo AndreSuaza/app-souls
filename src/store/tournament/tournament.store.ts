@@ -132,6 +132,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           buchholz: p.buchholz,
           hadBye: p.hadBye,
           rivals: p.rivals,
+          deckId: p.deckId ?? undefined,
         })),
 
         rounds: data.tournamentRounds.map((r) => ({

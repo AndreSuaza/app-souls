@@ -23,6 +23,7 @@ interface Props {
   disableAnimations?: boolean;
   disableInitialAnimation?: boolean;
   onOpenDetail?: (cards: Card[], index: number) => void;
+  highlightLegendaryCount?: boolean;
 }
 
 const getGridClass = (
@@ -86,6 +87,7 @@ export const CardGrid = ({
   showEmptyState = true,
   disableAnimations = false,
   onOpenDetail,
+  highlightLegendaryCount = false,
 }: Props) => {
   const [indexDeck, setIndexDeck] = useState(0);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -135,6 +137,7 @@ export const CardGrid = ({
                   dropCard={dropCard}
                   showDeckActions={showDeckActions}
                   count={cardCounts?.[card.id]}
+                  highlightLegendaryCount={highlightLegendaryCount}
                   index={index}
                   detailCard={detailCard}
                 />
@@ -152,6 +155,7 @@ export const CardGrid = ({
                   dropCard={dropCard}
                   showDeckActions={showDeckActions}
                   count={cardCounts?.[card.id]}
+                  highlightLegendaryCount={highlightLegendaryCount}
                   index={index}
                   detailCard={detailCard}
                 />

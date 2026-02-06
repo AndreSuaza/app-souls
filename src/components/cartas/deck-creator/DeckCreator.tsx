@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import clsx from "clsx";
 import { OptionsDeckCreator } from "./OptionsDeckCreator";
 import { Decklist } from "@/interfaces/decklist.interface";
@@ -8,7 +8,8 @@ import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
 import { CardDetail } from "../card-detail/CardDetail";
 import { getPaginatedCards } from "@/actions";
-import type { PaginationFilters, Card } from "@/interfaces";
+import type { PaginationFilters, Card, ArchetypeOption, Deck } from "@/interfaces";
+import { useUIStore } from "@/store";
 
 interface Propertie {
   id: string;
@@ -34,6 +35,13 @@ interface Props {
   className?: string;
   initialFilters?: PaginationFilters;
   initialPage?: number;
+  hasSession?: boolean;
+  archetypes?: ArchetypeOption[];
+  deckId?: string;
+  deckData?: Deck | null;
+  isOwnerDeck?: boolean;
+  canEditDeck?: boolean;
+  canDeleteDeck?: boolean;
 }
 
 const addCardLogic = (
@@ -101,8 +109,19 @@ export const DeckCreator = ({
   initialFilters,
   initialPage = 1,
   className,
+  hasSession = false,
+  archetypes = [],
+  deckId,
+  deckData,
+  isOwnerDeck = false,
+  canEditDeck = true,
+  canDeleteDeck = false,
 }: Props) => {
+  const hideLoading = useUIStore((state) => state.hideLoading);
   const hasImportedRef = useRef(false);
+  const lastDeckSignatureRef = useRef<string | null>(null);
+  const manualRefreshRef = useRef(0);
+  const lastDeckIdRef = useRef<string | null>(null);
   const [cardsState, setCardsState] = useState(cards);
   const [totalPagesState, setTotalPagesState] = useState(totalPages);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -121,13 +140,42 @@ export const DeckCreator = ({
   const [detailCards, setDetailCards] = useState<Card[]>([]);
   const [detailIndex, setDetailIndex] = useState(0);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [manualRefreshKey, setManualRefreshKey] = useState(0);
 
   const importDeck = useCallback(() => {
+    const manualRefreshTriggered =
+      manualRefreshRef.current !== manualRefreshKey;
+    if (manualRefreshTriggered) {
+      // Permite recargar el mazo actual cuando se re-selecciona el mismo deck.
+      hasImportedRef.current = false;
+      lastDeckSignatureRef.current = null;
+      manualRefreshRef.current = manualRefreshKey;
+    }
     const hasIncomingDeck =
       (mainDeck?.length ?? 0) > 0 || (sideDeck?.length ?? 0) > 0;
+    const nextSignature = JSON.stringify({
+      main: (mainDeck ?? []).map((item) => ({
+        id: item.card.id,
+        count: item.count,
+      })),
+      side: (sideDeck ?? []).map((item) => ({
+        id: item.card.id,
+        count: item.count,
+      })),
+    });
 
     // Evita sobrescribir el mazo del usuario cuando cambian los filtros/busquedas.
-    if (hasImportedRef.current || !hasIncomingDeck) return;
+    if (!hasIncomingDeck) {
+      if (manualRefreshTriggered) {
+        hideLoading();
+      }
+      return;
+    }
+    if (lastDeckSignatureRef.current !== nextSignature) {
+      hasImportedRef.current = false;
+      lastDeckSignatureRef.current = nextSignature;
+    }
+    if (hasImportedRef.current) return;
 
     if (mainDeck) {
       const main = mainDeck.filter(
@@ -152,11 +200,25 @@ export const DeckCreator = ({
     }
 
     hasImportedRef.current = true;
-  }, [mainDeck, sideDeck]);
+    // Oculta el overlay cuando el mazo seleccionado ya fue importado.
+    hideLoading();
+  }, [mainDeck, sideDeck, hideLoading, manualRefreshKey]);
 
   useEffect(() => {
     importDeck();
   }, [importDeck]);
+
+  useEffect(() => {
+    // Asegura recargar el mazo cuando cambia el id, incluso si las cartas son iguales.
+    const nextDeckId = deckId ?? null;
+    if (lastDeckIdRef.current !== nextDeckId) {
+      hasImportedRef.current = false;
+      lastDeckSignatureRef.current = null;
+      lastDeckIdRef.current = nextDeckId;
+    }
+    // Asegura cerrar el overlay cuando cambia el mazo cargado en la vista.
+    hideLoading();
+  }, [deckId, hideLoading]);
 
   useEffect(() => {
     return () => {
@@ -227,13 +289,15 @@ export const DeckCreator = ({
   const addCard = (cardSeleted: Card) => {
     const counts = getCardCountsByDeck(cardSeleted.id);
     const totalCount = counts.main + counts.limbo + counts.side;
-    // Las legendarias solo pueden existir en un mazo a la vez, pero permiten 2 copias dentro del mismo.
+    // Las legendarias solo permiten 1 copia y no pueden estar en otro mazo.
     if (cardSeleted.limit === "1") {
       const isLimbo = cardSeleted.types.some((type) => type.name === "Limbo");
       const hasOtherDeck = isLimbo
         ? counts.main > 0 || counts.side > 0
         : counts.limbo > 0 || counts.side > 0;
       if (hasOtherDeck) return;
+      const hasSameInDeck = isLimbo ? counts.limbo > 0 : counts.main > 0;
+      if (hasSameInDeck) return;
     }
     if (totalCount >= 2) return;
 
@@ -288,9 +352,9 @@ export const DeckCreator = ({
   const addCardSideDeck = (cardSeleted: Card) => {
     const counts = getCardCountsByDeck(cardSeleted.id);
     const totalCount = counts.main + counts.limbo + counts.side;
-    // Las legendarias solo pueden existir en un mazo a la vez, pero permiten 2 copias dentro del mismo.
+    // Las legendarias solo permiten 1 copia y no pueden estar en otro mazo.
     if (cardSeleted.limit === "1") {
-      if (counts.main > 0 || counts.limbo > 0) return;
+      if (counts.main > 0 || counts.limbo > 0 || counts.side > 0) return;
     }
     if (totalCount >= 2) return;
 
@@ -323,6 +387,24 @@ export const DeckCreator = ({
   const closeDetail = useCallback(() => {
     setIsDetailOpen(false);
   }, []);
+
+  const totalCardsInDecks =
+    deckListMain.reduce((acc, deck) => acc + deck.count, 0) +
+    deckListLimbo.reduce((acc, deck) => acc + deck.count, 0) +
+    deckListSide.reduce((acc, deck) => acc + deck.count, 0);
+
+  const cardCounts = useMemo(() => {
+    const totals: Record<string, number> = {};
+    const addCounts = (list: Decklist[]) => {
+      list.forEach((deck) => {
+        totals[deck.card.id] = (totals[deck.card.id] ?? 0) + deck.count;
+      });
+    };
+    addCounts(deckListMain);
+    addCounts(deckListLimbo);
+    addCounts(deckListSide);
+    return totals;
+  }, [deckListMain, deckListLimbo, deckListSide]);
 
   return (
     <div
@@ -360,6 +442,8 @@ export const DeckCreator = ({
             onOpenDetail={openDetail}
             isActive={!isFinderCollapsed}
             disableGridTransitions={isFullscreenToggling}
+            cardCounts={cardCounts}
+            highlightLegendaryCount
           />
         </div>
       </section>
@@ -383,6 +467,21 @@ export const DeckCreator = ({
               clearDecklist={clearDecklist}
               isFinderCollapsed={isFinderCollapsed}
               onToggleFinderCollapse={handleToggleFinderCollapse}
+              showSaveControls
+              hasSession={hasSession}
+              archetypes={archetypes}
+              deckId={deckId}
+              showUserDecksButton
+              showSaveButton={canEditDeck && totalCardsInDecks > 0}
+              showEditButton={isOwnerDeck && canEditDeck}
+              showCloneButton={isOwnerDeck}
+              showDeleteButton={canDeleteDeck}
+              deckData={deckData}
+              isOwnerDeck={isOwnerDeck}
+              archetypeName={deckData?.archetype?.name ?? null}
+              onRefreshCurrentDeck={() =>
+                setManualRefreshKey((prev) => prev + 1)
+              }
             />
           </div>
           <ShowDeck
@@ -396,6 +495,7 @@ export const DeckCreator = ({
             columnsLg={isFinderCollapsed ? 6 : 4}
             columnsXl={isFinderCollapsed ? 8 : 4}
             onOpenDetail={openDetail}
+            highlightLegendaryCount
           />
           <div className="h-6" aria-hidden />
         </div>

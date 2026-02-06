@@ -17,6 +17,8 @@ interface Props {
   columnsLg?: number;
   columnsXl?: number;
   onOpenDetail?: (cards: Card[], index: number) => void;
+  allowEdit?: boolean;
+  highlightLegendaryCount?: boolean;
 }
 
 const GRID_CARD_MIN_WIDTH = 150;
@@ -33,6 +35,8 @@ export const ShowDeck = ({
   columnsLg = 4,
   columnsXl = 6,
   onOpenDetail,
+  allowEdit = true,
+  highlightLegendaryCount = false,
 }: Props) => {
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState<number | null>(null);
@@ -185,18 +189,19 @@ export const ShowDeck = ({
         titleWrapperClassName="flex flex-1 flex-wrap items-center gap-1 min-w-0 sm:gap-2"
         bodyClassName={sectionBodyClass}
       >
-        {sectionsOpen.limbo && (
+        {sectionsOpen.limbo && autoColumns !== null && (
           <CardGrid
             cards={limboCards}
             autoColumns={autoColumns ?? undefined}
             lgColumns={columnsLg}
             xlColumns={columnsXl}
-            addCard={addCard}
-            dropCard={dropCard}
+            addCard={allowEdit ? addCard : undefined}
+            dropCard={allowEdit ? dropCard : undefined}
             showDeckActions
             cardCounts={limboCounts}
             showEmptyState={false}
             onOpenDetail={onOpenDetail}
+            highlightLegendaryCount={highlightLegendaryCount}
           />
         )}
       </DeckSection>
@@ -225,18 +230,19 @@ export const ShowDeck = ({
         titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
         bodyClassName={sectionBodyClass}
       >
-        {sectionsOpen.main && (
+        {sectionsOpen.main && autoColumns !== null && (
           <CardGrid
             cards={mainCards}
             autoColumns={autoColumns ?? undefined}
             lgColumns={columnsLg}
             xlColumns={columnsXl}
-            addCard={addCard}
-            dropCard={dropCard}
+            addCard={allowEdit ? addCard : undefined}
+            dropCard={allowEdit ? dropCard : undefined}
             showDeckActions
             cardCounts={mainCounts}
             showEmptyState={false}
             onOpenDetail={onOpenDetail}
+            highlightLegendaryCount={highlightLegendaryCount}
           />
         )}
       </DeckSection>
@@ -265,18 +271,19 @@ export const ShowDeck = ({
         titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
         bodyClassName={sectionBodyClass}
       >
-        {sectionsOpen.side && (
+        {sectionsOpen.side && autoColumns !== null && (
           <CardGrid
             cards={sideCards}
             autoColumns={autoColumns ?? undefined}
             lgColumns={columnsLg}
             xlColumns={columnsXl}
-            addCard={addCardSide}
-            dropCard={dropCardSide}
+            addCard={allowEdit ? addCardSide : undefined}
+            dropCard={allowEdit ? dropCardSide : undefined}
             showDeckActions
             cardCounts={sideCounts}
             showEmptyState={false}
             onOpenDetail={onOpenDetail}
+            highlightLegendaryCount={highlightLegendaryCount}
           />
         )}
       </DeckSection>

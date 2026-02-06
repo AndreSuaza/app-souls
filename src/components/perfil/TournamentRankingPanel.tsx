@@ -44,7 +44,7 @@ export const TournamentRankingPanel = ({
   rounds,
   status,
   showPodium,
-  title = "Clasificacion general",
+  title = "Clasificación general",
   showTitle = true,
   pageSize = DEFAULT_PAGE_SIZE,
   classNames,
@@ -95,7 +95,7 @@ export const TournamentRankingPanel = ({
         className={clsx(
           "border rounded-xl p-6 flex items-center justify-center w-full",
           classNames?.emptyState ??
-            "border border-dashed border-tournament-dark-accent bg-white text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300"
+            "border border-dashed border-tournament-dark-accent bg-white text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300",
         )}
       >
         No hay jugadores aún
@@ -108,14 +108,14 @@ export const TournamentRankingPanel = ({
       className={clsx(
         "border rounded-xl px-4 py-3 w-full",
         classNames?.container ??
-          "bg-white border-tournament-dark-accent text-slate-900 dark:bg-tournament-dark-surface dark:border-tournament-dark-border dark:text-slate-200"
+          "bg-white border-tournament-dark-accent text-slate-900 dark:bg-tournament-dark-surface dark:border-tournament-dark-border dark:text-slate-200",
       )}
     >
       {showTitle && title && (
         <h2
           className={clsx(
             "text-lg font-bold mb-4 text-left text-slate-900 dark:text-white",
-            classNames?.title
+            classNames?.title,
           )}
         >
           {title}

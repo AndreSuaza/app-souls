@@ -9,6 +9,7 @@ export * from "./products/products-pagination";
 export * from "./products/product-url";
 
 export * from "./tournaments/add-player.action";
+export * from "./tournaments/associate-deck-to-tournament.action";
 export * from "./tournaments/create-tournament.action";
 export * from "./tournaments/delete-player.action";
 export * from "./tournaments/delete-tournament.action";
@@ -21,6 +22,7 @@ export * from "./tournaments/get-public-tournaments.action";
 export * from "./tournaments/get-public-tournament-detail.action";
 export * from "./tournaments/get-tournament-types.action";
 export * from "./tournaments/get-tournament.action";
+export * from "./tournaments/get-tournament-summary.action";
 export * from "./tournaments/save-match-result.action";
 export * from "./tournaments/recalculate-round.action";
 export * from "./tournaments/search-users.action";
@@ -38,10 +40,16 @@ export * from "./auth/register";
 export * from "./auth/request-password-reset";
 export * from "./auth/reset-password";
 
-export * from "./decks/saveDeck";
-export * from "./decks/getDecks";
-export * from "./decks/getDecksByUser";
-export * from "./decks/getDeckById";
+export * from "./decks/save-deck.action";
+export * from "./decks/delete-deck.action";
+export * from "./decks/get-decks.action";
+export * from "./decks/get-decks-by-user.action";
+export * from "./decks/get-deck-by-id.action";
+export * from "./decks/get-deck-like-status.action";
+export * from "./decks/get-decks-filtered.action";
+export * from "./decks/get-user-decks-filtered.action";
+export * from "./decks/get-deck-filters.action";
+export * from "./decks/toggle-deck-like.action";
 
 export * from "./profile/avatars";
 export * from "./profile/edit-user-session";

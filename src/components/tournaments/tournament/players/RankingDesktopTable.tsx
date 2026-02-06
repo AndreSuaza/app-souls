@@ -89,7 +89,7 @@ export const RankingDesktopTable = ({
                     classNames?.cell
                   )}
                 >
-                  <PlayerCell player={player} />
+                  <PlayerCell player={player} showDeckLink />
                 </td>
 
                 <td

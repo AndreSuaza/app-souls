@@ -52,8 +52,11 @@ export * from "./finders/CardFinderPrices";
 export * from "./home/YoutubeList";
 
 export * from "./mazos/deck-detail/DeckDetail";
+export * from "./mazos/deck-detail/DeckDetailView";
 export * from "./mazos/deck-card/DeckCard";
 export * from "./mazos/deck-save/SaveDeckForm";
+export * from "./mazos/deck-filters/DeckFiltersBar";
+export * from "./mazos/deck-library/DeckLibrary";
 
 export * from "./login/ButtonSocial";
 export * from "./login/ButtonLogOut";

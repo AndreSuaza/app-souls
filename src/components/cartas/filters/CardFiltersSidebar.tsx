@@ -23,6 +23,7 @@ import {
   getDefaultFilters,
   numberOptions,
 } from "@/utils/filter-utils";
+import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 
 export const FILTER_PANEL_WIDTH = 320;
 // Ancho minimo estimado para mantener el buscador y el boton en una sola fila.
@@ -392,13 +393,7 @@ export function CardFiltersSidebar({
               <span>Filtrar</span>
             </button>
           </div>
-          <div className="text-xs md:text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
-            Mostrando{" "}
-            <span className="font-semibold text-slate-900 dark:text-white">
-              {statsRangeText}
-            </span>{" "}
-            cartas:
-          </div>
+          <PaginationStats rangeText={statsRangeText} entityLabel="cartas" />
         </div>
         <hr className="border-slate-200 dark:border-tournament-dark-border" />
       </div>

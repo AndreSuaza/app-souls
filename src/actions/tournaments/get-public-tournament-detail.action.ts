@@ -53,6 +53,7 @@ export async function getPublicTournamentDetailAction(
             buchholz: true,
             hadBye: true,
             rivals: true,
+            deckId: true,
           },
         },
         tournamentRounds: {
@@ -116,6 +117,7 @@ export async function getPublicTournamentDetailAction(
         buchholz: player.buchholz,
         hadBye: player.hadBye,
         rivals: player.rivals ?? [],
+        deckId: player.deckId ?? undefined,
       })),
       rounds: tournament.tournamentRounds.map((round) => ({
         id: round.id,

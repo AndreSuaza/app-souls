@@ -45,7 +45,7 @@ export const RankingMobileList = ({
           >
             <div className="flex items-center gap-3">
               <RankBadge rank={rank} showPodium={showPodium} />
-              <PlayerCell player={player} />
+              <PlayerCell player={player} showDeckLink />
             </div>
 
             <div

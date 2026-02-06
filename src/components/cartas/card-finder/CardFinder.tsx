@@ -76,6 +76,8 @@ interface Props {
   enableCompactSearchLayout?: boolean;
   isActive?: boolean;
   disableGridTransitions?: boolean;
+  cardCounts?: Record<string, number>;
+  highlightLegendaryCount?: boolean;
 }
 
 export const CardFinder = ({
@@ -99,6 +101,8 @@ export const CardFinder = ({
   enableCompactSearchLayout = false,
   isActive = true,
   disableGridTransitions = false,
+  cardCounts,
+  highlightLegendaryCount = false,
 }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -399,6 +403,8 @@ export const CardFinder = ({
           disableAnimations={disableGridAnimations}
           disableInitialAnimation={disableGridInitialAnimation}
           onOpenDetail={onOpenDetail}
+          cardCounts={cardCounts}
+          highlightLegendaryCount={highlightLegendaryCount}
         />
       </div>
     </Pagination>

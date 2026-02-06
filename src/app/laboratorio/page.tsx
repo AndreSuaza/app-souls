@@ -1,9 +1,11 @@
 import {
   getDeckById,
   getDecksByIds,
+  getDeckFiltersAction,
   getPaginatedCards,
   getPropertiesCards,
 } from "@/actions";
+import { auth } from "@/auth";
 import { DeckCreator } from "@/components";
 import { Metadata } from "next";
 
@@ -71,7 +73,11 @@ export default async function Cards({ searchParams }: Props) {
   } = await searchParams;
   const page2 = page ? parseInt(page) : 1;
 
-  const propertiesCards = await getPropertiesCards();
+  const [propertiesCards, session, deckFilters] = await Promise.all([
+    getPropertiesCards(),
+    auth(),
+    getDeckFiltersAction(),
+  ]);
   const { cards, totalPage, totalCount, perPage } = await getPaginatedCards({
     page: page2,
     text,
@@ -99,6 +105,25 @@ export default async function Cards({ searchParams }: Props) {
   }
 
   const { mainDeck, sideDeck } = await getDecksByIds(decklistCards);
+  const isOwnerDeck =
+    Boolean(session?.user?.idd) && deckUser?.userId === session?.user?.idd;
+  const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
+  const assignedAt =
+    deckUser?.tournamentId && session?.user?.idd
+      ? (deckUser.tournamentPlayers?.find(
+          (player) => player.userId === session.user.idd,
+        )?.deckAssignedAt ?? deckUser.createdAt)
+      : null;
+  const canEditDeck =
+    !deckUser?.tournamentId || !assignedAt
+      ? true
+      : (() => {
+          // Respeta la ventana de edición para mazos asociados a torneos.
+          const deadline = new Date(assignedAt);
+          deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
+          return new Date() <= deadline;
+        })();
+  const canDeleteDeck = Boolean(deckUser?.id) && isOwnerDeck && canEditDeck;
 
   return (
     <DeckCreator
@@ -123,6 +148,13 @@ export default async function Cards({ searchParams }: Props) {
         rarities,
         limit,
       }}
+      hasSession={Boolean(session?.user)}
+      archetypes={deckFilters.archetypes}
+      deckId={deckUser?.id}
+      deckData={deckUser}
+      isOwnerDeck={isOwnerDeck}
+      canEditDeck={canEditDeck}
+      canDeleteDeck={canDeleteDeck}
     />
   );
 }

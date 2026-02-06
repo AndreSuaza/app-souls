@@ -20,6 +20,8 @@ export const getActiveTournament = async () => {
       image: true,
       points: true,
       buchholz: true,
+      deckId: true,
+      deckAssignedAt: true,
     };
 
     const roundSelect = {
@@ -134,6 +136,8 @@ export const getActiveTournament = async () => {
           image: string | null;
           points: number;
           buchholz: number;
+          deckId: string | null;
+          deckAssignedAt: Date | null;
         }>;
         tournamentRounds: Array<{
           id: string;
@@ -162,6 +166,10 @@ export const getActiveTournament = async () => {
         image: player.image ?? undefined,
         points: player.points,
         buchholz: player.buchholz,
+        deckId: player.deckId ?? undefined,
+        deckAssignedAt: player.deckAssignedAt
+          ? player.deckAssignedAt.toISOString()
+          : undefined,
         pointsInitial: 0,
         hadBye: false,
         rivals: [],
