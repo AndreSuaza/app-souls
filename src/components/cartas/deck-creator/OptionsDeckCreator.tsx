@@ -12,7 +12,7 @@ import {
   IoSaveOutline,
   IoTrash,
 } from "react-icons/io5";
-import { VscSaveAll } from "react-icons/vsc";
+import { GiCardExchange } from "react-icons/gi";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { RiFullscreenExitLine, RiFullscreenLine } from "react-icons/ri";
@@ -22,6 +22,7 @@ import { UserDeckLibrary } from "@/components/mazos/deck-library/UserDeckLibrary
 import Link from "next/link";
 import Image from "next/image";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { useUserDecksStore } from "@/store/mazos/user-decks.store";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   deleteDeckAction,
@@ -58,6 +59,7 @@ interface Props {
   deckData?: Deck | null;
   isOwnerDeck?: boolean;
   archetypeName?: string | null;
+  onRefreshCurrentDeck?: () => void;
 }
 
 export const OptionsDeckCreator = ({
@@ -84,6 +86,7 @@ export const OptionsDeckCreator = ({
   deckData,
   isOwnerDeck = false,
   archetypeName,
+  onRefreshCurrentDeck,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -107,6 +110,7 @@ export const OptionsDeckCreator = ({
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
+  const deleteUserDeck = useUserDecksStore((state) => state.deleteDeck);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -126,6 +130,10 @@ export const OptionsDeckCreator = ({
 
   const resolvedArchetypeId = useMemo(() => {
     const allCards = [...deckListMain, ...deckListLimbo, ...deckListSide];
+    // El arquetipo solo se calcula con cartas de tipo "Unidad".
+    const unitCards = allCards.filter((deckItem) =>
+      deckItem.card.types.some((type) => type.name === "Unidad"),
+    );
     let total = 0;
     let noArchetypeCount = 0;
     const counts: Record<string, number> = {};
@@ -142,7 +150,7 @@ export const OptionsDeckCreator = ({
       return undefined;
     };
 
-    allCards.forEach((deckItem) => {
+    unitCards.forEach((deckItem) => {
       const count = deckItem.count;
       total += count;
       const archetypeId = resolveCardArchetypeId(deckItem.card);
@@ -485,7 +493,7 @@ export const OptionsDeckCreator = ({
             </span> */}
         </div>
         {showSaveControls && (
-          <div className="flex items-center gap-2 h-full">
+          <div className="flex items-center gap-1 sm:gap-2 h-full">
             {isOwnerDeck ? (
               <>
                 {showDeleteButton && (
@@ -515,7 +523,7 @@ export const OptionsDeckCreator = ({
                     title="Clonar mazo"
                     className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-purple-200 bg-purple-600 text-white shadow-sm transition hover:bg-purple-500 dark:border-purple-500/40 dark:bg-purple-500/20 dark:text-purple-200"
                   >
-                    <VscSaveAll className="h-4 w-4" />
+                    <GiCardExchange className="h-4 w-4" />
                   </button>
                 )}
                 {showSaveButton && (
@@ -546,7 +554,7 @@ export const OptionsDeckCreator = ({
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-purple-200 bg-purple-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-purple-500 dark:border-purple-500/40 dark:bg-purple-500/20 dark:text-purple-200"
                   >
                     Clonar
-                    <IoCopyOutline className="h-4 w-4" />
+                    <GiCardExchange className="h-4 w-4" />
                   </Link>
                 )}
                 {showSaveButton && (
@@ -742,11 +750,42 @@ export const OptionsDeckCreator = ({
               <UserDeckLibrary
                 archetypes={archetypes}
                 hasSession={hasSession}
-                onSelect={() => {
+                onSelect={(deck, event) => {
+                  const currentDeckId = deckData?.id ?? deckId ?? null;
+                  if (currentDeckId && deck.id === currentDeckId) {
+                    // Fuerza recarga del mazo actual para descartar cambios locales.
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setShowUserDecks(false);
+                    showLoading("Actualizando mazo...");
+                    onRefreshCurrentDeck?.();
+                    router.refresh();
+                    return;
+                  }
                   showLoading("Cargando mazo...");
                   setShowUserDecks(false);
                 }}
                 emptyStateText="Aún no tienes mazos guardados."
+                onDeleteDeck={(deckId) => {
+                  openAlertConfirmation({
+                    text: "¿Deseas eliminar este mazo?",
+                    description: "Esta acción eliminará el mazo permanentemente.",
+                    action: async () => {
+                      showLoading("Eliminando mazo...");
+                      const success = await deleteUserDeck(deckId);
+                      hideLoading();
+                      if (success) {
+                        showToast("Mazo eliminado correctamente.", "success");
+                      } else {
+                        showToast(
+                          "No se pudo eliminar el mazo. Inténtalo de nuevo.",
+                          "error",
+                        );
+                      }
+                      return success;
+                    },
+                  });
+                }}
               />
             </div>
           </div>

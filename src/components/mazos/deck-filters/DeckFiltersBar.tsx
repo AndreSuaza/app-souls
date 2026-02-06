@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import { useMemo } from "react";
+import { IoChevronDown } from "react-icons/io5";
 import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 
 interface ArchetypeOption {
@@ -57,113 +58,147 @@ export function DeckFiltersBar({
 
   const labelClass = "text-xs font-semibold text-slate-500 dark:text-slate-400";
   const selectClass =
-    "mt-1 w-full lg:w-auto min-w-0 lg:min-w-[180px] max-w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30";
+    "mt-1 w-full lg:w-auto min-w-0 lg:min-w-[180px] max-w-full appearance-none rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 pr-10 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 cursor-pointer";
   const loadingClass = isLoading ? "opacity-70" : "";
+  const selectIconClass =
+    "pointer-events-none absolute right-3 top-1/2 -translate-y-[45%] text-slate-400 dark:text-slate-300";
 
   return (
     <section className="py-1">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] lg:flex lg:flex-wrap lg:items-end">
         <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
           <span className={labelClass}>Torneo</span>
-          <select
-            value={filters.tournament}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                tournament: event.target
-                  .value as DeckFiltersState["tournament"],
-              })
-            }
-            className={clsx(
-              selectClass,
-              loadingClass,
-              filters.tournament !== "all" && "border-purple-600",
-            )}
-            title="Filtrar por torneo"
-            disabled={isLoading}
-          >
-            {tournamentOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={filters.tournament}
+              onChange={(event) =>
+                onChange({
+                  ...filters,
+                  tournament: event.target
+                    .value as DeckFiltersState["tournament"],
+                })
+              }
+              className={clsx(
+                selectClass,
+                loadingClass,
+                filters.tournament !== "all" && "border-purple-600",
+              )}
+              title="Filtrar por torneo"
+              disabled={isLoading}
+            >
+              {tournamentOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <IoChevronDown className={selectIconClass} />
+          </div>
         </div>
 
         <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
           <span className={labelClass}>Fecha</span>
-          <select
-            value={filters.date}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                date: event.target.value as DeckFiltersState["date"],
-              })
-            }
-            className={clsx(
-              selectClass,
-              loadingClass,
-              filters.date !== "recent" && "border-purple-600",
-            )}
-            title="Ordenar por fecha"
-            disabled={isLoading}
-          >
-            {dateOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={filters.date}
+              onChange={(event) =>
+                onChange({
+                  ...filters,
+                  date: event.target.value as DeckFiltersState["date"],
+                })
+              }
+              className={clsx(
+                selectClass,
+                loadingClass,
+                filters.date !== "recent" && "border-purple-600",
+              )}
+              title="Ordenar por fecha"
+              disabled={isLoading}
+            >
+              {dateOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <IoChevronDown className={selectIconClass} />
+          </div>
         </div>
 
         <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
           <span className={labelClass}>Arquetipo</span>
-          <select
-            value={filters.archetypeId}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                archetypeId: event.target.value,
-              })
-            }
-            className={clsx(
-              selectClass,
-              loadingClass,
-              filters.archetypeId && "border-purple-600",
-            )}
-            title="Filtrar por arquetipo"
-            disabled={isLoading}
-          >
-            <option value="">Todos</option>
-            {archetypeOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={filters.archetypeId}
+              onChange={(event) =>
+                onChange({
+                  ...filters,
+                  archetypeId: event.target.value,
+                })
+              }
+              className={clsx(
+                selectClass,
+                loadingClass,
+                filters.archetypeId && "border-purple-600",
+              )}
+              title="Filtrar por arquetipo"
+              disabled={isLoading}
+            >
+              <option value="">Todos</option>
+              {archetypeOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+            <IoChevronDown className={selectIconClass} />
+          </div>
         </div>
 
         <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
           <span className={labelClass}>Relevancia</span>
-          <select
-            value={filters.likes}
-            onChange={(event) =>
+          <div className="relative">
+            <select
+              value={filters.likes}
+              onChange={(event) =>
+                onChange({
+                  ...filters,
+                  likes: event.target.value as DeckFiltersState["likes"],
+                })
+              }
+              className={clsx(
+                selectClass,
+                loadingClass,
+                filters.likes === "1" && "border-purple-600",
+              )}
+              title="Ordenar por relevancia"
+              disabled={isLoading}
+            >
+              <option value="">Normal</option>
+              <option value="1">Mas votados</option>
+            </select>
+            <IoChevronDown className={selectIconClass} />
+          </div>
+        </div>
+
+        <div className="flex w-full min-w-0 flex-col md:w-auto lg:items-end lg:self-end">
+          <span className={clsx(labelClass, "hidden md:block md:invisible")}>
+            Acciones
+          </span>
+          <button
+            type="button"
+            onClick={() =>
               onChange({
-                ...filters,
-                likes: event.target.value as DeckFiltersState["likes"],
+                tournament: "all",
+                date: "recent",
+                archetypeId: "",
+                likes: "",
               })
             }
-            className={clsx(
-              selectClass,
-              loadingClass,
-              filters.likes === "1" && "border-purple-600",
-            )}
-            title="Ordenar por relevancia"
-            disabled={isLoading}
+            className="mt-1 inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300 dark:hover:bg-tournament-dark-accent"
           >
-            <option value="">Normal</option>
-            <option value="1">Mas votados</option>
-          </select>
+            Borrar filtros
+          </button>
         </div>
 
         {statsRangeText && (

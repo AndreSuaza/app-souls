@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAlertConfirmationStore } from "@/store";
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
 export const ConfirmationModal = ({ className = "" }: Props) => {
   const { text, description, closeAlertConfirmation, runAction } =
     useAlertConfirmationStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -22,7 +23,11 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
   }, []);
 
   const handleConfirm = async () => {
+    // Evita dobles confirmaciones antes de que el modal se cierre.
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     await runAction();
+    setIsSubmitting(false);
   };
 
   return (
@@ -61,7 +66,11 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
 
           <button
             onClick={handleConfirm}
-            className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-500"
+            disabled={isSubmitting}
+            className={clsx(
+              "rounded-lg bg-purple-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-500",
+              isSubmitting && "cursor-not-allowed opacity-70",
+            )}
           >
             Confirmar
           </button>

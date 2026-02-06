@@ -74,6 +74,10 @@ export const SaveDeckForm = ({
   const router = useRouter();
   const isPrivate = watch("visible");
   const shouldWarnPublic = !isPrivate && mainDeckCount < 40;
+  const displayArchetypeName =
+    archetypeName && archetypeName.trim().length > 0
+      ? archetypeName
+      : "Sin arquetipo";
 
   useEffect(() => {
     if (!initialValues) return;
@@ -196,16 +200,11 @@ export const SaveDeckForm = ({
         <label className="text-xs font-semibold tracking-[0.12em] text-slate-500">
           Arquetipo
         </label>
-        <input
-          value={
-            archetypeName && archetypeName.trim().length > 0
-              ? archetypeName
-              : "Sin arquetipo"
-          }
-          readOnly
-          disabled
-          className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 p-2 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
-        />
+        <div className="mt-1">
+          <span className="flex h-8 w-fit items-center rounded-md border border-purple-300/70 bg-purple-100/70 px-2 text-xs font-semibold uppercase tracking-wide text-purple-700 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100">
+            {displayArchetypeName}
+          </span>
+        </div>
       </div>
 
       <div className="space-y-2">

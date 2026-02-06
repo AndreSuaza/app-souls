@@ -108,7 +108,8 @@ export const Pefil = ({
       };
 
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }, [isOpen]);
 
     return (
@@ -172,6 +173,7 @@ export const Pefil = ({
   const deckFilters = useUserDecksStore((state) => state.filters);
   const setDeckFilters = useUserDecksStore((state) => state.setFilters);
   const fetchDecks = useUserDecksStore((state) => state.fetchDecks);
+  const hasLoadedDecks = useUserDecksStore((state) => state.hasLoaded);
   const nonTournamentCount = useUserDecksStore(
     (state) => state.nonTournamentCount,
   );
@@ -481,43 +483,82 @@ export const Pefil = ({
               hasSession={hasSession}
               refreshToken={deckRefreshToken}
               headerContent={
-                <div className="flex flex-wrap gap-2">
-                  {(
-                    [
-                      { value: "without", label: "Mazos" },
-                      { value: "with", label: "Competitivos" },
-                    ] as const
-                  ).map((filter) => {
-                    const isActive = deckFilters.tournament === filter.value;
-                    return (
-                      <button
-                        key={filter.value}
-                        type="button"
-                        onClick={() => {
-                          const nextFilters = {
-                            ...deckFilters,
-                            tournament: filter.value,
-                          };
-                          setDeckFilters(nextFilters);
-                          fetchDecks({
-                            tournament: nextFilters.tournament,
-                            archetypeId: nextFilters.archetypeId,
-                            date: nextFilters.date,
-                            likes: nextFilters.likes === "1",
-                            page: 1,
-                          });
-                        }}
-                        className={clsx(
-                          "flex h-9 items-center justify-center rounded-lg px-4 text-sm font-medium transition-colors",
-                          isActive
-                            ? "bg-purple-600 text-white shadow-sm"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white",
-                        )}
-                      >
-                        {filter.label}
-                      </button>
-                    );
-                  })}
+                <div className="flex flex-wrap items-center gap-3">
+                  {hasSession && hasLoadedDecks ? (
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const tooltipText =
+                          "La cantidad máxima de mazos permitidos es 12.";
+                        const hasReachedMax =
+                          nonTournamentCount >= MAX_USER_DECKS;
+                        if (hasReachedMax) {
+                          return (
+                            <>
+                              <button
+                                type="button"
+                                disabled
+                                className="inline-flex h-10 items-center justify-center gap-1 sm:gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-1 sm:px-3 text-xs font-semibold leading-none text-white shadow-sm opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
+                              >
+                                <IoAddOutline className="h-4 w-4" />
+                                Crear mazo
+                              </button>
+                              <InfoTooltip text={tooltipText} />
+                            </>
+                          );
+                        }
+                        return (
+                          <>
+                            <Link
+                              href="/laboratorio"
+                              className="inline-flex h-10 items-center justify-center gap-1 sm:gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-1 sm:px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
+                            >
+                              <IoAddOutline className="h-4 w-4" />
+                              Crear mazo
+                            </Link>
+                            <InfoTooltip text={tooltipText} />
+                          </>
+                        );
+                      })()}
+                    </div>
+                  ) : null}
+                  <div className="ml-auto flex flex-wrap gap-2">
+                    {(
+                      [
+                        { value: "without", label: "Mazos" },
+                        { value: "with", label: "Competitivos" },
+                      ] as const
+                    ).map((filter) => {
+                      const isActive = deckFilters.tournament === filter.value;
+                      return (
+                        <button
+                          key={filter.value}
+                          type="button"
+                          onClick={() => {
+                            const nextFilters = {
+                              ...deckFilters,
+                              tournament: filter.value,
+                            };
+                            setDeckFilters(nextFilters);
+                            fetchDecks({
+                              tournament: nextFilters.tournament,
+                              archetypeId: nextFilters.archetypeId,
+                              date: nextFilters.date,
+                              likes: nextFilters.likes === "1",
+                              page: 1,
+                            });
+                          }}
+                          className={clsx(
+                            "flex h-9 items-center justify-center rounded-lg px-2 sm:px-4 text-sm font-medium transition-colors",
+                            isActive
+                              ? "bg-purple-600 text-white shadow-sm"
+                              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white",
+                          )}
+                        >
+                          {filter.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               }
               onDeleteDeck={(deckId) => {
@@ -539,39 +580,6 @@ export const Pefil = ({
                     return success;
                   },
                 });
-              }}
-              renderStatsAction={({ hasLoaded }) => {
-                if (!hasSession || !hasLoaded) return null;
-                const tooltipText =
-                  "La cantidad máxima de mazos permitidos es 12.";
-                const hasReachedMax = nonTournamentCount >= MAX_USER_DECKS;
-                if (hasReachedMax) {
-                  return (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        disabled
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm opacity-60 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
-                      >
-                        <IoAddOutline className="h-4 w-4" />
-                        Crear mazo
-                      </button>
-                      <InfoTooltip text={tooltipText} />
-                    </div>
-                  );
-                }
-                return (
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href="/laboratorio"
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
-                    >
-                      <IoAddOutline className="h-4 w-4" />
-                      Crear mazo
-                    </Link>
-                    <InfoTooltip text={tooltipText} />
-                  </div>
-                );
               }}
             />
           )}

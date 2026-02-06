@@ -120,6 +120,8 @@ export const DeckCreator = ({
   const hideLoading = useUIStore((state) => state.hideLoading);
   const hasImportedRef = useRef(false);
   const lastDeckSignatureRef = useRef<string | null>(null);
+  const manualRefreshRef = useRef(0);
+  const lastDeckIdRef = useRef<string | null>(null);
   const [cardsState, setCardsState] = useState(cards);
   const [totalPagesState, setTotalPagesState] = useState(totalPages);
   const [currentPage, setCurrentPage] = useState(initialPage);
@@ -138,8 +140,17 @@ export const DeckCreator = ({
   const [detailCards, setDetailCards] = useState<Card[]>([]);
   const [detailIndex, setDetailIndex] = useState(0);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [manualRefreshKey, setManualRefreshKey] = useState(0);
 
   const importDeck = useCallback(() => {
+    const manualRefreshTriggered =
+      manualRefreshRef.current !== manualRefreshKey;
+    if (manualRefreshTriggered) {
+      // Permite recargar el mazo actual cuando se re-selecciona el mismo deck.
+      hasImportedRef.current = false;
+      lastDeckSignatureRef.current = null;
+      manualRefreshRef.current = manualRefreshKey;
+    }
     const hasIncomingDeck =
       (mainDeck?.length ?? 0) > 0 || (sideDeck?.length ?? 0) > 0;
     const nextSignature = JSON.stringify({
@@ -154,7 +165,12 @@ export const DeckCreator = ({
     });
 
     // Evita sobrescribir el mazo del usuario cuando cambian los filtros/busquedas.
-    if (!hasIncomingDeck) return;
+    if (!hasIncomingDeck) {
+      if (manualRefreshTriggered) {
+        hideLoading();
+      }
+      return;
+    }
     if (lastDeckSignatureRef.current !== nextSignature) {
       hasImportedRef.current = false;
       lastDeckSignatureRef.current = nextSignature;
@@ -186,13 +202,20 @@ export const DeckCreator = ({
     hasImportedRef.current = true;
     // Oculta el overlay cuando el mazo seleccionado ya fue importado.
     hideLoading();
-  }, [mainDeck, sideDeck, hideLoading]);
+  }, [mainDeck, sideDeck, hideLoading, manualRefreshKey]);
 
   useEffect(() => {
     importDeck();
   }, [importDeck]);
 
   useEffect(() => {
+    // Asegura recargar el mazo cuando cambia el id, incluso si las cartas son iguales.
+    const nextDeckId = deckId ?? null;
+    if (lastDeckIdRef.current !== nextDeckId) {
+      hasImportedRef.current = false;
+      lastDeckSignatureRef.current = null;
+      lastDeckIdRef.current = nextDeckId;
+    }
     // Asegura cerrar el overlay cuando cambia el mazo cargado en la vista.
     hideLoading();
   }, [deckId, hideLoading]);
@@ -456,6 +479,9 @@ export const DeckCreator = ({
               deckData={deckData}
               isOwnerDeck={isOwnerDeck}
               archetypeName={deckData?.archetype?.name ?? null}
+              onRefreshCurrentDeck={() =>
+                setManualRefreshKey((prev) => prev + 1)
+              }
             />
           </div>
           <ShowDeck

@@ -120,24 +120,38 @@ export const DeckCard = ({
     <article className="group relative h-full w-full border-2 border-slate-200 bg-transparent rounded-lg shadow-sm transition-all hover:shadow-md dark:border-tournament-dark-border overflow-hidden duration-300 transform-gpu hover:-translate-y-2">
       {(showLikeButton || showDeleteButton || !mazo.visible) && (
         <>
-          {showDeleteButton && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onDeleteClick?.(mazo.id);
-              }}
-              title="Eliminar mazo"
-              aria-label="Eliminar mazo"
-              className="absolute left-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-200/80 text-red-600 transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-red-300"
-            >
-              <IoTrash className="h-4 w-4" />
-            </button>
+          {(showDeleteButton || !mazo.visible) && (
+            <div className="absolute left-2 top-2 z-20 flex flex-col items-start gap-1">
+              {showDeleteButton && (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onDeleteClick?.(mazo.id);
+                  }}
+                  title="Eliminar mazo"
+                  aria-label="Eliminar mazo"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-200/80 text-purple-600 transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
+                >
+                  <IoTrash className="h-4 w-4" />
+                </button>
+              )}
+
+              {mazo.visible === false && (
+                <span
+                  title="Mazo privado"
+                  aria-label="Mazo privado"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white/80 text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
+                >
+                  <IoLockClosed className="h-4 w-4" />
+                </span>
+              )}
+            </div>
           )}
 
-          <div className="absolute right-2 top-2 z-20 flex flex-col items-end gap-1">
-            {showLikeButton && (
+          {showLikeButton && (
+            <div className="absolute right-2 top-2 z-20 flex flex-col items-end gap-1">
               <button
                 type="button"
                 onClick={handleLikeClick}
@@ -174,18 +188,8 @@ export const DeckCard = ({
                   {likesCount}
                 </span>
               </button>
-            )}
-
-            {mazo.visible === false && (
-              <span
-                title="Mazo privado"
-                aria-label="Mazo privado"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/80 text-amber-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-amber-300"
-              >
-                <IoLockClosed className="h-4 w-4" />
-              </span>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
 

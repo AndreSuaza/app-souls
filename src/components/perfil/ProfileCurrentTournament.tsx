@@ -12,14 +12,11 @@ import { MatchCard } from "../tournaments/tournament/current-round/MarchCard";
 import { RoundHistoryCardBase } from "../tournaments/tournament/hisotry/RoundHistoryCardBase";
 import { ResultButton } from "../tournaments/tournament/current-round/ResultButton";
 import { TournamentRankingPanel } from "./TournamentRankingPanel";
-import {
-  useAlertConfirmationStore,
-  useToastStore,
-  useUIStore,
-} from "@/store";
+import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { associateDeckToTournamentAction } from "@/actions";
 import { FiRefreshCw } from "react-icons/fi";
-import { IoEyeOutline, IoLinkOutline } from "react-icons/io5";
+import { GiCardDraw } from "react-icons/gi";
+import { TbCardsFilled } from "react-icons/tb";
 import { Modal } from "../ui/modal/modal";
 import { UserDeckLibrary } from "../mazos/deck-library/UserDeckLibrary";
 
@@ -130,9 +127,9 @@ export const ProfileCurrentTournament = ({
     if (!tournament) return;
 
     openAlertConfirmation({
-      text: "\u00bfDeseas asociar este mazo al torneo?",
+      text: "¿Deseas asociar este mazo al torneo?",
       description:
-        "Se duplicar\u00e1 el mazo seleccionado y quedar\u00e1 asociado a este torneo.",
+        "Se duplicará el mazo seleccionado y quedará asociado a este torneo.",
       action: async () => {
         showLoading("Asociando mazo...");
         try {
@@ -223,23 +220,40 @@ export const ProfileCurrentTournament = ({
             <div className="rounded-xl border border-tournament-dark-accent bg-white p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                    Torneo
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+                      Torneo
+                    </p>
+                    <span
+                      className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+                        tournament.status === "in_progress"
+                          ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                          : tournament.status === "finished"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
+                            : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+                      }`}
+                    >
+                      {tournament.status === "in_progress"
+                        ? "En progreso"
+                        : tournament.status === "finished"
+                          ? "Finalizado"
+                          : "Pendiente"}
+                    </span>
+                  </div>
                   <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
                     {tournament.title}
                   </h2>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-end gap-2">
                   {canAssociateDeck && (
                     <button
                       type="button"
                       title="Asociar mazo"
                       aria-label="Asociar mazo"
                       onClick={handleOpenDeckModal}
-                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-yellow-300 bg-yellow-400 px-3 text-xs font-semibold leading-none text-slate-900 shadow-sm transition hover:bg-yellow-300 dark:border-yellow-300 dark:bg-yellow-400 dark:text-slate-900 dark:hover:bg-yellow-300"
                     >
-                      <IoLinkOutline className="h-4 w-4" />
+                      <GiCardDraw className="h-5 w-5" />
                       Asociar mazo
                     </button>
                   )}
@@ -248,9 +262,9 @@ export const ProfileCurrentTournament = ({
                       href={`/laboratorio?id=${associatedDeckId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-yellow-300 bg-yellow-400 px-3 text-xs font-semibold leading-none text-slate-900 shadow-sm transition hover:bg-yellow-300 dark:border-yellow-300 dark:bg-yellow-400 dark:text-slate-900 dark:hover:bg-yellow-300"
                     >
-                      <IoEyeOutline className="h-4 w-4" />
+                      <TbCardsFilled className="h-5 w-5" />
                       Ver mazo
                     </Link>
                   )}
@@ -265,21 +279,6 @@ export const ProfileCurrentTournament = ({
                         <FiRefreshCw className="h-4 w-4" />
                       </button>
                     )}
-                  <span
-                    className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
-                      tournament.status === "in_progress"
-                        ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                        : tournament.status === "finished"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
-                          : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
-                    }`}
-                  >
-                    {tournament.status === "in_progress"
-                      ? "En progreso"
-                      : tournament.status === "finished"
-                        ? "Finalizado"
-                        : "Pendiente"}
-                  </span>
                 </div>
               </div>
             </div>
