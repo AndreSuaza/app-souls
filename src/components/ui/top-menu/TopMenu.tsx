@@ -17,6 +17,8 @@ export const TopMenu = () => {
   const dropdownRefProfile = useRef<HTMLDivElement | null>(null);
 
   const { data: session } = useSession();
+  const canSeeAdminTournaments =
+    session?.user?.role === "admin" || session?.user?.role === "store";
 
   const handleClick = async () => {
     await signOut();
@@ -162,14 +164,16 @@ export const TopMenu = () => {
                     Tu perfil
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/admin/torneos"
-                    className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
-                  >
-                    Torneos
-                  </Link>
-                </li>
+                {canSeeAdminTournaments && (
+                  <li>
+                    <Link
+                      href="/admin/torneos"
+                      className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                    >
+                      Torneos
+                    </Link>
+                  </li>
+                )}
                 <li>
                   <button
                     onClick={handleClick}

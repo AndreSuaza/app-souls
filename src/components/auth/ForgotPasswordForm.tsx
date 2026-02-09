@@ -80,7 +80,7 @@ export const ForgotPasswordForm = () => {
       <button
         disabled={isPending || success}
         className={clsx(
-          "mt-2 py-3 rounded-lg text-sm font-semibold tracking-wide transition",
+          "mt-2 py-3 rounded-lg text-sm font-semibold tracking-wide transition inline-flex items-center justify-center gap-2",
           {
             "bg-indigo-600 text-white hover:bg-indigo-700 shadow-[0_12px_30px_rgba(79,70,229,0.35)]":
               !success && !isPending,
@@ -88,7 +88,11 @@ export const ForgotPasswordForm = () => {
               success || isPending,
           }
         )}
+        aria-busy={isPending}
       >
+        {isPending && (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+        )}
         {isPending ? "Enviando..." : "Enviar enlace"}
       </button>
 

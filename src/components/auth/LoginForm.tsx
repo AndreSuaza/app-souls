@@ -167,7 +167,7 @@ export const LoginForm = ({ isVerified, callbackUrl }: FormLoginProps) => {
 
       <button
         className={clsx(
-          "mt-3 py-3 rounded-lg text-sm font-semibold tracking-wide transition",
+          "mt-3 py-3 rounded-lg text-sm font-semibold tracking-wide transition inline-flex items-center justify-center gap-2",
           {
             "bg-indigo-600 text-white hover:bg-indigo-700 shadow-[0_12px_30px_rgba(79,70,229,0.35)]":
               !isPending,
@@ -175,8 +175,12 @@ export const LoginForm = ({ isVerified, callbackUrl }: FormLoginProps) => {
           }
         )}
         disabled={isPending}
+        aria-busy={isPending}
       >
-        Iniciar Sesión
+        {isPending && (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+        )}
+        {isPending ? "Ingresando..." : "Iniciar Sesión"}
       </button>
 
       {/* divisor line */}

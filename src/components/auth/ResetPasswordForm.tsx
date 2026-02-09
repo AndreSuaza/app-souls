@@ -31,7 +31,6 @@ export const ResetPasswordForm = ({ token }: Props) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const onSubmit = ({ password, confirm }: ResetPasswordFormValues) => {
     setErrorMsg(null);
@@ -144,7 +143,7 @@ export const ResetPasswordForm = ({ token }: Props) => {
         </label>
         <div className="relative mt-2">
           <input
-            type={showConfirm ? "text" : "password"}
+            type={showPassword ? "text" : "password"}
             placeholder={String.fromCharCode(8226).repeat(8)}
             disabled={isPending}
             className={clsx(
@@ -161,11 +160,11 @@ export const ResetPasswordForm = ({ token }: Props) => {
 
           <button
             type="button"
-            onClick={() => setShowConfirm((prev) => !prev)}
+            onClick={() => setShowPassword((prev) => !prev)}
             className="absolute right-3 inset-y-0 flex items-center text-slate-500"
             tabIndex={-1}
           >
-            {showConfirm ? (
+            {showPassword ? (
               <AiOutlineEyeInvisible size={22} />
             ) : (
               <AiOutlineEye size={22} />
@@ -184,14 +183,18 @@ export const ResetPasswordForm = ({ token }: Props) => {
       <button
         disabled={isPending || !!successMsg}
         className={clsx(
-          "mt-3 py-3 rounded-lg text-sm font-semibold tracking-wide transition",
+          "mt-3 py-3 rounded-lg text-sm font-semibold tracking-wide transition inline-flex items-center justify-center gap-2",
           {
             "bg-indigo-600 text-white hover:bg-indigo-700 shadow-[0_12px_30px_rgba(79,70,229,0.35)]":
               !successMsg && !isPending,
             "bg-gray-300 text-gray-500": isPending || successMsg,
           }
         )}
+        aria-busy={isPending}
       >
+        {isPending && (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+        )}
         {isPending ? "Guardando..." : "Restablecer contraseña"}
       </button>
 

@@ -29,7 +29,6 @@ export const RegisterForm = () => {
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     startTransition(async () => {
@@ -75,7 +74,7 @@ export const RegisterForm = () => {
               {
                 "border-red-500": errors.name,
                 "border-slate-200": !errors.name,
-              }
+              },
             )}
             type="name"
             placeholder="Ingresa tu nombre"
@@ -129,7 +128,7 @@ export const RegisterForm = () => {
               {
                 "border-red-500": errors.name,
                 "border-slate-200": !errors.name,
-              }
+              },
             )}
             type="text"
             placeholder="Ingresa tu apellido"
@@ -183,7 +182,7 @@ export const RegisterForm = () => {
               {
                 "border-red-500": errors.nickname,
                 "border-slate-200": !errors.nickname,
-              }
+              },
             )}
             type="text"
             placeholder="Crea tu nickname"
@@ -242,7 +241,7 @@ export const RegisterForm = () => {
               {
                 "border-red-500": errors.email,
                 "border-slate-200": !errors.email,
-              }
+              },
             )}
             type="email"
             placeholder="Ingresa tu correo electrónico"
@@ -283,7 +282,7 @@ export const RegisterForm = () => {
                 {
                   "border-red-500": errors.password,
                   "border-slate-200": !errors.password,
-                }
+                },
               )}
               {...register("password", {
                 required: "El campo 'contraseña' es requerido.",
@@ -304,7 +303,7 @@ export const RegisterForm = () => {
 
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 inset-y-0 flex items-center text-slate-500"
               tabIndex={-1}
             >
@@ -333,14 +332,14 @@ export const RegisterForm = () => {
           </label>
           <div className="relative mt-2">
             <input
-              type={showConfirm ? "text" : "password"}
+              type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               className={clsx(
                 "w-full px-4 py-2 border rounded-lg bg-slate-100/80 text-slate-900 placeholder-slate-400 pr-12 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
                 {
                   "border-red-500": errors.confirmPassword,
                   "border-slate-200": !errors.confirmPassword,
-                }
+                },
               )}
               {...register("confirmPassword", {
                 required: "El campo 'confirmar contraseña' es requerido.",
@@ -353,11 +352,11 @@ export const RegisterForm = () => {
 
             <button
               type="button"
-              onClick={() => setShowConfirm(!showConfirm)}
+              onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 inset-y-0 flex items-center text-slate-500"
               tabIndex={-1}
             >
-              {showConfirm ? (
+              {showPassword ? (
                 <AiOutlineEyeInvisible size={22} />
               ) : (
                 <AiOutlineEye size={22} />
@@ -376,16 +375,20 @@ export const RegisterForm = () => {
 
       <button
         className={clsx(
-          "mt-3 py-3 rounded-lg text-sm font-semibold tracking-wide transition",
+          "mt-3 py-3 rounded-lg text-sm font-semibold tracking-wide transition inline-flex items-center justify-center gap-2",
           {
             "bg-indigo-600 text-white hover:bg-indigo-700 shadow-[0_12px_30px_rgba(79,70,229,0.35)]":
-              !success,
-            "bg-gray-300 text-gray-500": success,
-          }
+              !success && !isPending,
+            "bg-gray-300 text-gray-500": success || isPending,
+          },
         )}
         disabled={success || isPending}
+        aria-busy={isPending}
       >
-        Registrarse
+        {isPending && (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+        )}
+        {isPending ? "Registrando..." : "Registrarse"}
       </button>
 
       <Link
@@ -393,7 +396,7 @@ export const RegisterForm = () => {
         href={"/auth/login"}
       >
         {" "}
-        Ya tienes una cuenta?{" "}
+        ¿Ya tienes una cuenta?{" "}
       </Link>
     </form>
   );
