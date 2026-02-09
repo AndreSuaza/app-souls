@@ -7,7 +7,7 @@ declare module "next-auth" {
       idd?: string;
       role?: string;
       nickname?: string;
-      image?: string;
+      image?: string| null;
       storeId?: string | null;
     } & DefaultSession["user"];
   }
@@ -16,7 +16,7 @@ declare module "next-auth" {
     idd?: string;
     role?: string;
     nickname?: string;
-    image?: string;
+    image?: string| null;
     storeId?: string | null;
   }
 }

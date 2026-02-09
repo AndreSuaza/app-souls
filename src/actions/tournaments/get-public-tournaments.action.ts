@@ -10,9 +10,6 @@ export const getPublicTournaments = async () => {
     const [heroTournament, tournaments] = await Promise.all([
       prisma.tournament.findFirst({
         where: {
-          status: {
-            in: ["in_progress", "pending"],
-          },
           typeTournament: {
             name: "Tier 1",
           },
