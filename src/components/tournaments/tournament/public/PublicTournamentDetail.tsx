@@ -208,15 +208,32 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
               <div className="rounded-xl border border-tournament-dark-accent bg-white p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-1">
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                      Torneo
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+                        Torneo
+                      </p>
+                      <span
+                        className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+                          tournament.status === "in_progress"
+                            ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
+                            : tournament.status === "finished"
+                              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
+                              : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
+                        }`}
+                      >
+                        {tournament.status === "in_progress"
+                          ? "En progreso"
+                          : tournament.status === "finished"
+                            ? "Finalizado"
+                            : "Pendiente"}
+                      </span>
+                    </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
                       {tournament.title}
                     </h2>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {tournament.status === "in_progress" && (
+                  {tournament.status === "in_progress" && (
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         title="Actualizar torneo"
@@ -225,23 +242,8 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                       >
                         <FiRefreshCw className="h-4 w-4" />
                       </button>
-                    )}
-                    <span
-                      className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
-                        tournament.status === "in_progress"
-                          ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-200"
-                          : tournament.status === "finished"
-                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200"
-                            : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-200"
-                      }`}
-                    >
-                      {tournament.status === "in_progress"
-                        ? "En progreso"
-                        : tournament.status === "finished"
-                          ? "Finalizado"
-                          : "Pendiente"}
-                    </span>
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

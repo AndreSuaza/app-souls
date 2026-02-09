@@ -20,7 +20,7 @@ const formatCountdown = (diffMs: number) => {
 
   return `${String(days).padStart(2, "0")}d ${String(hours).padStart(
     2,
-    "0"
+    "0",
   )}h ${String(minutes).padStart(2, "0")}m`;
 };
 
@@ -100,8 +100,6 @@ export function PublicTournamentsHero({ tournament }: Props) {
 
         <Link
           href={tournament?.id ? `/torneos/${tournament.id}` : "/torneos"}
-          target="_blank"
-          rel="noopener noreferrer"
           className="rounded-lg bg-purple-600 px-6 py-2 font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:bg-purple-700 dark:shadow-[0_0_20px_rgba(115,17,212,0.4)] dark:hover:shadow-[0_0_30px_rgba(115,17,212,0.6)]"
         >
           Ver información

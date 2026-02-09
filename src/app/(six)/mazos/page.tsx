@@ -40,7 +40,7 @@ const getParam = (value: string | string[] | undefined): string | undefined => {
 const normalizeTournament = (
   value: string | undefined,
 ): DeckFiltersState["tournament"] => {
-  return value === "with" || value === "without" ? value : "all";
+  return value === "without" ? "without" : "with";
 };
 
 const normalizeDate = (value: string | undefined): DeckFiltersState["date"] => {

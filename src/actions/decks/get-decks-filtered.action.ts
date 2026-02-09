@@ -18,15 +18,9 @@ export async function getDecksFilteredAction(
     cardsNumber: { gte: 40 },
   };
 
-  if (filters.tournament === "with") {
-    where.tournamentId = { not: null };
-  }
-
-  if (filters.tournament === "without") {
-    // En Mongo, "null" no siempre cubre documentos donde el campo no existe.
-    // Cubrimos ambos casos para que "Sin torneo" funcione de forma consistente.
-    where.OR = [{ tournamentId: null }, { tournamentId: { isSet: false } }];
-  }
+  // El filtro de torneos ahora prioriza el orden sin excluir mazos.
+  const tournamentPriority =
+    filters.tournament === "without" ? "without" : "with";
 
   if (filters.archetypeId) {
     where.archetypeId = filters.archetypeId;
@@ -37,9 +31,20 @@ export async function getDecksFilteredAction(
     where.likesCount = { gt: 0 };
   }
 
+  const priorityOrder: Prisma.DeckOrderByWithRelationInput[] = [
+    {
+      tournamentId: tournamentPriority === "with" ? "desc" : "asc",
+    },
+  ];
+
   const orderBy = filters.likes
-    ? [{ likesCount: "desc" as const }, { createdAt: "desc" as const }]
+    ? [
+        ...priorityOrder,
+        { likesCount: "desc" as const },
+        { createdAt: "desc" as const },
+      ]
     : [
+        ...priorityOrder,
         {
           createdAt:
             filters.date === "old" ? ("asc" as const) : ("desc" as const),

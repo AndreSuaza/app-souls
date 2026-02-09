@@ -69,6 +69,10 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
           deckId: null,
         },
       });
+      // Limpia likes asociados para evitar violar la relacion requerida.
+      await tx.like.deleteMany({
+        where: { deckId: deck.id },
+      });
       await tx.deck.delete({
         where: { id: deck.id },
       });
@@ -77,8 +81,14 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
     return { success: true };
   }
 
-  await prisma.deck.delete({
-    where: { id: deck.id },
+  await prisma.$transaction(async (tx) => {
+    // Limpia likes asociados para evitar violar la relacion requerida.
+    await tx.like.deleteMany({
+      where: { deckId: deck.id },
+    });
+    await tx.deck.delete({
+      where: { id: deck.id },
+    });
   });
 
   return { success: true };

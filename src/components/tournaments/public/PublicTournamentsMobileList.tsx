@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { PublicTournamentsDateBadge } from "./PublicTournamentsDateBadge";
 
@@ -35,10 +36,6 @@ type Props = {
   actionLabel?: string;
 };
 
-const openTournament = (url: string) => {
-  window.open(url, "_blank", "noopener,noreferrer");
-};
-
 export function PublicTournamentsMobileList({
   tournaments,
   statusConfig,
@@ -49,6 +46,8 @@ export function PublicTournamentsMobileList({
   onSelect,
   actionLabel = "Ver torneo",
 }: Props) {
+  const router = useRouter();
+
   return (
     <div className="space-y-3 md:hidden">
       {tournaments.map((tournament) => {
@@ -59,7 +58,7 @@ export function PublicTournamentsMobileList({
             onSelect(tournament);
             return;
           }
-          openTournament(tournamentUrl);
+          router.push(tournamentUrl);
         };
         return (
           <div
@@ -115,8 +114,6 @@ export function PublicTournamentsMobileList({
               {showActionColumn && (
                 <Link
                   href={tournamentUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="text-sm font-semibold text-purple-700 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
                 >
                   {actionLabel}

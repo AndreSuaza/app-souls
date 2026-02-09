@@ -16,7 +16,7 @@ export async function associateDeckToTournamentAction(
 
   const userId = session?.user?.idd;
   if (!userId) {
-    throw new Error("No tienes una sesi\u00f3n activa.");
+    throw new Error("No tienes una sesión activa.");
   }
 
   const parsed = AssociateTournamentDeckSchema.safeParse(input);
@@ -85,7 +85,7 @@ export async function associateDeckToTournamentAction(
   });
 
   if (!deck) {
-    throw new Error("No se encontr\u00f3 el mazo seleccionado.");
+    throw new Error("No se encontró el mazo seleccionado.");
   }
 
   if (deck.cardsNumber < 40) {
@@ -98,6 +98,14 @@ export async function associateDeckToTournamentAction(
 
   // Duplica el mazo y asegura la asociación en una misma transacción.
   const duplicatedDeck = await prisma.$transaction(async (tx) => {
+    if (deck.visible) {
+      // Si el mazo original era público, se vuelve privado al asociarlo.
+      await tx.deck.update({
+        where: { id: deck.id },
+        data: { visible: false },
+      });
+    }
+
     const created = await tx.deck.create({
       data: {
         userId,

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { PublicTournamentsDateBadge } from "./PublicTournamentsDateBadge";
 
@@ -35,10 +36,6 @@ type Props = {
   actionLabel?: string;
 };
 
-const openTournament = (url: string) => {
-  window.open(url, "_blank", "noopener,noreferrer");
-};
-
 export function PublicTournamentsTable({
   tournaments,
   statusConfig,
@@ -50,6 +47,7 @@ export function PublicTournamentsTable({
   actionLabel = "Ver torneo",
 }: Props) {
   const isPublicView = !onSelect;
+  const router = useRouter();
 
   return (
     <div className="hidden overflow-hidden rounded-xl border border-tournament-dark-accent bg-white shadow-sm dark:border-tournament-dark-accent dark:bg-tournament-dark-surface md:block">
@@ -76,7 +74,7 @@ export function PublicTournamentsTable({
                 onSelect(tournament);
                 return;
               }
-              openTournament(tournamentUrl);
+              router.push(tournamentUrl);
             };
             return (
               <tr
@@ -100,8 +98,6 @@ export function PublicTournamentsTable({
                   {isPublicView ? (
                     <Link
                       href={tournamentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="hover:text-purple-600 dark:hover:text-purple-300"
                     >
                       {tournament.title}
@@ -142,8 +138,6 @@ export function PublicTournamentsTable({
                   <td className="px-3 py-4 text-right">
                     <Link
                       href={tournamentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="text-purple-700 font-semibold hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
                     >
                       {actionLabel}

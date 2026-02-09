@@ -27,8 +27,8 @@ interface Props {
 }
 
 const tournamentOptions = [
-  { value: "all", label: "Todos" },
   { value: "with", label: "Competitivos" },
+  { value: "without", label: "No competitivos" },
 ] as const;
 
 const dateOptions = [
@@ -67,7 +67,7 @@ export function DeckFiltersBar({
     <section className="py-1">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] lg:flex lg:flex-wrap lg:items-end">
         <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[180px]">
-          <span className={labelClass}>Torneo</span>
+          <span className={labelClass}>Prioridad</span>
           <div className="relative">
             <select
               value={filters.tournament}
@@ -81,9 +81,9 @@ export function DeckFiltersBar({
               className={clsx(
                 selectClass,
                 loadingClass,
-                filters.tournament !== "all" && "border-purple-600",
+                filters.tournament !== "with" && "border-purple-600",
               )}
-              title="Filtrar por torneo"
+              title="Priorizar por tipo de mazo"
               disabled={isLoading}
             >
               {tournamentOptions.map((option) => (
@@ -189,7 +189,7 @@ export function DeckFiltersBar({
             type="button"
             onClick={() =>
               onChange({
-                tournament: "all",
+                tournament: "with",
                 date: "recent",
                 archetypeId: "",
                 likes: "",

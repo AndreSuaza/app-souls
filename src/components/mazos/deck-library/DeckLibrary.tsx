@@ -65,9 +65,7 @@ const parseFiltersFromUrl = (params: URLSearchParams): DeckFiltersState => {
   const archetypeParam = params.get("archetype") ?? "";
 
   const tournament: DeckFiltersState["tournament"] =
-    tournamentParam === "with" || tournamentParam === "without"
-      ? tournamentParam
-      : "all";
+    tournamentParam === "without" ? "without" : "with";
 
   const date: DeckFiltersState["date"] = dateParam === "old" ? "old" : "recent";
 
@@ -199,7 +197,7 @@ export function DeckLibrary({
 
       FILTER_KEYS.forEach((key) => params.delete(key));
 
-      if (nextFilters.tournament !== "all") {
+      if (nextFilters.tournament !== "with") {
         params.set("tournament", nextFilters.tournament);
       }
 
