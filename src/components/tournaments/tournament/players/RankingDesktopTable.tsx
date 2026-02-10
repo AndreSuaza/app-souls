@@ -21,6 +21,7 @@ interface Props {
   currentPage: number;
   pageSize: number;
   showPodium?: boolean;
+  showDeckLink?: boolean;
   classNames?: RankingDesktopTableClassNames;
 }
 
@@ -30,6 +31,7 @@ export const RankingDesktopTable = ({
   currentPage,
   pageSize,
   showPodium = true,
+  showDeckLink = false,
   classNames,
 }: Props) => {
   return (
@@ -89,7 +91,7 @@ export const RankingDesktopTable = ({
                     classNames?.cell
                   )}
                 >
-                  <PlayerCell player={player} showDeckLink />
+                  <PlayerCell player={player} showDeckLink={showDeckLink} />
                 </td>
 
                 <td

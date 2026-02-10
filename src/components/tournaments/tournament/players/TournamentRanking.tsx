@@ -18,6 +18,7 @@ export const TournamentRanking = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isFinished = tournament?.status === "finished";
+  const canShowDeckLink = tournament?.status === "finished";
 
   const pageParam = Number(searchParams.get("page") ?? 1);
   const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
@@ -55,6 +56,7 @@ export const TournamentRanking = () => {
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
         showPodium={isFinished}
+        showDeckLink={canShowDeckLink}
         classNames={{
           headerRow:
             "text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 border-b border-tournament-dark-accent dark:border-tournament-dark-border",
@@ -69,6 +71,7 @@ export const TournamentRanking = () => {
         currentPage={currentPage}
         pageSize={PAGE_SIZE}
         showPodium={isFinished}
+        showDeckLink={canShowDeckLink}
         classNames={{
           card: "rounded-xl border border-tournament-dark-accent bg-white p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface",
           meta: "text-right text-sm text-slate-700 dark:text-slate-200",

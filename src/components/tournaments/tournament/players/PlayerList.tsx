@@ -17,8 +17,14 @@ import { PlayerListView } from "./PlayerListView";
 export const PlayerList = () => {
   const showToast = useToastStore((state) => state.showToast);
 
-  const { players, rounds, tournament, addPlayerByUserId, deletePlayer } =
-    useTournamentStore();
+  const {
+    players,
+    rounds,
+    tournament,
+    addPlayerByUserId,
+    deletePlayer,
+    showMissingDeckIndicator,
+  } = useTournamentStore();
   const openAlertConfirmation = useAlertConfirmationStore(
     (s) => s.openAlertConfirmation,
   );
@@ -31,7 +37,6 @@ export const PlayerList = () => {
   const [selectedUserForInitialPoints, setSelectedUserForInitialPoints] =
     useState<UserSummaryInterface | null>(null);
   const isSubmittingInitialPoints = useRef(false);
-
   // Cuando se selecciona un usuario desde PlayerSearchInput
   const handleSelect = async (user: UserSummaryInterface) => {
     if (isFinished) {
@@ -150,6 +155,7 @@ export const PlayerList = () => {
         <PlayerListView
           players={players}
           isFinished={isFinished}
+          showMissingDeckIndicator={showMissingDeckIndicator}
           onDelete={(id) => {
             openAlertConfirmation({
               text: "¿Deseas eliminar este jugador del torneo?",

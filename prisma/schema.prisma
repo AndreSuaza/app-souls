@@ -155,6 +155,7 @@ model Tournament {
   date               DateTime         @default(now())
   image              String?
   status             TournamentStatus @default(pending)
+  finishedAt         DateTime?
   currentRoundNumber Int              @default(0)
   maxRounds          Int              @default(1)
   createDate         DateTime         @default(now())
@@ -212,9 +213,8 @@ model TournamentPlayer {
   rivals         String[] @default([]) @db.ObjectId
   createDate     DateTime @default(now())
 
-  deckId         String?   @db.ObjectId
-  deck           Deck?     @relation(fields: [deckId], references: [id])
-  deckAssignedAt DateTime?
+  deckId String? @db.ObjectId
+  deck   Deck?   @relation(fields: [deckId], references: [id])
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
 

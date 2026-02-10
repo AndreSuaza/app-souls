@@ -21,7 +21,6 @@ export const getActiveTournament = async () => {
       points: true,
       buchholz: true,
       deckId: true,
-      deckAssignedAt: true,
     };
 
     const roundSelect = {
@@ -63,6 +62,7 @@ export const getActiveTournament = async () => {
                   id: true,
                   title: true,
                   status: true,
+                  finishedAt: true,
                   currentRoundNumber: true,
                   typeTournament: {
                     select: {
@@ -105,6 +105,7 @@ export const getActiveTournament = async () => {
                   id: true,
                   title: true,
                   status: true,
+                  finishedAt: true,
                   currentRoundNumber: true,
                   typeTournament: {
                     select: {
@@ -136,6 +137,7 @@ export const getActiveTournament = async () => {
         id: string;
         title: string;
         status: "pending" | "in_progress" | "finished" | "cancelled";
+        finishedAt: Date | null;
         currentRoundNumber: number;
         typeTournament: {
           name: string;
@@ -150,7 +152,6 @@ export const getActiveTournament = async () => {
           points: number;
           buchholz: number;
           deckId: string | null;
-          deckAssignedAt: Date | null;
         }>;
         tournamentRounds: Array<{
           id: string;
@@ -168,6 +169,9 @@ export const getActiveTournament = async () => {
         id: tournament.id,
         title: tournament.title,
         status: tournament.status,
+        finishedAt: tournament.finishedAt
+          ? tournament.finishedAt.toISOString()
+          : null,
         currentRoundNumber: tournament.currentRoundNumber,
         typeTournamentName: tournament.typeTournament?.name ?? null,
       },
@@ -181,9 +185,6 @@ export const getActiveTournament = async () => {
         points: player.points,
         buchholz: player.buchholz,
         deckId: player.deckId ?? undefined,
-        deckAssignedAt: player.deckAssignedAt
-          ? player.deckAssignedAt.toISOString()
-          : undefined,
         pointsInitial: 0,
         hadBye: false,
         rivals: [],

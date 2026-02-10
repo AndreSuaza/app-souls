@@ -41,6 +41,7 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
       where: { id: deck.tournamentId },
       select: {
         status: true,
+        finishedAt: true,
         typeTournament: {
           select: { name: true },
         },
@@ -53,6 +54,7 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
 
     const tournamentTypeName = tournament.typeTournament?.name ?? "";
     const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(tournamentTypeName);
+    const now = new Date();
 
     if (isCompetitiveTier) {
       // En Tier 1/2 no se permite eliminar el mazo después de iniciar el torneo.
@@ -62,23 +64,21 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
         );
       }
     } else {
-      const tournamentPlayer = await prisma.tournamentPlayer.findFirst({
-        where: {
-          deckId: deck.id,
-          userId: session.user.idd,
-        },
-        select: {
-          id: true,
-          deckAssignedAt: true,
-        },
-      });
+      const canDeleteDuring =
+        tournament.status === "pending" || tournament.status === "in_progress";
+      const canDeleteAfterFinish =
+        tournament.status === "finished" &&
+        tournament.finishedAt instanceof Date &&
+        (() => {
+          // Respeta la ventana de 7 días después de finalizar en Tier 3.
+          const deadline = new Date(tournament.finishedAt);
+          deadline.setDate(
+            deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS,
+          );
+          return now <= deadline;
+        })();
 
-      const lockStart = tournamentPlayer?.deckAssignedAt ?? deck.createdAt;
-      const deadline = new Date(lockStart);
-      deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
-
-      // Bloquea la eliminación si ya pasó la ventana permitida del torneo.
-      if (new Date() > deadline) {
+      if (!canDeleteDuring && !canDeleteAfterFinish) {
         throw new Error(
           "Ya no puedes eliminar este mazo porque superaste el tiempo permitido.",
         );

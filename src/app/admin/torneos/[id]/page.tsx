@@ -32,6 +32,25 @@ export default function TournamentAdminPage() {
     fetchTournament(id);
   }, [id, fetchTournament]);
 
+  useEffect(() => {
+    const handleTabChange = (event: Event) => {
+      const detail = (event as CustomEvent<TournamentTab>).detail;
+      if (
+        detail === "players" ||
+        detail === "currentRound" ||
+        detail === "rounds" ||
+        detail === "information"
+      ) {
+        setActiveTab(detail);
+      }
+    };
+
+    window.addEventListener("changeTournamentTab", handleTabChange);
+    return () => {
+      window.removeEventListener("changeTournamentTab", handleTabChange);
+    };
+  }, []);
+
   // Validación de pestaña activa según estado del torneo y jugadores
   useEffect(() => {
     // Esperar a que el torneo esté cargado

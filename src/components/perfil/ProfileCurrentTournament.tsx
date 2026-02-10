@@ -99,6 +99,7 @@ export const ProfileCurrentTournament = ({
 
   const showCurrentRoundSection = tournament?.status === "in_progress";
   const showPodium = tournament?.status === "finished";
+  const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
   const shouldShowWarning =
     data.inProgressCount > 1 &&
     tournament?.status === "in_progress" &&
@@ -107,14 +108,26 @@ export const ProfileCurrentTournament = ({
   const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(
     tournament?.typeTournamentName ?? ""
   );
+  const tournamentFinishedAt = tournament?.finishedAt
+    ? new Date(tournament.finishedAt)
+    : null;
   const hasAssociatedDeck = Boolean(associatedDeckId);
+  const canAssociateDuring =
+    tournament?.status === "pending" || tournament?.status === "in_progress";
+  const canAssociateAfterFinish =
+    tournament?.status === "finished" &&
+    tournamentFinishedAt !== null &&
+    (() => {
+      // Ventana de 7 días para Tier 3 después de finalizar.
+      const deadline = new Date(tournamentFinishedAt);
+      deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
+      return new Date() <= deadline;
+    })();
   const canAssociateDeck =
     enableDeckAssociation &&
     hasSession &&
     Boolean(currentPlayer) &&
-    (isCompetitiveTier
-      ? tournament?.status === "pending" || tournament?.status === "in_progress"
-      : tournament?.status === "finished") &&
+    (isCompetitiveTier ? canAssociateDuring : canAssociateDuring || canAssociateAfterFinish) &&
     !hasAssociatedDeck;
   const canViewDeck =
     enableDeckAssociation && Boolean(currentPlayer) && hasAssociatedDeck;
@@ -249,7 +262,7 @@ export const ProfileCurrentTournament = ({
                     {tournament.title}
                   </h2>
                 </div>
-                <div className="flex items-end gap-2">
+                <div className="flex items-center gap-2">
                   {canAssociateDeck && (
                     <button
                       type="button"

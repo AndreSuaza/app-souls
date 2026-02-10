@@ -40,8 +40,10 @@ type TournamentStoreState = {
   rounds: RoundInterface[];
   loading: boolean;
   error: string | null;
+  showMissingDeckIndicator: boolean;
 
   setTournamentId: (id: string) => void;
+  setShowMissingDeckIndicator: (value: boolean) => void;
   fetchTournament: (id?: string) => Promise<void>;
 
   addPlayerByUserId: (
@@ -83,8 +85,11 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
   rounds: [] as RoundInterface[],
   loading: false,
   error: null,
+  showMissingDeckIndicator: false,
 
   setTournamentId: (id: string) => set({ tournamentId: id }),
+  setShowMissingDeckIndicator: (value: boolean) =>
+    set({ showMissingDeckIndicator: value }),
 
   fetchTournament: async (id?: string) => {
     const tournamentId = id ?? get().tournamentId;
@@ -109,6 +114,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       set({
         tournamentId,
         error: null,
+        showMissingDeckIndicator: false,
         tournament: {
           id: data.id,
           title: data.title,

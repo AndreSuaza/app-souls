@@ -50,44 +50,52 @@ export async function saveDeck(input: SaveDeckInput) {
             where: { id: existingDeck.tournamentId },
             select: {
               status: true,
+              finishedAt: true,
               typeTournament: {
                 select: { name: true },
               },
             },
           });
 
-          const tournamentTypeName = tournament?.typeTournament?.name ?? "";
+          if (!tournament) {
+            return {
+              success: false,
+              message: "No se encontró el torneo asociado.",
+            };
+          }
+
+          const tournamentTypeName = tournament.typeTournament?.name ?? "";
           const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(
             tournamentTypeName,
           );
+          const now = new Date();
 
           if (isCompetitiveTier) {
             // En Tier 1/2 solo se permite editar antes de iniciar el torneo.
-            if (tournament?.status !== "pending") {
+            if (tournament.status !== "pending") {
               return {
                 success: false,
                 message:
                   "No puedes editar este mazo porque el torneo ya inició o finalizó.",
               };
             }
-            resolvedVisible = false;
           } else {
-            const tournamentPlayer = await prisma.tournamentPlayer.findFirst({
-              where: {
-                deckId: existingDeck.id,
-                userId: session.user.idd,
-              },
-              select: {
-                deckAssignedAt: true,
-              },
-            });
+            const canEditDuring =
+              tournament.status === "pending" ||
+              tournament.status === "in_progress";
+            const canEditAfterFinish =
+              tournament.status === "finished" &&
+              tournament.finishedAt instanceof Date &&
+              (() => {
+                // Respeta la ventana de 7 días después de finalizar en Tier 3.
+                const deadline = new Date(tournament.finishedAt);
+                deadline.setDate(
+                  deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS,
+                );
+                return now <= deadline;
+              })();
 
-            // Bloquea edición del mazo de torneo cuando ya pasó la ventana permitida.
-            const lockStart =
-              tournamentPlayer?.deckAssignedAt ?? existingDeck.createdAt;
-            const deadline = new Date(lockStart);
-            deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
-            if (new Date() > deadline) {
+            if (!canEditDuring && !canEditAfterFinish) {
               return {
                 success: false,
                 message:
@@ -95,6 +103,9 @@ export async function saveDeck(input: SaveDeckInput) {
               };
             }
           }
+
+          // En mazos de torneo la visibilidad se fuerza según el estado.
+          resolvedVisible = tournament.status === "finished";
         }
 
         await prisma.deck.update({
