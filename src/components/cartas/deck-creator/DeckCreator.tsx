@@ -350,7 +350,7 @@ export const DeckCreator = ({
   };
 
   const addCardSideDeck = (cardSeleted: Card) => {
-    const counts = getCardCountsByDeck(cardSeleted.id);
+    const counts = getCardCountsByDeck(cardSeleted.idd);
     const totalCount = counts.main + counts.limbo + counts.side;
     // Las legendarias solo permiten 1 copia y no pueden estar en otro mazo.
     if (cardSeleted.limit === "1") {
