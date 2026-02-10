@@ -151,22 +151,23 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   );
 
   return (
-    <div className="relative min-h-screen flex flex-col space-y-3 items-start justify-center bg-slate-50 text-slate-900 overflow-hidden px-3 pb-14 pt-2 md:pt-6 dark:bg-tournament-dark-bg dark:text-white sm:px-6 md:px-10 lg:px-16">
+    <div className="relative min-h-screen flex flex-col items-stretch justify-center bg-slate-50 text-slate-900 overflow-hidden px-3 pb-14 pt-2 md:pt-6 dark:bg-tournament-dark-bg dark:text-white sm:px-6 md:px-10 lg:px-16">
       <div className="absolute inset-0 hidden" />
 
-      <div className="flex justify-start">
-        <Link
-          href="/torneos"
-          className="inline-flex items-center gap-2 rounded-full border border-tournament-dark-accent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
-        >
-          Volver a torneos
-        </Link>
-      </div>
+      <div className="w-full max-w-6xl mx-auto flex flex-col space-y-3">
+        <div className="flex justify-start">
+          <Link
+            href="/torneos"
+            className="inline-flex items-center gap-2 rounded-full border border-tournament-dark-accent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
+          >
+            Volver a torneos
+          </Link>
+        </div>
 
-      <div className="relative z-10 w-full max-w-6xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:p-8 flex flex-col gap-8">
-        <div className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-tournament-dark-accent bg-white p-5 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+        <div className="relative z-10 w-full rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:p-8 flex flex-col gap-8">
+          <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-tournament-dark-accent bg-white p-5 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
               <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
                 <IoStorefrontOutline className="text-purple-600 dark:text-purple-300" />
                 Tienda organizadora
@@ -210,21 +211,21 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
               </div>
             </div>
 
-            <div className="rounded-xl border border-tournament-dark-accent bg-white p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-              {hasValidCoordinates ? (
-                <Map
-                  className="h-[280px] w-full rounded-lg"
-                  lat={store.lat}
-                  lgn={store.lgn}
-                  title={store.name}
-                />
-              ) : (
-                <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong dark:text-slate-300">
-                  Mapa no disponible.
-                </div>
-              )}
+              <div className="rounded-xl border border-tournament-dark-accent bg-white p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+                {hasValidCoordinates ? (
+                  <Map
+                    className="h-[280px] w-full rounded-lg"
+                    lat={store.lat}
+                    lgn={store.lgn}
+                    title={store.name}
+                  />
+                ) : (
+                  <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong dark:text-slate-300">
+                    Mapa no disponible.
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
           {tournament && (
             <div className="space-y-4">
@@ -299,7 +300,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
               )}
             </div>
           )}
-        </div>
+          </div>
 
         {tournament && (
           <div className="space-y-4">
@@ -360,6 +361,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }
