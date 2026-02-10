@@ -31,9 +31,28 @@ export const RoundActionButton = () => {
 
   const canGenerateFirstRound =
     tournament.status !== "finished" && !hasRounds && players.length > 3;
+  const requiresDeckAssociation = ["Tier 1", "Tier 2"].includes(
+    tournament.typeTournamentName ?? ""
+  );
+  const hasAllPlayersDecks = players.every((player) => Boolean(player.deckId));
+
+  const validateDeckAssociation = (context: "tournament" | "round") => {
+    // En torneos Tier 1/2 se exige mazo asociado antes de iniciar.
+    if (!requiresDeckAssociation) return true;
+    if (hasAllPlayersDecks) return true;
+
+    showToast(
+      context === "tournament"
+        ? "Todos los jugadores deben tener un mazo asociado para iniciar el torneo."
+        : "Todos los jugadores deben tener un mazo asociado para iniciar la ronda.",
+      "warning"
+    );
+    return false;
+  };
 
   // Handlers con loading
   const handleGenerateRound = async () => {
+    if (!validateDeckAssociation("tournament")) return;
     showLoading("Generando ronda");
     try {
       await generateRound();
@@ -89,6 +108,7 @@ export const RoundActionButton = () => {
     return (
       <button
         onClick={async () => {
+          if (!validateDeckAssociation("round")) return;
           showLoading("Iniciando ronda");
           try {
             await startCurrentRound();

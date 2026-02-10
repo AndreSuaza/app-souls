@@ -64,6 +64,11 @@ export const getActiveTournament = async () => {
                   title: true,
                   status: true,
                   currentRoundNumber: true,
+                  typeTournament: {
+                    select: {
+                      name: true,
+                    },
+                  },
                   tournamentPlayers: {
                     select: playerSelect,
                   },
@@ -101,6 +106,11 @@ export const getActiveTournament = async () => {
                   title: true,
                   status: true,
                   currentRoundNumber: true,
+                  typeTournament: {
+                    select: {
+                      name: true,
+                    },
+                  },
                   tournamentPlayers: {
                     select: playerSelect,
                   },
@@ -127,6 +137,9 @@ export const getActiveTournament = async () => {
         title: string;
         status: "pending" | "in_progress" | "finished" | "cancelled";
         currentRoundNumber: number;
+        typeTournament: {
+          name: string;
+        } | null;
         tournamentPlayers: Array<{
           id: string;
           userId: string;
@@ -156,6 +169,7 @@ export const getActiveTournament = async () => {
         title: tournament.title,
         status: tournament.status,
         currentRoundNumber: tournament.currentRoundNumber,
+        typeTournamentName: tournament.typeTournament?.name ?? null,
       },
       players: tournament.tournamentPlayers.map((player) => ({
         id: player.id,

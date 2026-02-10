@@ -1,4 +1,4 @@
-import {
+﻿import {
   getDeckById,
   getDecksByIds,
   getDeckFiltersAction,
@@ -15,12 +15,12 @@ export const metadata: Metadata = {
   title:
     "Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG",
   description:
-    "Diseña el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. ¡Prepara tu mazo y domina el campo de batalla!",
+    "DiseÃ±a el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. Â¡Prepara tu mazo y domina el campo de batalla!",
   openGraph: {
     title:
       "Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG",
     description:
-      "Diseña el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. ¡Prepara tu mazo y domina el campo de batalla!",
+      "DiseÃ±a el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. Â¡Prepara tu mazo y domina el campo de batalla!",
     url: "https://soulsinxtinction.com/tiendas",
     siteName: "Laboratorio Souls In Xtinction TCG",
     images: [
@@ -114,15 +114,24 @@ export default async function Cards({ searchParams }: Props) {
           (player) => player.userId === session.user.idd,
         )?.deckAssignedAt ?? deckUser.createdAt)
       : null;
+  const tournamentTypeName = deckUser?.tournament?.typeTournamentName ?? "";
+  const tournamentStatus = deckUser?.tournament?.status ?? "";
+  const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(tournamentTypeName);
   const canEditDeck =
-    !deckUser?.tournamentId || !assignedAt
+    !deckUser?.tournamentId
       ? true
-      : (() => {
-          // Respeta la ventana de edición para mazos asociados a torneos.
-          const deadline = new Date(assignedAt);
-          deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
-          return new Date() <= deadline;
-        })();
+      : isCompetitiveTier
+        ? tournamentStatus === "pending"
+        : !assignedAt
+          ? true
+          : (() => {
+              // Respeta la ventana de edición para mazos asociados a torneos.
+              const deadline = new Date(assignedAt);
+              deadline.setDate(
+                deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS,
+              );
+              return new Date() <= deadline;
+            })();
   const canDeleteDeck = Boolean(deckUser?.id) && isOwnerDeck && canEditDeck;
 
   return (
@@ -158,3 +167,4 @@ export default async function Cards({ searchParams }: Props) {
     />
   );
 }
+

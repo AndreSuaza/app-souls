@@ -104,12 +104,17 @@ export const ProfileCurrentTournament = ({
     tournament?.status === "in_progress" &&
     !hasShownInProgressWarning;
 
+  const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(
+    tournament?.typeTournamentName ?? ""
+  );
   const hasAssociatedDeck = Boolean(associatedDeckId);
   const canAssociateDeck =
     enableDeckAssociation &&
     hasSession &&
     Boolean(currentPlayer) &&
-    tournament?.status === "finished" &&
+    (isCompetitiveTier
+      ? tournament?.status === "pending" || tournament?.status === "in_progress"
+      : tournament?.status === "finished") &&
     !hasAssociatedDeck;
   const canViewDeck =
     enableDeckAssociation && Boolean(currentPlayer) && hasAssociatedDeck;

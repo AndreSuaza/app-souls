@@ -34,6 +34,11 @@ export const getProfileTournament = async (input: Input) => {
       title: true,
       status: true,
       currentRoundNumber: true,
+      typeTournament: {
+        select: {
+          name: true,
+        },
+      },
       tournamentPlayers: {
         select: {
           id: true,
@@ -79,6 +84,7 @@ export const getProfileTournament = async (input: Input) => {
       title: tournament.title,
       status: tournament.status,
       currentRoundNumber: tournament.currentRoundNumber,
+      typeTournamentName: tournament.typeTournament?.name ?? null,
     },
     players: tournament.tournamentPlayers.map((player) => ({
       id: player.id,

@@ -92,6 +92,7 @@ export interface TournamentSnapshot {
     title: string;
     status: "pending" | "in_progress" | "finished" | "cancelled";
     currentRoundNumber: number;
+    typeTournamentName?: string | null;
   };
   players: TournamentPlayerInterface[];
   rounds: RoundInterface[];

@@ -44,28 +44,56 @@ export async function saveDeck(input: SaveDeckInput) {
       });
 
       if (existingDeck && existingDeck.userId === session.user.idd) {
+        let resolvedVisible = data.visible;
         if (existingDeck.tournamentId) {
-          const tournamentPlayer = await prisma.tournamentPlayer.findFirst({
-            where: {
-              deckId: existingDeck.id,
-              userId: session.user.idd,
-            },
+          const tournament = await prisma.tournament.findUnique({
+            where: { id: existingDeck.tournamentId },
             select: {
-              deckAssignedAt: true,
+              status: true,
+              typeTournament: {
+                select: { name: true },
+              },
             },
           });
 
-          // Bloquea edición del mazo de torneo cuando ya pasó la ventana permitida.
-          const lockStart =
-            tournamentPlayer?.deckAssignedAt ?? existingDeck.createdAt;
-          const deadline = new Date(lockStart);
-          deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
-          if (new Date() > deadline) {
-            return {
-              success: false,
-              message:
-                "Ya no puedes editar este mazo porque superaste el tiempo permitido.",
-            };
+          const tournamentTypeName = tournament?.typeTournament?.name ?? "";
+          const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(
+            tournamentTypeName,
+          );
+
+          if (isCompetitiveTier) {
+            // En Tier 1/2 solo se permite editar antes de iniciar el torneo.
+            if (tournament?.status !== "pending") {
+              return {
+                success: false,
+                message:
+                  "No puedes editar este mazo porque el torneo ya inició o finalizó.",
+              };
+            }
+            resolvedVisible = false;
+          } else {
+            const tournamentPlayer = await prisma.tournamentPlayer.findFirst({
+              where: {
+                deckId: existingDeck.id,
+                userId: session.user.idd,
+              },
+              select: {
+                deckAssignedAt: true,
+              },
+            });
+
+            // Bloquea edición del mazo de torneo cuando ya pasó la ventana permitida.
+            const lockStart =
+              tournamentPlayer?.deckAssignedAt ?? existingDeck.createdAt;
+            const deadline = new Date(lockStart);
+            deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
+            if (new Date() > deadline) {
+              return {
+                success: false,
+                message:
+                  "Ya no puedes editar este mazo porque superaste el tiempo permitido.",
+              };
+            }
           }
         }
 
@@ -77,7 +105,7 @@ export async function saveDeck(input: SaveDeckInput) {
             archetypeId: data.archetypesId,
             imagen: data.imgDeck,
             cards: data.deckList,
-            visible: data.visible,
+            visible: resolvedVisible,
             cardsNumber: data.cardsNumber,
           },
         });

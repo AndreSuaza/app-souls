@@ -27,6 +27,17 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
   const { tournament, players, rounds = EMPTY_ROUNDS, store } = tournamentData;
 
+  const whatsappLink = useMemo(() => {
+    if (!tournament?.title) return "";
+    const rawPhone = store.phone ?? "";
+    const normalizedPhone = rawPhone.replace(/\D/g, "");
+    if (!normalizedPhone) return "";
+    const message = `Hola, quiero inscribirme al torneo ${tournament.title}. ¿Me brindas más información?`;
+    return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(
+      message,
+    )}`;
+  }, [store.phone, tournament?.title]);
+
   // Valida coordenadas para renderizar el mapa solo si son confiables.
   const hasValidCoordinates =
     Number.isFinite(store.lat) &&
@@ -182,6 +193,18 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                     <p className="mt-1 text-base md:text-xl font-medium text-slate-700 dark:text-slate-200">
                       {tournament.description}
                     </p>
+                  </div>
+                )}
+                {tournament.status === "pending" && whatsappLink && (
+                  <div className="mt-4">
+                    <Link
+                      href={whatsappLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:bg-purple-700"
+                    >
+                      Inscribirse
+                    </Link>
                   </div>
                 )}
               </div>

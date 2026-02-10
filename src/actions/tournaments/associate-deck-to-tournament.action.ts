@@ -38,6 +38,11 @@ export async function associateDeckToTournamentAction(
       tournament: {
         select: {
           status: true,
+          typeTournament: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
@@ -47,7 +52,20 @@ export async function associateDeckToTournamentAction(
     throw new Error("No estas registrado en este torneo.");
   }
 
-  if (tournamentPlayer.tournament.status !== "finished") {
+  const tournamentTypeName =
+    tournamentPlayer.tournament.typeTournament?.name ?? "";
+  const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(tournamentTypeName);
+
+  if (isCompetitiveTier) {
+    if (
+      tournamentPlayer.tournament.status !== "pending" &&
+      tournamentPlayer.tournament.status !== "in_progress"
+    ) {
+      throw new Error(
+        "Solo puedes asociar un mazo antes o durante el torneo.",
+      );
+    }
+  } else if (tournamentPlayer.tournament.status !== "finished") {
     throw new Error(
       "Solo puedes asociar un mazo cuando el torneo ha finalizado.",
     );
@@ -57,7 +75,7 @@ export async function associateDeckToTournamentAction(
     throw new Error("Ya tienes un mazo asociado a este torneo.");
   }
 
-  if (tournamentPlayer.deckAssignedAt) {
+  if (!isCompetitiveTier && tournamentPlayer.deckAssignedAt) {
     const deadline = new Date(tournamentPlayer.deckAssignedAt);
     deadline.setDate(deadline.getDate() + MAX_DECK_ASSOCIATION_DAYS);
     if (new Date() > deadline) {
@@ -114,8 +132,8 @@ export async function associateDeckToTournamentAction(
         imagen: deck.imagen,
         cards: deck.cards,
         cardsNumber: deck.cardsNumber,
-        // Los mazos asociados a torneos siempre deben quedar públicos.
-        visible: true,
+        // En Tier 1/2 el mazo debe quedar privado hasta finalizar el torneo.
+        visible: isCompetitiveTier ? false : true,
         archetypeId: deck.archetypeId,
         tournamentId,
       },
