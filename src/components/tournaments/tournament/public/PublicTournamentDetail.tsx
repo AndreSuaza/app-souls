@@ -11,6 +11,7 @@ import { useToastStore, useUIStore } from "@/store";
 import { MatchCard } from "../current-round/MarchCard";
 import { RoundHistoryCardBase } from "../hisotry/RoundHistoryCardBase";
 import { ResultButton } from "../current-round/ResultButton";
+import { orderMatchesByBye } from "@/utils/matches";
 
 type Props = {
   initialTournament: PublicTournamentDetail;
@@ -49,6 +50,10 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
     if (rounds.length === 0) return undefined;
     return rounds[rounds.length - 1];
   }, [rounds]);
+  const orderedCurrentMatches = useMemo(
+    () => orderMatchesByBye(currentRound?.matches ?? []),
+    [currentRound?.matches],
+  );
 
   // Ordena la ronda actual primero y luego el resto en descendente.
   const historyRounds = useMemo(() => {
@@ -279,7 +284,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
                   {currentRound ? (
                     <div className="flex flex-col gap-3">
-                      {currentRound.matches.map((match, index) => (
+                      {orderedCurrentMatches.map((match, index) => (
                         <MatchCard
                           key={match.id}
                           match={stripMatchResult(match)}

@@ -12,6 +12,7 @@ type PlayerListViewProps = {
   players: TournamentPlayerInterface[];
   isFinished?: boolean;
   showMissingDeckIndicator?: boolean;
+  onDeckClick?: (payload: { playerId: string; deckId: string }) => void;
   onDelete?: (playerId: string) => void;
 };
 
@@ -19,8 +20,11 @@ export const PlayerListView = ({
   players,
   isFinished = false,
   showMissingDeckIndicator = false,
+  onDeckClick,
   onDelete,
 }: PlayerListViewProps) => {
+  const shouldUseDeckModal = Boolean(onDeckClick);
+
   return (
     <ul>
       {players.map((p, idx) => (
@@ -55,15 +59,28 @@ export const PlayerListView = ({
               </div>
 
               {p.deckId ? (
-                <Link
-                  href={`/mazos/${p.deckId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Ver mazo jugado"
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-purple-300"
-                >
-                  <TbCardsFilled className="h-4 w-4" />
-                </Link>
+                shouldUseDeckModal ? (
+                  <button
+                    type="button"
+                    title="Gestionar mazo asociado"
+                    onClick={() =>
+                      onDeckClick?.({ playerId: p.id, deckId: p.deckId! })
+                    }
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-purple-300"
+                  >
+                    <TbCardsFilled className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <Link
+                    href={`/mazos/${p.deckId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Ver mazo jugado"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-purple-300"
+                  >
+                    <TbCardsFilled className="h-4 w-4" />
+                  </Link>
+                )
               ) : (
                 showMissingDeckIndicator && (
                   <span

@@ -118,7 +118,7 @@ export default async function Cards({ searchParams }: Props) {
     !deckUser?.tournamentId
       ? true
       : isCompetitiveTier
-        ? tournamentStatus === "pending"
+        ? false
         : (() => {
             if (
               tournamentStatus === "pending" ||

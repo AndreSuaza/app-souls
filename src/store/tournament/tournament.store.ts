@@ -12,6 +12,7 @@ import {
   startRoundAction,
   deleteTournamentAction,
   updateTournamentInfoAction,
+  removeTournamentDeckAction,
 } from "@/actions";
 import { applySwissResults, calculateBuchholzForPlayers } from "@/logic";
 import {
@@ -71,6 +72,7 @@ type TournamentStoreState = {
   startCurrentRound: () => Promise<void>;
   recalculateCurrentRound: () => Promise<boolean>;
   deleteTournament: () => Promise<boolean>;
+  removePlayerDeck: (playerId: string) => Promise<boolean>;
   updateTournamentInfo: (data: {
     title: string;
     description?: string | null;
@@ -744,6 +746,33 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     } catch (error) {
       console.error(error);
       set({ error: "Error cancelando el torneo" });
+      return false;
+    }
+  },
+
+  removePlayerDeck: async (playerId: string) => {
+    const { tournamentId, tournament, players } = get();
+    if (!tournamentId || !tournament) return false;
+
+    const player = players.find((p) => p.id === playerId);
+    if (!player?.deckId) return false;
+
+    try {
+      await removeTournamentDeckAction({
+        tournamentId,
+        tournamentPlayerId: playerId,
+      });
+
+      set({
+        players: players.map((current) =>
+          current.id === playerId ? { ...current, deckId: undefined } : current,
+        ),
+      });
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error removiendo el mazo del jugador" });
       return false;
     }
   },

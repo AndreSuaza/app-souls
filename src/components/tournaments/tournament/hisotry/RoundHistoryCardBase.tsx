@@ -8,6 +8,7 @@ import {
   RoundInterface,
   TournamentPlayerInterface,
 } from "@/interfaces";
+import { orderMatchesByBye } from "@/utils/matches";
 import { RoundStatusBadge } from "./RoundStatusBadge";
 import { MatchCard } from "../current-round/MarchCard";
 import { IoChevronDown, IoChevronUp } from "react-icons/io5";
@@ -90,15 +91,18 @@ export const RoundHistoryCardBase = ({
     }
   }, [allowExpand, defaultExpanded, isControlled]);
 
-  const totalMatches = matches.length;
-  const completedMatches = matches.filter(
+  const orderedMatches = useMemo(() => orderMatchesByBye(matches), [matches]);
+  const totalMatches = orderedMatches.length;
+  const completedMatches = orderedMatches.filter(
     (match) => match.result !== null
   ).length;
 
   const visibleMatches = useMemo(() => {
-    if (!maxVisibleMatches) return matches;
-    return showAll ? matches : matches.slice(0, maxVisibleMatches);
-  }, [matches, maxVisibleMatches, showAll]);
+    if (!maxVisibleMatches) return orderedMatches;
+    return showAll
+      ? orderedMatches
+      : orderedMatches.slice(0, maxVisibleMatches);
+  }, [orderedMatches, maxVisibleMatches, showAll]);
 
   return (
     <div
@@ -199,7 +203,7 @@ export const RoundHistoryCardBase = ({
               </div>
             ))}
 
-            {maxVisibleMatches && matches.length > maxVisibleMatches && (
+            {maxVisibleMatches && orderedMatches.length > maxVisibleMatches && (
               <div className="flex justify-center mt-4">
                 <button
                   onClick={() => setShowAll((prev) => !prev)}
@@ -210,7 +214,7 @@ export const RoundHistoryCardBase = ({
                 >
                   {showAll
                     ? "Mostrar menos"
-                    : `Ver las ${matches.length} partidas`}
+                    : `Ver las ${orderedMatches.length} partidas`}
                 </button>
               </div>
             )}

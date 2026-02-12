@@ -57,12 +57,10 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
     const now = new Date();
 
     if (isCompetitiveTier) {
-      // En Tier 1/2 no se permite eliminar el mazo después de iniciar el torneo.
-      if (tournament.status !== "pending") {
-        throw new Error(
-          "No puedes eliminar este mazo porque el torneo ya inició o finalizó.",
-        );
-      }
+      // En Tier 1/2 el mazo asociado queda bloqueado desde la asociacion.
+      throw new Error(
+        "No puedes eliminar este mazo porque está asociado a un torneo competitivo.",
+      );
     } else {
       const canDeleteDuring =
         tournament.status === "pending" || tournament.status === "in_progress";

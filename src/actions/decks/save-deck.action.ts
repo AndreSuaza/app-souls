@@ -71,14 +71,12 @@ export async function saveDeck(input: SaveDeckInput) {
           const now = new Date();
 
           if (isCompetitiveTier) {
-            // En Tier 1/2 solo se permite editar antes de iniciar el torneo.
-            if (tournament.status !== "pending") {
-              return {
-                success: false,
-                message:
-                  "No puedes editar este mazo porque el torneo ya inició o finalizó.",
-              };
-            }
+            // En Tier 1/2 el mazo asociado queda bloqueado desde la asociacion.
+            return {
+              success: false,
+              message:
+                "No puedes editar este mazo porque está asociado a un torneo competitivo.",
+            };
           } else {
             const canEditDuring =
               tournament.status === "pending" ||

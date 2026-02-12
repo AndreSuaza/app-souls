@@ -25,6 +25,7 @@ export * from "./tournaments/get-tournament.action";
 export * from "./tournaments/get-tournament-summary.action";
 export * from "./tournaments/save-match-result.action";
 export * from "./tournaments/recalculate-round.action";
+export * from "./tournaments/remove-tournament-deck.action";
 export * from "./tournaments/search-users.action";
 export * from "./tournaments/start-round.action";
 export * from "./tournaments/tournaments-pagination";

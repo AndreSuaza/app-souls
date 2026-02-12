@@ -19,6 +19,8 @@ import { GiCardDraw } from "react-icons/gi";
 import { TbCardsFilled } from "react-icons/tb";
 import { Modal } from "../ui/modal/modal";
 import { UserDeckLibrary } from "../mazos/deck-library/UserDeckLibrary";
+import { TournamentDeckConfirmModal } from "./TournamentDeckConfirmModal";
+import { orderMatchesByBye } from "@/utils/matches";
 
 const EMPTY_ROUNDS: [] = [];
 
@@ -60,9 +62,14 @@ export const ProfileCurrentTournament = ({
     currentPlayer?.deckId ?? null,
   );
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
+  const [isDeckConfirmModalOpen, setIsDeckConfirmModalOpen] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
   const currentRound =
     rounds.length > 0 ? rounds[rounds.length - 1] : undefined;
-
+  const orderedCurrentMatches = useMemo(
+    () => orderMatchesByBye(currentRound?.matches ?? []),
+    [currentRound?.matches],
+  );
   useEffect(() => {
     setAssociatedDeckId(currentPlayer?.deckId ?? null);
   }, [currentPlayer?.deckId]);
@@ -80,6 +87,9 @@ export const ProfileCurrentTournament = ({
     currentRound && currentMatchIndex >= 0
       ? currentRound.matches[currentMatchIndex]
       : null;
+  const orderedCurrentMatchIndex = currentMatch
+    ? orderedCurrentMatches.findIndex((match) => match.id === currentMatch.id)
+    : -1;
 
   // Coloca la ronda actual primero (si existe) y luego ordena el resto en descendente.
   const historyRounds = useMemo(() => {
@@ -136,6 +146,33 @@ export const ProfileCurrentTournament = ({
     setIsDeckModalOpen(true);
   };
 
+  const handleAssociateDeck = async (deckId: string) => {
+    if (!tournament) return false;
+    showLoading("Asociando mazo...");
+    try {
+      const result = await associateDeckToTournamentAction({
+        tournamentId: tournament.id,
+        deckId,
+      });
+      setAssociatedDeckId(result.deckId);
+      setIsDeckModalOpen(false);
+      setIsDeckConfirmModalOpen(false);
+      setSelectedDeck(null);
+      showToast("Mazo asociado correctamente.", "success");
+      return true;
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudo asociar el mazo.",
+        "error",
+      );
+      return false;
+    } finally {
+      hideLoading();
+    }
+  };
+
   const handleDeckSelect = (
     deck: Deck,
     event: MouseEvent<HTMLAnchorElement>,
@@ -144,36 +181,30 @@ export const ProfileCurrentTournament = ({
     event.stopPropagation();
     if (!tournament) return;
 
+    if (isCompetitiveTier) {
+      // En Tier 1/2 se muestra el detalle completo antes de confirmar.
+      setSelectedDeck(deck);
+      setIsDeckModalOpen(false);
+      setIsDeckConfirmModalOpen(true);
+      return;
+    }
     openAlertConfirmation({
       text: "¿Deseas asociar este mazo al torneo?",
       description:
         "Se duplicará el mazo seleccionado y quedará asociado a este torneo.",
-      action: async () => {
-        showLoading("Asociando mazo...");
-        try {
-          const result = await associateDeckToTournamentAction({
-            tournamentId: tournament.id,
-            deckId: deck.id,
-          });
-          setAssociatedDeckId(result.deckId);
-          setIsDeckModalOpen(false);
-          showToast("Mazo asociado correctamente.", "success");
-          return true;
-        } catch (error) {
-          showToast(
-            error instanceof Error
-              ? error.message
-              : "No se pudo asociar el mazo.",
-            "error",
-          );
-          return false;
-        } finally {
-          hideLoading();
-        }
-      },
+      action: async () => await handleAssociateDeck(deck.id),
     });
   };
+  const handleChangeSelectedDeck = () => {
+    setIsDeckConfirmModalOpen(false);
+    setSelectedDeck(null);
+    setIsDeckModalOpen(true);
+  };
 
+  const handleCloseDeckConfirmModal = () => {
+    setIsDeckConfirmModalOpen(false);
+    setSelectedDeck(null);
+  };
   useEffect(() => {
     if (!shouldShowWarning) return;
     showToast("Tienes mas de un torneo en progreso registrado.", "warning");
@@ -310,7 +341,11 @@ export const ProfileCurrentTournament = ({
                 {currentRound && currentMatch ? (
                   <MatchCard
                     match={stripMatchResult(currentMatch)}
-                    tableNumber={currentMatchIndex + 1}
+                    tableNumber={
+                      orderedCurrentMatchIndex >= 0
+                        ? orderedCurrentMatchIndex + 1
+                        : currentMatchIndex + 1
+                    }
                     players={players}
                     readOnly
                     decorated
@@ -415,6 +450,18 @@ export const ProfileCurrentTournament = ({
           </div>
         </Modal>
       )}
+
+      {isDeckConfirmModalOpen && selectedDeck && (
+        <TournamentDeckConfirmModal
+          deck={selectedDeck}
+          hasSession={hasSession}
+          onConfirm={() => handleAssociateDeck(selectedDeck.id)}
+          onChangeDeck={handleChangeSelectedDeck}
+          onClose={handleCloseDeckConfirmModal}
+        />
+      )}
     </div>
   );
 };
+
+

@@ -1,12 +1,18 @@
 "use client";
 
+import { useMemo } from "react";
 import { useTournamentStore } from "@/store";
 import { MatchCard } from "./MarchCard";
+import { orderMatchesByBye } from "@/utils/matches";
 
 export const RoundMatchesSection = () => {
   const { rounds, players } = useTournamentStore();
 
   const currentRound = rounds[rounds.length - 1];
+  const orderedMatches = useMemo(
+    () => orderMatchesByBye(currentRound?.matches ?? []),
+    [currentRound?.matches],
+  );
 
   if (!currentRound) {
     return (
@@ -34,7 +40,7 @@ export const RoundMatchesSection = () => {
 
       {/* Matches */}
       <div className="flex flex-col gap-3">
-        {currentRound.matches.map((match, index) => (
+        {orderedMatches.map((match, index) => (
           <MatchCard
             key={match.id}
             match={match}
