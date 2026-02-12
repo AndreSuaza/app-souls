@@ -13,8 +13,6 @@ import {
   IoTrash,
 } from "react-icons/io5";
 import { GiCardExchange } from "react-icons/gi";
-import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
 import { RiFullscreenExitLine, RiFullscreenLine } from "react-icons/ri";
 import { RiEraserLine } from "react-icons/ri";
 import { Modal, Decklistimage, SaveDeckForm } from "@/components";
@@ -383,21 +381,6 @@ export const OptionsDeckCreator = ({
     "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:border-purple-400 hover:text-purple-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300";
   const primaryActionButtonClass =
     "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-amber-100 p-2 text-amber-700 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-amber-400/10 dark:text-amber-300";
-  const shareIconButtonClass =
-    "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200";
-
-  const whatsappShareLink = deckList
-    ? `https://wa.me/?text=${encodeURIComponent(deckList)}`
-    : "https://wa.me/";
-  const facebookShareLink = deckList
-    ? `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        deckList,
-      )}`
-    : "https://www.facebook.com/sharer/sharer.php?u=";
-  const xShareLink = deckList
-    ? `https://twitter.com/intent/tweet?url=${encodeURIComponent(deckList)}`
-    : "https://twitter.com/intent/tweet";
-
   const resolvedDeckId =
     saveMode === "clone"
       ? undefined
@@ -604,38 +587,6 @@ export const OptionsDeckCreator = ({
                   <IoCopyOutline className="h-5 w-5" />
                   Copiar enlace
                 </button>
-                <div className="flex items-center justify-center gap-3">
-                  <Link
-                    href={whatsappShareLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Compartir en WhatsApp"
-                    aria-label="Compartir en WhatsApp"
-                    className={shareIconButtonClass}
-                  >
-                    <FaWhatsapp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                  </Link>
-                  <Link
-                    href={facebookShareLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Compartir en Facebook"
-                    aria-label="Compartir en Facebook"
-                    className={shareIconButtonClass}
-                  >
-                    <FaFacebookF className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </Link>
-                  <Link
-                    href={xShareLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Compartir en X"
-                    aria-label="Compartir en X"
-                    className={shareIconButtonClass}
-                  >
-                    <FaXTwitter className="h-5 w-5 text-slate-900 dark:text-white" />
-                  </Link>
-                </div>
               </div>
               {copyState && (
                 <p className="text-sm font-semibold text-lime-600 dark:text-lime-400">

@@ -82,12 +82,70 @@ export async function getUserDecksFilteredAction(input: DeckFiltersInput) {
     },
   });
 
+  const tournamentIds = Array.from(
+    new Set(
+      decks
+        .map((deck) => deck.tournamentId)
+        .filter((tournamentId): tournamentId is string =>
+          Boolean(tournamentId),
+        ),
+    ),
+  );
+
+  const tournaments = tournamentIds.length
+    ? await prisma.tournament.findMany({
+        where: { id: { in: tournamentIds } },
+        select: {
+          id: true,
+          status: true,
+          finishedAt: true,
+          typeTournament: {
+            select: { name: true },
+          },
+        },
+      })
+    : [];
+
+  const tournamentMap = new Map(
+    tournaments.map((tournament) => [
+      tournament.id,
+      {
+        id: tournament.id,
+        status: tournament.status,
+        finishedAt: tournament.finishedAt
+          ? tournament.finishedAt.toISOString()
+          : null,
+        typeTournamentName: tournament.typeTournament?.name ?? null,
+      },
+    ]),
+  );
+
+  // Trae los likes del usuario para pintar el corazon solo cuando el usuario realmente dio like.
+  const likedDeckIds = decks.length
+    ? (
+        await prisma.like.findMany({
+          where: {
+            userId,
+            deckId: { in: decks.map((deck) => deck.id) },
+          },
+          select: { deckId: true },
+        })
+      ).map((like) => like.deckId)
+    : [];
+
+  const decksWithTournament = decks.map((deck) => ({
+    ...deck,
+    tournament: deck.tournamentId
+      ? tournamentMap.get(deck.tournamentId) ?? null
+      : null,
+  }));
+
   return {
-    decks,
+    decks: decksWithTournament,
     totalCount,
     totalPages,
     currentPage,
     perPage,
-    likedDeckIds: [],
+    likedDeckIds,
   };
 }

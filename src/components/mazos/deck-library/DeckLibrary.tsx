@@ -38,6 +38,7 @@ interface Props {
   showLikeButton?: boolean;
   disableLikeButton?: boolean;
   showDeleteButton?: boolean;
+  canDeleteDeck?: (deck: Deck) => boolean;
   onDeleteDeck?: (deckId: string) => void;
   getDeckHref?: (deck: Deck) => string;
   onDeckSelect?: (deck: Deck, event: MouseEvent<HTMLAnchorElement>) => void;
@@ -102,6 +103,7 @@ export function DeckLibrary({
   showLikeButton = true,
   disableLikeButton = false,
   showDeleteButton = false,
+  canDeleteDeck,
   onDeleteDeck,
   getDeckHref,
   onDeckSelect,
@@ -372,22 +374,28 @@ export function DeckLibrary({
                     gridTemplateColumns: `repeat(${autoColumns}, minmax(0, 1fr))`,
                   }}
                 >
-                  {decks.map((deck) => (
-                    <li key={deck.id} className="h-full">
-                      <DeckCard
-                        mazo={deck}
-                        hasSession={hasSession}
-                        isLiked={likedDecksSet.has(deck.id)}
-                        onLikedChange={handleLikedChange}
-                        showLikeButton={showLikeButton}
-                        disableLikeButton={disableLikeButton}
-                        showDeleteButton={showDeleteButton}
-                        onDeleteClick={onDeleteDeck}
-                        href={getDeckHref ? getDeckHref(deck) : undefined}
-                        onCardClick={onDeckSelect}
-                      />
-                    </li>
-                  ))}
+                  {decks.map((deck) => {
+                    const canDelete = showDeleteButton
+                      ? canDeleteDeck?.(deck) ?? true
+                      : false;
+
+                    return (
+                      <li key={deck.id} className="h-full">
+                        <DeckCard
+                          mazo={deck}
+                          hasSession={hasSession}
+                          isLiked={likedDecksSet.has(deck.id)}
+                          onLikedChange={handleLikedChange}
+                          showLikeButton={showLikeButton}
+                          disableLikeButton={disableLikeButton}
+                          showDeleteButton={canDelete}
+                          onDeleteClick={onDeleteDeck}
+                          href={getDeckHref ? getDeckHref(deck) : undefined}
+                          onCardClick={onDeckSelect}
+                        />
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

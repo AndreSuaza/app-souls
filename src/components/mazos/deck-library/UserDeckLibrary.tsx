@@ -10,6 +10,7 @@ import { useUserDecksStore } from "@/store";
 interface Props {
   archetypes: ArchetypeOption[];
   hasSession: boolean;
+  disableLikeButton?: boolean;
   onSelect?: (deck: Deck, event: MouseEvent<HTMLAnchorElement>) => void;
   refreshToken?: number;
   onDeleteDeck?: (deckId: string) => void;
@@ -27,6 +28,7 @@ interface Props {
 export function UserDeckLibrary({
   archetypes,
   hasSession,
+  disableLikeButton = true,
   onSelect,
   refreshToken,
   onDeleteDeck,
@@ -36,6 +38,8 @@ export function UserDeckLibrary({
   tournamentFilter,
   emptyStateText,
 }: Props) {
+  const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
+
   const {
     decks,
     pagination,
@@ -117,6 +121,33 @@ export function UserDeckLibrary({
       })
     : undefined;
 
+  const canDeleteDeck = (deck: Deck) => {
+    if (!deck.tournamentId) return true;
+
+    const tournament = deck.tournament;
+    if (!tournament) return false;
+
+    const tournamentTypeName = tournament.typeTournamentName ?? "";
+    const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(tournamentTypeName);
+
+    if (isCompetitiveTier) {
+      // En Tier 1/2 el mazo asociado queda bloqueado desde la asociación.
+      return false;
+    }
+
+    if (tournament.status === "pending" || tournament.status === "in_progress") {
+      return true;
+    }
+
+    if (tournament.status !== "finished" || !tournament.finishedAt) {
+      return false;
+    }
+
+    const deadline = new Date(tournament.finishedAt);
+    deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
+    return new Date() <= deadline;
+  };
+
   return (
     <DeckLibrary
       initialDecks={decks}
@@ -133,7 +164,8 @@ export function UserDeckLibrary({
       fetchDecksAction={fetchDecks}
       disableUrlSync
       showLikeButton
-      disableLikeButton
+      disableLikeButton={disableLikeButton}
+      canDeleteDeck={onDeleteDeck ? canDeleteDeck : undefined}
       hideFilters
       headerContent={headerContent}
       statsAction={statsAction}

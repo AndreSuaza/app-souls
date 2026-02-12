@@ -12,6 +12,7 @@ export interface DeckArchetype {
 export interface DeckTournamentInfo {
   id: string;
   status: string;
+  finishedAt?: string | null;
   typeTournamentName?: string | null;
 }
 
