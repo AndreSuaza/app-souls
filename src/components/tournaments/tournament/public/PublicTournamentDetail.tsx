@@ -5,7 +5,7 @@ import Link from "next/link";
 import { IoLocationOutline, IoStorefrontOutline } from "react-icons/io5";
 import { FiRefreshCw } from "react-icons/fi";
 import { getPublicTournamentDetailAction } from "@/actions";
-import { Map, TournamentRankingPanel } from "@/components";
+import { Map, MarkdownContent, TournamentRankingPanel } from "@/components";
 import { type MatchInterface, type PublicTournamentDetail } from "@/interfaces";
 import { useToastStore, useUIStore } from "@/store";
 import { MatchCard } from "../current-round/MarchCard";
@@ -196,9 +196,10 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
                 {tournament.description && (
                   <div className="mt-3">
-                    <p className="mt-1 text-base md:text-xl font-medium text-slate-700 dark:text-slate-200">
-                      {tournament.description}
-                    </p>
+                    <MarkdownContent
+                      content={tournament.description}
+                      className="text-base md:text-xl"
+                    />
                   </div>
                 )}
                 {tournament.status === "pending" && whatsappLink && (
