@@ -171,51 +171,51 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
         <div className="relative z-10 w-full rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:p-8 flex flex-col gap-8">
           <div className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-4">
               <div className="rounded-xl border border-tournament-dark-accent bg-white p-5 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                <IoStorefrontOutline className="text-purple-600 dark:text-purple-300" />
-                Tienda organizadora
-              </div>
-              <h2 className="mt-3 text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-                {store.name}
-              </h2>
-
-              <div className="mt-4 grid gap-3 text-sm text-slate-600 dark:text-slate-300">
-                <div className="flex items-start gap-x-3 text-xl">
-                  <IoLocationOutline className="mt-1.5 text-purple-600 dark:text-purple-300" />
-                  <div>
-                    <p>
-                      {store.city}, {store.country}
-                    </p>
-                    <p className="text-slate-600 dark:text-slate-300">
-                      {store.address}
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+                  <IoStorefrontOutline className="text-purple-600 dark:text-purple-300" />
+                  Tienda organizadora
                 </div>
+                <h2 className="mt-3 text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+                  {store.name}
+                </h2>
 
-                {tournament.description && (
-                  <div className="mt-3">
-                    <MarkdownContent
-                      content={tournament.description}
-                      className="text-base md:text-xl"
-                    />
+                <div className="mt-4 grid gap-3 text-sm text-slate-600 dark:text-slate-300">
+                  <div className="flex items-start gap-x-3 text-xl">
+                    <IoLocationOutline className="mt-1.5 text-purple-600 dark:text-purple-300" />
+                    <div>
+                      <p>
+                        {store.city}, {store.country}
+                      </p>
+                      <p className="text-slate-600 dark:text-slate-300">
+                        {store.address}
+                      </p>
+                    </div>
                   </div>
-                )}
-                {tournament.status === "pending" && whatsappLink && (
-                  <div className="mt-4">
-                    <Link
-                      href={whatsappLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:bg-purple-700"
-                    >
-                      Inscribirse
-                    </Link>
-                  </div>
-                )}
+
+                  {tournament.description && (
+                    <div className="mt-3">
+                      <MarkdownContent
+                        content={tournament.description}
+                        className="text-base md:text-xl"
+                      />
+                    </div>
+                  )}
+                  {tournament.status === "pending" && whatsappLink && (
+                    <div className="mt-4">
+                      <Link
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:bg-purple-700"
+                      >
+                        Inscribirse
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
               <div className="rounded-xl border border-tournament-dark-accent bg-white p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
                 {hasValidCoordinates ? (
@@ -232,7 +232,6 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                 )}
               </div>
             </div>
-
           {tournament && (
             <div className="space-y-4">
               <div className="rounded-xl border border-tournament-dark-accent bg-white p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
@@ -371,3 +370,5 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
     </div>
   );
 }
+
+
