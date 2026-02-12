@@ -74,7 +74,7 @@ export const TournamentDeckConfirmModal = ({
       close={onClose}
     >
       <div className="flex max-h-[90vh] w-full flex-col overflow-hidden">
-        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 pr-16 sm:pr-5 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
           <p className="text-sm font-semibold text-slate-900 dark:text-white sm:text-base">
             ¿Estás seguro de que este es el mazo que deseas asociar?
           </p>
