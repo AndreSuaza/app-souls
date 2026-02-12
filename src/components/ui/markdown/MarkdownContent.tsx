@@ -2,10 +2,10 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import React, { isValidElement } from "react";
+import React, { isValidElement, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeSanitize from "rehype-sanitize";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { Components } from "react-markdown";
 import { MarkdownDeckPreview } from "./MarkdownDeckPreview";
 import { MarkdownCardImage } from "./MarkdownCardImage";
@@ -13,6 +13,21 @@ import { MarkdownCardImage } from "./MarkdownCardImage";
 type Props = {
   content: string;
   className?: string;
+};
+
+const normalizeImageParagraphs = (value: string) => {
+  if (!value) return value;
+  // Junta imagenes separadas por lineas en blanco para renderizarlas en una sola fila.
+  return value.replace(
+    /(!\[[^\]]*]\([^)]*\))\s*\n\s*\n(?=\s*!\[[^\]]*]\([^)]*\))/g,
+    "$1\n",
+  );
+};
+
+// Permite <u> para el subrayado sin abrir el resto del HTML arbitrario.
+const markdownSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames ?? []), "u"],
 };
 
 type HastNode = {
@@ -231,15 +246,20 @@ const components: Components = {
 };
 
 export function MarkdownContent({ content, className }: Props) {
+  const normalizedContent = useMemo(
+    () => normalizeImageParagraphs(content),
+    [content],
+  );
+
   return (
     <ReactMarkdown
       className={clsx("space-y-3", className)}
       remarkPlugins={[remarkGfm]}
       // Se sanitiza el HTML para evitar inyecciones cuando el contenido viene de usuarios.
-      rehypePlugins={[rehypeSanitize]}
+      rehypePlugins={[[rehypeSanitize, markdownSchema]]}
       components={components}
     >
-      {content}
+      {normalizedContent}
     </ReactMarkdown>
   );
 }

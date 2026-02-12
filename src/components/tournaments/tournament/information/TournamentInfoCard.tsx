@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { IoTrashOutline } from "react-icons/io5";
 import { DateTimeFields } from "../../crear-torneo/DateTimeFields";
+import { MarkdownContent } from "@/components/ui/markdown/MarkdownContent";
+import { MarkdownEditor } from "@/components/ui/markdown/MarkdownEditor";
 
 interface TournamentForm {
   title: string;
@@ -28,6 +31,14 @@ export const TournamentInfoCard = ({
 }: TournamentInfoCardProps) => {
   const date = form.date.toISOString().split("T")[0];
   const time = form.date.toTimeString().slice(0, 5);
+  // Alterna entre la vista previa y el editor del markdown.
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  // Ajusta el limite segun el tier del torneo.
+  const descriptionMaxLength =
+    typeTournamentName?.toLowerCase().includes("tier 1") ||
+    typeTournamentName?.toLowerCase().includes("tier 2")
+      ? 500
+      : 300;
 
   return (
     <div className="rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm space-y-6 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
@@ -59,19 +70,6 @@ export const TournamentInfoCard = ({
             value={form.title}
             disabled={isFinished}
             onChange={(e) => onChange({ ...form, title: e.target.value })}
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Descripción
-          </label>
-          <textarea
-            className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
-            rows={3}
-            value={form.description}
-            disabled={isFinished}
-            onChange={(e) => onChange({ ...form, description: e.target.value })}
           />
         </div>
 
@@ -111,6 +109,40 @@ export const TournamentInfoCard = ({
               disabled
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              Descripción
+            </label>
+            {!isFinished && (
+              <button
+                type="button"
+                onClick={() => setIsEditingDescription((prev) => !prev)}
+                className="rounded-md px-3 py-1 text-xs font-semibold text-purple-600 transition hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-500/10"
+              >
+                {isEditingDescription ? "Cerrar edici\u00f3n" : "Editar"}
+              </button>
+            )}
+          </div>
+
+          {isEditingDescription && !isFinished ? (
+            <MarkdownEditor
+              label={undefined}
+              value={form.description}
+              onChange={(value) => onChange({ ...form, description: value })}
+              placeholder="Describe el torneo usando markdown"
+              maxLength={descriptionMaxLength}
+            />
+          ) : (
+            <div className="rounded-lg border border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+              <MarkdownContent
+                content={form.description}
+                className="text-sm text-slate-700 dark:text-slate-200"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

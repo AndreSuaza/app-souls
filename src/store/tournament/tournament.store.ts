@@ -792,6 +792,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         description: data.description ?? undefined,
         date: data.date,
         status: tournament.status ?? "pending",
+        typeTournamentName: tournament.typeTournamentName ?? undefined,
       });
 
       // Actualización del store

@@ -1,6 +1,15 @@
+import { getCardImagesAction } from "@/actions";
 import { CreateTournamentForm } from "@/components";
 
-export default function CrearTorneoPage() {
+export default async function CrearTorneoPage() {
+  let cardImages: string[] = [];
+
+  try {
+    cardImages = await getCardImagesAction({});
+  } catch {
+    cardImages = [];
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
@@ -10,7 +19,7 @@ export default function CrearTorneoPage() {
         Ingresa los detalles para configurar tu torneo.
       </p>
 
-      <CreateTournamentForm />
+      <CreateTournamentForm cardImages={cardImages} />
     </div>
   );
 }

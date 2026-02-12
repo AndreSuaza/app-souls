@@ -10,14 +10,14 @@ export async function updateTournamentInfoAction(
   input: UpdateTournamentInfoInput
 ) {
   try {
-    const { status } = UpdateTournamentInfoSchema.parse(input);
+    const data = UpdateTournamentInfoSchema.parse(input);
 
-    if (status === "finished") {
+    if (data.status === "finished") {
       throw new Error("No se puede editar un torneo finalizado");
     }
 
-    // Validación con Zod
-    const data = UpdateTournamentInfoSchema.parse(input);
+
+
 
     await prisma.tournament.update({
       where: { id: data.tournamentId },
