@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 const adminRoutes = ["/admin"];
 // rutas a las que el usuario con role store puede acceder
 const storeAllowedAdminRoutes = ["/admin/torneos"];
+// rutas a las que el usuario con role news puede acceder
+const newsAllowedAdminRoutes = ["/admin/noticias"];
 const protectedRoutes = ["/perfil"];
 const authRoutes = [
   "/auth/login",
@@ -63,7 +65,7 @@ export default baseAuth((req) => {
 
     const role = req.auth?.user.role;
 
-    if (role !== "admin" && role !== "store") {
+    if (role !== "admin" && role !== "store" && role !== "news") {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
 
@@ -74,6 +76,16 @@ export default baseAuth((req) => {
       );
 
       // Si intenta acceder a cualquier otra ruta admin → bloquear
+      if (!isAllowed) {
+        return NextResponse.redirect(new URL("/", nextUrl));
+      }
+    }
+
+    if (role === "news") {
+      const isAllowed = newsAllowedAdminRoutes.some((allowedRoute) =>
+        path.startsWith(allowedRoute)
+      );
+
       if (!isAllowed) {
         return NextResponse.redirect(new URL("/", nextUrl));
       }

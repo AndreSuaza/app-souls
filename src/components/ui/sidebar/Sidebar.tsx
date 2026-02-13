@@ -27,6 +27,20 @@ export const Sidebar = () => {
   const closeMenu = useUIStore((state) => state.closeSideMenu);
   const { data: session } = useSession();
 
+  const adminShortcut = (() => {
+    const role = session?.user?.role;
+    if (role === "admin") {
+      return { label: "Administrar", href: "/admin/torneos" };
+    }
+    if (role === "store") {
+      return { label: "Torneos", href: "/admin/torneos" };
+    }
+    if (role === "news") {
+      return { label: "Noticias", href: "/admin/noticias" };
+    }
+    return null;
+  })();
+
   const handleClick = async () => {
     await signOut();
   };
@@ -178,14 +192,13 @@ export const Sidebar = () => {
                 Tu perfil
               </Link>
 
-              {(session.user.role === "store" ||
-                session.user.role === "admin") && (
+              {adminShortcut && (
                 <Link
-                  href="/admin/torneos"
+                  href={adminShortcut.href}
                   className="block w-full h-full mb-2 mt-2 p-1  pl-6 md:pl-0 hover:bg-gray-800 transition-transform"
                   onClick={closeMenu}
                 >
-                  Torneos
+                  {adminShortcut.label}
                 </Link>
               )}
 

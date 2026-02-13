@@ -16,3 +16,5 @@ export * from "./decks/delete-deck.schema";
 export * from "./cards/card-images.schema";
 export * from "./cards/card-search.schema";
 export * from "./cards/card-id.schema";
+
+export * from "./news/news.schema";

@@ -6,17 +6,25 @@ import clsx from "clsx";
 import { useUIStore } from "@/store";
 import {
   IoAddCircleOutline,
+  IoArrowBackOutline,
   IoCloseOutline,
   IoHomeOutline,
+  IoNewspaperOutline,
 } from "react-icons/io5";
 import { IoMdTrophy } from "react-icons/io";
 import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export const TournamentSidebar = () => {
   const isOpen = useUIStore((state) => state.isTournamentSidebarOpen);
   const close = useUIStore((state) => state.closeTournamentSidebar);
+  const { data: session } = useSession();
+  const role = session?.user?.role;
 
   const pathname = usePathname();
+  const isTournamentSection = pathname.startsWith("/admin/torneos");
+  const isNewsSection = pathname.startsWith("/admin/noticias");
+  const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
 
   const menuItems = [
     {
@@ -24,17 +32,74 @@ export const TournamentSidebar = () => {
       href: "/",
       icon: IoHomeOutline,
     },
-    {
-      label: "Nuevo torneo",
-      href: "/admin/torneos/crear-torneo",
-      icon: IoAddCircleOutline,
-    },
-    {
-      label: "Torneos",
-      href: "/admin/torneos",
-      icon: IoMdTrophy,
-    },
   ];
+
+  if (isAdminRoot) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Torneos",
+          href: "/admin/torneos",
+          icon: IoMdTrophy,
+        },
+        {
+          label: "Noticias",
+          href: "/admin/noticias",
+          icon: IoNewspaperOutline,
+        },
+      );
+    }
+  }
+
+  if (isTournamentSection) {
+    if (role === "admin" || role === "store") {
+      menuItems.push(
+        {
+          label: "Crear torneo",
+          href: "/admin/torneos/crear-torneo",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Torneos",
+          href: "/admin/torneos",
+          icon: IoMdTrophy,
+        },
+      );
+    }
+
+    if (role === "admin") {
+      menuItems.push({
+        label: "Panel de administración",
+        href: "/admin",
+        icon: IoArrowBackOutline,
+      });
+    }
+  }
+
+  if (isNewsSection) {
+    if (role === "admin" || role === "news") {
+      menuItems.push(
+        {
+          label: "Crear noticia",
+          href: "/admin/noticias/crear-noticia",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Noticias",
+          href: "/admin/noticias",
+          icon: IoNewspaperOutline,
+        },
+      );
+    }
+
+    if (role === "admin") {
+      menuItems.push({
+        label: "Panel de administración",
+        href: "/admin",
+        icon: IoArrowBackOutline,
+      });
+    }
+  }
 
   return (
     <>
@@ -51,7 +116,7 @@ export const TournamentSidebar = () => {
           {
             "translate-x-0": isOpen,
             "translate-x-full": !isOpen,
-          }
+          },
         )}
       >
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-tournament-dark-border">
@@ -81,7 +146,7 @@ export const TournamentSidebar = () => {
                       isActive,
                     "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white":
                       !isActive,
-                  }
+                  },
                 )}
               >
                 <Icon size={22} />

@@ -87,3 +87,6 @@ export * from "./tournaments/public/PublicTournamentsHero";
 export * from "./tournaments/public/PublicTournamentsList";
 export * from "./tournaments/public/PublicTournamentsMobileList";
 export * from "./tournaments/public/PublicTournamentsTable";
+
+export * from "./news/admin/AdminNewsList";
+export * from "./news/form/NewsForm";

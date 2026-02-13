@@ -18,6 +18,7 @@ enum Role {
   admin
   store
   seller
+  news
 }
 
 model Type {
@@ -288,6 +289,45 @@ model User {
 
   storeId String? @db.ObjectId
   store   Store?  @relation(fields: [storeId], references: [id])
+  news    News[]
+}
+
+enum NewsStatus {
+  draft
+  scheduled
+  published
+}
+
+model NewCategory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  image     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  news      News[]
+}
+
+model News {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  subtitle      String
+  shortSummary  String
+  content       String
+  featuredImage String
+  publishedAt   DateTime?
+  status        NewsStatus  @default(draft)
+  tags          String[]    @default([])
+  userId        String      @db.ObjectId
+  user          User        @relation(fields: [userId], references: [id])
+  newCategoryId String      @db.ObjectId
+  newCategory   NewCategory @relation(fields: [newCategoryId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([newCategoryId])
+  @@index([status])
+  @@index([publishedAt])
 }
 
 model Account {
