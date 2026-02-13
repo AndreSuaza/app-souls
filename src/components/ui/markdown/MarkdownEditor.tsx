@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import Image from "next/image";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -9,20 +9,27 @@ import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import ImageExtension from "@tiptap/extension-image";
 import { Markdown } from "@tiptap/markdown";
+import { mergeAttributes } from "@tiptap/core";
 import {
   FiBold,
   FiChevronDown,
   FiCode,
-  FiGrid,
   FiImage,
   FiItalic,
   FiLink,
   FiList,
   FiType,
   FiUnderline,
+  FiX,
 } from "react-icons/fi";
+import { GiCardDraw } from "react-icons/gi";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import { getCardByIdAction, getDeckById, searchCardsAction } from "@/actions";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { Modal } from "../modal/modal";
 import { getPlainTextLengthFromMarkdown } from "@/utils/markdown";
+import { useToastStore } from "@/store";
+import { MarkdownContent } from "./MarkdownContent";
 
 type Props = {
   label?: string;
@@ -31,7 +38,9 @@ type Props = {
   placeholder?: string;
   maxLength?: number;
   error?: string;
-  cardImages?: string[];
+  initialPreview?: boolean;
+  enablePreviewToggle?: boolean;
+  readOnly?: boolean;
 };
 
 const UnderlineHtml = Underline.extend({
@@ -40,18 +49,58 @@ const UnderlineHtml = Underline.extend({
   },
 });
 
-const normalizeCardPath = (input: string) => {
-  const trimmed = input.trim();
-  if (!trimmed) return "";
-  if (trimmed.startsWith("/")) return trimmed;
-  if (trimmed.startsWith("cards/")) return `/${trimmed}`;
-  return `/cards/${trimmed}`;
+const CardImageExtension = ImageExtension.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      preview: {
+        default: null,
+        renderHTML: (attributes) =>
+          attributes.preview ? { "data-preview": attributes.preview } : {},
+        parseHTML: (element) => element.getAttribute("data-preview") ?? null,
+      },
+    };
+  },
+  renderHTML({ HTMLAttributes }) {
+    const { src, "data-preview": dataPreview, ...rest } = HTMLAttributes;
+    const resolvedSrc = dataPreview || src;
+
+    return [
+      "img",
+      mergeAttributes(this.options.HTMLAttributes, rest, {
+        src: resolvedSrc,
+        "data-src": src,
+        ...(dataPreview ? { "data-preview": dataPreview } : {}),
+        style: "max-width: 190px; width: 100%; height: auto;",
+      }),
+    ];
+  },
+});
+
+type CardSearchResult = {
+  id: string;
+  idd: string;
+  code: string;
+  name: string;
 };
 
-const getAltFromSrc = (src: string) => {
-  const parts = src.split("/");
-  const file = parts[parts.length - 1] ?? "Carta";
-  return file.replace(".webp", "");
+type CardSearchResponse = {
+  cards: CardSearchResult[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  perPage: number;
+};
+
+const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
+const isCardReference = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith("http")) return false;
+  if (trimmed.includes("/")) return false;
+  if (trimmed.includes(".")) return false;
+  if (!/^[0-9a-zA-Z]+$/.test(trimmed)) return false;
+  return true;
 };
 
 export const MarkdownEditor = ({
@@ -61,23 +110,34 @@ export const MarkdownEditor = ({
   placeholder,
   maxLength,
   error,
-  cardImages = [],
+  initialPreview = false,
+  enablePreviewToggle = true,
+  readOnly = false,
 }: Props) => {
   const headingMenuRef = useRef<HTMLDivElement | null>(null);
   const listMenuRef = useRef<HTMLDivElement | null>(null);
+  const previewCacheRef = useRef(new Map<string, string>());
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [isHeadingMenuOpen, setIsHeadingMenuOpen] = useState(false);
   const [isListMenuOpen, setIsListMenuOpen] = useState(false);
   const [cardSearch, setCardSearch] = useState("");
-  const [manualCardPath, setManualCardPath] = useState("");
-  const [selectedCards, setSelectedCards] = useState<string[]>([]);
+  const [manualCardId, setManualCardId] = useState("");
+  const [manualCardError, setManualCardError] = useState<string | null>(null);
+  const [selectedCards, setSelectedCards] = useState<CardSearchResult[]>([]);
+  const [cardResults, setCardResults] = useState<CardSearchResult[]>([]);
+  const [cardPage, setCardPage] = useState(1);
+  const [cardTotalPages, setCardTotalPages] = useState(1);
+  const [cardTotalCount, setCardTotalCount] = useState(0);
+  const [isCardSearchLoading, setIsCardSearchLoading] = useState(false);
+  const [cardSearchError, setCardSearchError] = useState<string | null>(null);
   const [linkText, setLinkText] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
-  const [decklistValue, setDecklistValue] = useState("");
+  const [deckIdValue, setDeckIdValue] = useState("");
   const [, setEditorTick] = useState(0);
-
+  const [isPublicPreview, setIsPublicPreview] = useState(initialPreview);
+  const showToast = useToastStore((state) => state.showToast);
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -89,13 +149,14 @@ export const MarkdownEditor = ({
         openOnClick: false,
         autolink: false,
         HTMLAttributes: {
-          class: "text-purple-600 underline decoration-purple-300 dark:text-purple-300",
+          class:
+            "text-purple-600 underline decoration-purple-300 dark:text-purple-300",
         },
       }),
-      ImageExtension.configure({
+      CardImageExtension.configure({
         HTMLAttributes: {
           class:
-            "my-2 h-auto max-w-full rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border",
+            "my-2 inline-block h-auto w-[140px] max-w-full rounded-lg border border-slate-200 shadow-sm sm:w-[170px] md:w-[190px] dark:border-tournament-dark-border",
         },
       }),
       Markdown,
@@ -121,6 +182,30 @@ export const MarkdownEditor = ({
     },
   });
 
+  const updateCardPreview = useCallback(
+    (cardId: string, preview: string) => {
+      if (!editor) return;
+      editor.commands.command(({ tr }) => {
+        let updated = false;
+
+        tr.doc.descendants((node, pos) => {
+          if (node.type.name !== "image") return;
+          if (node.attrs?.src !== cardId) return;
+          if (node.attrs?.preview === preview) return;
+
+          tr.setNodeMarkup(pos, undefined, {
+            ...node.attrs,
+            preview,
+          });
+          updated = true;
+        });
+
+        return updated;
+      });
+    },
+    [editor],
+  );
+
   useEffect(() => {
     if (!editor) return;
     const current = editor.getMarkdown();
@@ -130,7 +215,74 @@ export const MarkdownEditor = ({
         contentType: "markdown",
       });
     }
-  }, [editor, value]);
+  }, [editor, value, updateCardPreview]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const originalCreateNodeViews = editor.createNodeViews.bind(editor);
+
+    editor.createNodeViews = () => {
+      // Evitamos flushSync en ciclos de vida de React al diferir el montaje de NodeViews.
+      setTimeout(() => {
+        if (!editor.isDestroyed) {
+          originalCreateNodeViews();
+        }
+      }, 0);
+    };
+
+    return () => {
+      editor.createNodeViews = originalCreateNodeViews;
+    };
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+    let isActive = true;
+
+    const resolveCardPreviews = async () => {
+      const ids = new Set<string>();
+
+      editor.state.doc.descendants((node) => {
+        if (node.type.name !== "image") return;
+        const src = typeof node.attrs?.src === "string" ? node.attrs.src : "";
+        const preview = node.attrs?.preview;
+        if (!isCardReference(src) || preview) return;
+        ids.add(src);
+      });
+
+      for (const id of ids) {
+        if (!isActive) return;
+        const cached = previewCacheRef.current.get(id);
+        if (cached) {
+          updateCardPreview(id, cached);
+          continue;
+        }
+        try {
+          const card = await getCardByIdAction({ cardId: id });
+          if (!card) continue;
+          const preview = `/cards/${card.code}-${card.idd}.webp`;
+          previewCacheRef.current.set(id, preview);
+          updateCardPreview(id, preview);
+        } catch {
+          // Si falla, dejamos el id para reintentar luego.
+        }
+      }
+    };
+
+    void resolveCardPreviews();
+
+    return () => {
+      isActive = false;
+    };
+  }, [editor, value, updateCardPreview]);
+
+  useEffect(() => {
+    if (readOnly) {
+      setIsPublicPreview(true);
+      return;
+    }
+    setIsPublicPreview(initialPreview);
+  }, [initialPreview, readOnly]);
 
   useEffect(() => {
     if (!editor) return;
@@ -162,45 +314,108 @@ export const MarkdownEditor = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredCards = useMemo(() => {
-    const term = cardSearch.trim().toLowerCase();
-    if (!term) return cardImages;
-    return cardImages.filter((name) => name.toLowerCase().includes(term));
-  }, [cardImages, cardSearch]);
+  useEffect(() => {
+    if (!isCardModalOpen) return;
 
-  const visibleCards = useMemo(() => {
-    // Evita renderizar demasiadas cartas en el modal para mantener la UI fluida.
-    return filteredCards.slice(0, 72);
-  }, [filteredCards]);
+    let isActive = true;
+    const searchTerm = cardSearch.trim();
 
-  const toggleCardSelection = (src: string) => {
+    // Limpia la lista al abrir/buscar para evitar mostrar resultados anteriores.
+    setCardResults([]);
+    setCardSearchError(null);
+    setCardTotalCount(0);
+    setCardTotalPages(1);
+    setIsCardSearchLoading(true);
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const results = (await searchCardsAction({
+          text: searchTerm.length > 0 ? searchTerm : undefined,
+          take: 30,
+          page: cardPage,
+        })) as CardSearchResponse;
+        if (!isActive) return;
+        setCardResults(results.cards);
+        setCardTotalCount(results.totalCount);
+        setCardTotalPages(results.totalPages);
+        setCardPage(results.currentPage);
+      } catch {
+        if (!isActive) return;
+        setCardSearchError("No se pudieron cargar las cartas.");
+        setCardResults([]);
+        setCardTotalCount(0);
+        setCardTotalPages(1);
+      } finally {
+        if (!isActive) return;
+        setIsCardSearchLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [cardSearch, isCardModalOpen, cardPage]);
+
+  useEffect(() => {
+    if (!isCardModalOpen) return;
+    setCardPage(1);
+  }, [cardSearch, isCardModalOpen]);
+
+  const visibleCards = useMemo(() => cardResults, [cardResults]);
+  const selectedCardIds = useMemo(
+    () => new Set(selectedCards.map((card) => card.id)),
+    [selectedCards],
+  );
+
+  const toggleCardSelection = (card: CardSearchResult) => {
     setSelectedCards((prev) =>
-      prev.includes(src) ? prev.filter((item) => item !== src) : [...prev, src],
+      prev.some((item) => item.id === card.id)
+        ? prev.filter((item) => item.id !== card.id)
+        : [...prev, card],
     );
   };
 
-  const handleAddManualCard = () => {
-    const normalized = normalizeCardPath(manualCardPath);
-    if (!normalized) return;
-    setSelectedCards((prev) =>
-      prev.includes(normalized) ? prev : [...prev, normalized],
-    );
-    setManualCardPath("");
+  const handleAddManualCard = async () => {
+    const trimmedId = manualCardId.trim();
+    if (!trimmedId) return;
+
+    setManualCardError(null);
+    try {
+      const card = await getCardByIdAction({ cardId: trimmedId });
+      if (!card) {
+        setManualCardError("No se encontro la carta con ese id.");
+        return;
+      }
+      setSelectedCards((prev) =>
+        prev.some((item) => item.id === card.id) ? prev : [...prev, card],
+      );
+      setCardResults((prev) =>
+        prev.some((item) => item.id === card.id) ? prev : [card, ...prev],
+      );
+      setManualCardId("");
+    } catch {
+      setManualCardError("No se pudo cargar la carta.");
+    }
   };
 
   const handleInsertCards = () => {
     if (!editor || selectedCards.length === 0) return;
 
-    const nodes = selectedCards.map((src) => ({
+    const nodes = selectedCards.map((card) => ({
       type: "image",
       attrs: {
-        src,
-        alt: getAltFromSrc(src),
+        src: card.id,
+        alt: card.name ?? "Carta",
+        preview: `/cards/${card.code}-${card.idd}.webp`,
       },
     }));
 
     // Insertamos todas las cartas como bloques consecutivos para mantener el flujo visual.
     editor.chain().focus().insertContent(nodes).run();
+    selectedCards.forEach((card) => {
+      previewCacheRef.current.set(card.id, `/cards/${card.code}-${card.idd}.webp`);
+    });
     setSelectedCards([]);
     setIsCardModalOpen(false);
   };
@@ -243,10 +458,25 @@ export const MarkdownEditor = ({
     setIsLinkModalOpen(false);
   };
 
-  const handleInsertDecklist = () => {
+  const handleInsertDecklist = async () => {
     if (!editor) return;
-    const decklist = decklistValue.trim();
-    if (!decklist) return;
+    const deckId = deckIdValue.trim();
+    if (!deckId) return;
+    if (!/^[0-9a-fA-F]{24}$/.test(deckId)) {
+      showToast("El id del mazo no es valido.", "error");
+      return;
+    }
+
+    try {
+      const deck = await getDeckById(deckId);
+      if (!deck) {
+        showToast("No se encontro ningun mazo con ese id.", "error");
+        return;
+      }
+    } catch {
+      showToast("No se pudo validar el mazo.", "error");
+      return;
+    }
 
     editor
       .chain()
@@ -254,11 +484,11 @@ export const MarkdownEditor = ({
       .insertContent({
         type: "text",
         text: "Mazo embebido",
-        marks: [{ type: "link", attrs: { href: decklist } }],
+        marks: [{ type: "link", attrs: { href: deckId } }],
       })
       .run();
 
-    setDecklistValue("");
+    setDeckIdValue("");
     setIsDeckModalOpen(false);
   };
 
@@ -320,7 +550,12 @@ export const MarkdownEditor = ({
 
       <div className="rounded-xl border border-tournament-dark-accent bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-tournament-dark-accent px-3 py-2 dark:border-tournament-dark-border">
-          <div className="flex flex-wrap items-center gap-1">
+          <div
+            className={clsx(
+              "flex flex-wrap items-center gap-1",
+              (isPublicPreview || readOnly) && "pointer-events-none opacity-60",
+            )}
+          >
             <div className="relative" ref={headingMenuRef}>
               <button
                 type="button"
@@ -394,7 +629,9 @@ export const MarkdownEditor = ({
             <button
               type="button"
               onClick={() => editor?.chain().focus().toggleItalic().run()}
-              className={toolbarButtonClass(editor?.isActive("italic") ?? false)}
+              className={toolbarButtonClass(
+                editor?.isActive("italic") ?? false,
+              )}
               title="Cursiva"
             >
               <FiItalic className="h-4 w-4" />
@@ -432,7 +669,7 @@ export const MarkdownEditor = ({
               className={toolbarButtonClass(false)}
               title="Insertar mazo"
             >
-              <FiGrid className="h-4 w-4" />
+              <GiCardDraw className="h-4 w-4" />
             </button>
 
             <div className="relative" ref={listMenuRef}>
@@ -497,16 +734,46 @@ export const MarkdownEditor = ({
               <FiCode className="h-4 w-4" />
             </button>
           </div>
+          {enablePreviewToggle && (
+            <button
+              type="button"
+              onClick={() => {
+                if (readOnly) return;
+                setIsPublicPreview((prev) => !prev);
+              }}
+              className={clsx(
+                "rounded-md px-3 py-1 text-xs font-semibold transition",
+                isPublicPreview
+                  ? "bg-purple-600 text-white hover:bg-purple-700"
+                  : "text-purple-600 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-500/10",
+                readOnly && "cursor-not-allowed opacity-60",
+              )}
+            >
+              {isPublicPreview ? "Edición" : "Vista pública"}
+            </button>
+          )}
         </div>
 
         <div className="p-3">
           <div className="relative rounded-lg border border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
-            {isEmpty && (
-              <div className="pointer-events-none absolute left-4 top-3 text-sm text-slate-400 dark:text-slate-500">
-                {placeholder ?? "Escribe la descripcion del torneo"}
-              </div>
+            {isPublicPreview ? (
+              isEmpty ? (
+                <div className="text-sm text-slate-400 dark:text-slate-500">
+                  {placeholder ?? "Escribe la descripcion del torneo"}
+                </div>
+              ) : (
+                <MarkdownContent content={value} />
+              )
+            ) : (
+              <>
+                {isEmpty && (
+                  <div className="pointer-events-none absolute left-4 top-3 text-sm text-slate-400 dark:text-slate-500">
+                    {placeholder ?? "Escribe la descripcion del torneo"}
+                  </div>
+                )}
+                <EditorContent editor={editor} />
+              </>
             )}
-            <EditorContent editor={editor} />
           </div>
         </div>
 
@@ -535,57 +802,73 @@ export const MarkdownEditor = ({
       </div>
 
       {isCardModalOpen && (
-        <Modal className="inset-0 flex items-center justify-center p-4" close={() => setIsCardModalOpen(false)}>
+        <Modal
+          className="inset-0 flex items-center justify-center p-4"
+          close={() => setIsCardModalOpen(false)}
+        >
           <div className="w-full max-w-4xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
             <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  Seleccionar cartas
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Selecciona una o varias cartas, o agrega una ruta manual.
-                </p>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    Seleccionar cartas
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Selecciona una o varias cartas, o agrega el id de la carta.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsCardModalOpen(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-tournament-dark-accent text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
+                  aria-label="Cerrar"
+                  title="Cerrar"
+                >
+                  <FiX className="h-4 w-4" />
+                </button>
               </div>
 
-              <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-2">
                 <input
                   value={cardSearch}
                   onChange={(event) => setCardSearch(event.target.value)}
                   placeholder="Buscar por nombre o codigo"
-                  className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
+                  className="w-full min-w-0 rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
                 />
-                <span className="text-xs text-slate-400 dark:text-slate-500">
-                  {filteredCards.length} resultados
+                <span className="whitespace-nowrap text-end text-xs text-slate-400 dark:text-slate-500">
+                  {cardTotalCount} resultados
                 </span>
-              </div>
-
-              <div className="flex flex-col gap-2 md:flex-row">
                 <input
-                  value={manualCardPath}
-                  onChange={(event) => setManualCardPath(event.target.value)}
-                  placeholder="/cards/EDA-001-9467.webp"
-                  className="flex-1 rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
+                  value={manualCardId}
+                  onChange={(event) => setManualCardId(event.target.value)}
+                  placeholder="ID de la carta"
+                  className="w-full min-w-0 rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
                 />
                 <button
                   type="button"
                   onClick={handleAddManualCard}
                   className="rounded-lg border border-purple-300 px-4 py-2 text-sm font-semibold text-purple-600 transition hover:bg-purple-50 dark:border-purple-500/40 dark:text-purple-300 dark:hover:bg-purple-500/10"
                 >
-                  Agregar ruta
+                  Agregar id
                 </button>
               </div>
+              {manualCardError && (
+                <p className="text-xs text-rose-500 dark:text-rose-400">
+                  {manualCardError}
+                </p>
+              )}
 
-              <div className="max-h-[360px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
+              <div className="relative max-h-[360px] min-h-[360px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {visibleCards.map((cardName) => {
-                    const src = `/cards/${cardName}`;
-                    const isSelected = selectedCards.includes(src);
+                  {visibleCards.map((card) => {
+                    const src = `/cards/${card.code}-${card.idd}.webp`;
+                    const isSelected = selectedCardIds.has(card.id);
 
                     return (
                       <button
-                        key={cardName}
+                        key={card.id}
                         type="button"
-                        onClick={() => toggleCardSelection(src)}
+                        onClick={() => toggleCardSelection(card)}
                         className={clsx(
                           "relative rounded-lg border bg-white p-2 text-left transition hover:border-purple-400 dark:bg-tournament-dark-surface",
                           isSelected
@@ -595,24 +878,41 @@ export const MarkdownEditor = ({
                       >
                         <Image
                           src={src}
-                          alt={cardName}
+                          alt={card.name}
                           width={160}
                           height={230}
                           className="h-auto w-full rounded-md"
                         />
                         <span className="mt-2 block truncate text-xs text-slate-500 dark:text-slate-400">
-                          {cardName}
+                          {card.name}
+                        </span>
+                        <span className="block truncate text-[10px] text-slate-400 dark:text-slate-500">
+                          {card.code}-{card.idd}
                         </span>
                       </button>
                     );
                   })}
                 </div>
-                {filteredCards.length > visibleCards.length && (
-                  <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
-                    Refina la busqueda para ver mas cartas.
-                  </p>
+                {isCardSearchLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-50/80 text-sm text-slate-500 backdrop-blur-sm dark:bg-tournament-dark-muted-strong/80 dark:text-slate-300">
+                    Buscando cartas...
+                  </div>
+                )}
+                {cardSearchError && !isCardSearchLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center text-sm text-rose-500 dark:text-rose-300">
+                    {cardSearchError}
+                  </div>
                 )}
               </div>
+              {cardTotalPages > 1 && (
+                <PaginationLine
+                  currentPage={cardPage}
+                  totalPages={cardTotalPages}
+                  searchParams={EMPTY_SEARCH_PARAMS}
+                  pathname=""
+                  onPageChange={setCardPage}
+                />
+              )}
 
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-sm text-slate-500 dark:text-slate-400">
@@ -642,7 +942,10 @@ export const MarkdownEditor = ({
       )}
 
       {isLinkModalOpen && (
-        <Modal className="inset-0 flex items-center justify-center p-4" close={() => setIsLinkModalOpen(false)}>
+        <Modal
+          className="inset-0 flex items-center justify-center p-4"
+          close={() => setIsLinkModalOpen(false)}
+        >
           <div className="w-full max-w-lg rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
               Insertar link
@@ -682,18 +985,21 @@ export const MarkdownEditor = ({
       )}
 
       {isDeckModalOpen && (
-        <Modal className="inset-0 flex items-center justify-center p-4" close={() => setIsDeckModalOpen(false)}>
+        <Modal
+          className="inset-0 flex items-center justify-center p-4"
+          close={() => setIsDeckModalOpen(false)}
+        >
           <div className="w-full max-w-lg rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
               Insertar mazo embebido
             </h3>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Pega el decklist codificado para mostrar el mazo en el detalle del torneo.
+              Pega el id del mazo para mostrarlo dentro del markdown.
             </p>
             <input
-              value={decklistValue}
-              onChange={(event) => setDecklistValue(event.target.value)}
-              placeholder="0349%2C2%2C..."
+              value={deckIdValue}
+              onChange={(event) => setDeckIdValue(event.target.value)}
+              placeholder="ID del mazo"
               className="mt-4 w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
             />
             <div className="mt-6 flex justify-end gap-2">
@@ -718,4 +1024,3 @@ export const MarkdownEditor = ({
     </div>
   );
 };
-

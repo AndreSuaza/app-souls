@@ -14,3 +14,5 @@ export * from "./decks/deck-like.schema";
 export * from "./decks/save-deck.schema";
 export * from "./decks/delete-deck.schema";
 export * from "./cards/card-images.schema";
+export * from "./cards/card-search.schema";
+export * from "./cards/card-id.schema";

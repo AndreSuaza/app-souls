@@ -28,11 +28,7 @@ type CreateTournamentInputs = {
   storeId?: string;
 };
 
-type Props = {
-  cardImages?: string[];
-};
-
-export const CreateTournamentForm = ({ cardImages = [] }: Props) => {
+export const CreateTournamentForm = () => {
   const { data: session } = useSession();
   const role = session?.user?.role;
   const userStoreId = session?.user?.storeId;
@@ -229,7 +225,6 @@ export const CreateTournamentForm = ({ cardImages = [] }: Props) => {
             placeholder="Describe el torneo usando markdown"
             maxLength={maxDescriptionLength}
             error={errors.description?.message}
-            cardImages={cardImages}
           />
         )}
       />

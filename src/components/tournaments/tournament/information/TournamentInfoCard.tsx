@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { IoTrashOutline } from "react-icons/io5";
 import { DateTimeFields } from "../../crear-torneo/DateTimeFields";
-import { MarkdownContent } from "@/components/ui/markdown/MarkdownContent";
 import { MarkdownEditor } from "@/components/ui/markdown/MarkdownEditor";
 
 interface TournamentForm {
@@ -31,8 +29,6 @@ export const TournamentInfoCard = ({
 }: TournamentInfoCardProps) => {
   const date = form.date.toISOString().split("T")[0];
   const time = form.date.toTimeString().slice(0, 5);
-  // Alterna entre la vista previa y el editor del markdown.
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
   // Ajusta el limite segun el tier del torneo.
   const descriptionMaxLength =
     typeTournamentName?.toLowerCase().includes("tier 1") ||
@@ -112,39 +108,22 @@ export const TournamentInfoCard = ({
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-              Descripción
-            </label>
-            {!isFinished && (
-              <button
-                type="button"
-                onClick={() => setIsEditingDescription((prev) => !prev)}
-                className="rounded-md px-3 py-1 text-xs font-semibold text-purple-600 transition hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-500/10"
-              >
-                {isEditingDescription ? "Cerrar edici\u00f3n" : "Editar"}
-              </button>
-            )}
-          </div>
-
-          {isEditingDescription && !isFinished ? (
-            <MarkdownEditor
-              label={undefined}
-              value={form.description}
-              onChange={(value) => onChange({ ...form, description: value })}
-              placeholder="Describe el torneo usando markdown"
-              maxLength={descriptionMaxLength}
-            />
-          ) : (
-            <div className="rounded-lg border border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
-              <MarkdownContent
-                content={form.description}
-                className="text-sm text-slate-700 dark:text-slate-200"
-              />
-            </div>
-          )}
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Descripción
+          </label>
+          <MarkdownEditor
+            label={undefined}
+            value={form.description}
+            onChange={(value) => onChange({ ...form, description: value })}
+            placeholder="Describe el torneo usando markdown"
+            maxLength={descriptionMaxLength}
+            initialPreview
+            enablePreviewToggle={!isFinished}
+            readOnly={isFinished}
+          />
         </div>
       </div>
     </div>
   );
 };
+

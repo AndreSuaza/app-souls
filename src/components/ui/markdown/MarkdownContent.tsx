@@ -24,6 +24,72 @@ const normalizeImageParagraphs = (value: string) => {
   );
 };
 
+const renderInlineWithUnderline = (children: React.ReactNode) => {
+  let keyIndex = 0;
+  const regex = /\+\+([^+]+)\+\+/g;
+
+  const splitUnderline = (text: string) => {
+    const result: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(text)) !== null) {
+      const before = text.slice(lastIndex, match.index);
+      if (before) {
+        result.push(before);
+      }
+      result.push(
+        <u key={`underline-${keyIndex}-${match.index}`}>{match[1]}</u>,
+      );
+      keyIndex += 1;
+      lastIndex = match.index + match[0].length;
+    }
+
+    const after = text.slice(lastIndex);
+    if (after) {
+      result.push(after);
+    }
+
+    return result;
+  };
+
+  const processNode = (node: React.ReactNode): React.ReactNode[] => {
+    if (typeof node === "string") {
+      return splitUnderline(node);
+    }
+
+    if (typeof node === "number" || typeof node === "boolean") {
+      return [node];
+    }
+
+    if (Array.isArray(node)) {
+      return node.flatMap(processNode);
+    }
+
+    if (isValidElement(node)) {
+      const element = node as React.ReactElement<{ children?: React.ReactNode }>;
+      if (typeof element.type === "string" && element.props?.children) {
+        const processedChildren = processNode(element.props.children);
+        return [
+          React.cloneElement(element, {
+            ...element.props,
+            children: processedChildren,
+          }),
+        ];
+      }
+      return [element];
+    }
+
+    if (node == null) {
+      return [];
+    }
+
+    return [node];
+  };
+
+  return processNode(children);
+};
+
 // Permite <u> para el subrayado sin abrir el resto del HTML arbitrario.
 const markdownSchema = {
   ...defaultSchema,
@@ -41,20 +107,30 @@ type HastNode = {
   children?: HastNode[];
 };
 
+const isCardReference = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith("http")) return false;
+  if (trimmed.includes("/")) return false;
+  if (trimmed.includes(".")) return false;
+  if (!/^[0-9a-zA-Z]+$/.test(trimmed)) return false;
+  return true;
+};
+
 const components: Components = {
   h1: ({ children }) => (
     <h1 className="text-2xl font-bold text-slate-900 dark:text-white md:text-3xl">
-      {children}
+      {renderInlineWithUnderline(children)}
     </h1>
   ),
   h2: ({ children }) => (
     <h2 className="text-xl font-bold text-slate-900 dark:text-white md:text-2xl">
-      {children}
+      {renderInlineWithUnderline(children)}
     </h2>
   ),
   h3: ({ children }) => (
     <h3 className="text-lg font-semibold text-slate-900 dark:text-white md:text-xl">
-      {children}
+      {renderInlineWithUnderline(children)}
     </h3>
   ),
   p: ({ children, node }) => {
@@ -67,6 +143,8 @@ const components: Components = {
       href.length > 0 &&
       !href.startsWith("http") &&
       href.includes("%2C");
+    const isDeckIdHref = (href?: string) =>
+      typeof href === "string" && /^[0-9a-fA-F]{24}$/.test(href.trim());
     const isBlankTextNode = (child?: HastNode) =>
       child?.type === "text" &&
       typeof child.value === "string" &&
@@ -77,8 +155,10 @@ const components: Components = {
     const isDecklistNode = (child?: HastNode) =>
       (child?.type === "element" &&
         child.tagName === "a" &&
-        isDecklistHref(child.properties?.href)) ||
-      (child?.type === "link" && isDecklistHref(child.url));
+        (isDecklistHref(child.properties?.href) ||
+          isDeckIdHref(child.properties?.href))) ||
+      (child?.type === "link" &&
+        (isDecklistHref(child.url) || isDeckIdHref(child.url)));
     const meaningfulNodes = nodeChildren.filter(
       (child) => !isBlankTextNode(child),
     );
@@ -127,7 +207,7 @@ const components: Components = {
             key={`markdown-inline-${chunks.length}`}
             className={paragraphClass}
           >
-            {inlineBuffer}
+            {renderInlineWithUnderline(inlineBuffer)}
           </p>,
         );
         inlineBuffer = [];
@@ -160,11 +240,7 @@ const components: Components = {
       return <>{chunks}</>;
     }
 
-    return (
-      <p className={paragraphClass}>
-        {children}
-      </p>
-    );
+    return <p className={paragraphClass}>{renderInlineWithUnderline(children)}</p>;
   },
   a: ({ children, href }) => {
     const isDecklist =
@@ -172,10 +248,16 @@ const components: Components = {
       href.length > 0 &&
       !href.startsWith("http") &&
       href.includes("%2C");
+    const isDeckId =
+      typeof href === "string" && /^[0-9a-fA-F]{24}$/.test(href.trim());
 
     if (isDecklist) {
       // Renderiza el mazo embebido cuando el link es un decklist.
       return <MarkdownDeckPreview decklist={href} />;
+    }
+
+    if (isDeckId) {
+      return <MarkdownDeckPreview deckId={href.trim()} />;
     }
 
     return (
@@ -192,8 +274,9 @@ const components: Components = {
   img: ({ src, alt }) => {
     const isCardImage =
       typeof src === "string" &&
-      src.toLowerCase().includes("cards/") &&
-      src.toLowerCase().endsWith(".webp");
+      (isCardReference(src) ||
+        (src.toLowerCase().includes("cards/") &&
+          src.toLowerCase().endsWith(".webp")));
 
     if (isCardImage) {
       return <MarkdownCardImage src={src} alt={alt} />;
@@ -222,7 +305,9 @@ const components: Components = {
       {children}
     </ol>
   ),
-  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  li: ({ children }) => (
+    <li className="leading-relaxed">{renderInlineWithUnderline(children)}</li>
+  ),
   blockquote: ({ children }) => (
     <blockquote className="border-l-4 border-purple-300 pl-4 italic text-slate-600 dark:text-slate-300">
       {children}
