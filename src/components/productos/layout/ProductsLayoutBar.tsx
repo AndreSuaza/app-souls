@@ -13,7 +13,7 @@ export function ProductsLayoutBar() {
           </button>
         </Link>
         <Link
-          href="https://wa.me/573125580644?text=Hola%2C+me+gustar%C3%ADa+conocer+m%C3%A1s+de+sus+productos"
+          href="https://wa.me/573180726340?text=Hola%2C+me+gustar%C3%ADa+conocer+m%C3%A1s+de+sus+productos"
           target="_blank"
           rel="noreferrer"
         >
