@@ -51,6 +51,7 @@ export * from "./decks/get-decks-by-user.action";
 export * from "./decks/get-deck-by-id.action";
 export * from "./decks/get-deck-like-status.action";
 export * from "./decks/get-decks-filtered.action";
+export * from "./decks/search-decks.action";
 export * from "./decks/get-user-decks-filtered.action";
 export * from "./decks/get-deck-filters.action";
 export * from "./decks/toggle-deck-like.action";

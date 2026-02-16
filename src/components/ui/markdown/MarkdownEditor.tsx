@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
-import Image from "next/image";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -13,23 +12,23 @@ import { mergeAttributes } from "@tiptap/core";
 import {
   FiBold,
   FiChevronDown,
-  FiCode,
-  FiImage,
   FiItalic,
   FiLink,
   FiList,
   FiType,
   FiUnderline,
-  FiX,
 } from "react-icons/fi";
-import { GiCardDraw } from "react-icons/gi";
-import type { ReadonlyURLSearchParams } from "next/navigation";
-import { getCardByIdAction, getDeckById, searchCardsAction } from "@/actions";
-import { PaginationLine } from "@/components/ui/pagination/paginationLine";
+import { GiCardDraw, GiCardPick } from "react-icons/gi";
+import {
+  getCardByIdAction,
+  searchCardsAction,
+  searchDecksAction,
+} from "@/actions";
 import { Modal } from "../modal/modal";
 import { getPlainTextLengthFromMarkdown } from "@/utils/markdown";
-import { useToastStore } from "@/store";
 import { MarkdownContent } from "./MarkdownContent";
+import { MarkdownCardModal } from "./MarkdownCardModal";
+import { MarkdownDeckModal } from "./MarkdownDeckModal";
 
 type Props = {
   label?: string;
@@ -82,6 +81,7 @@ type CardSearchResult = {
   idd: string;
   code: string;
   name: string;
+  rarityName?: string | null;
 };
 
 type CardSearchResponse = {
@@ -92,7 +92,21 @@ type CardSearchResponse = {
   perPage: number;
 };
 
-const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
+type DeckSearchResult = {
+  id: string;
+  name: string;
+  imagen: string;
+  userNickname: string;
+};
+
+type DeckSearchResponse = {
+  decks: DeckSearchResult[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  perPage: number;
+};
+
 const isCardReference = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) return false;
@@ -134,10 +148,16 @@ export const MarkdownEditor = ({
   const [cardSearchError, setCardSearchError] = useState<string | null>(null);
   const [linkText, setLinkText] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
-  const [deckIdValue, setDeckIdValue] = useState("");
+  const [deckSearch, setDeckSearch] = useState("");
+  const [deckResults, setDeckResults] = useState<DeckSearchResult[]>([]);
+  const [deckPage, setDeckPage] = useState(1);
+  const [deckTotalPages, setDeckTotalPages] = useState(1);
+  const [deckTotalCount, setDeckTotalCount] = useState(0);
+  const [isDeckSearchLoading, setIsDeckSearchLoading] = useState(false);
+  const [deckSearchError, setDeckSearchError] = useState<string | null>(null);
+  const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
   const [, setEditorTick] = useState(0);
   const [isPublicPreview, setIsPublicPreview] = useState(initialPreview);
-  const showToast = useToastStore((state) => state.showToast);
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -362,11 +382,59 @@ export const MarkdownEditor = ({
     setCardPage(1);
   }, [cardSearch, isCardModalOpen]);
 
+  useEffect(() => {
+    if (!isDeckModalOpen) return;
+
+    let isActive = true;
+    const searchTerm = deckSearch.trim();
+
+    setDeckResults([]);
+    setDeckSearchError(null);
+    setDeckTotalCount(0);
+    setDeckTotalPages(1);
+    setIsDeckSearchLoading(true);
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const results = (await searchDecksAction({
+          text: searchTerm.length > 0 ? searchTerm : undefined,
+          take: 24,
+          page: deckPage,
+        })) as DeckSearchResponse;
+        if (!isActive) return;
+        setDeckResults(results.decks);
+        setDeckTotalCount(results.totalCount);
+        setDeckTotalPages(results.totalPages);
+        setDeckPage(results.currentPage);
+      } catch {
+        if (!isActive) return;
+        setDeckSearchError("No se pudieron cargar los mazos.");
+        setDeckResults([]);
+        setDeckTotalCount(0);
+        setDeckTotalPages(1);
+      } finally {
+        if (!isActive) return;
+        setIsDeckSearchLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [deckSearch, isDeckModalOpen, deckPage]);
+
+  useEffect(() => {
+    if (!isDeckModalOpen) return;
+    setDeckPage(1);
+  }, [deckSearch, isDeckModalOpen]);
+
   const visibleCards = useMemo(() => cardResults, [cardResults]);
   const selectedCardIds = useMemo(
     () => new Set(selectedCards.map((card) => card.id)),
     [selectedCards],
   );
+  const visibleDecks = useMemo(() => deckResults, [deckResults]);
 
   const toggleCardSelection = (card: CardSearchResult) => {
     setSelectedCards((prev) =>
@@ -414,7 +482,10 @@ export const MarkdownEditor = ({
     // Insertamos todas las cartas como bloques consecutivos para mantener el flujo visual.
     editor.chain().focus().insertContent(nodes).run();
     selectedCards.forEach((card) => {
-      previewCacheRef.current.set(card.id, `/cards/${card.code}-${card.idd}.webp`);
+      previewCacheRef.current.set(
+        card.id,
+        `/cards/${card.code}-${card.idd}.webp`,
+      );
     });
     setSelectedCards([]);
     setIsCardModalOpen(false);
@@ -458,25 +529,8 @@ export const MarkdownEditor = ({
     setIsLinkModalOpen(false);
   };
 
-  const handleInsertDecklist = async () => {
-    if (!editor) return;
-    const deckId = deckIdValue.trim();
-    if (!deckId) return;
-    if (!/^[0-9a-fA-F]{24}$/.test(deckId)) {
-      showToast("El id del mazo no es valido.", "error");
-      return;
-    }
-
-    try {
-      const deck = await getDeckById(deckId);
-      if (!deck) {
-        showToast("No se encontro ningun mazo con ese id.", "error");
-        return;
-      }
-    } catch {
-      showToast("No se pudo validar el mazo.", "error");
-      return;
-    }
+  const handleInsertDecklist = () => {
+    if (!editor || !selectedDeckId) return;
 
     editor
       .chain()
@@ -484,11 +538,11 @@ export const MarkdownEditor = ({
       .insertContent({
         type: "text",
         text: "Mazo embebido",
-        marks: [{ type: "link", attrs: { href: deckId } }],
+        marks: [{ type: "link", attrs: { href: selectedDeckId } }],
       })
       .run();
 
-    setDeckIdValue("");
+    setSelectedDeckId(null);
     setIsDeckModalOpen(false);
   };
 
@@ -661,7 +715,7 @@ export const MarkdownEditor = ({
               className={toolbarButtonClass(false)}
               title="Insertar carta"
             >
-              <FiImage className="h-4 w-4" />
+              <GiCardPick className="h-4 w-4" />
             </button>
             <button
               type="button"
@@ -723,6 +777,7 @@ export const MarkdownEditor = ({
                 </div>
               )}
             </div>
+            {/* BotÃ³n de cÃ³digo desactivado temporalmente.
             <button
               type="button"
               onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
@@ -733,6 +788,7 @@ export const MarkdownEditor = ({
             >
               <FiCode className="h-4 w-4" />
             </button>
+            */}
           </div>
           {enablePreviewToggle && (
             <button
@@ -801,145 +857,27 @@ export const MarkdownEditor = ({
         </div>
       </div>
 
-      {isCardModalOpen && (
-        <Modal
-          className="inset-0 flex items-center justify-center p-4"
-          close={() => setIsCardModalOpen(false)}
-        >
-          <div className="w-full max-w-4xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-            <div className="space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    Seleccionar cartas
-                  </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Selecciona una o varias cartas, o agrega el id de la carta.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsCardModalOpen(false)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-tournament-dark-accent text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
-                  aria-label="Cerrar"
-                  title="Cerrar"
-                >
-                  <FiX className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-                <input
-                  value={cardSearch}
-                  onChange={(event) => setCardSearch(event.target.value)}
-                  placeholder="Buscar por nombre o codigo"
-                  className="w-full min-w-0 rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
-                />
-                <span className="whitespace-nowrap text-end text-xs text-slate-400 dark:text-slate-500">
-                  {cardTotalCount} resultados
-                </span>
-                <input
-                  value={manualCardId}
-                  onChange={(event) => setManualCardId(event.target.value)}
-                  placeholder="ID de la carta"
-                  className="w-full min-w-0 rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddManualCard}
-                  className="rounded-lg border border-purple-300 px-4 py-2 text-sm font-semibold text-purple-600 transition hover:bg-purple-50 dark:border-purple-500/40 dark:text-purple-300 dark:hover:bg-purple-500/10"
-                >
-                  Agregar id
-                </button>
-              </div>
-              {manualCardError && (
-                <p className="text-xs text-rose-500 dark:text-rose-400">
-                  {manualCardError}
-                </p>
-              )}
-
-              <div className="relative max-h-[360px] min-h-[360px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {visibleCards.map((card) => {
-                    const src = `/cards/${card.code}-${card.idd}.webp`;
-                    const isSelected = selectedCardIds.has(card.id);
-
-                    return (
-                      <button
-                        key={card.id}
-                        type="button"
-                        onClick={() => toggleCardSelection(card)}
-                        className={clsx(
-                          "relative rounded-lg border bg-white p-2 text-left transition hover:border-purple-400 dark:bg-tournament-dark-surface",
-                          isSelected
-                            ? "border-purple-500 ring-2 ring-purple-400/40"
-                            : "border-transparent",
-                        )}
-                      >
-                        <Image
-                          src={src}
-                          alt={card.name}
-                          width={160}
-                          height={230}
-                          className="h-auto w-full rounded-md"
-                        />
-                        <span className="mt-2 block truncate text-xs text-slate-500 dark:text-slate-400">
-                          {card.name}
-                        </span>
-                        <span className="block truncate text-[10px] text-slate-400 dark:text-slate-500">
-                          {card.code}-{card.idd}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {isCardSearchLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-50/80 text-sm text-slate-500 backdrop-blur-sm dark:bg-tournament-dark-muted-strong/80 dark:text-slate-300">
-                    Buscando cartas...
-                  </div>
-                )}
-                {cardSearchError && !isCardSearchLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center text-sm text-rose-500 dark:text-rose-300">
-                    {cardSearchError}
-                  </div>
-                )}
-              </div>
-              {cardTotalPages > 1 && (
-                <PaginationLine
-                  currentPage={cardPage}
-                  totalPages={cardTotalPages}
-                  searchParams={EMPTY_SEARCH_PARAMS}
-                  pathname=""
-                  onPageChange={setCardPage}
-                />
-              )}
-
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="text-sm text-slate-500 dark:text-slate-400">
-                  {selectedCards.length} seleccionadas
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsCardModalOpen(false)}
-                    className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleInsertCards}
-                    className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
-                    disabled={selectedCards.length === 0}
-                  >
-                    Insertar cartas
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Modal>
-      )}
+      <MarkdownCardModal
+        isOpen={isCardModalOpen}
+        onClose={() => setIsCardModalOpen(false)}
+        searchValue={cardSearch}
+        onSearchChange={setCardSearch}
+        manualCardId={manualCardId}
+        onManualCardIdChange={setManualCardId}
+        onAddManualCard={handleAddManualCard}
+        manualCardError={manualCardError}
+        cards={visibleCards}
+        selectedCardIds={selectedCardIds}
+        onToggleCard={toggleCardSelection}
+        isLoading={isCardSearchLoading}
+        error={cardSearchError}
+        totalCount={cardTotalCount}
+        totalPages={cardTotalPages}
+        currentPage={cardPage}
+        onPageChange={setCardPage}
+        selectedCount={selectedCards.length}
+        onInsert={handleInsertCards}
+      />
 
       {isLinkModalOpen && (
         <Modal
@@ -984,43 +922,27 @@ export const MarkdownEditor = ({
         </Modal>
       )}
 
-      {isDeckModalOpen && (
-        <Modal
-          className="inset-0 flex items-center justify-center p-4"
-          close={() => setIsDeckModalOpen(false)}
-        >
-          <div className="w-full max-w-lg rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-              Insertar mazo embebido
-            </h3>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Pega el id del mazo para mostrarlo dentro del markdown.
-            </p>
-            <input
-              value={deckIdValue}
-              onChange={(event) => setDeckIdValue(event.target.value)}
-              placeholder="ID del mazo"
-              className="mt-4 w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
-            />
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setIsDeckModalOpen(false)}
-                className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleInsertDecklist}
-                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
-              >
-                Insertar mazo
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      <MarkdownDeckModal
+        isOpen={isDeckModalOpen}
+        onClose={() => {
+          setIsDeckModalOpen(false);
+          setSelectedDeckId(null);
+        }}
+        searchValue={deckSearch}
+        onSearchChange={setDeckSearch}
+        decks={visibleDecks}
+        selectedDeckId={selectedDeckId}
+        onSelectDeck={(deckId) =>
+          setSelectedDeckId((prev) => (prev === deckId ? null : deckId))
+        }
+        isLoading={isDeckSearchLoading}
+        error={deckSearchError}
+        totalCount={deckTotalCount}
+        totalPages={deckTotalPages}
+        currentPage={deckPage}
+        onPageChange={setDeckPage}
+        onInsert={handleInsertDecklist}
+      />
     </div>
   );
 };

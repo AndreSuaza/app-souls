@@ -49,11 +49,22 @@ export async function searchCardsAction(input: CardSearchInput = {}) {
       idd: true,
       code: true,
       name: true,
+      rarities: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 
   return {
-    cards,
+    cards: cards.map((card) => ({
+      id: card.id,
+      idd: card.idd,
+      code: card.code,
+      name: card.name,
+      rarityName: card.rarities[0]?.name ?? null,
+    })),
     totalCount,
     totalPages,
     currentPage: safePage,
