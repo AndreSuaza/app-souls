@@ -28,11 +28,24 @@ const isCardReference = (value: string) => {
   return true;
 };
 
+const getCardLookupId = (value?: string) => {
+  if (!value) return null;
+  if (isCardReference(value)) return value;
+
+  const normalized = value.split("?")[0];
+  const match = normalized.match(/\/cards\/([^/]+)\.webp$/i);
+  if (!match) return null;
+
+  const filename = match[1];
+  const lastDashIndex = filename.lastIndexOf("-");
+  if (lastDashIndex === -1) return null;
+
+  // El idd siempre va después del último guion en el nombre del archivo.
+  return filename.slice(lastDashIndex + 1);
+};
+
 export const MarkdownCardPreview = ({ src, alt }: Props) => {
-  const cardId = useMemo(() => {
-    if (!src) return null;
-    return isCardReference(src) ? src : null;
-  }, [src]);
+  const cardId = useMemo(() => getCardLookupId(src), [src]);
   const [resolvedCard, setResolvedCard] = useState<CardPreview | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
