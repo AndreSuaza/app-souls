@@ -39,6 +39,8 @@ type Props = {
   error?: string;
   initialPreview?: boolean;
   enablePreviewToggle?: boolean;
+  enableCardInsert?: boolean;
+  enableDeckInsert?: boolean;
   readOnly?: boolean;
 };
 
@@ -126,6 +128,8 @@ export const MarkdownEditor = ({
   error,
   initialPreview = false,
   enablePreviewToggle = true,
+  enableCardInsert = true,
+  enableDeckInsert = true,
   readOnly = false,
 }: Props) => {
   const headingMenuRef = useRef<HTMLDivElement | null>(null);
@@ -736,22 +740,26 @@ export const MarkdownEditor = ({
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => setIsCardModalOpen(true)}
-              className={toolbarButtonClass(false)}
-              title="Insertar carta"
-            >
-              <GiCardPick className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsDeckModalOpen(true)}
-              className={toolbarButtonClass(false)}
-              title="Insertar mazo"
-            >
-              <GiCardDraw className="h-4 w-4" />
-            </button>
+            {enableCardInsert && (
+              <button
+                type="button"
+                onClick={() => setIsCardModalOpen(true)}
+                className={toolbarButtonClass(false)}
+                title="Insertar carta"
+              >
+                <GiCardPick className="h-4 w-4" />
+              </button>
+            )}
+            {enableDeckInsert && (
+              <button
+                type="button"
+                onClick={() => setIsDeckModalOpen(true)}
+                className={toolbarButtonClass(false)}
+                title="Insertar mazo"
+              >
+                <GiCardDraw className="h-4 w-4" />
+              </button>
+            )}
 
             {/* Botón de código desactivado temporalmente.
             <button
@@ -791,7 +799,7 @@ export const MarkdownEditor = ({
             {isPublicPreview ? (
               isEmpty ? (
                 <div className="text-sm text-slate-400 dark:text-slate-500">
-                  {placeholder ?? "Escribe la descripcion del torneo"}
+                  {placeholder ?? "Escribe la descripción del torneo"}
                 </div>
               ) : (
                 <MarkdownContent content={value} />
@@ -800,7 +808,7 @@ export const MarkdownEditor = ({
               <>
                 {isEmpty && (
                   <div className="pointer-events-none absolute left-4 top-3 text-sm text-slate-400 dark:text-slate-500">
-                    {placeholder ?? "Escribe la descripcion del torneo"}
+                    {placeholder ?? "Escribe la descripción del torneo"}
                   </div>
                 )}
                 <EditorContent editor={editor} />
@@ -833,23 +841,25 @@ export const MarkdownEditor = ({
         </div>
       </div>
 
-      <MarkdownCardModal
-        isOpen={isCardModalOpen}
-        onClose={() => setIsCardModalOpen(false)}
-        searchValue={cardSearch}
-        onSearchChange={setCardSearch}
-        cards={visibleCards}
-        selectedCardIds={selectedCardIds}
-        onToggleCard={toggleCardSelection}
-        isLoading={isCardSearchLoading}
-        error={cardSearchError}
-        totalCount={cardTotalCount}
-        totalPages={cardTotalPages}
-        currentPage={cardPage}
-        onPageChange={setCardPage}
-        selectedCount={selectedCards.length}
-        onInsert={handleInsertCards}
-      />
+      {enableCardInsert && (
+        <MarkdownCardModal
+          isOpen={isCardModalOpen}
+          onClose={() => setIsCardModalOpen(false)}
+          searchValue={cardSearch}
+          onSearchChange={setCardSearch}
+          cards={visibleCards}
+          selectedCardIds={selectedCardIds}
+          onToggleCard={toggleCardSelection}
+          isLoading={isCardSearchLoading}
+          error={cardSearchError}
+          totalCount={cardTotalCount}
+          totalPages={cardTotalPages}
+          currentPage={cardPage}
+          onPageChange={setCardPage}
+          selectedCount={selectedCards.length}
+          onInsert={handleInsertCards}
+        />
+      )}
 
       {isLinkModalOpen && (
         <Modal
@@ -894,27 +904,29 @@ export const MarkdownEditor = ({
         </Modal>
       )}
 
-      <MarkdownDeckModal
-        isOpen={isDeckModalOpen}
-        onClose={() => {
-          setIsDeckModalOpen(false);
-          setSelectedDeckId(null);
-        }}
-        searchValue={deckSearch}
-        onSearchChange={setDeckSearch}
-        decks={visibleDecks}
-        selectedDeckId={selectedDeckId}
-        onSelectDeck={(deckId) =>
-          setSelectedDeckId((prev) => (prev === deckId ? null : deckId))
-        }
-        isLoading={isDeckSearchLoading}
-        error={deckSearchError}
-        totalCount={deckTotalCount}
-        totalPages={deckTotalPages}
-        currentPage={deckPage}
-        onPageChange={setDeckPage}
-        onInsert={handleInsertDecklist}
-      />
+      {enableDeckInsert && (
+        <MarkdownDeckModal
+          isOpen={isDeckModalOpen}
+          onClose={() => {
+            setIsDeckModalOpen(false);
+            setSelectedDeckId(null);
+          }}
+          searchValue={deckSearch}
+          onSearchChange={setDeckSearch}
+          decks={visibleDecks}
+          selectedDeckId={selectedDeckId}
+          onSelectDeck={(deckId) =>
+            setSelectedDeckId((prev) => (prev === deckId ? null : deckId))
+          }
+          isLoading={isDeckSearchLoading}
+          error={deckSearchError}
+          totalCount={deckTotalCount}
+          totalPages={deckTotalPages}
+          currentPage={deckPage}
+          onPageChange={setDeckPage}
+          onInsert={handleInsertDecklist}
+        />
+      )}
     </div>
   );
 };

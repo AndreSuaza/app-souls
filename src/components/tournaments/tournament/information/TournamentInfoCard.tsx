@@ -120,6 +120,8 @@ export const TournamentInfoCard = ({
             initialPreview
             enablePreviewToggle={!isFinished}
             readOnly={isFinished}
+            enableCardInsert={false}
+            enableDeckInsert={false}
           />
         </div>
       </div>

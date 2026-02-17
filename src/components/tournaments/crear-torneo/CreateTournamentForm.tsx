@@ -38,7 +38,7 @@ export const CreateTournamentForm = () => {
   const { tournamentTypes, stores, fetchTournamentTypes, fetchStores } =
     useCatalogStore();
   const openConfirmation = useAlertConfirmationStore(
-    (s) => s.openAlertConfirmation
+    (s) => s.openAlertConfirmation,
   );
   const showToast = useToastStore((s) => s.showToast);
   const showLoading = useUIStore((s) => s.showLoading);
@@ -64,9 +64,12 @@ export const CreateTournamentForm = () => {
   });
   // Ajusta el limite segun el tier seleccionado.
   const maxDescriptionLength = useMemo(() => {
-    const selectedType = tournamentTypes.find((type) => type.id === selectedTypeId);
+    const selectedType = tournamentTypes.find(
+      (type) => type.id === selectedTypeId,
+    );
     const typeName = selectedType?.name?.toLowerCase() ?? "";
-    const isTierOneOrTwo = typeName.includes("tier 1") || typeName.includes("tier 2");
+    const isTierOneOrTwo =
+      typeName.includes("tier 1") || typeName.includes("tier 2");
 
     return isTierOneOrTwo ? 500 : 300;
   }, [selectedTypeId, tournamentTypes]);
@@ -155,7 +158,8 @@ export const CreateTournamentForm = () => {
       },
     });
   });
-  return (
+
+  return (
     <form
       onSubmit={onSubmit}
       className="rounded-xl border border-tournament-dark-accent bg-white p-6 shadow-sm space-y-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
@@ -170,7 +174,7 @@ export const CreateTournamentForm = () => {
             "w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500",
             {
               "border-red-500": errors.title,
-            }
+            },
           )}
           placeholder="Ej. Torneo Verano 2025"
           {...register("title", {
@@ -203,7 +207,7 @@ export const CreateTournamentForm = () => {
             const trimmed = plainText.trim();
 
             if (trimmed.length === 0) {
-              return "La descripcion es obligatoria";
+              return "La descripción es obligatoria";
             }
 
             if (trimmed.length < 10) {
@@ -219,12 +223,14 @@ export const CreateTournamentForm = () => {
         }}
         render={({ field }) => (
           <MarkdownEditor
-            label="Descripcion"
+            label="Descripción"
             value={field.value ?? ""}
             onChange={field.onChange}
             placeholder="Describe el torneo usando markdown"
             maxLength={maxDescriptionLength}
             error={errors.description?.message}
+            enableCardInsert={false}
+            enableDeckInsert={false}
           />
         )}
       />
@@ -278,5 +284,3 @@ export const CreateTournamentForm = () => {
     </form>
   );
 };
-
-
