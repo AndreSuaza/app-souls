@@ -7,25 +7,45 @@ import { CardSearchSchema, type CardSearchInput } from "@/schemas";
 export async function searchCardsAction(input: CardSearchInput = {}) {
   const { text, take = 30, page = 1 } = CardSearchSchema.parse(input);
   const currentPage = Math.max(1, page);
+  const searchText = text?.trim();
+  // Evita errores en Mongo cuando el texto no es un ObjectId válido.
+  const isMongoId = searchText
+    ? /^[0-9a-fA-F]{24}$/.test(searchText)
+    : false;
 
-  const where: Prisma.CardWhereInput = text
+  const where: Prisma.CardWhereInput = searchText
     ? {
         OR: [
           {
             effect: {
-              contains: text,
+              contains: searchText,
               mode: "insensitive" as Prisma.QueryMode,
             },
           },
+          ...(isMongoId
+            ? [
+                {
+                  id: {
+                    equals: searchText,
+                  },
+                },
+              ]
+            : []),
           {
             idd: {
-              equals: text,
+              equals: searchText,
               mode: "insensitive" as Prisma.QueryMode,
             },
           },
           {
             name: {
-              contains: text,
+              contains: searchText,
+              mode: "insensitive" as Prisma.QueryMode,
+            },
+          },
+          {
+            code: {
+              contains: searchText,
               mode: "insensitive" as Prisma.QueryMode,
             },
           },

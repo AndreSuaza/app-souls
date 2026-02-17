@@ -52,7 +52,11 @@ export const MarkdownDeckModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal className="inset-0 flex items-center justify-center p-4" close={onClose}>
+    <Modal
+      className="inset-0 flex items-center justify-center p-4"
+      close={onClose}
+      hideCloseButton
+    >
       <div className="w-full max-w-4xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">

@@ -137,8 +137,6 @@ export const MarkdownEditor = ({
   const [isHeadingMenuOpen, setIsHeadingMenuOpen] = useState(false);
   const [isListMenuOpen, setIsListMenuOpen] = useState(false);
   const [cardSearch, setCardSearch] = useState("");
-  const [manualCardId, setManualCardId] = useState("");
-  const [manualCardError, setManualCardError] = useState<string | null>(null);
   const [selectedCards, setSelectedCards] = useState<CardSearchResult[]>([]);
   const [cardResults, setCardResults] = useState<CardSearchResult[]>([]);
   const [cardPage, setCardPage] = useState(1);
@@ -444,29 +442,6 @@ export const MarkdownEditor = ({
     );
   };
 
-  const handleAddManualCard = async () => {
-    const trimmedId = manualCardId.trim();
-    if (!trimmedId) return;
-
-    setManualCardError(null);
-    try {
-      const card = await getCardByIdAction({ cardId: trimmedId });
-      if (!card) {
-        setManualCardError("No se encontro la carta con ese id.");
-        return;
-      }
-      setSelectedCards((prev) =>
-        prev.some((item) => item.id === card.id) ? prev : [...prev, card],
-      );
-      setCardResults((prev) =>
-        prev.some((item) => item.id === card.id) ? prev : [card, ...prev],
-      );
-      setManualCardId("");
-    } catch {
-      setManualCardError("No se pudo cargar la carta.");
-    }
-  };
-
   const handleInsertCards = () => {
     if (!editor || selectedCards.length === 0) return;
 
@@ -709,22 +684,6 @@ export const MarkdownEditor = ({
             >
               <FiLink className="h-4 w-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => setIsCardModalOpen(true)}
-              className={toolbarButtonClass(false)}
-              title="Insertar carta"
-            >
-              <GiCardPick className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsDeckModalOpen(true)}
-              className={toolbarButtonClass(false)}
-              title="Insertar mazo"
-            >
-              <GiCardDraw className="h-4 w-4" />
-            </button>
 
             <div className="relative" ref={listMenuRef}>
               <button
@@ -777,7 +736,24 @@ export const MarkdownEditor = ({
                 </div>
               )}
             </div>
-            {/* BotÃ³n de cÃ³digo desactivado temporalmente.
+            <button
+              type="button"
+              onClick={() => setIsCardModalOpen(true)}
+              className={toolbarButtonClass(false)}
+              title="Insertar carta"
+            >
+              <GiCardPick className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsDeckModalOpen(true)}
+              className={toolbarButtonClass(false)}
+              title="Insertar mazo"
+            >
+              <GiCardDraw className="h-4 w-4" />
+            </button>
+
+            {/* Botón de código desactivado temporalmente.
             <button
               type="button"
               onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
@@ -862,10 +838,6 @@ export const MarkdownEditor = ({
         onClose={() => setIsCardModalOpen(false)}
         searchValue={cardSearch}
         onSearchChange={setCardSearch}
-        manualCardId={manualCardId}
-        onManualCardIdChange={setManualCardId}
-        onAddManualCard={handleAddManualCard}
-        manualCardError={manualCardError}
         cards={visibleCards}
         selectedCardIds={selectedCardIds}
         onToggleCard={toggleCardSelection}

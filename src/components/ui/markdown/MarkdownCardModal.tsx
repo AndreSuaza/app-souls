@@ -22,10 +22,6 @@ type Props = {
   onClose: () => void;
   searchValue: string;
   onSearchChange: (value: string) => void;
-  manualCardId: string;
-  onManualCardIdChange: (value: string) => void;
-  onAddManualCard: () => void;
-  manualCardError: string | null;
   cards: CardSearchResult[];
   selectedCardIds: Set<string>;
   onToggleCard: (card: CardSearchResult) => void;
@@ -44,10 +40,6 @@ export const MarkdownCardModal = ({
   onClose,
   searchValue,
   onSearchChange,
-  manualCardId,
-  onManualCardIdChange,
-  onAddManualCard,
-  manualCardError,
   cards,
   selectedCardIds,
   onToggleCard,
@@ -63,7 +55,11 @@ export const MarkdownCardModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal className="inset-0 flex items-center justify-center p-4" close={onClose}>
+    <Modal
+      className="inset-0 flex items-center justify-center p-4"
+      close={onClose}
+      hideCloseButton
+    >
       <div className="w-full max-w-4xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">
@@ -72,7 +68,8 @@ export const MarkdownCardModal = ({
                 Seleccionar cartas
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Selecciona una o varias cartas, o agrega el id de la carta.
+                Selecciona una o varias cartas. Puedes buscar por nombre, id,
+                idd o codigo.
               </p>
             </div>
             <button
@@ -90,34 +87,13 @@ export const MarkdownCardModal = ({
             <input
               value={searchValue}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Buscar por nombre o codigo"
+              placeholder="Buscar por nombre, id, idd o codigo"
               className="w-full min-w-0 rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
             />
             <span className="whitespace-nowrap text-end text-xs text-slate-400 dark:text-slate-500">
               {totalCount} resultados
             </span>
           </div>
-
-          <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-            <input
-              value={manualCardId}
-              onChange={(event) => onManualCardIdChange(event.target.value)}
-              placeholder="ID de la carta"
-              className="w-full min-w-0 rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
-            />
-            <button
-              type="button"
-              onClick={onAddManualCard}
-              className="rounded-lg border border-purple-300 px-4 py-2 text-sm font-semibold text-purple-600 transition hover:bg-purple-50 dark:border-purple-500/40 dark:text-purple-300 dark:hover:bg-purple-500/10"
-            >
-              Agregar id
-            </button>
-          </div>
-          {manualCardError && (
-            <p className="text-xs text-rose-500 dark:text-rose-400">
-              {manualCardError}
-            </p>
-          )}
 
           <div className="relative max-h-[360px] min-h-[360px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
