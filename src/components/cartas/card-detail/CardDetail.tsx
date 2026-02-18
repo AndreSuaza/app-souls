@@ -1,6 +1,7 @@
 "use client";
 
 import type { Archetype, Card, Keyword, Rarity, Type } from "@/interfaces";
+import { getCardProductsByIddAction } from "@/actions";
 import { useCardDetailStore } from "@/store";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
@@ -20,10 +21,21 @@ interface Props {
   onClose?: () => void;
 }
 
+type Product = {
+  code: string;
+  name: string;
+  show: boolean;
+  url: string;
+};
+
 export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
   const [deckList] = useState(cards);
   const [card, setCard] = useState(deckList[indexList]);
   const [indexCard, setIndexCard] = useState(indexList);
+  const initialProduct = deckList[indexList]?.product;
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>(
+    initialProduct ? [initialProduct] : [],
+  );
   const [isMounted, setIsMounted] = useState(false);
   const isCardDetailOpen = useCardDetailStore(
     (state) => state.isCardDetailOpen,
@@ -55,6 +67,45 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
     setIsMounted(true);
     return () => setIsMounted(false);
   }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadRelatedProducts = async () => {
+      if (!card?.id) return;
+      setRelatedProducts(card.product ? [card.product] : []);
+
+      try {
+        const { products } = await getCardProductsByIddAction({
+          cardId: card.id,
+        });
+        if (!isActive) return;
+
+        // Prioriza el producto actual y evita duplicados.
+        const uniqueProducts = new Map<string, Product>();
+        if (card.product) {
+          uniqueProducts.set(card.product.code, card.product);
+        }
+        products.forEach((product) => {
+          if (!uniqueProducts.has(product.code)) {
+            uniqueProducts.set(product.code, product);
+          }
+        });
+
+        setRelatedProducts(Array.from(uniqueProducts.values()));
+      } catch {
+        // Si falla, mantiene el producto actual para no vaciar la sección.
+        if (!isActive) return;
+        setRelatedProducts(card.product ? [card.product] : []);
+      }
+    };
+
+    void loadRelatedProducts();
+
+    return () => {
+      isActive = false;
+    };
+  }, [card]);
 
   const forwardCard = () => {
     if (indexCard < deckList.length - 1) {
@@ -218,7 +269,11 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
               <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                 Productos donde puedes encontrar esta carta
               </p>
-              <CardDetailProductCard product={card.product} />
+              <div className="space-y-3">
+                {relatedProducts.map((product) => (
+                  <CardDetailProductCard key={product.code} product={product} />
+                ))}
+              </div>
             </div>
           </div>
         </div>

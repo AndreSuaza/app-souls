@@ -37,6 +37,7 @@ export const getDeckById = async (id: string) => {
     let tournamentInfo: {
       id: string;
       status: string;
+      storeId?: string | null;
       finishedAt?: string | null;
       typeTournamentName?: string | null;
     } | null = null;
@@ -47,6 +48,7 @@ export const getDeckById = async (id: string) => {
         select: {
           id: true,
           status: true,
+          storeId: true,
           finishedAt: true,
           typeTournament: {
             select: { name: true },
@@ -58,6 +60,7 @@ export const getDeckById = async (id: string) => {
         tournamentInfo = {
           id: tournament.id,
           status: tournament.status,
+          storeId: tournament.storeId,
           finishedAt: tournament.finishedAt
             ? tournament.finishedAt.toISOString()
             : null,

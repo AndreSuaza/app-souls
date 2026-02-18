@@ -8,7 +8,7 @@ import remarkGfm from "remark-gfm";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { Components } from "react-markdown";
 import { MarkdownDeckPreview } from "./MarkdownDeckPreview";
-import { MarkdownCardImage } from "./MarkdownCardImage";
+import { MarkdownCardPreview } from "./MarkdownCardPreview";
 
 type Props = {
   content: string;
@@ -279,7 +279,7 @@ const components: Components = {
           src.toLowerCase().endsWith(".webp")));
 
     if (isCardImage) {
-      return <MarkdownCardImage src={src} alt={alt} />;
+      return <MarkdownCardPreview src={src} alt={alt} />;
     }
 
     if (!src) return null;

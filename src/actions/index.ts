@@ -7,6 +7,7 @@ export * from "./cards/cards-and-prices";
 export * from "./cards/card-images.action";
 export * from "./cards/search-cards.action";
 export * from "./cards/get-card-by-id.action";
+export * from "./cards/get-card-products-by-idd.action";
 
 export * from "./products/products-pagination";
 export * from "./products/product-url";
@@ -51,6 +52,7 @@ export * from "./decks/get-decks-by-user.action";
 export * from "./decks/get-deck-by-id.action";
 export * from "./decks/get-deck-like-status.action";
 export * from "./decks/get-decks-filtered.action";
+export * from "./decks/search-decks.action";
 export * from "./decks/get-user-decks-filtered.action";
 export * from "./decks/get-deck-filters.action";
 export * from "./decks/toggle-deck-like.action";

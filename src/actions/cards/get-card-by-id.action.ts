@@ -6,7 +6,7 @@ import { CardIdSchema, type CardIdInput } from "@/schemas";
 export async function getCardByIdAction(input: CardIdInput) {
   const { cardId } = CardIdSchema.parse(input);
 
-  return prisma.card.findFirst({
+  const card = await prisma.card.findFirst({
     where: {
       OR: [{ id: cardId }, { idd: cardId }],
     },
@@ -15,6 +15,21 @@ export async function getCardByIdAction(input: CardIdInput) {
       idd: true,
       code: true,
       name: true,
+      rarities: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
+
+  if (!card) return null;
+
+  return {
+    id: card.id,
+    idd: card.idd,
+    code: card.code,
+    name: card.name,
+    rarityName: card.rarities[0]?.name ?? null,
+  };
 }
