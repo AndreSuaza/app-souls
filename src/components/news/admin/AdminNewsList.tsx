@@ -127,7 +127,7 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por tÃ­tulo o subtÃ­tulo"
+            placeholder="Buscar por título o subtítulo"
             className="w-full min-w-[260px] rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
           />
         </div>

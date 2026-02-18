@@ -3,6 +3,7 @@
 import { IoTrashOutline } from "react-icons/io5";
 import { DateTimeFields } from "../../crear-torneo/DateTimeFields";
 import { MarkdownEditor } from "@/components/ui/markdown/MarkdownEditor";
+import { FormField, FormInput } from "@/components/ui/form";
 
 interface TournamentForm {
   title: string;
@@ -57,17 +58,14 @@ export const TournamentInfoCard = ({
 
       {/* Inputs */}
       <div className="space-y-4">
-        <div>
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Título
-          </label>
-          <input
-            className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
+        <FormField label="Título" labelFor="tournament-info-title">
+          <FormInput
+            id="tournament-info-title"
             value={form.title}
             disabled={isFinished}
             onChange={(e) => onChange({ ...form, title: e.target.value })}
           />
-        </div>
+        </FormField>
 
         <DateTimeFields
           date={date}
@@ -84,27 +82,23 @@ export const TournamentInfoCard = ({
         />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-              Tipo de torneo
-            </label>
-            <input
-              className="w-full rounded-lg border border-tournament-dark-accent bg-slate-50 p-2 text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
+          <FormField label="Tipo de torneo" labelFor="tournament-info-type">
+            <FormInput
+              id="tournament-info-type"
               value={typeTournamentName ?? "-"}
               disabled
+              className="bg-slate-50 text-slate-600 dark:bg-tournament-dark-muted dark:text-slate-300"
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-              Formato
-            </label>
-            <input
-              className="w-full rounded-lg border border-tournament-dark-accent bg-slate-50 p-2 text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
+          <FormField label="Formato" labelFor="tournament-info-format">
+            <FormInput
+              id="tournament-info-format"
               value={format ?? "-"}
               disabled
+              className="bg-slate-50 text-slate-600 dark:bg-tournament-dark-muted dark:text-slate-300"
             />
-          </div>
+          </FormField>
         </div>
 
         <div className="space-y-2">
@@ -128,4 +122,3 @@ export const TournamentInfoCard = ({
     </div>
   );
 };
-

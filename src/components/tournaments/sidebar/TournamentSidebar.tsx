@@ -69,7 +69,7 @@ export const TournamentSidebar = () => {
 
     if (role === "admin") {
       menuItems.push({
-        label: "Panel de administración",
+        label: "Volver",
         href: "/admin",
         icon: IoArrowBackOutline,
       });
@@ -94,7 +94,7 @@ export const TournamentSidebar = () => {
 
     if (role === "admin") {
       menuItems.push({
-        label: "Panel de administración",
+        label: "Volver",
         href: "/admin",
         icon: IoArrowBackOutline,
       });

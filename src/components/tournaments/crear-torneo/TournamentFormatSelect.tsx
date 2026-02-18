@@ -1,5 +1,7 @@
 "use client";
 
+import { FormField, FormSelect } from "@/components/ui/form";
+
 type TournamentFormat = "Masters";
 
 type Props = {
@@ -13,22 +15,18 @@ const TOURNAMENT_FORMATS: { value: TournamentFormat; label: string }[] = [
 
 export const TournamentFormatSelect = ({ value, onChange }: Props) => {
   return (
-    <div>
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-        Formato
-      </label>
-
-      <select
+    <FormField label="Formato" labelFor="tournament-format">
+      <FormSelect
+        id="tournament-format"
         value={value}
         onChange={(e) => onChange(e.target.value as TournamentFormat)}
-        className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
       >
         {TOURNAMENT_FORMATS.map((f) => (
           <option key={f.value} value={f.value}>
             {f.label}
           </option>
         ))}
-      </select>
-    </div>
+      </FormSelect>
+    </FormField>
   );
 };

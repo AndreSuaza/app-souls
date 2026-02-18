@@ -30,7 +30,7 @@ export const Sidebar = () => {
   const adminShortcut = (() => {
     const role = session?.user?.role;
     if (role === "admin") {
-      return { label: "Administrar", href: "/admin/torneos" };
+      return { label: "Administrar", href: "/admin" };
     }
     if (role === "store") {
       return { label: "Torneos", href: "/admin/torneos" };

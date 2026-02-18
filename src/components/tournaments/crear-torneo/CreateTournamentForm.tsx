@@ -3,12 +3,11 @@
 import { useMemo, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import clsx from "clsx";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MdError } from "react-icons/md";
 import { createTournamentAction } from "@/actions";
 import { MarkdownEditor } from "@/components";
+import { FormField, FormInput } from "@/components/ui/form";
 import { getPlainTextFromMarkdown } from "@/utils/markdown";
 import {
   useCatalogStore,
@@ -164,19 +163,16 @@ export const CreateTournamentForm = () => {
       onSubmit={onSubmit}
       className="rounded-xl border border-tournament-dark-accent bg-white p-6 shadow-sm space-y-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
     >
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-          Nombre del torneo
-        </label>
-        <input
+      <FormField
+        label="Nombre del torneo"
+        labelFor="tournament-title"
+        error={errors.title?.message}
+      >
+        <FormInput
+          id="tournament-title"
           maxLength={50}
-          className={clsx(
-            "w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500",
-            {
-              "border-red-500": errors.title,
-            },
-          )}
           placeholder="Ej. Torneo Verano 2025"
+          hasError={!!errors.title}
           {...register("title", {
             required: "El nombre del torneo es obligatorio",
             minLength: {
@@ -189,14 +185,7 @@ export const CreateTournamentForm = () => {
             },
           })}
         />
-
-        {errors.title && (
-          <div className="mt-1 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
-            <MdError size={14} />
-            <span>{errors.title.message}</span>
-          </div>
-        )}
-      </div>
+      </FormField>
 
       <Controller
         name="description"
