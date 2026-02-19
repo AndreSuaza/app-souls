@@ -1,8 +1,9 @@
 import { z } from "zod";
 
-export const NewsStatusEnum = z.enum(["draft", "scheduled", "published"]);
-
-const TagsSchema = z.array(z.string().trim().min(1)).default([]);
+const TagsSchema = z
+  .array(z.string().trim().min(1))
+  .max(5, "Solo se permiten 5 etiquetas")
+  .default([]);
 
 const BaseNewsSchema = z.object({
   title: z
@@ -21,33 +22,16 @@ const BaseNewsSchema = z.object({
   featuredImage: z.string().min(1, "La imagen destacada es obligatoria"),
   newCategoryId: z.string().min(1, "La categoría es obligatoria"),
   tags: TagsSchema,
-  status: NewsStatusEnum,
   publishedAt: z.string().or(z.date()).optional(),
+  publishNow: z.boolean().optional().default(false),
 });
 
-const validatePublishedAt = (
-  data: z.infer<typeof BaseNewsSchema>,
-  ctx: z.RefinementCtx,
-) => {
-  if (data.status === "draft") return;
-
-  if (!data.publishedAt) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["publishedAt"],
-      message: "La fecha de publicación es obligatoria",
-    });
-  }
-};
-
-export const CreateNewsSchema = BaseNewsSchema.superRefine(validatePublishedAt);
+export const CreateNewsSchema = BaseNewsSchema;
 
 export type CreateNewsInput = z.infer<typeof CreateNewsSchema>;
 
 export const UpdateNewsSchema = BaseNewsSchema.extend({
   newsId: z.string().min(1),
-}).superRefine((data, ctx) => {
-  validatePublishedAt(data, ctx);
 });
 
 export type UpdateNewsInput = z.infer<typeof UpdateNewsSchema>;

@@ -91,7 +91,11 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const matchesDate = (value?: string | null) => {
@@ -128,7 +132,7 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
       if (categoryFilter !== "all" && item.newCategoryId !== categoryFilter) {
         return false;
       }
-      // Usa la fecha de publicaciÃ³n si existe, de lo contrario la de creaciÃ³n.
+      // Usa la fecha de publicación si existe, de lo contrario la de creación.
       const dateValue = item.publishedAt ?? item.createdAt;
       if (!matchesDate(dateValue)) return false;
 
@@ -173,7 +177,14 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
     router.replace(`${pathname}?${params.toString()}`);
-  }, [statusFilter, categoryFilter, dateFilter, pathname, router, searchParams]);
+  }, [
+    statusFilter,
+    categoryFilter,
+    dateFilter,
+    pathname,
+    router,
+    searchParams,
+  ]);
 
   useEffect(() => {
     if (currentPage > totalPages) {

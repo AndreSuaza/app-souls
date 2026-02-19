@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveNewsStatus } from "@/logic";
 import { CreateNewsSchema, type CreateNewsInput } from "@/schemas";
 
 export async function createNewsAction(input: CreateNewsInput) {
@@ -17,7 +18,13 @@ export async function createNewsAction(input: CreateNewsInput) {
     }
 
     const data = CreateNewsSchema.parse(input);
-    const publishedAt = data.publishedAt ? new Date(data.publishedAt) : null;
+    const parsedPublishedAt = data.publishedAt
+      ? new Date(data.publishedAt)
+      : null;
+    const { status, publishedAt } = resolveNewsStatus({
+      publishedAt: parsedPublishedAt,
+      publishNow: data.publishNow,
+    });
 
     const created = await prisma.new.create({
       data: {
@@ -27,7 +34,7 @@ export async function createNewsAction(input: CreateNewsInput) {
         content: data.content,
         featuredImage: data.featuredImage,
         publishedAt,
-        status: data.status,
+        status,
         tags: data.tags,
         userId: session.user.idd,
         newCategoryId: data.newCategoryId,

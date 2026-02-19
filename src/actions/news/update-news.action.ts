@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { resolveNewsStatus } from "@/logic";
 import { UpdateNewsSchema, type UpdateNewsInput } from "@/schemas";
 
 export async function updateNewsAction(input: UpdateNewsInput) {
@@ -17,7 +18,33 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     }
 
     const data = UpdateNewsSchema.parse(input);
-    const publishedAt = data.publishedAt ? new Date(data.publishedAt) : null;
+    const existing = await prisma.new.findUnique({
+      where: { id: data.newsId },
+      select: { status: true, publishedAt: true },
+    });
+
+    if (!existing) {
+      throw new Error("Noticia no encontrada");
+    }
+
+    const now = new Date();
+    // Bloquea edición si la noticia ya está publicada para el público.
+    const isPublished =
+      existing.status === "published" ||
+      (existing.publishedAt && existing.publishedAt.getTime() <= now.getTime());
+
+    if (isPublished) {
+      throw new Error("No se puede editar una noticia publicada");
+    }
+
+    const parsedPublishedAt = data.publishedAt
+      ? new Date(data.publishedAt)
+      : null;
+    const { status, publishedAt } = resolveNewsStatus({
+      publishedAt: parsedPublishedAt,
+      publishNow: data.publishNow,
+      now,
+    });
 
     await prisma.new.update({
       where: { id: data.newsId },
@@ -28,7 +55,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
         content: data.content,
         featuredImage: data.featuredImage,
         publishedAt,
-        status: data.status,
+        status,
         tags: data.tags,
         newCategoryId: data.newCategoryId,
       },

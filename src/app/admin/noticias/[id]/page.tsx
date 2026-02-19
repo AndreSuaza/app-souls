@@ -129,6 +129,11 @@ export default function EditNewsPage() {
 
   if (loading || !news) return null;
 
+  const publishedAt = news.publishedAt ? new Date(news.publishedAt) : null;
+  const isPublished =
+    news.status === "published" ||
+    (!!publishedAt && publishedAt.getTime() <= Date.now());
+
   return (
     <section className="space-y-6">
       <header>
@@ -148,6 +153,7 @@ export default function EditNewsPage() {
         submitLabel="Guardar cambios"
         onSubmit={handleSubmit}
         onDelete={handleDelete}
+        readOnly={isPublished}
       />
     </section>
   );

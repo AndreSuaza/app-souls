@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
-import clsx from "clsx";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
+import clsx from "clsx";
 import { FiX } from "react-icons/fi";
 import { MarkdownEditor } from "@/components";
 import {
@@ -12,7 +12,7 @@ import {
   FormSelect,
   FormTextarea,
 } from "@/components/ui/form";
-import type { NewsCategoryOption, NewsDetail, NewsStatus } from "@/interfaces";
+import type { NewsCategoryOption, NewsDetail } from "@/interfaces";
 import { NewsImageModal } from "./NewsImageModal";
 
 type NewsFormValues = {
@@ -21,7 +21,6 @@ type NewsFormValues = {
   shortSummary: string;
   content: string;
   featuredImage: string;
-  status: NewsStatus;
   publishedAt: string;
   newCategoryId: string;
   tagsInput: string;
@@ -33,10 +32,10 @@ export type NewsSubmitValues = {
   shortSummary: string;
   content: string;
   featuredImage: string;
-  status: NewsStatus;
   publishedAt?: string;
   newCategoryId: string;
   tags: string[];
+  publishNow: boolean;
 };
 
 type Props = {
@@ -47,13 +46,14 @@ type Props = {
   submitLabel?: string;
   onSubmit: (values: NewsSubmitValues) => void;
   onDelete?: () => void;
+  readOnly?: boolean;
 };
 
 const SHORT_SUMMARY_MAX = 300;
 
-const formatDateForInput = (value?: string | null) => {
+const formatDateForInput = (value?: string | Date | null) => {
   if (!value) return "";
-  const date = new Date(value);
+  const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 16);
 };
@@ -66,6 +66,7 @@ export const NewsForm = ({
   submitLabel = "Guardar",
   onSubmit,
   onDelete,
+  readOnly = false,
 }: Props) => {
   const defaultValues = useMemo<NewsFormValues>(
     () => ({
@@ -74,13 +75,13 @@ export const NewsForm = ({
       shortSummary: initialValues?.shortSummary ?? "",
       content: initialValues?.content ?? "",
       featuredImage: initialValues?.featuredImage ?? "",
-      status: initialValues?.status ?? "draft",
       publishedAt: formatDateForInput(initialValues?.publishedAt),
       newCategoryId: initialValues?.newCategoryId ?? "",
       tagsInput: initialValues?.tags?.join(", ") ?? "",
     }),
     [initialValues],
   );
+  const minPublishedAt = useMemo(() => formatDateForInput(new Date()), []);
 
   const {
     register,
@@ -94,7 +95,6 @@ export const NewsForm = ({
     defaultValues,
   });
 
-  const status = watch("status");
   const shortSummaryValue = watch("shortSummary") ?? "";
   const featuredImageValue = watch("featuredImage") ?? "";
   const isSubmitAttempted = Object.keys(errors).length > 0;
@@ -103,6 +103,7 @@ export const NewsForm = ({
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(initialValues?.tags ?? []);
+  const [publishNow, setPublishNow] = useState(false);
 
   useEffect(() => {
     setTags((initialValues?.tags ?? []).slice(0, 5));
@@ -117,8 +118,6 @@ export const NewsForm = ({
       "shortSummary",
       "featuredImage",
       "newCategoryId",
-      "status",
-      "publishedAt",
     ]);
   }, [isSubmitAttempted, trigger]);
 
@@ -175,34 +174,21 @@ export const NewsForm = ({
     const currentSummary = watch("shortSummary");
     const currentCategory = watch("newCategoryId");
     const currentImage = watch("featuredImage");
-    const currentStatus = watch("status");
-    const currentPublishedAt = watch("publishedAt");
 
-    const emptyTitle = !currentTitle?.trim();
-    const emptySubtitle = !currentSubtitle?.trim();
-    const emptySummary = !currentSummary?.trim();
-    const emptyCategory = !currentCategory?.trim();
-    const emptyFeaturedImage = !currentImage?.trim();
-    const requiresPublishedAt =
-      currentStatus !== "draft" && !currentPublishedAt;
-
-    if (emptyTitle) {
+    if (!currentTitle?.trim()) {
       setValue("title", currentTitle, { shouldValidate: true });
     }
-    if (emptySubtitle) {
+    if (!currentSubtitle?.trim()) {
       setValue("subtitle", currentSubtitle, { shouldValidate: true });
     }
-    if (emptySummary) {
+    if (!currentSummary?.trim()) {
       setValue("shortSummary", currentSummary, { shouldValidate: true });
     }
-    if (emptyCategory) {
+    if (!currentCategory?.trim()) {
       setValue("newCategoryId", currentCategory, { shouldValidate: true });
     }
-    if (emptyFeaturedImage) {
+    if (!currentImage?.trim()) {
       setValue("featuredImage", currentImage, { shouldValidate: true });
-    }
-    if (requiresPublishedAt) {
-      setValue("publishedAt", currentPublishedAt, { shouldValidate: true });
     }
   };
 
@@ -213,12 +199,25 @@ export const NewsForm = ({
       shortSummary: values.shortSummary,
       content: values.content,
       featuredImage: values.featuredImage,
-      status: values.status,
       publishedAt: values.publishedAt ? values.publishedAt : undefined,
       newCategoryId: values.newCategoryId,
       tags,
+      publishNow,
     });
   }, handleInvalidSubmit);
+
+  const handlePublishNow = () => {
+    setPublishNow(true);
+    setValue("publishedAt", formatDateForInput(new Date()), {
+      shouldValidate: true,
+    });
+  };
+
+  const handlePublishedAtChange = () => {
+    if (publishNow) {
+      setPublishNow(false);
+    }
+  };
 
   return (
     <form
@@ -235,6 +234,7 @@ export const NewsForm = ({
             id="news-title"
             placeholder="Ej. Presentamos el nuevo arquetipo"
             hasError={!!errors.title}
+            disabled={readOnly}
             {...register("title", {
               required: "El título es obligatorio",
             })}
@@ -250,6 +250,7 @@ export const NewsForm = ({
             id="news-subtitle"
             placeholder="Ej. Todo lo que necesitas saber"
             hasError={!!errors.subtitle}
+            disabled={readOnly}
             {...register("subtitle", {
               required: "El subtítulo es obligatorio",
             })}
@@ -270,8 +271,13 @@ export const NewsForm = ({
             hasError={!!errors.shortSummary}
             className="pb-7"
             maxLength={SHORT_SUMMARY_MAX}
+            disabled={readOnly}
             {...register("shortSummary", {
               required: "El resumen es obligatorio",
+              minLength: {
+                value: 10,
+                message: "El resumen debe tener al menos 10 caracteres",
+              },
             })}
           />
           <span className="pointer-events-none absolute bottom-2 right-3 text-xs text-slate-400 dark:text-slate-500">
@@ -298,6 +304,7 @@ export const NewsForm = ({
             onChange={field.onChange}
             placeholder="Escribe el contenido de la noticia..."
             error={errors.content?.message}
+            readOnly={readOnly}
           />
         )}
       />
@@ -314,19 +321,22 @@ export const NewsForm = ({
               placeholder="Selecciona una imagen"
               hasError={!!errors.featuredImage}
               readOnly
+              disabled={readOnly}
               value={featuredImageValue}
-              onClick={handleOpenImageModal}
+              onClick={readOnly ? undefined : handleOpenImageModal}
               {...register("featuredImage", {
                 required: "La imagen destacada es obligatoria",
               })}
             />
-            <button
-              type="button"
-              onClick={handleOpenImageModal}
-              className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
-            >
-              Seleccionar
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                onClick={handleOpenImageModal}
+                className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
+              >
+                Seleccionar
+              </button>
+            )}
           </div>
         </FormField>
 
@@ -338,6 +348,7 @@ export const NewsForm = ({
           <FormSelect
             id="news-category"
             hasError={!!errors.newCategoryId}
+            disabled={readOnly}
             {...register("newCategoryId", {
               required: "La categoría es obligatoria",
             })}
@@ -352,43 +363,34 @@ export const NewsForm = ({
         </FormField>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <FormField
-          label="Estado"
-          labelFor="news-status"
-          error={errors.status?.message}
-        >
-          <FormSelect
-            id="news-status"
-            hasError={!!errors.status}
-            {...register("status", { required: true })}
-          >
-            <option value="draft">Borrador</option>
-            <option value="scheduled">Programado</option>
-            <option value="published">Publicado</option>
-          </FormSelect>
-        </FormField>
-
-        <FormField
-          label="Fecha de publicación"
-          labelFor="news-published-at"
-          error={errors.publishedAt?.message}
-        >
+      <FormField label="Fecha de publicación" labelFor="news-published-at">
+        <div className="flex flex-wrap gap-2">
           <FormInput
             id="news-published-at"
             type="datetime-local"
-            hasError={!!errors.publishedAt}
+            disabled={readOnly}
+            min={minPublishedAt}
             {...register("publishedAt", {
-              validate: (value) => {
-                if (status !== "draft" && !value) {
-                  return "La fecha de publicación es obligatoria";
-                }
-                return true;
-              },
+              onChange: handlePublishedAtChange,
             })}
           />
-        </FormField>
-      </div>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={handlePublishNow}
+              disabled={publishNow}
+              className={clsx(
+                "inline-flex h-10 items-center justify-center rounded-lg border px-4 text-sm font-semibold transition",
+                publishNow
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200"
+                  : "border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-500/10",
+              )}
+            >
+              Publicar ahora
+            </button>
+          )}
+        </div>
+      </FormField>
 
       <FormField
         label="Etiquetas"
@@ -400,6 +402,7 @@ export const NewsForm = ({
             id="news-tags-input"
             placeholder="Escribe una etiqueta y presiona Enter"
             value={tagInput}
+            disabled={readOnly}
             onChange={(event) => setTagInput(event.target.value)}
             onKeyDown={handleTagKeyDown}
           />
@@ -410,14 +413,16 @@ export const NewsForm = ({
                 className="inline-flex items-center gap-2 rounded-full border border-purple-400/60 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700 dark:border-purple-400/50 dark:bg-purple-500/10 dark:text-purple-200"
               >
                 {tag}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTag(tag)}
-                  className="text-purple-500 transition hover:text-purple-700 dark:text-purple-200 dark:hover:text-white"
-                  aria-label={`Eliminar ${tag}`}
-                >
-                  <FiX className="h-3 w-3" />
-                </button>
+                {!readOnly && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="text-purple-500 transition hover:text-purple-700 dark:text-purple-200 dark:hover:text-white"
+                    aria-label={`Eliminar ${tag}`}
+                  >
+                    <FiX className="h-3 w-3" />
+                  </button>
+                )}
               </span>
             ))}
           </div>
@@ -455,12 +460,14 @@ export const NewsForm = ({
           >
             Cancelar
           </Link>
-          <button
-            type="submit"
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-purple-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
-          >
-            {submitLabel}
-          </button>
+          {!readOnly && (
+            <button
+              type="submit"
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-purple-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
+            >
+              {submitLabel}
+            </button>
+          )}
         </div>
       </div>
 
