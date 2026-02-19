@@ -13,6 +13,8 @@ export type AdminNewsListItem = {
   publishedAt?: string | null;
   userId: string;
   newCategoryId: string;
+  authorName?: string | null;
+  categoryName?: string | null;
   createdAt: string;
 };
 
@@ -28,4 +30,5 @@ export type NewsDetail = {
   tags: string[];
   userId: string;
   newCategoryId: string;
+  authorName?: string | null;
 };

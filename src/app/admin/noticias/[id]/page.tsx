@@ -144,7 +144,7 @@ export default function EditNewsPage() {
         categories={categories}
         imageOptions={newsImages}
         initialValues={news}
-        userId={news.userId}
+        userId={news.authorName ?? news.userId}
         submitLabel="Guardar cambios"
         onSubmit={handleSubmit}
         onDelete={handleDelete}

@@ -27,6 +27,18 @@ export async function getAdminNewsAction(): Promise<AdminNewsListItem[]> {
         userId: true,
         newCategoryId: true,
         createdAt: true,
+        user: {
+          select: {
+            name: true,
+            lastname: true,
+            nickname: true,
+          },
+        },
+        newCategory: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
@@ -38,6 +50,12 @@ export async function getAdminNewsAction(): Promise<AdminNewsListItem[]> {
       publishedAt: item.publishedAt ? item.publishedAt.toISOString() : null,
       userId: item.userId,
       newCategoryId: item.newCategoryId,
+      // Prioriza nombre completo y cae al nickname para mostrar un autor legible.
+      authorName: item.user
+        ? `${item.user.name ?? ""} ${item.user.lastname ?? ""}`.trim() ||
+          item.user.nickname
+        : null,
+      categoryName: item.newCategory?.name ?? null,
       createdAt: item.createdAt.toISOString(),
     }));
   } catch (error) {

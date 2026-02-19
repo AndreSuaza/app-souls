@@ -37,6 +37,13 @@ export async function getNewsByIdAction(
         tags: true,
         userId: true,
         newCategoryId: true,
+        user: {
+          select: {
+            name: true,
+            lastname: true,
+            nickname: true,
+          },
+        },
       },
     });
 
@@ -54,6 +61,11 @@ export async function getNewsByIdAction(
       tags: news.tags ?? [],
       userId: news.userId,
       newCategoryId: news.newCategoryId,
+      // Prioriza nombre completo y cae al nickname para mostrar un autor legible.
+      authorName: news.user
+        ? `${news.user.name ?? ""} ${news.user.lastname ?? ""}`.trim() ||
+          news.user.nickname
+        : null,
     };
   } catch (error) {
     console.error("[getNewsByIdAction]", error);

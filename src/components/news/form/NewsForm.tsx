@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
+import clsx from "clsx";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { FiX } from "react-icons/fi";
@@ -104,7 +105,7 @@ export const NewsForm = ({
   const [tags, setTags] = useState<string[]>(initialValues?.tags ?? []);
 
   useEffect(() => {
-    setTags(initialValues?.tags ?? []);
+    setTags((initialValues?.tags ?? []).slice(0, 5));
   }, [initialValues?.tags]);
 
   useEffect(() => {
@@ -143,8 +144,10 @@ export const NewsForm = ({
       .filter((tag) => tag.length > 0);
 
     setTags((prev) => {
+      if (prev.length >= 5) return prev;
       const merged = [...prev];
       incoming.forEach((tag) => {
+        if (merged.length >= 5) return;
         if (!merged.includes(tag)) {
           merged.push(tag);
         }
@@ -387,7 +390,11 @@ export const NewsForm = ({
         </FormField>
       </div>
 
-      <FormField label="Etiquetas" labelFor="news-tags-input">
+      <FormField
+        label="Etiquetas"
+        labelFor="news-tags-input"
+        tooltip="Máximo 5 palabras clave por noticia."
+      >
         <div className="space-y-2">
           <FormInput
             id="news-tags-input"
@@ -426,28 +433,35 @@ export const NewsForm = ({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        <Link
-          href="/admin/noticias"
-          className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 font-medium text-slate-700 transition-colors hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
-        >
-          Cancelar
-        </Link>
-        <button
-          type="submit"
-          className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
-        >
-          {submitLabel}
-        </button>
+      <div
+        className={clsx(
+          "flex flex-wrap items-center gap-3",
+          onDelete ? "justify-between" : "justify-end",
+        )}
+      >
         {onDelete && (
           <button
             type="button"
             onClick={onDelete}
-            className="inline-flex items-center justify-center rounded-lg border border-red-500 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-400 dark:text-red-300 dark:hover:bg-red-500/10"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-red-500 px-4 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-400 dark:text-red-300 dark:hover:bg-red-500/10"
           >
             Eliminar noticia
           </button>
         )}
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <Link
+            href="/admin/noticias"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 font-medium text-slate-700 transition-colors hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
+          >
+            Cancelar
+          </Link>
+          <button
+            type="submit"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-purple-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
+          >
+            {submitLabel}
+          </button>
+        </div>
       </div>
 
       <NewsImageModal
