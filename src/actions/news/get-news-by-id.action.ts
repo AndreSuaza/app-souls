@@ -47,7 +47,9 @@ export async function getNewsByIdAction(
       },
     });
 
-    if (!news) return null;
+    if (!news || news.status === "deleted") {
+      return null;
+    }
 
     return {
       id: news.id,

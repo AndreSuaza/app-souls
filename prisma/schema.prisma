@@ -296,6 +296,7 @@ enum NewStatus {
   draft
   scheduled
   published
+  deleted
 }
 
 model NewCategory {

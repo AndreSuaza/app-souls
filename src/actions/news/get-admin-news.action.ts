@@ -17,6 +17,9 @@ export async function getAdminNewsAction(): Promise<AdminNewsListItem[]> {
     }
 
     const news = await prisma.new.findMany({
+      where: {
+        status: { not: "deleted" },
+      },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,

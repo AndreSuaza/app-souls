@@ -20,8 +20,12 @@ export async function deleteNewsAction(id: string) {
 
     const newsId = NewsIdSchema.parse(id);
 
-    await prisma.new.delete({
+    await prisma.new.update({
       where: { id: newsId },
+      data: {
+        // Marcamos como eliminada para conservar historial sin exponerla en listados.
+        status: "deleted",
+      },
     });
 
     return true;

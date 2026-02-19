@@ -1,4 +1,4 @@
-export type NewsStatus = "draft" | "scheduled" | "published";
+export type NewsStatus = "draft" | "scheduled" | "published" | "deleted";
 
 export type NewsCategoryOption = {
   id: string;

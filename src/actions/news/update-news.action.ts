@@ -27,6 +27,10 @@ export async function updateNewsAction(input: UpdateNewsInput) {
       throw new Error("Noticia no encontrada");
     }
 
+    if (existing.status === "deleted") {
+      throw new Error("No se puede editar una noticia eliminada");
+    }
+
     const now = new Date();
     // Bloquea edición si la noticia ya está publicada para el público.
     const isPublished =

@@ -22,7 +22,10 @@ type Props = {
 
 type DateFilter = "all" | "today" | "last7" | "last30" | "last90" | "thisMonth";
 
-const STATUS_OPTIONS: Array<{ value: NewsStatus | "all"; label: string }> = [
+const STATUS_OPTIONS: Array<{
+  value: Exclude<NewsStatus, "deleted"> | "all";
+  label: string;
+}> = [
   { value: "all", label: "Todos" },
   { value: "draft", label: "Borrador" },
   { value: "scheduled", label: "Programado" },
@@ -55,6 +58,11 @@ const STATUS_STYLES: Record<NewsStatus, { label: string; className: string }> =
       className:
         "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-500/30",
     },
+    deleted: {
+      label: "Eliminado",
+      className:
+        "bg-red-50 text-red-600 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-500/30",
+    },
   };
 
 const PAGE_SIZE = 10;
@@ -72,7 +80,9 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
   const [inputValue, setInputValue] = useState("");
   const [query, setQuery] = useState("");
   const prevQueryRef = useRef(query);
-  const [statusFilter, setStatusFilter] = useState<NewsStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    Exclude<NewsStatus, "deleted"> | "all"
+  >("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const filtersRef = useRef({
@@ -121,6 +131,7 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
     };
 
     return news.filter((item) => {
+      if (item.status === "deleted") return false;
       if (term) {
         const matchesTitle = item.title.toLowerCase().includes(term);
         const matchesSubtitle = item.subtitle.toLowerCase().includes(term);
@@ -240,7 +251,9 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
           <select
             value={statusFilter}
             onChange={(event) =>
-              setStatusFilter(event.target.value as NewsStatus | "all")
+              setStatusFilter(
+                event.target.value as Exclude<NewsStatus, "deleted"> | "all",
+              )
             }
             className="mt-1 rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
           >
