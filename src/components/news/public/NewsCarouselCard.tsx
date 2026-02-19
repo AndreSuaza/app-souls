@@ -10,36 +10,43 @@ type Props = {
 
 export const NewsCarouselCard = ({ item }: Props) => {
   const categoryLabel = item.categoryName ?? "Sin categoría";
+  const formattedDate = item.publishedAt
+    ? new Intl.DateTimeFormat("es-CO", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(new Date(item.publishedAt))
+    : "";
 
   return (
     <Link
       href={`/noticias/${item.id}`}
-      className="group relative flex w-[240px] shrink-0 flex-col overflow-hidden rounded-2xl border border-tournament-dark-accent bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface sm:w-[280px] md:w-[300px]"
+      className="group relative flex w-full min-h-[440px] flex-col overflow-hidden rounded-2xl border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
     >
-      <div className="relative h-40 w-full overflow-hidden sm:h-44 md:h-48">
+      <div className="relative h-48 w-full overflow-hidden sm:h-52 md:h-56">
         <Image
           src={`/news/cards/${item.cardImage}`}
           alt={item.title}
           fill
-          sizes="(max-width: 640px) 240px, (max-width: 1024px) 280px, 300px"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80 transition-opacity group-hover:opacity-100" />
-      </div>
-
-      <div className="flex flex-1 flex-col gap-2 px-4 py-4">
-        <span className="inline-flex w-fit cursor-default rounded-full border border-purple-300/70 bg-purple-100/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-purple-700 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent opacity-80" />
+        <span className="absolute bottom-3 left-3 inline-flex cursor-default rounded-md bg-purple-600 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
           {categoryLabel}
         </span>
-        <h3 className="text-sm font-semibold text-slate-900 line-clamp-2 dark:text-white">
-          {item.title}
-        </h3>
       </div>
 
-      <div className="pointer-events-none absolute inset-0 flex items-end p-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-        <div className="w-full rounded-xl bg-slate-950/80 p-3 text-xs text-slate-100">
-          <p className="line-clamp-3">{item.shortSummary}</p>
-        </div>
+      <div className="flex flex-1 flex-col gap-4 px-5 py-5">
+        <h3 className="text-base font-semibold text-slate-900 line-clamp-2 dark:text-white md:text-lg">
+          {item.title}
+        </h3>
+        <p className="text-sm text-slate-600 line-clamp-3 dark:text-slate-300">
+          {item.shortSummary}
+        </p>
+        <span className="mt-auto pt-5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+          {formattedDate}
+        </span>
       </div>
     </Link>
   );

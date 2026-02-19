@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 import type { PublicNewsCard } from "@/interfaces";
 import { NewsCarouselCard } from "./NewsCarouselCard";
@@ -10,55 +10,23 @@ type Props = {
 };
 
 export const NewsCarousel = ({ items }: Props) => {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const loopItems = useMemo(
-    () => (items.length > 0 ? [...items, ...items] : []),
-    [items],
-  );
+  const [pageIndex, setPageIndex] = useState(0);
+  const pages = useMemo(() => {
+    const chunkSize = 3;
+    const chunked: PublicNewsCard[][] = [];
+
+    for (let i = 0; i < items.length; i += chunkSize) {
+      chunked.push(items.slice(i, i + chunkSize));
+    }
+
+    return chunked;
+  }, [items]);
 
   useEffect(() => {
-    const container = scrollRef.current;
-    if (!container || items.length === 0) return;
-
-    let animationFrame = 0;
-    let lastTime = performance.now();
-    const halfWidth = () => container.scrollWidth / 2;
-
-    const step = (time: number) => {
-      const delta = time - lastTime;
-      lastTime = time;
-
-      if (!isPaused) {
-        container.scrollLeft += delta * 0.04;
-        if (container.scrollLeft >= halfWidth()) {
-          // Reinicia el scroll sin salto visible porque el contenido está duplicado.
-          container.scrollLeft -= halfWidth();
-        }
-      }
-
-      animationFrame = requestAnimationFrame(step);
-    };
-
-    animationFrame = requestAnimationFrame(step);
-
-    return () => cancelAnimationFrame(animationFrame);
-  }, [items.length, isPaused]);
-
-  const handleScroll = (direction: "prev" | "next") => {
-    const container = scrollRef.current;
-    if (!container) return;
-    const amount = Math.max(container.clientWidth * 0.8, 260);
-    const delta = direction === "next" ? amount : -amount;
-    container.scrollBy({ left: delta, behavior: "smooth" });
-
-    const half = container.scrollWidth / 2;
-    if (container.scrollLeft < 0) {
-      container.scrollLeft += half;
-    } else if (container.scrollLeft >= half) {
-      container.scrollLeft -= half;
+    if (pageIndex >= pages.length) {
+      setPageIndex(0);
     }
-  };
+  }, [pageIndex, pages.length]);
 
   if (items.length === 0) {
     return (
@@ -68,34 +36,47 @@ export const NewsCarousel = ({ items }: Props) => {
     );
   }
 
+  const canScrollLeft = pageIndex > 0;
+  const canScrollRight = pageIndex < pages.length - 1;
+
   return (
     <div className="relative">
-      <button
-        type="button"
-        aria-label="Noticias anteriores"
-        onClick={() => handleScroll("prev")}
-        className="absolute left-2 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
-      >
-        <IoChevronBack className="h-6 w-6" />
-      </button>
-      <button
-        type="button"
-        aria-label="Noticias siguientes"
-        onClick={() => handleScroll("next")}
-        className="absolute right-2 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
-      >
-        <IoChevronForward className="h-6 w-6" />
-      </button>
+      {canScrollLeft && (
+        <button
+          type="button"
+          aria-label="Noticias anteriores"
+          onClick={() => setPageIndex((current) => Math.max(0, current - 1))}
+          className="absolute -left-6 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
+        >
+          <IoChevronBack className="h-6 w-6" />
+        </button>
+      )}
+      {canScrollRight && (
+        <button
+          type="button"
+          aria-label="Noticias siguientes"
+          onClick={() =>
+            setPageIndex((current) => Math.min(pages.length - 1, current + 1))
+          }
+          className="absolute -right-6 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
+        >
+          <IoChevronForward className="h-6 w-6" />
+        </button>
+      )}
 
-      <div
-        ref={scrollRef}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        className="overflow-hidden px-16"
-      >
-        <div className="flex w-max gap-5 py-2">
-          {loopItems.map((item, index) => (
-            <NewsCarouselCard key={`${item.id}-${index}`} item={item} />
+      <div className="overflow-hidden">
+        <div
+          className="flex transition-transform duration-500 ease-out"
+          style={{ transform: `translateX(-${pageIndex * 100}%)` }}
+        >
+          {pages.map((page, index) => (
+            <div key={`news-page-${index}`} className="w-full shrink-0">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {page.map((item) => (
+                  <NewsCarouselCard key={item.id} item={item} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>

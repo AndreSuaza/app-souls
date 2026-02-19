@@ -122,7 +122,8 @@ export const PublicNewsDetailView = ({ news, recommended }: Props) => {
           />
         </div>
 
-        <div className="mt-12 space-y-4">
+        <div className="mt-16 space-y-8">
+          <hr className="border-slate-200 dark:border-tournament-dark-border" />
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             Otras noticias
           </h2>
