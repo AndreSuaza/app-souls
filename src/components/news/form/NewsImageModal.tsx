@@ -15,6 +15,9 @@ type Props = {
   isOpen: boolean;
   images: string[];
   selectedImage: string | null;
+  folder: "banners" | "cards";
+  title: string;
+  description: string;
   onSelect: (image: string) => void;
   onClose: () => void;
   onConfirm: () => void;
@@ -24,6 +27,9 @@ export const NewsImageModal = ({
   isOpen,
   images,
   selectedImage,
+  folder,
+  title,
+  description,
   onSelect,
   onClose,
   onConfirm,
@@ -61,10 +67,10 @@ export const NewsImageModal = ({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Seleccionar imagen destacada
+                {title}
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Selecciona una imagen de portada para la noticia.
+                {description}
               </p>
             </div>
             <button
@@ -103,7 +109,7 @@ export const NewsImageModal = ({
                   >
                     <div className="flex flex-1 items-center justify-center">
                       <Image
-                        src={`/news/${image}`}
+                        src={`/news/${folder}/${image}`}
                         alt={image}
                         width={520}
                         height={260}

@@ -18,7 +18,7 @@ export const NewsCarouselCard = ({ item }: Props) => {
     >
       <div className="relative h-40 w-full overflow-hidden sm:h-44 md:h-48">
         <Image
-          src={`/news/${item.featuredImage}`}
+          src={`/news/cards/${item.cardImage}`}
           alt={item.title}
           fill
           sizes="(max-width: 640px) 240px, (max-width: 1024px) 280px, 300px"

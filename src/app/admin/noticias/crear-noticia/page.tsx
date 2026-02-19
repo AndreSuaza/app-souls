@@ -9,7 +9,7 @@ import {
 } from "@/actions";
 import { NewsForm, type NewsSubmitValues } from "@/components";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import type { NewsCategoryOption } from "@/interfaces";
+import type { NewsCategoryOption, NewsImageOptions } from "@/interfaces";
 
 export default function CreateNewsPage() {
   const router = useRouter();
@@ -20,7 +20,10 @@ export default function CreateNewsPage() {
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const [categories, setCategories] = useState<NewsCategoryOption[]>([]);
-  const [newsImages, setNewsImages] = useState<string[]>([]);
+  const [newsImages, setNewsImages] = useState<NewsImageOptions>({
+    banners: [],
+    cards: [],
+  });
 
   useEffect(() => {
     let active = true;

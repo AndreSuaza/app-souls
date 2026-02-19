@@ -18,7 +18,11 @@ import {
   FormSelect,
   FormTextarea,
 } from "@/components/ui/form";
-import type { NewsCategoryOption, NewsDetail } from "@/interfaces";
+import type {
+  NewsCategoryOption,
+  NewsDetail,
+  NewsImageOptions,
+} from "@/interfaces";
 import { NewsImageModal } from "./NewsImageModal";
 
 type NewsFormValues = {
@@ -27,6 +31,7 @@ type NewsFormValues = {
   shortSummary: string;
   content: string;
   featuredImage: string;
+  cardImage: string;
   publishedAt: string;
   newCategoryId: string;
   tagsInput: string;
@@ -38,6 +43,7 @@ export type NewsSubmitValues = {
   shortSummary: string;
   content: string;
   featuredImage: string;
+  cardImage: string;
   publishedAt?: string;
   newCategoryId: string;
   tags: string[];
@@ -46,7 +52,7 @@ export type NewsSubmitValues = {
 
 type Props = {
   categories: NewsCategoryOption[];
-  imageOptions: string[];
+  imageOptions: NewsImageOptions;
   initialValues?: Partial<NewsDetail>;
   userId?: string;
   submitLabel?: string;
@@ -83,6 +89,7 @@ export const NewsForm = ({
       shortSummary: initialValues?.shortSummary ?? "",
       content: initialValues?.content ?? "",
       featuredImage: initialValues?.featuredImage ?? "",
+      cardImage: initialValues?.cardImage ?? "",
       publishedAt: formatDateForInput(initialValues?.publishedAt),
       newCategoryId: initialValues?.newCategoryId ?? "",
       tagsInput: initialValues?.tags?.join(", ") ?? "",
@@ -109,10 +116,14 @@ export const NewsForm = ({
 
   const shortSummaryValue = watch("shortSummary") ?? "";
   const featuredImageValue = watch("featuredImage") ?? "";
+  const cardImageValue = watch("cardImage") ?? "";
   const isSubmitAttempted = Object.keys(errors).length > 0;
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [imageFolder, setImageFolder] = useState<"banners" | "cards">(
+    "banners",
+  );
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(initialValues?.tags ?? []);
   const [publishNow, setPublishNow] = useState(false);
@@ -148,18 +159,26 @@ export const NewsForm = ({
       "subtitle",
       "shortSummary",
       "featuredImage",
+      "cardImage",
       "newCategoryId",
     ]);
   }, [isSubmitAttempted, trigger]);
 
-  const handleOpenImageModal = () => {
-    setPendingImage(featuredImageValue || null);
+  const handleOpenImageModal = (folder: "banners" | "cards") => {
+    setImageFolder(folder);
+    setPendingImage(
+      folder === "banners" ? featuredImageValue || null : cardImageValue || null,
+    );
     setIsImageModalOpen(true);
   };
 
   const handleConfirmImage = () => {
     if (!pendingImage) return;
-    setValue("featuredImage", pendingImage, { shouldValidate: true });
+    if (imageFolder === "banners") {
+      setValue("featuredImage", pendingImage, { shouldValidate: true });
+    } else {
+      setValue("cardImage", pendingImage, { shouldValidate: true });
+    }
     setIsImageModalOpen(false);
   };
 
@@ -205,6 +224,7 @@ export const NewsForm = ({
     const currentSummary = watch("shortSummary");
     const currentCategory = watch("newCategoryId");
     const currentImage = watch("featuredImage");
+    const currentCardImage = watch("cardImage");
 
     if (!currentTitle?.trim()) {
       setValue("title", currentTitle, { shouldValidate: true });
@@ -221,6 +241,9 @@ export const NewsForm = ({
     if (!currentImage?.trim()) {
       setValue("featuredImage", currentImage, { shouldValidate: true });
     }
+    if (!currentCardImage?.trim()) {
+      setValue("cardImage", currentCardImage, { shouldValidate: true });
+    }
   };
 
   const handleFormSubmit = handleSubmit((values) => {
@@ -230,6 +253,7 @@ export const NewsForm = ({
       shortSummary: values.shortSummary,
       content: values.content,
       featuredImage: values.featuredImage,
+      cardImage: values.cardImage,
       publishedAt: values.publishedAt ? values.publishedAt : undefined,
       newCategoryId: values.newCategoryId,
       tags,
@@ -357,7 +381,7 @@ export const NewsForm = ({
               readOnly
               disabled={readOnly}
               value={featuredImageValue}
-              onClick={readOnly ? undefined : handleOpenImageModal}
+              onClick={readOnly ? undefined : () => handleOpenImageModal("banners")}
               {...register("featuredImage", {
                 required: "La imagen destacada es obligatoria",
               })}
@@ -365,10 +389,71 @@ export const NewsForm = ({
             {!readOnly && (
               <button
                 type="button"
-                onClick={handleOpenImageModal}
+                onClick={() => handleOpenImageModal("banners")}
                 className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
               >
                 Seleccionar
+              </button>
+            )}
+          </div>
+        </FormField>
+
+        <FormField
+          label="Imagen para tarjeta"
+          labelFor="news-card-image"
+          error={errors.cardImage?.message}
+        >
+          <div className="flex flex-wrap gap-2">
+            <FormInput
+              id="news-card-image"
+              placeholder="Selecciona una imagen"
+              hasError={!!errors.cardImage}
+              readOnly
+              disabled={readOnly}
+              value={cardImageValue}
+              onClick={readOnly ? undefined : () => handleOpenImageModal("cards")}
+              {...register("cardImage", {
+                required: "La imagen para tarjeta es obligatoria",
+              })}
+            />
+            {!readOnly && (
+              <button
+                type="button"
+                onClick={() => handleOpenImageModal("cards")}
+                className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
+              >
+                Seleccionar
+              </button>
+            )}
+          </div>
+        </FormField>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <FormField label="Fecha de publicación" labelFor="news-published-at">
+          <div className="flex flex-wrap gap-2">
+            <FormInput
+              id="news-published-at"
+              type="datetime-local"
+              disabled={readOnly}
+              min={effectiveMinPublishedAt}
+              {...register("publishedAt", {
+                onChange: handlePublishedAtChange,
+              })}
+            />
+            {!readOnly && (
+              <button
+                type="button"
+                onClick={handlePublishNow}
+                disabled={publishNow}
+                className={clsx(
+                  "inline-flex h-10 items-center justify-center rounded-lg border px-4 text-sm font-semibold transition",
+                  publishNow
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200"
+                    : "border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-500/10",
+                )}
+              >
+                Publicar ahora
               </button>
             )}
           </div>
@@ -396,35 +481,6 @@ export const NewsForm = ({
           </FormSelect>
         </FormField>
       </div>
-
-      <FormField label="Fecha de publicación" labelFor="news-published-at">
-        <div className="flex flex-wrap gap-2">
-          <FormInput
-            id="news-published-at"
-            type="datetime-local"
-            disabled={readOnly}
-            min={effectiveMinPublishedAt}
-            {...register("publishedAt", {
-              onChange: handlePublishedAtChange,
-            })}
-          />
-          {!readOnly && (
-            <button
-              type="button"
-              onClick={handlePublishNow}
-              disabled={publishNow}
-              className={clsx(
-                "inline-flex h-10 items-center justify-center rounded-lg border px-4 text-sm font-semibold transition",
-                publishNow
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200"
-                  : "border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-500/10",
-              )}
-            >
-              Publicar ahora
-            </button>
-          )}
-        </div>
-      </FormField>
 
       <FormField
         label="Etiquetas"
@@ -507,11 +563,26 @@ export const NewsForm = ({
 
       <NewsImageModal
         isOpen={isImageModalOpen}
-        images={imageOptions}
+        images={
+          imageFolder === "banners"
+            ? imageOptions.banners
+            : imageOptions.cards
+        }
         selectedImage={pendingImage}
         onSelect={setPendingImage}
         onClose={() => setIsImageModalOpen(false)}
         onConfirm={handleConfirmImage}
+        folder={imageFolder}
+        title={
+          imageFolder === "banners"
+            ? "Seleccionar imagen destacada"
+            : "Seleccionar imagen para tarjeta"
+        }
+        description={
+          imageFolder === "banners"
+            ? "Selecciona una imagen tipo banner para la noticia."
+            : "Selecciona una imagen cuadrada para la tarjeta."
+        }
       />
     </form>
   );

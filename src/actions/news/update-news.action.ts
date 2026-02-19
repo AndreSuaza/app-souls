@@ -47,6 +47,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
         shortSummary: data.shortSummary,
         content: data.content,
         featuredImage: data.featuredImage,
+        cardImage: data.cardImage,
         publishedAt,
         status,
         tags: data.tags,

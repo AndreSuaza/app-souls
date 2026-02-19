@@ -26,6 +26,7 @@ export async function getPublicNewsDetailAction(
         shortSummary: true,
         content: true,
         featuredImage: true,
+        cardImage: true,
         publishedAt: true,
         status: true,
         newCategoryId: true,
@@ -46,6 +47,7 @@ export async function getPublicNewsDetailAction(
       title: true,
       shortSummary: true,
       featuredImage: true,
+      cardImage: true,
       publishedAt: true,
       newCategoryId: true,
       newCategory: {
@@ -81,11 +83,14 @@ export async function getPublicNewsDetailAction(
           })
         : [];
 
-    const mapCard = (item: typeof sameCategoryNews[number]): PublicNewsCard => ({
+    const mapCard = (
+      item: typeof sameCategoryNews[number],
+    ): PublicNewsCard => ({
       id: item.id,
       title: item.title,
       shortSummary: item.shortSummary,
       featuredImage: item.featuredImage,
+      cardImage: item.cardImage,
       publishedAt: item.publishedAt ? item.publishedAt.toISOString() : null,
       newCategoryId: item.newCategoryId,
       categoryName: item.newCategory?.name ?? null,
@@ -99,6 +104,7 @@ export async function getPublicNewsDetailAction(
         shortSummary: news.shortSummary,
         content: news.content,
         featuredImage: news.featuredImage,
+        cardImage: news.cardImage,
         publishedAt: news.publishedAt ? news.publishedAt.toISOString() : null,
         newCategoryId: news.newCategoryId,
         categoryName: news.newCategory?.name ?? null,

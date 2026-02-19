@@ -11,7 +11,7 @@ import {
 } from "@/actions";
 import { NewsForm, type NewsSubmitValues } from "@/components";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import type { NewsCategoryOption, NewsDetail } from "@/interfaces";
+import type { NewsCategoryOption, NewsDetail, NewsImageOptions } from "@/interfaces";
 
 export default function EditNewsPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +24,10 @@ export default function EditNewsPage() {
   const hideLoading = useUIStore((state) => state.hideLoading);
   const [news, setNews] = useState<NewsDetail | null>(null);
   const [categories, setCategories] = useState<NewsCategoryOption[]>([]);
-  const [newsImages, setNewsImages] = useState<string[]>([]);
+  const [newsImages, setNewsImages] = useState<NewsImageOptions>({
+    banners: [],
+    cards: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

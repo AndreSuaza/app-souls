@@ -314,6 +314,7 @@ model New {
   shortSummary  String
   content       String
   featuredImage String
+  cardImage     String
   publishedAt   DateTime?
   status        NewStatus   @default(draft)
   tags          String[]    @default([])

@@ -20,6 +20,7 @@ const BaseNewsSchema = z.object({
     .max(300, "El resumen no puede superar los 300 caracteres"),
   content: z.string().min(10, "El contenido debe tener al menos 10 caracteres"),
   featuredImage: z.string().min(1, "La imagen destacada es obligatoria"),
+  cardImage: z.string().min(1, "La imagen para tarjeta es obligatoria"),
   newCategoryId: z.string().min(1, "La categoría es obligatoria"),
   tags: TagsSchema,
   publishedAt: z.string().or(z.date()).optional(),

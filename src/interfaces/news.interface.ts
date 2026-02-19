@@ -25,6 +25,7 @@ export type NewsDetail = {
   shortSummary: string;
   content: string;
   featuredImage: string;
+  cardImage: string;
   publishedAt?: string | null;
   status: NewsStatus;
   tags: string[];
@@ -34,11 +35,17 @@ export type NewsDetail = {
   categoryName?: string | null;
 };
 
+export type NewsImageOptions = {
+  banners: string[];
+  cards: string[];
+};
+
 export type PublicNewsCard = {
   id: string;
   title: string;
   shortSummary: string;
   featuredImage: string;
+  cardImage: string;
   publishedAt?: string | null;
   newCategoryId: string;
   categoryName?: string | null;
@@ -50,6 +57,7 @@ export type PublicNewsDetail = {
   subtitle: string;
   content: string;
   featuredImage: string;
+  cardImage: string;
   publishedAt?: string | null;
   newCategoryId: string;
   categoryName?: string | null;
