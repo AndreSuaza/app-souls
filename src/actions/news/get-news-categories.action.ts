@@ -21,7 +21,6 @@ export async function getNewsCategoriesAction(): Promise<NewsCategoryOption[]> {
       select: {
         id: true,
         name: true,
-        image: true,
       },
     });
 

@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
+import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
+import { FiX } from "react-icons/fi";
 import { MarkdownEditor } from "@/components";
 import {
   FormField,
@@ -10,6 +12,7 @@ import {
   FormTextarea,
 } from "@/components/ui/form";
 import type { NewsCategoryOption, NewsDetail, NewsStatus } from "@/interfaces";
+import { NewsImageModal } from "./NewsImageModal";
 
 type NewsFormValues = {
   title: string;
@@ -37,12 +40,15 @@ export type NewsSubmitValues = {
 
 type Props = {
   categories: NewsCategoryOption[];
+  imageOptions: string[];
   initialValues?: Partial<NewsDetail>;
   userId?: string;
   submitLabel?: string;
   onSubmit: (values: NewsSubmitValues) => void;
   onDelete?: () => void;
 };
+
+const SHORT_SUMMARY_MAX = 300;
 
 const formatDateForInput = (value?: string | null) => {
   if (!value) return "";
@@ -53,6 +59,7 @@ const formatDateForInput = (value?: string | null) => {
 
 export const NewsForm = ({
   categories,
+  imageOptions,
   initialValues,
   userId,
   submitLabel = "Guardar",
@@ -80,18 +87,123 @@ export const NewsForm = ({
     formState: { errors },
     control,
     watch,
+    setValue,
+    trigger,
   } = useForm<NewsFormValues>({
     defaultValues,
   });
 
   const status = watch("status");
+  const shortSummaryValue = watch("shortSummary") ?? "";
+  const featuredImageValue = watch("featuredImage") ?? "";
+  const isSubmitAttempted = Object.keys(errors).length > 0;
 
-  const handleFormSubmit = handleSubmit((values) => {
-    const tags = values.tagsInput
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>(initialValues?.tags ?? []);
+
+  useEffect(() => {
+    setTags(initialValues?.tags ?? []);
+  }, [initialValues?.tags]);
+
+  useEffect(() => {
+    if (!isSubmitAttempted) return;
+    // Re-valida para que los bordes se sincronicen con el estado de errores.
+    trigger([
+      "title",
+      "subtitle",
+      "shortSummary",
+      "featuredImage",
+      "newCategoryId",
+      "status",
+      "publishedAt",
+    ]);
+  }, [isSubmitAttempted, trigger]);
+
+  const handleOpenImageModal = () => {
+    setPendingImage(featuredImageValue || null);
+    setIsImageModalOpen(true);
+  };
+
+  const handleConfirmImage = () => {
+    if (!pendingImage) return;
+    setValue("featuredImage", pendingImage, { shouldValidate: true });
+    setIsImageModalOpen(false);
+  };
+
+  const handleAddTags = () => {
+    const trimmed = tagInput.trim();
+    if (!trimmed) return;
+
+    // Permite agregar varias etiquetas separadas por coma en un solo intento.
+    const incoming = trimmed
       .split(",")
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0);
 
+    setTags((prev) => {
+      const merged = [...prev];
+      incoming.forEach((tag) => {
+        if (!merged.includes(tag)) {
+          merged.push(tag);
+        }
+      });
+      return merged;
+    });
+    setTagInput("");
+  };
+
+  const handleTagKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleAddTags();
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setTags((prev) => prev.filter((item) => item !== tag));
+  };
+
+  const handleInvalidSubmit = () => {
+    // Forza el estado de error en campos obligatorios aunque no tengan interacción previa.
+    const currentTitle = watch("title");
+    const currentSubtitle = watch("subtitle");
+    const currentSummary = watch("shortSummary");
+    const currentCategory = watch("newCategoryId");
+    const currentImage = watch("featuredImage");
+    const currentStatus = watch("status");
+    const currentPublishedAt = watch("publishedAt");
+
+    const emptyTitle = !currentTitle?.trim();
+    const emptySubtitle = !currentSubtitle?.trim();
+    const emptySummary = !currentSummary?.trim();
+    const emptyCategory = !currentCategory?.trim();
+    const emptyFeaturedImage = !currentImage?.trim();
+    const requiresPublishedAt =
+      currentStatus !== "draft" && !currentPublishedAt;
+
+    if (emptyTitle) {
+      setValue("title", currentTitle, { shouldValidate: true });
+    }
+    if (emptySubtitle) {
+      setValue("subtitle", currentSubtitle, { shouldValidate: true });
+    }
+    if (emptySummary) {
+      setValue("shortSummary", currentSummary, { shouldValidate: true });
+    }
+    if (emptyCategory) {
+      setValue("newCategoryId", currentCategory, { shouldValidate: true });
+    }
+    if (emptyFeaturedImage) {
+      setValue("featuredImage", currentImage, { shouldValidate: true });
+    }
+    if (requiresPublishedAt) {
+      setValue("publishedAt", currentPublishedAt, { shouldValidate: true });
+    }
+  };
+
+  const handleFormSubmit = handleSubmit((values) => {
     onSubmit({
       title: values.title,
       subtitle: values.subtitle,
@@ -103,7 +215,7 @@ export const NewsForm = ({
       newCategoryId: values.newCategoryId,
       tags,
     });
-  });
+  }, handleInvalidSubmit);
 
   return (
     <form
@@ -147,15 +259,22 @@ export const NewsForm = ({
         labelFor="news-summary"
         error={errors.shortSummary?.message}
       >
-        <FormTextarea
-          id="news-summary"
-          rows={3}
-          placeholder="Resumen breve para listados"
-          hasError={!!errors.shortSummary}
-          {...register("shortSummary", {
-            required: "El resumen es obligatorio",
-          })}
-        />
+        <div className="relative">
+          <FormTextarea
+            id="news-summary"
+            rows={3}
+            placeholder="Resumen breve para listados"
+            hasError={!!errors.shortSummary}
+            className="pb-7"
+            maxLength={SHORT_SUMMARY_MAX}
+            {...register("shortSummary", {
+              required: "El resumen es obligatorio",
+            })}
+          />
+          <span className="pointer-events-none absolute bottom-2 right-3 text-xs text-slate-400 dark:text-slate-500">
+            {shortSummaryValue.length}/{SHORT_SUMMARY_MAX}
+          </span>
+        </div>
       </FormField>
 
       <Controller
@@ -186,14 +305,26 @@ export const NewsForm = ({
           labelFor="news-featured-image"
           error={errors.featuredImage?.message}
         >
-          <FormInput
-            id="news-featured-image"
-            placeholder="URL o ruta de la imagen"
-            hasError={!!errors.featuredImage}
-            {...register("featuredImage", {
-              required: "La imagen destacada es obligatoria",
-            })}
-          />
+          <div className="flex flex-wrap gap-2">
+            <FormInput
+              id="news-featured-image"
+              placeholder="Selecciona una imagen"
+              hasError={!!errors.featuredImage}
+              readOnly
+              value={featuredImageValue}
+              onClick={handleOpenImageModal}
+              {...register("featuredImage", {
+                required: "La imagen destacada es obligatoria",
+              })}
+            />
+            <button
+              type="button"
+              onClick={handleOpenImageModal}
+              className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
+            >
+              Seleccionar
+            </button>
+          </div>
         </FormField>
 
         <FormField
@@ -219,9 +350,14 @@ export const NewsForm = ({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <FormField label="Estado" labelFor="news-status">
+        <FormField
+          label="Estado"
+          labelFor="news-status"
+          error={errors.status?.message}
+        >
           <FormSelect
             id="news-status"
+            hasError={!!errors.status}
             {...register("status", { required: true })}
           >
             <option value="draft">Borrador</option>
@@ -251,12 +387,34 @@ export const NewsForm = ({
         </FormField>
       </div>
 
-      <FormField label="Etiquetas (separadas por coma)" labelFor="news-tags">
-        <FormInput
-          id="news-tags"
-          placeholder="meta, competitivo, eventos"
-          {...register("tagsInput")}
-        />
+      <FormField label="Etiquetas" labelFor="news-tags-input">
+        <div className="space-y-2">
+          <FormInput
+            id="news-tags-input"
+            placeholder="Escribe una etiqueta y presiona Enter"
+            value={tagInput}
+            onChange={(event) => setTagInput(event.target.value)}
+            onKeyDown={handleTagKeyDown}
+          />
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-2 rounded-full border border-purple-400/60 bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700 dark:border-purple-400/50 dark:bg-purple-500/10 dark:text-purple-200"
+              >
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="text-purple-500 transition hover:text-purple-700 dark:text-purple-200 dark:hover:text-white"
+                  aria-label={`Eliminar ${tag}`}
+                >
+                  <FiX className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
       </FormField>
 
       {userId && (
@@ -268,7 +426,13 @@ export const NewsForm = ({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <Link
+          href="/admin/noticias"
+          className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 font-medium text-slate-700 transition-colors hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
+        >
+          Cancelar
+        </Link>
         <button
           type="submit"
           className="inline-flex items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
@@ -285,6 +449,15 @@ export const NewsForm = ({
           </button>
         )}
       </div>
+
+      <NewsImageModal
+        isOpen={isImageModalOpen}
+        images={imageOptions}
+        selectedImage={pendingImage}
+        onSelect={setPendingImage}
+        onClose={() => setIsImageModalOpen(false)}
+        onConfirm={handleConfirmImage}
+      />
     </form>
   );
 };

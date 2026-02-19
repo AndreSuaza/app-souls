@@ -6,6 +6,7 @@ import {
   deleteNewsAction,
   getNewsByIdAction,
   getNewsCategoriesAction,
+  getNewsImagesAction,
   updateNewsAction,
 } from "@/actions";
 import { NewsForm, type NewsSubmitValues } from "@/components";
@@ -23,6 +24,7 @@ export default function EditNewsPage() {
   const hideLoading = useUIStore((state) => state.hideLoading);
   const [news, setNews] = useState<NewsDetail | null>(null);
   const [categories, setCategories] = useState<NewsCategoryOption[]>([]);
+  const [newsImages, setNewsImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,9 +34,10 @@ export default function EditNewsPage() {
     const loadData = async () => {
       try {
         showLoading("Cargando noticia...");
-        const [detail, categoryList] = await Promise.all([
+        const [detail, categoryList, images] = await Promise.all([
           getNewsByIdAction(id),
           getNewsCategoriesAction(),
+          getNewsImagesAction(),
         ]);
 
         if (!detail) {
@@ -47,6 +50,7 @@ export default function EditNewsPage() {
         if (active) {
           setNews(detail);
           setCategories(categoryList);
+          setNewsImages(images);
         }
       } catch {
         if (active) {
@@ -138,6 +142,7 @@ export default function EditNewsPage() {
 
       <NewsForm
         categories={categories}
+        imageOptions={newsImages}
         initialValues={news}
         userId={news.userId}
         submitLabel="Guardar cambios"

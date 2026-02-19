@@ -23,7 +23,7 @@ export async function getNewsByIdAction(
 
     const newsId = NewsIdSchema.parse(id);
 
-    const news = await prisma.news.findUnique({
+    const news = await prisma.new.findUnique({
       where: { id: newsId },
       select: {
         id: true,

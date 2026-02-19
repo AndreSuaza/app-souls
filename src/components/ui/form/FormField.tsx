@@ -64,15 +64,10 @@ const FormFieldTooltip = ({ text }: { text: string }) => {
   );
 };
 
-export const FormField = ({
-  label,
-  labelFor,
-  tooltip,
-  error,
-  children,
-  className,
-  labelClassName,
-}: Props) => {
+export const FormField = (props: Props) => {
+  const { label, labelFor, tooltip, error, children, className, labelClassName } =
+    props;
+  const isRequired = Object.prototype.hasOwnProperty.call(props, "error");
   return (
     <div className={clsx("space-y-1", className)}>
       {label && (
@@ -85,6 +80,18 @@ export const FormField = ({
             )}
           >
             {label}
+            {isRequired && (
+              <span
+                className={clsx(
+                  "ml-1",
+                  error
+                    ? "text-red-500 dark:text-red-400"
+                    : "text-slate-700 dark:text-slate-200",
+                )}
+              >
+                *
+              </span>
+            )}
           </label>
           {tooltip && <FormFieldTooltip text={tooltip} />}
         </div>

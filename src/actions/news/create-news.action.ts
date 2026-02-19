@@ -19,7 +19,7 @@ export async function createNewsAction(input: CreateNewsInput) {
     const data = CreateNewsSchema.parse(input);
     const publishedAt = data.publishedAt ? new Date(data.publishedAt) : null;
 
-    const created = await prisma.news.create({
+    const created = await prisma.new.create({
       data: {
         title: data.title,
         subtitle: data.subtitle,

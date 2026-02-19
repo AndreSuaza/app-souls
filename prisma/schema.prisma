@@ -289,10 +289,10 @@ model User {
 
   storeId String? @db.ObjectId
   store   Store?  @relation(fields: [storeId], references: [id])
-  news    News[]
+  news    New[]
 }
 
-enum NewsStatus {
+enum NewStatus {
   draft
   scheduled
   published
@@ -301,13 +301,12 @@ enum NewsStatus {
 model NewCategory {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
-  image     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  news      News[]
+  news      New[]
 }
 
-model News {
+model New {
   id            String      @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   subtitle      String
@@ -315,7 +314,7 @@ model News {
   content       String
   featuredImage String
   publishedAt   DateTime?
-  status        NewsStatus  @default(draft)
+  status        NewStatus   @default(draft)
   tags          String[]    @default([])
   userId        String      @db.ObjectId
   user          User        @relation(fields: [userId], references: [id])

@@ -20,7 +20,7 @@ export async function deleteNewsAction(id: string) {
 
     const newsId = NewsIdSchema.parse(id);
 
-    await prisma.news.delete({
+    await prisma.new.delete({
       where: { id: newsId },
     });
 

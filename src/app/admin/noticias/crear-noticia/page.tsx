@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createNewsAction, getNewsCategoriesAction } from "@/actions";
+import {
+  createNewsAction,
+  getNewsCategoriesAction,
+  getNewsImagesAction,
+} from "@/actions";
 import { NewsForm, type NewsSubmitValues } from "@/components";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import type { NewsCategoryOption } from "@/interfaces";
@@ -16,15 +20,20 @@ export default function CreateNewsPage() {
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const [categories, setCategories] = useState<NewsCategoryOption[]>([]);
+  const [newsImages, setNewsImages] = useState<string[]>([]);
 
   useEffect(() => {
     let active = true;
     const loadCategories = async () => {
       try {
         showLoading("Cargando categorías...");
-        const data = await getNewsCategoriesAction();
+        const [data, images] = await Promise.all([
+          getNewsCategoriesAction(),
+          getNewsImagesAction(),
+        ]);
         if (active) {
           setCategories(data);
+          setNewsImages(images);
         }
       } catch {
         showToast("No se pudieron cargar las categorías", "error");
@@ -76,6 +85,7 @@ export default function CreateNewsPage() {
 
       <NewsForm
         categories={categories}
+        imageOptions={newsImages}
         submitLabel="Crear noticia"
         onSubmit={handleSubmit}
       />

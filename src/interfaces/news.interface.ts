@@ -3,7 +3,6 @@ export type NewsStatus = "draft" | "scheduled" | "published";
 export type NewsCategoryOption = {
   id: string;
   name: string;
-  image: string;
 };
 
 export type AdminNewsListItem = {

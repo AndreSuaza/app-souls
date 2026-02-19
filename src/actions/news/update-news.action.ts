@@ -19,7 +19,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     const data = UpdateNewsSchema.parse(input);
     const publishedAt = data.publishedAt ? new Date(data.publishedAt) : null;
 
-    await prisma.news.update({
+    await prisma.new.update({
       where: { id: data.newsId },
       data: {
         title: data.title,
