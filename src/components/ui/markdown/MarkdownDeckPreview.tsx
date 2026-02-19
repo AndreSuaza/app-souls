@@ -270,22 +270,27 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 py-10 text-center text-sm text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
-        Cargando mazo...
+      <div className="my-5 rounded-xl border border-tournament-dark-accent bg-white p-4 md:my-10 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+        <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 py-10 text-center text-sm text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
+          Cargando mazo...
+        </div>
       </div>
     );
   }
 
   if (hasError) {
     return (
-      <div className="rounded-lg border border-dashed border-rose-200 bg-rose-50 py-10 text-center text-sm text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
-        No se pudo cargar el mazo.
+      <div className="my-5 rounded-xl border border-tournament-dark-accent bg-white p-4 md:my-10 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+        <div className="rounded-lg border border-dashed border-rose-200 bg-rose-50 py-10 text-center text-sm text-rose-600 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200">
+          No se pudo cargar el mazo.
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-4">
+    <div className="my-5 w-full rounded-xl border border-tournament-dark-accent bg-white p-4 md:my-10 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+      <div className="w-full space-y-4">
       {deck && (
         <DeckInfoPanel
           deck={deck}
@@ -390,6 +395,7 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
             />
           )}
         </DeckSection>
+      </div>
       </div>
     </div>
   );

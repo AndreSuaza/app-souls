@@ -31,23 +31,12 @@ export async function updateNewsAction(input: UpdateNewsInput) {
       throw new Error("No se puede editar una noticia eliminada");
     }
 
-    const now = new Date();
-    // Bloquea edición si la noticia ya está publicada para el público.
-    const isPublished =
-      existing.status === "published" ||
-      (existing.publishedAt && existing.publishedAt.getTime() <= now.getTime());
-
-    if (isPublished) {
-      throw new Error("No se puede editar una noticia publicada");
-    }
-
     const parsedPublishedAt = data.publishedAt
       ? new Date(data.publishedAt)
       : null;
     const { status, publishedAt } = resolveNewsStatus({
       publishedAt: parsedPublishedAt,
       publishNow: data.publishNow,
-      now,
     });
 
     await prisma.new.update({

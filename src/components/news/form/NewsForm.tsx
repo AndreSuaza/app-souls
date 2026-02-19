@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type KeyboardEvent,
+  type ChangeEvent,
+} from "react";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import clsx from "clsx";
@@ -55,7 +61,9 @@ const formatDateForInput = (value?: string | Date | null) => {
   if (!value) return "";
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 16);
+  // Ajusta a hora local para que el input muestre la fecha del usuario.
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
 
 export const NewsForm = ({
@@ -82,6 +90,10 @@ export const NewsForm = ({
     [initialValues],
   );
   const minPublishedAt = useMemo(() => formatDateForInput(new Date()), []);
+  const initialPublishedAt = useMemo(
+    () => formatDateForInput(initialValues?.publishedAt),
+    [initialValues?.publishedAt],
+  );
 
   const {
     register,
@@ -104,10 +116,29 @@ export const NewsForm = ({
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(initialValues?.tags ?? []);
   const [publishNow, setPublishNow] = useState(false);
+  const [hasPublishedAtChanged, setHasPublishedAtChanged] = useState(false);
+
+  const effectiveMinPublishedAt = useMemo(() => {
+    if (readOnly) return undefined;
+    // Si está publicada y no se modificó la fecha, no imponemos mínimo.
+    if (initialValues?.status === "published" && !hasPublishedAtChanged) {
+      return undefined;
+    }
+    return minPublishedAt;
+  }, [
+    readOnly,
+    initialValues?.status,
+    hasPublishedAtChanged,
+    minPublishedAt,
+  ]);
 
   useEffect(() => {
     setTags((initialValues?.tags ?? []).slice(0, 5));
   }, [initialValues?.tags]);
+
+  useEffect(() => {
+    setHasPublishedAtChanged(false);
+  }, [initialPublishedAt]);
 
   useEffect(() => {
     if (!isSubmitAttempted) return;
@@ -208,15 +239,18 @@ export const NewsForm = ({
 
   const handlePublishNow = () => {
     setPublishNow(true);
+    setHasPublishedAtChanged(true);
     setValue("publishedAt", formatDateForInput(new Date()), {
       shouldValidate: true,
     });
   };
 
-  const handlePublishedAtChange = () => {
+  const handlePublishedAtChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (publishNow) {
       setPublishNow(false);
     }
+    const nextValue = event.target.value;
+    setHasPublishedAtChanged(nextValue !== initialPublishedAt);
   };
 
   return (
@@ -369,7 +403,7 @@ export const NewsForm = ({
             id="news-published-at"
             type="datetime-local"
             disabled={readOnly}
-            min={minPublishedAt}
+            min={effectiveMinPublishedAt}
             {...register("publishedAt", {
               onChange: handlePublishedAtChange,
             })}

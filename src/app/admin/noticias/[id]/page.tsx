@@ -77,8 +77,20 @@ export default function EditNewsPage() {
   }
 
   const handleSubmit = (values: NewsSubmitValues) => {
+    const initialDate = news?.publishedAt ? new Date(news.publishedAt) : null;
+    const nextDate = values.publishedAt ? new Date(values.publishedAt) : null;
+    const dateChanged =
+      initialDate?.getTime() !== nextDate?.getTime() &&
+      !(initialDate === null && nextDate === null);
+    const isPublished = news?.status === "published";
+    // Advierte cuando una noticia publicada cambiaría su visibilidad al reprogramar.
+    const confirmationText =
+      isPublished && dateChanged
+        ? "Esta noticia está publicada. Al cambiar la fecha puede quedar programada y dejar de estar visible hasta la nueva fecha. ¿Deseas guardar los cambios?"
+        : "¿Deseas guardar los cambios?";
+
     openConfirmation({
-      text: "¿Deseas guardar los cambios?",
+      text: confirmationText,
       action: async () => {
         showLoading("Actualizando noticia...");
         await updateNewsAction({
@@ -129,10 +141,6 @@ export default function EditNewsPage() {
 
   if (loading || !news) return null;
 
-  const publishedAt = news.publishedAt ? new Date(news.publishedAt) : null;
-  const isPublished =
-    news.status === "published" ||
-    (!!publishedAt && publishedAt.getTime() <= Date.now());
 
   return (
     <section className="space-y-6">
@@ -153,7 +161,7 @@ export default function EditNewsPage() {
         submitLabel="Guardar cambios"
         onSubmit={handleSubmit}
         onDelete={handleDelete}
-        readOnly={isPublished}
+        readOnly={false}
       />
     </section>
   );

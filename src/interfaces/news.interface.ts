@@ -31,4 +31,27 @@ export type NewsDetail = {
   userId: string;
   newCategoryId: string;
   authorName?: string | null;
+  categoryName?: string | null;
+};
+
+export type PublicNewsCard = {
+  id: string;
+  title: string;
+  shortSummary: string;
+  featuredImage: string;
+  publishedAt?: string | null;
+  newCategoryId: string;
+  categoryName?: string | null;
+};
+
+export type PublicNewsDetail = {
+  id: string;
+  title: string;
+  subtitle: string;
+  content: string;
+  featuredImage: string;
+  publishedAt?: string | null;
+  newCategoryId: string;
+  categoryName?: string | null;
+  shortSummary: string;
 };

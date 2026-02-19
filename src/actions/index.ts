@@ -70,3 +70,6 @@ export * from "./news/update-news.action";
 export * from "./news/delete-news.action";
 export * from "./news/get-news-categories.action";
 export * from "./news/get-news-images.action";
+export * from "./news/get-public-news.action";
+export * from "./news/get-public-news-categories.action";
+export * from "./news/get-public-news-detail.action";
