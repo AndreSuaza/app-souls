@@ -15,6 +15,7 @@ import {
   FiItalic,
   FiLink,
   FiList,
+  FiShoppingBag,
   FiType,
   FiUnderline,
 } from "react-icons/fi";
@@ -23,12 +24,14 @@ import {
   getCardByIdAction,
   searchCardsAction,
   searchDecksAction,
+  searchProductsAction,
 } from "@/actions";
 import { Modal } from "../modal/modal";
 import { getPlainTextLengthFromMarkdown } from "@/utils/markdown";
 import { MarkdownContent } from "./MarkdownContent";
 import { MarkdownCardModal } from "./MarkdownCardModal";
 import { MarkdownDeckModal } from "./MarkdownDeckModal";
+import { MarkdownProductModal } from "./MarkdownProductModal";
 
 type Props = {
   label?: string;
@@ -41,6 +44,7 @@ type Props = {
   enablePreviewToggle?: boolean;
   enableCardInsert?: boolean;
   enableDeckInsert?: boolean;
+  enableProductInsert?: boolean;
   readOnly?: boolean;
 };
 
@@ -109,6 +113,20 @@ type DeckSearchResponse = {
   perPage: number;
 };
 
+type ProductSearchResult = {
+  id: string;
+  name: string;
+  imageUrl: string | null;
+};
+
+type ProductSearchResponse = {
+  products: ProductSearchResult[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  perPage: number;
+};
+
 const isCardReference = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) return false;
@@ -130,6 +148,7 @@ export const MarkdownEditor = ({
   enablePreviewToggle = true,
   enableCardInsert = true,
   enableDeckInsert = true,
+  enableProductInsert = true,
   readOnly = false,
 }: Props) => {
   const headingMenuRef = useRef<HTMLDivElement | null>(null);
@@ -138,6 +157,7 @@ export const MarkdownEditor = ({
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isHeadingMenuOpen, setIsHeadingMenuOpen] = useState(false);
   const [isListMenuOpen, setIsListMenuOpen] = useState(false);
   const [cardSearch, setCardSearch] = useState("");
@@ -158,6 +178,19 @@ export const MarkdownEditor = ({
   const [isDeckSearchLoading, setIsDeckSearchLoading] = useState(false);
   const [deckSearchError, setDeckSearchError] = useState<string | null>(null);
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
+  const [productResults, setProductResults] = useState<ProductSearchResult[]>(
+    [],
+  );
+  const [productPage, setProductPage] = useState(1);
+  const [productTotalPages, setProductTotalPages] = useState(1);
+  const [productTotalCount, setProductTotalCount] = useState(0);
+  const [isProductSearchLoading, setIsProductSearchLoading] = useState(false);
+  const [productSearchError, setProductSearchError] = useState<string | null>(
+    null,
+  );
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null,
+  );
   const [, setEditorTick] = useState(0);
   const [isPublicPreview, setIsPublicPreview] = useState(initialPreview);
   const editor = useEditor({
@@ -431,12 +464,64 @@ export const MarkdownEditor = ({
     setDeckPage(1);
   }, [deckSearch, isDeckModalOpen]);
 
+  useEffect(() => {
+    if (!isProductModalOpen) return;
+
+    let isActive = true;
+
+    setProductResults([]);
+    setProductSearchError(null);
+    setProductTotalCount(0);
+    setProductTotalPages(1);
+    setIsProductSearchLoading(true);
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const results = (await searchProductsAction({
+          take: 24,
+          page: productPage,
+        })) as ProductSearchResponse;
+        if (!isActive) return;
+        setProductResults(results.products);
+        setProductTotalCount(results.totalCount);
+        setProductTotalPages(results.totalPages);
+        setProductPage(results.currentPage);
+      } catch {
+        if (!isActive) return;
+        setProductSearchError("No se pudieron cargar los productos.");
+        setProductResults([]);
+        setProductTotalCount(0);
+        setProductTotalPages(1);
+      } finally {
+        if (!isActive) return;
+        setIsProductSearchLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [isProductModalOpen, productPage]);
+
+  useEffect(() => {
+    if (!isProductModalOpen) return;
+    setProductPage(1);
+    setSelectedProductId(null);
+  }, [isProductModalOpen]);
+
+  useEffect(() => {
+    if (!isProductModalOpen) return;
+    setSelectedProductId(null);
+  }, [isProductModalOpen, productPage]);
+
   const visibleCards = useMemo(() => cardResults, [cardResults]);
   const selectedCardIds = useMemo(
     () => new Set(selectedCards.map((card) => card.id)),
     [selectedCards],
   );
   const visibleDecks = useMemo(() => deckResults, [deckResults]);
+  const visibleProducts = useMemo(() => productResults, [productResults]);
 
   const toggleCardSelection = (card: CardSearchResult) => {
     setSelectedCards((prev) =>
@@ -523,6 +608,34 @@ export const MarkdownEditor = ({
 
     setSelectedDeckId(null);
     setIsDeckModalOpen(false);
+  };
+
+  const handleInsertProduct = () => {
+    if (!editor || !selectedProductId) return;
+
+    const selectedProduct = productResults.find(
+      (product) => product.id === selectedProductId,
+    );
+
+    if (!selectedProduct?.imageUrl) {
+      setProductSearchError("El producto seleccionado no tiene imagen.");
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "image",
+        attrs: {
+          src: `/products/${selectedProduct.imageUrl}.webp`,
+          alt: selectedProduct.name ?? "Producto",
+        },
+      })
+      .run();
+
+    setSelectedProductId(null);
+    setIsProductModalOpen(false);
   };
 
   const currentHeadingLevel = [1, 2, 3].find((level) =>
@@ -760,6 +873,16 @@ export const MarkdownEditor = ({
                 <GiCardDraw className="h-4 w-4" />
               </button>
             )}
+            {enableProductInsert && (
+              <button
+                type="button"
+                onClick={() => setIsProductModalOpen(true)}
+                className={toolbarButtonClass(false)}
+                title="Insertar producto"
+              >
+                <FiShoppingBag className="h-4 w-4" />
+              </button>
+            )}
 
             {/* Botón de código desactivado temporalmente.
             <button
@@ -925,6 +1048,30 @@ export const MarkdownEditor = ({
           currentPage={deckPage}
           onPageChange={setDeckPage}
           onInsert={handleInsertDecklist}
+        />
+      )}
+
+      {enableProductInsert && (
+        <MarkdownProductModal
+          isOpen={isProductModalOpen}
+          onClose={() => {
+            setIsProductModalOpen(false);
+            setSelectedProductId(null);
+          }}
+          products={visibleProducts}
+          selectedProductId={selectedProductId}
+          onSelectProduct={(productId) =>
+            setSelectedProductId((prev) =>
+              prev === productId ? null : productId,
+            )
+          }
+          isLoading={isProductSearchLoading}
+          error={productSearchError}
+          totalCount={productTotalCount}
+          totalPages={productTotalPages}
+          currentPage={productPage}
+          onPageChange={setProductPage}
+          onInsert={handleInsertProduct}
         />
       )}
     </div>

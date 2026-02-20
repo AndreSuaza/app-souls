@@ -13,6 +13,32 @@ import { NewsForm, type NewsSubmitValues } from "@/components";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import type { NewsCategoryOption, NewsDetail, NewsImageOptions } from "@/interfaces";
 
+const STATUS_STYLES: Record<
+  NewsDetail["status"],
+  { label: string; className: string }
+> = {
+  draft: {
+    label: "Borrador",
+    className:
+      "bg-slate-100 text-slate-600 ring-slate-200 dark:bg-tournament-dark-muted dark:text-slate-300 dark:ring-tournament-dark-border",
+  },
+  scheduled: {
+    label: "Programado",
+    className:
+      "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-500/30",
+  },
+  published: {
+    label: "Publicado",
+    className:
+      "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-500/30",
+  },
+  deleted: {
+    label: "Eliminado",
+    className:
+      "bg-red-50 text-red-600 ring-red-200 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-500/30",
+  },
+};
+
 export default function EditNewsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -155,6 +181,17 @@ export default function EditNewsPage() {
           Actualiza el contenido de la noticia seleccionada.
         </p>
       </header>
+
+      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-300">
+        <span className="font-semibold text-slate-700 dark:text-slate-200">
+          Estado:
+        </span>
+        <span
+          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-inset ${STATUS_STYLES[news.status].className}`}
+        >
+          {STATUS_STYLES[news.status].label}
+        </span>
+      </div>
 
       <NewsForm
         categories={categories}

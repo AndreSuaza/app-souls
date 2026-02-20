@@ -220,6 +220,7 @@ export const CreateTournamentForm = () => {
             error={errors.description?.message}
             enableCardInsert={false}
             enableDeckInsert={false}
+            enableProductInsert={false}
           />
         )}
       />

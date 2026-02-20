@@ -44,7 +44,7 @@ export const PublicNewsDetailView = ({ news, recommended }: Props) => {
 
   return (
     <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
-      <div className="relative h-[120px] w-full overflow-hidden sm:h-[150px] md:h-[180px]">
+      <div className="relative w-full overflow-hidden h-[150px] md:h-[180px]">
         <Image
           src={`/news/banners/${news.featuredImage}`}
           alt={news.title}

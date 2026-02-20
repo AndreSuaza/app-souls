@@ -116,6 +116,7 @@ export const TournamentInfoCard = ({
             readOnly={isFinished}
             enableCardInsert={false}
             enableDeckInsert={false}
+            enableProductInsert={false}
           />
         </div>
       </div>

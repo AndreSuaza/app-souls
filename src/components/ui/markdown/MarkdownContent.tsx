@@ -9,6 +9,7 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import type { Components } from "react-markdown";
 import { MarkdownDeckPreview } from "./MarkdownDeckPreview";
 import { MarkdownCardPreview } from "./MarkdownCardPreview";
+import { MarkdownProductPreview } from "./MarkdownProductPreview";
 
 type Props = {
   content: string;
@@ -272,11 +273,19 @@ const components: Components = {
     );
   },
   img: ({ src, alt }) => {
+    const isProductImage =
+      typeof src === "string" &&
+      src.toLowerCase().includes("/products/") &&
+      src.toLowerCase().endsWith(".webp");
     const isCardImage =
       typeof src === "string" &&
       (isCardReference(src) ||
         (src.toLowerCase().includes("cards/") &&
           src.toLowerCase().endsWith(".webp")));
+
+    if (isProductImage) {
+      return <MarkdownProductPreview src={src} alt={alt} />;
+    }
 
     if (isCardImage) {
       return <MarkdownCardPreview src={src} alt={alt} />;

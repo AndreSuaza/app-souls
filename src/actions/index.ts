@@ -11,6 +11,7 @@ export * from "./cards/get-card-products-by-idd.action";
 
 export * from "./products/products-pagination";
 export * from "./products/product-url";
+export * from "./products/search-products.action";
 
 export * from "./tournaments/add-player.action";
 export * from "./tournaments/associate-deck-to-tournament.action";
