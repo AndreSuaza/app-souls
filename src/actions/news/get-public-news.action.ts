@@ -1,9 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { AdminNewsListItem } from "@/interfaces";
+import type { PublicNewsListItem } from "@/interfaces";
 
-export async function getPublicNewsAction(): Promise<AdminNewsListItem[]> {
+export async function getPublicNewsAction(): Promise<PublicNewsListItem[]> {
   try {
     const news = await prisma.new.findMany({
       where: {
@@ -14,18 +14,12 @@ export async function getPublicNewsAction(): Promise<AdminNewsListItem[]> {
         id: true,
         title: true,
         subtitle: true,
-        status: true,
+        shortSummary: true,
+        cardImage: true,
         publishedAt: true,
-        userId: true,
+        tags: true,
         newCategoryId: true,
         createdAt: true,
-        user: {
-          select: {
-            name: true,
-            lastname: true,
-            nickname: true,
-          },
-        },
         newCategory: {
           select: {
             name: true,
@@ -38,15 +32,11 @@ export async function getPublicNewsAction(): Promise<AdminNewsListItem[]> {
       id: item.id,
       title: item.title,
       subtitle: item.subtitle,
-      status: item.status,
+      shortSummary: item.shortSummary,
+      cardImage: item.cardImage,
       publishedAt: item.publishedAt ? item.publishedAt.toISOString() : null,
-      userId: item.userId,
+      tags: item.tags ?? [],
       newCategoryId: item.newCategoryId,
-      // Exponemos autor para reutilizar el layout administrativo en la vista pública temporal.
-      authorName: item.user
-        ? `${item.user.name ?? ""} ${item.user.lastname ?? ""}`.trim() ||
-          item.user.nickname
-        : null,
       categoryName: item.newCategory?.name ?? null,
       createdAt: item.createdAt.toISOString(),
     }));

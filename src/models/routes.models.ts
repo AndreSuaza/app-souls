@@ -1,49 +1,64 @@
 export interface Route {
-  path: string;
   name: string;
+  path?: string;
+  menu?: Route[];
 }
 
-export const Routes = [
+export const Routes: Route[] = [
   {
-    path: "/como-jugar",
-    name: "Aprende a Jugar",
-  },
-  {
-    path: "/torneos",
-    name: "Torneos",
+    name: "Jugar",
+    menu: [
+      {
+        path: "/como-jugar",
+        name: "Aprender a jugar",
+      },
+      {
+        path: "/preguntas-frecuentes",
+        name: "Preguntas frecuentes",
+      },
+    ],
   },
   {
     name: "Cartas",
     menu: [
       {
         path: "/cartas",
-        name: "biblioteca",
+        name: "Explorar cartas",
       },
       {
-        path: "/mazos",
-        name: "Mazos",
-      },
-      {
-        path: "/laboratorio",
-        name: "Laboratorio",
-      },
-      {
-        path: "preguntas-frecuentes",
-        name: "Preguntas Frecuentes",
+        path: "/boveda",
+        name: "Precios de las cartas",
       },
     ],
   },
   {
-    path: "/productos",
+    name: "Mazos",
+    menu: [
+      {
+        path: "/mazos",
+        name: "Explorar mazos",
+      },
+      {
+        path: "/laboratorio",
+        name: "Creación de mazos",
+      },
+    ],
+  },
+  {
+    path: "/torneos",
+    name: "Torneos",
+  },
+  {
     name: "Productos",
-    title: "Productos",
-  },
-  {
-    path: "/tiendas",
-    name: "Tiendas",
-  },
-  {
-    path: "/boveda",
-    name: "Bóveda",
+    menu: [
+      {
+        path: "/productos",
+        name: "Productos",
+      },
+      {
+        path: "/tiendas",
+        name: "Tiendas",
+      },
+    ],
   },
 ];

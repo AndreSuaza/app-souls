@@ -51,6 +51,19 @@ export type PublicNewsCard = {
   categoryName?: string | null;
 };
 
+export type PublicNewsListItem = {
+  id: string;
+  title: string;
+  subtitle: string;
+  shortSummary: string;
+  cardImage: string;
+  publishedAt?: string | null;
+  createdAt: string;
+  newCategoryId: string;
+  categoryName?: string | null;
+  tags: string[];
+};
+
 export type PublicNewsDetail = {
   id: string;
   title: string;

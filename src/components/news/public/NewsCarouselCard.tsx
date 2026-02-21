@@ -2,13 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import clsx from "clsx";
 import type { PublicNewsCard } from "@/interfaces";
 
 type Props = {
   item: PublicNewsCard;
+  className?: string;
+  imageClassName?: string;
 };
 
-export const NewsCarouselCard = ({ item }: Props) => {
+export const NewsCarouselCard = ({
+  item,
+  className,
+  imageClassName,
+}: Props) => {
   const categoryLabel = item.categoryName ?? "Sin categoría";
   const formattedDate = item.publishedAt
     ? new Intl.DateTimeFormat("es-CO", {
@@ -21,9 +28,17 @@ export const NewsCarouselCard = ({ item }: Props) => {
   return (
     <Link
       href={`/noticias/${item.id}`}
-      className="group relative flex w-full min-h-[440px] flex-col overflow-hidden rounded-2xl border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
+      className={clsx(
+        "group relative flex w-full min-h-[440px] flex-col overflow-hidden rounded-2xl border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface",
+        className,
+      )}
     >
-      <div className="relative h-48 w-full overflow-hidden sm:h-52 md:h-56">
+      <div
+        className={clsx(
+          "relative h-48 w-full overflow-hidden sm:h-52 md:h-56",
+          imageClassName,
+        )}
+      >
         <Image
           src={`/news/cards/${item.cardImage}`}
           alt={item.title}

@@ -1,16 +1,17 @@
 ﻿"use client";
 
+import { useState } from "react";
 import { useUIStore } from "@/store";
+import { Routes } from "@/models/routes.models";
 import clsx from "clsx";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import {
   IoBagRemoveOutline,
   IoBookOutline,
+  IoChevronDownOutline,
   IoCloseOutline,
-  IoDiamondOutline,
   IoFlashOutline,
-  IoFlaskOutline,
   IoLayers,
   IoLogoFacebook,
   IoLogoInstagram,
@@ -18,7 +19,6 @@ import {
   IoLogoYoutube,
   IoLogInOutline,
   IoLogOutOutline,
-  IoStorefrontOutline,
   IoTrophyOutline,
 } from "react-icons/io5";
 
@@ -26,6 +26,7 @@ export const Sidebar = () => {
   const isSideMenuOpen = useUIStore((state) => state.isSideMenuOpen);
   const closeMenu = useUIStore((state) => state.closeSideMenu);
   const { data: session } = useSession();
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   const adminShortcut = (() => {
     const role = session?.user?.role;
@@ -43,6 +44,18 @@ export const Sidebar = () => {
 
   const handleClick = async () => {
     await signOut();
+  };
+
+  const sectionIcons: Record<string, typeof IoFlashOutline> = {
+    Jugar: IoFlashOutline,
+    Cartas: IoBookOutline,
+    Mazos: IoLayers,
+    Torneos: IoTrophyOutline,
+    Productos: IoBagRemoveOutline,
+  };
+
+  const toggleSection = (name: string) => {
+    setOpenSections((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
   return (
@@ -83,78 +96,61 @@ export const Sidebar = () => {
             <IoTrophyOutline className="w-6 h-6 mr-3" />
             Torneo Nacional
           </Link> */}
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/como-jugar"
-            onClick={closeMenu}
-          >
-            <IoFlashOutline className="w-6 h-6 mr-3" />
-            Como Jugar
-          </Link>
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/torneos"
-            onClick={closeMenu}
-          >
-            <IoTrophyOutline className="w-6 h-6 mr-3" />
-            Torneos
-          </Link>
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/preguntas-frecuentes"
-            onClick={closeMenu}
-          >
-            <IoFlashOutline className="w-6 h-6 mr-3" />
-            Preguntas Frecuentes
-          </Link>
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/cartas"
-            onClick={closeMenu}
-          >
-            <IoBookOutline className="w-6 h-6 mr-3" />
-            Cartas
-          </Link>
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/laboratorio"
-            onClick={closeMenu}
-          >
-            <IoFlaskOutline className="w-6 h-6 mr-3" />
-            Laboratorio
-          </Link>
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/mazos"
-            onClick={closeMenu}
-          >
-            <IoLayers className="w-6 h-6 mr-3" />
-            Mazos
-          </Link>
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/productos"
-            onClick={closeMenu}
-          >
-            <IoBagRemoveOutline className="w-6 h-6 mr-3" />
-            Productos
-          </Link>
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/tiendas"
-            onClick={closeMenu}
-          >
-            <IoStorefrontOutline className="w-6 h-6 mr-3" />
-            Tiendas
-          </Link>
-          <Link
-            className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-            href="/boveda"
-            onClick={closeMenu}
-          >
-            <IoDiamondOutline className="w-6 h-6 mr-3" />
-            Boveda
-          </Link>
+          {Routes.map((route) => {
+            const Icon = sectionIcons[route.name];
+
+            if (route.menu?.length) {
+              const isOpen = Boolean(openSections[route.name]);
+              return (
+                <div key={route.name} className="flex flex-col">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(route.name)}
+                    className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                    aria-expanded={isOpen}
+                  >
+                    {Icon && <Icon className="w-6 h-6 mr-3" />}
+                    <span>{route.name}</span>
+                    <IoChevronDownOutline
+                      className={clsx(
+                        "ml-auto h-5 w-5 transition-transform",
+                        isOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+                  <div
+                    className={clsx(
+                      "ml-10 flex flex-col gap-1 overflow-hidden transition-all duration-200",
+                      isOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0",
+                    )}
+                  >
+                    {route.menu.map((item) => (
+                      <Link
+                        key={`${route.name}-${item.name}`}
+                        href={item.path ?? "/"}
+                        onClick={closeMenu}
+                        className="rounded-md px-2 py-1 text-xs font-semibold uppercase text-slate-200 transition-all hover:text-yellow-600"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={route.name}
+                className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                href={route.path ?? "/"}
+                onClick={closeMenu}
+              >
+                {Icon && <Icon className="w-6 h-6 mr-3" />}
+                {route.name}
+              </Link>
+            );
+          })}
 
           <div className="flex flex-row mt-6 border-t-2 pt-4">
             <Link

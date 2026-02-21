@@ -28,7 +28,9 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   const showLoading = useUIStore((s) => s.showLoading);
   const hideLoading = useUIStore((s) => s.hideLoading);
   const showToast = useToastStore((s) => s.showToast);
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(
+    initialTournament.tournament?.status === "pending",
+  );
 
   const { tournament, players, rounds = EMPTY_ROUNDS, store } = tournamentData;
 
@@ -367,22 +369,6 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
               </div>
             )}
 
-            <div className="space-y-4">
-              <div className="rounded-xl border border-tournament-dark-accent bg-white dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-                {hasValidCoordinates ? (
-                  <Map
-                    className="h-[280px] w-full rounded-lg"
-                    lat={store.lat}
-                    lgn={store.lgn}
-                    title={store.name}
-                  />
-                ) : (
-                  <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong dark:text-slate-300">
-                    Mapa no disponible.
-                  </div>
-                )}
-              </div>
-            </div>
             {tournament && (
               <div className="space-y-4">
                 {showCurrentRoundSection && (
@@ -473,6 +459,23 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                 })}
               </div>
             )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="rounded-xl border border-tournament-dark-accent bg-white dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+              {hasValidCoordinates ? (
+                <Map
+                  className="h-[280px] w-full rounded-lg"
+                  lat={store.lat}
+                  lgn={store.lgn}
+                  title={store.name}
+                />
+              ) : (
+                <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong dark:text-slate-300">
+                  Mapa no disponible.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
