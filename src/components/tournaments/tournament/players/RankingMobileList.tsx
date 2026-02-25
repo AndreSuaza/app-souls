@@ -19,6 +19,7 @@ interface Props {
   currentPage: number;
   pageSize: number;
   showPodium?: boolean;
+  showDeckLink?: boolean;
   classNames?: RankingMobileListClassNames;
 }
 
@@ -28,6 +29,7 @@ export const RankingMobileList = ({
   currentPage,
   pageSize,
   showPodium = true,
+  showDeckLink = false,
   classNames,
 }: Props) => {
   return (
@@ -45,7 +47,7 @@ export const RankingMobileList = ({
           >
             <div className="flex items-center gap-3">
               <RankBadge rank={rank} showPodium={showPodium} />
-              <PlayerCell player={player} showDeckLink />
+              <PlayerCell player={player} showDeckLink={showDeckLink} />
             </div>
 
             <div

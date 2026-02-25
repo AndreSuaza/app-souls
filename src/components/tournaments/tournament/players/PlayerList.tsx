@@ -13,12 +13,20 @@ import { UserSummaryInterface } from "@/interfaces";
 import { InitialPointsModal } from "./InitialPointsModal";
 import { PlayerSearchInput } from "./PlayerSearchInput";
 import { PlayerListView } from "./PlayerListView";
+import { PlayerDeckActionModal } from "./PlayerDeckActionModal";
 
 export const PlayerList = () => {
   const showToast = useToastStore((state) => state.showToast);
 
-  const { players, rounds, tournament, addPlayerByUserId, deletePlayer } =
-    useTournamentStore();
+  const {
+    players,
+    rounds,
+    tournament,
+    addPlayerByUserId,
+    deletePlayer,
+    showMissingDeckIndicator,
+    removePlayerDeck,
+  } = useTournamentStore();
   const openAlertConfirmation = useAlertConfirmationStore(
     (s) => s.openAlertConfirmation,
   );
@@ -31,7 +39,10 @@ export const PlayerList = () => {
   const [selectedUserForInitialPoints, setSelectedUserForInitialPoints] =
     useState<UserSummaryInterface | null>(null);
   const isSubmittingInitialPoints = useRef(false);
-
+  const [selectedDeckAction, setSelectedDeckAction] = useState<{
+    playerId: string;
+    deckId: string;
+  } | null>(null);
   // Cuando se selecciona un usuario desde PlayerSearchInput
   const handleSelect = async (user: UserSummaryInterface) => {
     if (isFinished) {
@@ -106,6 +117,39 @@ export const PlayerList = () => {
     setSelectedUserForInitialPoints(null);
   };
 
+  const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(
+    tournament?.typeTournamentName ?? "",
+  );
+  const canRemoveDeck = tournament?.status === "in_progress";
+
+  const handleCloseDeckActionModal = () => {
+    setSelectedDeckAction(null);
+  };
+
+  const handleRemoveDeck = () => {
+    if (!selectedDeckAction || !canRemoveDeck) return;
+
+    openAlertConfirmation({
+      text: "¿Deseas eliminar el mazo asociado?",
+      description: "Esta acción removerá el mazo del jugador para este torneo.",
+      action: async () => {
+        showLoading("Eliminando mazo...");
+        try {
+          const success = await removePlayerDeck(selectedDeckAction.playerId);
+          if (success) {
+            showToast("Mazo removido correctamente.", "success");
+            setSelectedDeckAction(null);
+            return true;
+          }
+          showToast("No se pudo remover el mazo.", "error");
+          return false;
+        } finally {
+          hideLoading();
+        }
+      },
+    });
+  };
+
   return (
     <div className="flex-1 rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
       <div className="flex justify-between items-center mb-4">
@@ -150,6 +194,12 @@ export const PlayerList = () => {
         <PlayerListView
           players={players}
           isFinished={isFinished}
+          showMissingDeckIndicator={showMissingDeckIndicator}
+          onDeckClick={
+            isCompetitiveTier
+              ? (payload) => setSelectedDeckAction(payload)
+              : undefined
+          }
           onDelete={(id) => {
             openAlertConfirmation({
               text: "¿Deseas eliminar este jugador del torneo?",
@@ -166,7 +216,14 @@ export const PlayerList = () => {
           }}
         />
       </div>
-
+      {selectedDeckAction && isCompetitiveTier && (
+        <PlayerDeckActionModal
+          deckId={selectedDeckAction.deckId}
+          canRemove={Boolean(canRemoveDeck)}
+          onClose={handleCloseDeckActionModal}
+          onRemove={handleRemoveDeck}
+        />
+      )}
       {showInitialModal && selectedUserForInitialPoints && (
         <InitialPointsModal
           user={selectedUserForInitialPoints}
@@ -178,3 +235,6 @@ export const PlayerList = () => {
     </div>
   );
 };
+
+
+

@@ -2,15 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { IoLocationOutline, IoStorefrontOutline } from "react-icons/io5";
+import { IoChevronDownOutline, IoLocationOutline } from "react-icons/io5";
 import { FiRefreshCw } from "react-icons/fi";
+import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { AnimatePresence, motion } from "framer-motion";
 import { getPublicTournamentDetailAction } from "@/actions";
-import { Map, TournamentRankingPanel } from "@/components";
+import { Map, MarkdownContent, TournamentRankingPanel } from "@/components";
 import { type MatchInterface, type PublicTournamentDetail } from "@/interfaces";
 import { useToastStore, useUIStore } from "@/store";
 import { MatchCard } from "../current-round/MarchCard";
 import { RoundHistoryCardBase } from "../hisotry/RoundHistoryCardBase";
 import { ResultButton } from "../current-round/ResultButton";
+import { orderMatchesByBye } from "@/utils/matches";
 
 type Props = {
   initialTournament: PublicTournamentDetail;
@@ -24,8 +28,54 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   const showLoading = useUIStore((s) => s.showLoading);
   const hideLoading = useUIStore((s) => s.hideLoading);
   const showToast = useToastStore((s) => s.showToast);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(
+    initialTournament.tournament?.status === "pending",
+  );
 
   const { tournament, players, rounds = EMPTY_ROUNDS, store } = tournamentData;
+
+  const whatsappLink = useMemo(() => {
+    if (!tournament?.title) return "";
+    const rawPhone = store.phone ?? "";
+    const normalizedPhone = rawPhone.replace(/\D/g, "");
+    if (!normalizedPhone) return "";
+    const message = `Hola, quiero inscribirme al torneo ${tournament.title}. ¿Me brindas más información?`;
+    return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(
+      message,
+    )}`;
+  }, [store.phone, tournament?.title]);
+
+  const formattedDate = useMemo(() => {
+    if (!tournament?.date) return "";
+    const date = new Date(tournament.date);
+    const parts = new Intl.DateTimeFormat("es-CO", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).formatToParts(date);
+    const day = parts.find((part) => part.type === "day")?.value ?? "";
+    const month = parts.find((part) => part.type === "month")?.value ?? "";
+    const year = parts.find((part) => part.type === "year")?.value ?? "";
+    return `${day} de ${month} ${year}`;
+  }, [tournament?.date]);
+
+  const tournamentShareUrl = useMemo(() => {
+    if (!tournament?.id) return "https://soulsinxtinction.com/torneos";
+    return `https://soulsinxtinction.com/torneos/${tournament.id}`;
+  }, [tournament?.id]);
+
+  const whatsappShareLink = `https://wa.me/?text=${encodeURIComponent(
+    tournamentShareUrl,
+  )}`;
+  const facebookShareLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+    tournamentShareUrl,
+  )}`;
+  const xShareLink = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+    tournamentShareUrl,
+  )}`;
+
+  const shareButtonClass =
+    "inline-flex h-8 w-8 items-center justify-center rounded-md border border-purple-300/70 bg-purple-100/70 text-purple-700 shadow-sm transition hover:border-purple-400 hover:text-purple-800 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100";
 
   // Valida coordenadas para renderizar el mapa solo si son confiables.
   const hasValidCoordinates =
@@ -38,6 +88,10 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
     if (rounds.length === 0) return undefined;
     return rounds[rounds.length - 1];
   }, [rounds]);
+  const orderedCurrentMatches = useMemo(
+    () => orderMatchesByBye(currentRound?.matches ?? []),
+    [currentRound?.matches],
+  );
 
   // Ordena la ronda actual primero y luego el resto en descendente.
   const historyRounds = useMemo(() => {
@@ -140,78 +194,27 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   );
 
   return (
-    <div className="relative min-h-screen flex flex-col space-y-3 items-start justify-center bg-slate-50 text-slate-900 overflow-hidden px-3 pb-14 pt-2 md:pt-6 dark:bg-tournament-dark-bg dark:text-white sm:px-6 md:px-10 lg:px-16">
+    <div className="relative min-h-screen flex flex-col items-stretch justify-center bg-slate-50 text-slate-900 overflow-hidden px-3 pb-14 pt-2 md:pt-6 dark:bg-tournament-dark-bg dark:text-white sm:px-6 md:px-10 lg:px-16">
       <div className="absolute inset-0 hidden" />
 
-      <div className="flex justify-start">
-        <Link
-          href="/torneos"
-          className="inline-flex items-center gap-2 rounded-full border border-tournament-dark-accent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
-        >
-          Volver a torneos
-        </Link>
-      </div>
+      <div className="w-full max-w-6xl mx-auto flex flex-col space-y-3">
+        <div className="flex justify-start">
+          <Link
+            href="/torneos"
+            className="inline-flex items-center gap-2 rounded-full border border-tournament-dark-accent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
+          >
+            Volver a torneos
+          </Link>
+        </div>
 
-      <div className="relative z-10 w-full max-w-6xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:p-8 flex flex-col gap-8">
-        <div className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-tournament-dark-accent bg-white p-5 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                <IoStorefrontOutline className="text-purple-600 dark:text-purple-300" />
-                Tienda organizadora
-              </div>
-              <h2 className="mt-3 text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-                {store.name}
-              </h2>
-
-              <div className="mt-4 grid gap-3 text-sm text-slate-600 dark:text-slate-300">
-                <div className="flex items-start gap-x-3 text-xl">
-                  <IoLocationOutline className="mt-1.5 text-purple-600 dark:text-purple-300" />
-                  <div>
-                    <p>
-                      {store.city}, {store.country}
-                    </p>
-                    <p className="text-slate-600 dark:text-slate-300">
-                      {store.address}
-                    </p>
-                  </div>
-                </div>
-
-                {tournament.description && (
-                  <div className="mt-3">
-                    <p className="mt-1 text-base md:text-xl font-medium text-slate-700 dark:text-slate-200">
-                      {tournament.description}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-tournament-dark-accent bg-white p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-              {hasValidCoordinates ? (
-                <Map
-                  className="h-[280px] w-full rounded-lg"
-                  lat={store.lat}
-                  lgn={store.lgn}
-                  title={store.name}
-                />
-              ) : (
-                <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong dark:text-slate-300">
-                  Mapa no disponible.
-                </div>
-              )}
-            </div>
-          </div>
-
-          {tournament && (
-            <div className="space-y-4">
-              <div className="rounded-xl border border-tournament-dark-accent bg-white p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
-                        Torneo
-                      </p>
+        <div className="relative z-10 w-full rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:p-8 flex flex-col gap-8">
+          <div className="space-y-6">
+            {tournament && (
+              <div className="rounded-xl bg-white dark:bg-tournament-dark-surface">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch lg:justify-between">
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">
+                      <span>{store.name}</span>
                       <span
                         className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${
                           tournament.status === "in_progress"
@@ -228,113 +231,252 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                             : "Pendiente"}
                       </span>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
-                      {tournament.title}
-                    </h2>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h1 className="text-2xl font-bold text-slate-900 dark:text-white md:text-3xl">
+                        {tournament.title}
+                      </h1>
+                      <span className="h-5 w-px bg-slate-300 dark:bg-slate-600" />
+                      <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">
+                        {formattedDate}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 text-xs font-semibold tracking-[0.12em] text-slate-600 dark:text-slate-200">
+                      <div className="flex items-center gap-2">
+                        <IoLocationOutline className="text-purple-600 dark:text-purple-300" />
+                        <span>
+                          {store.city}, {store.country}
+                        </span>
+                      </div>
+                      <span>{store.address}</span>
+                      {tournament.description && (
+                        <>
+                          <span className="h-4 w-px bg-slate-300 dark:bg-slate-600" />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setIsDescriptionOpen((prev) => !prev)
+                            }
+                            className="flex items-center gap-1 transition-colors hover:text-purple-600 dark:hover:text-purple-300"
+                          >
+                            {isDescriptionOpen
+                              ? "Ocultar descripción"
+                              : "Ver descripción"}
+                            <IoChevronDownOutline
+                              className={`transition-transform ${
+                                isDescriptionOpen ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+                        </>
+                      )}
+                    </div>
+
                   </div>
-                  {tournament.status === "in_progress" && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        title="Actualizar torneo"
-                        onClick={handleReload}
-                        className="rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
-                      >
-                        <FiRefreshCw className="h-4 w-4" />
-                      </button>
+
+                  <div className="flex min-h-full flex-col justify-between gap-3 lg:items-end">
+                    <div className="flex flex-wrap items-center justify-between gap-3 lg:justify-end">
+                      {tournament.status === "pending" && whatsappLink && (
+                        <Link
+                          href={whatsappLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex w-[120px] items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:bg-purple-700 lg:hidden"
+                        >
+                          Inscribirse
+                        </Link>
+                      )}
+                      <div className="flex w-[120px] items-center gap-3">
+                        <Link
+                          href={whatsappShareLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Compartir en WhatsApp"
+                          aria-label="Compartir en WhatsApp"
+                          className={shareButtonClass}
+                        >
+                          <FaWhatsapp className="h-4 w-4" />
+                        </Link>
+                        <Link
+                          href={facebookShareLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Compartir en Facebook"
+                          aria-label="Compartir en Facebook"
+                          className={shareButtonClass}
+                        >
+                          <FaFacebookF className="h-4 w-4" />
+                        </Link>
+                        <Link
+                          href={xShareLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Compartir en X"
+                          aria-label="Compartir en X"
+                          className={shareButtonClass}
+                        >
+                          <FaXTwitter className="h-4 w-4" />
+                        </Link>
+                      </div>
+                      {tournament.status === "in_progress" && (
+                        <button
+                          type="button"
+                          title="Actualizar torneo"
+                          onClick={handleReload}
+                          className="rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
+                        >
+                          <FiRefreshCw className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
-                  )}
+
+                    <div className="mt-auto flex text-right gap-3 text-sm text-slate-600 dark:text-slate-300 lg:max-w-xs">
+                      <div className="flex flex-col items-end gap-2">
+                        {tournament.status === "pending" && whatsappLink && (
+                          <Link
+                            href={whatsappLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hidden w-[120px] items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:bg-purple-700 lg:inline-flex"
+                          >
+                            Inscribirse
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {showCurrentRoundSection && (
-                <>
-                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200">
-                    Ronda actual
-                  </h3>
-
-                  {currentRound ? (
-                    <div className="flex flex-col gap-3">
-                      {currentRound.matches.map((match, index) => (
-                        <MatchCard
-                          key={match.id}
-                          match={stripMatchResult(match)}
-                          tableNumber={index + 1}
-                          players={players}
-                          readOnly
-                          decorated
-                          renderResult={() => renderVS()}
+                <AnimatePresence initial={false}>
+                  {isDescriptionOpen && tournament.description && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-3 text-base text-slate-700 dark:text-slate-200">
+                        <MarkdownContent
+                          content={tournament.description}
+                          className="text-base md:text-lg"
                         />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
-                      Aún no se ha generado la ronda actual.
-                    </div>
+                      </div>
+                    </motion.div>
                   )}
-                </>
-              )}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {tournament && (
+              <div className="space-y-4">
+                {showCurrentRoundSection && (
+                  <>
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200">
+                      Ronda actual
+                    </h3>
+
+                    {currentRound ? (
+                      <div className="flex flex-col gap-3">
+                        {orderedCurrentMatches.map((match, index) => (
+                          <MatchCard
+                            key={match.id}
+                            match={stripMatchResult(match)}
+                            tableNumber={index + 1}
+                            players={players}
+                            readOnly
+                            decorated
+                            renderResult={() => renderVS()}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
+                        Aún no se ha generado la ronda actual.
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {tournament && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
+                Clasificación general
+              </h3>
+
+              <TournamentRankingPanel
+                players={players}
+                rounds={rounds}
+                status={tournament.status}
+                showPodium={showPodium}
+                showTitle={false}
+              />
             </div>
           )}
-        </div>
 
-        {tournament && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
-              Clasificación general
+              Historial de rondas
             </h3>
 
-            <TournamentRankingPanel
-              players={players}
-              rounds={rounds}
-              status={tournament.status}
-              showPodium={showPodium}
-              showTitle={false}
-            />
+            {historyRounds.length === 0 ? (
+              <div className="flex items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
+                Aún no se han generado rondas.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {historyRounds.map((round) => {
+                  const isCurrentRound =
+                    tournament?.status === "in_progress" &&
+                    round.roundNumber === tournament.currentRoundNumber + 1;
+
+                  const status = isCurrentRound ? "IN_PROGRESS" : "FINISHED";
+
+                  return (
+                    <RoundHistoryCardBase
+                      key={round.id}
+                      round={round}
+                      players={players}
+                      status={status}
+                      matches={
+                        status === "IN_PROGRESS"
+                          ? round.matches.map(stripMatchResult)
+                          : round.matches
+                      }
+                      readOnly
+                      allowExpand={false}
+                      renderResult={(match) =>
+                        status === "IN_PROGRESS"
+                          ? renderVS()
+                          : renderResultButtons(match)
+                      }
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
 
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
-            Historial de rondas
-          </h3>
-
-          {historyRounds.length === 0 ? (
-            <div className="flex items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
-              Aún no se han generado rondas.
+          <div className="space-y-4">
+            <div className="rounded-xl border border-tournament-dark-accent bg-white dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+              {hasValidCoordinates ? (
+                <Map
+                  className="h-[280px] w-full rounded-lg"
+                  lat={store.lat}
+                  lgn={store.lgn}
+                  title={store.name}
+                />
+              ) : (
+                <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong dark:text-slate-300">
+                  Mapa no disponible.
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="space-y-4">
-              {historyRounds.map((round) => {
-                const isCurrentRound =
-                  tournament?.status === "in_progress" &&
-                  round.roundNumber === tournament.currentRoundNumber + 1;
-
-                const status = isCurrentRound ? "IN_PROGRESS" : "FINISHED";
-
-                return (
-                  <RoundHistoryCardBase
-                    key={round.id}
-                    round={round}
-                    players={players}
-                    status={status}
-                    matches={
-                      status === "IN_PROGRESS"
-                        ? round.matches.map(stripMatchResult)
-                        : round.matches
-                    }
-                    readOnly
-                    allowExpand={false}
-                    renderResult={(match) =>
-                      status === "IN_PROGRESS"
-                        ? renderVS()
-                        : renderResultButtons(match)
-                    }
-                  />
-                );
-              })}
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

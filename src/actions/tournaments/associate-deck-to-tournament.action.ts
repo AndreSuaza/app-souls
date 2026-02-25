@@ -34,10 +34,15 @@ export async function associateDeckToTournamentAction(
     select: {
       id: true,
       deckId: true,
-      deckAssignedAt: true,
       tournament: {
         select: {
           status: true,
+          finishedAt: true,
+          typeTournament: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
@@ -47,24 +52,41 @@ export async function associateDeckToTournamentAction(
     throw new Error("No estas registrado en este torneo.");
   }
 
-  if (tournamentPlayer.tournament.status !== "finished") {
-    throw new Error(
-      "Solo puedes asociar un mazo cuando el torneo ha finalizado.",
-    );
+  const tournamentTypeName =
+    tournamentPlayer.tournament.typeTournament?.name ?? "";
+  const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(tournamentTypeName);
+  const tournamentStatus = tournamentPlayer.tournament.status;
+  const tournamentFinishedAt = tournamentPlayer.tournament.finishedAt;
+  const now = new Date();
+
+  if (isCompetitiveTier) {
+    if (tournamentStatus !== "pending" && tournamentStatus !== "in_progress") {
+      throw new Error(
+        "Solo puedes asociar un mazo antes o durante el torneo.",
+      );
+    }
+  } else {
+    const canAssociateBeforeFinish =
+      tournamentStatus === "pending" || tournamentStatus === "in_progress";
+    const canAssociateAfterFinish =
+      tournamentStatus === "finished" &&
+      tournamentFinishedAt instanceof Date &&
+      (() => {
+        // Respeta la ventana de 7 días después de finalizar en Tier 3.
+        const deadline = new Date(tournamentFinishedAt);
+        deadline.setDate(deadline.getDate() + MAX_DECK_ASSOCIATION_DAYS);
+        return now <= deadline;
+      })();
+
+    if (!canAssociateBeforeFinish && !canAssociateAfterFinish) {
+      throw new Error(
+        "Solo puedes asociar un mazo antes, durante o hasta 7 días después de finalizar el torneo.",
+      );
+    }
   }
 
   if (tournamentPlayer.deckId) {
     throw new Error("Ya tienes un mazo asociado a este torneo.");
-  }
-
-  if (tournamentPlayer.deckAssignedAt) {
-    const deadline = new Date(tournamentPlayer.deckAssignedAt);
-    deadline.setDate(deadline.getDate() + MAX_DECK_ASSOCIATION_DAYS);
-    if (new Date() > deadline) {
-      throw new Error(
-        "Ya superaste el tiempo permitido para asociar un mazo a este torneo.",
-      );
-    }
   }
 
   const deck = await prisma.deck.findFirst({
@@ -94,12 +116,11 @@ export async function associateDeckToTournamentAction(
     );
   }
 
-  const now = new Date();
 
   // Duplica el mazo y asegura la asociación en una misma transacción.
   const duplicatedDeck = await prisma.$transaction(async (tx) => {
-    if (deck.visible) {
-      // Si el mazo original era público, se vuelve privado al asociarlo.
+    if (deck.visible && tournamentStatus !== "finished") {
+      // Protege la privacidad del mazo original mientras el torneo no termina.
       await tx.deck.update({
         where: { id: deck.id },
         data: { visible: false },
@@ -114,8 +135,8 @@ export async function associateDeckToTournamentAction(
         imagen: deck.imagen,
         cards: deck.cards,
         cardsNumber: deck.cardsNumber,
-        // Los mazos asociados a torneos siempre deben quedar públicos.
-        visible: true,
+        // Los mazos de torneo son privados hasta finalizar.
+        visible: tournamentStatus === "finished",
         archetypeId: deck.archetypeId,
         tournamentId,
       },
@@ -128,7 +149,6 @@ export async function associateDeckToTournamentAction(
       where: { id: tournamentPlayer.id },
       data: {
         deckId: created.id,
-        deckAssignedAt: tournamentPlayer.deckAssignedAt ?? now,
       },
     });
 
@@ -137,6 +157,5 @@ export async function associateDeckToTournamentAction(
 
   return {
     deckId: duplicatedDeck.id,
-    deckAssignedAt: (tournamentPlayer.deckAssignedAt ?? now).toISOString(),
   };
 }

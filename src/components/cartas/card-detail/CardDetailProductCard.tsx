@@ -51,11 +51,11 @@ export function CardDetailProductCard({ product }: Props) {
   );
 
   if (!product.show) {
-    return <div>{content}</div>;
+    return <div className="block">{content}</div>;
   }
 
   return (
-    <Link href={`/productos/${product.url}`} target="_blank">
+    <Link href={`/productos/${product.url}`} target="_blank" className="block">
       {content}
     </Link>
   );

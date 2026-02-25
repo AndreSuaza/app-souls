@@ -39,16 +39,18 @@ export const Footer = () => {
             <ul className="my-2 uppercase">
               {Routes.map((route) =>
                 route.menu ? (
-                  route.menu.map((menu) => (
-                    <li key={menu.name} className="mt-1">
-                      <Link href={menu.path}>{menu.name}</Link>
-                    </li>
-                  ))
-                ) : (
+                  route.menu.map((menu) =>
+                    menu.path ? (
+                      <li key={menu.name} className="mt-1">
+                        <Link href={menu.path}>{menu.name}</Link>
+                      </li>
+                    ) : null,
+                  )
+                ) : route.path ? (
                   <li key={route.name} className="mt-1">
-                    <Link href="">{route.name}</Link>
+                    <Link href={route.path}>{route.name}</Link>
                   </li>
-                )
+                ) : null,
               )}
             </ul>
           </div>

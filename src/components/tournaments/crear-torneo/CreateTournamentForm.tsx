@@ -2,12 +2,13 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useForm } from "react-hook-form";
-import clsx from "clsx";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MdError } from "react-icons/md";
 import { createTournamentAction } from "@/actions";
+import { MarkdownEditor } from "@/components";
+import { FormField, FormInput } from "@/components/ui/form";
+import { getPlainTextFromMarkdown } from "@/utils/markdown";
 import {
   useCatalogStore,
   useAlertConfirmationStore,
@@ -36,7 +37,7 @@ export const CreateTournamentForm = () => {
   const { tournamentTypes, stores, fetchTournamentTypes, fetchStores } =
     useCatalogStore();
   const openConfirmation = useAlertConfirmationStore(
-    (s) => s.openAlertConfirmation
+    (s) => s.openAlertConfirmation,
   );
   const showToast = useToastStore((s) => s.showToast);
   const showLoading = useUIStore((s) => s.showLoading);
@@ -48,9 +49,29 @@ export const CreateTournamentForm = () => {
     handleSubmit,
     formState: { errors },
     setValue,
-  } = useForm<CreateTournamentInputs>();
+    control,
+  } = useForm<CreateTournamentInputs>({
+    defaultValues: {
+      description: "",
+    },
+  });
 
   const [format, setFormat] = useState<"Masters">("Masters");
+  const selectedTypeId = useWatch({
+    control,
+    name: "typeTournamentId",
+  });
+  // Ajusta el limite segun el tier seleccionado.
+  const maxDescriptionLength = useMemo(() => {
+    const selectedType = tournamentTypes.find(
+      (type) => type.id === selectedTypeId,
+    );
+    const typeName = selectedType?.name?.toLowerCase() ?? "";
+    const isTierOneOrTwo =
+      typeName.includes("tier 1") || typeName.includes("tier 2");
+
+    return isTierOneOrTwo ? 500 : 300;
+  }, [selectedTypeId, tournamentTypes]);
 
   // Traer los tipos de torneos
   useEffect(() => {
@@ -142,19 +163,16 @@ export const CreateTournamentForm = () => {
       onSubmit={onSubmit}
       className="rounded-xl border border-tournament-dark-accent bg-white p-6 shadow-sm space-y-4 dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
     >
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-          Nombre del torneo
-        </label>
-        <input
+      <FormField
+        label="Nombre del torneo"
+        labelFor="tournament-title"
+        error={errors.title?.message}
+      >
+        <FormInput
+          id="tournament-title"
           maxLength={50}
-          className={clsx(
-            "w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500",
-            {
-              "border-red-500": errors.title,
-            }
-          )}
           placeholder="Ej. Torneo Verano 2025"
+          hasError={!!errors.title}
           {...register("title", {
             required: "El nombre del torneo es obligatorio",
             minLength: {
@@ -167,49 +185,45 @@ export const CreateTournamentForm = () => {
             },
           })}
         />
+      </FormField>
 
-        {errors.title && (
-          <div className="mt-1 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
-            <MdError size={14} />
-            <span>{errors.title.message}</span>
-          </div>
-        )}
-      </div>
+      <Controller
+        name="description"
+        control={control}
+        rules={{
+          validate: (value) => {
+            const plainText = getPlainTextFromMarkdown(value ?? "");
+            const trimmed = plainText.trim();
 
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-          Descripción
-        </label>
-        <textarea
-          maxLength={300}
-          className={clsx(
-            "w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500",
-            {
-              "border-red-500": errors.description,
+            if (trimmed.length === 0) {
+              return "La descripción es obligatoria";
             }
-          )}
-          placeholder="Describe el torneo"
-          rows={3}
-          {...register("description", {
-            required: "La descripción es obligatoria",
-            minLength: {
-              value: 10,
-              message: "Debe tener al menos 10 caracteres",
-            },
-            maxLength: {
-              value: 300,
-              message: "No puede superar los 300 caracteres",
-            },
-          })}
-        />
 
-        {errors.description && (
-          <div className="mt-1 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
-            <MdError size={14} />
-            <span>{errors.description.message}</span>
-          </div>
+            if (trimmed.length < 10) {
+              return "Debe tener al menos 10 caracteres";
+            }
+
+            if (trimmed.length > maxDescriptionLength) {
+              return `No puede superar los ${maxDescriptionLength} caracteres`;
+            }
+
+            return true;
+          },
+        }}
+        render={({ field }) => (
+          <MarkdownEditor
+            label="Descripción"
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            placeholder="Describe el torneo usando markdown"
+            maxLength={maxDescriptionLength}
+            error={errors.description?.message}
+            enableCardInsert={false}
+            enableDeckInsert={false}
+            enableProductInsert={false}
+          />
         )}
-      </div>
+      />
 
       <DateTimeFields
         date={date}

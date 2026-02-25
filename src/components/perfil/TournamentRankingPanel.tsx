@@ -32,6 +32,7 @@ type Props = {
   title?: string;
   showTitle?: boolean;
   pageSize?: number;
+  showDeckLink?: boolean;
   classNames?: TournamentRankingPanelClassNames;
   desktopClassNames?: RankingDesktopTableClassNames;
   mobileClassNames?: RankingMobileListClassNames;
@@ -44,6 +45,7 @@ export const TournamentRankingPanel = ({
   rounds,
   status,
   showPodium,
+  showDeckLink,
   title = "Clasificación general",
   showTitle = true,
   pageSize = DEFAULT_PAGE_SIZE,
@@ -56,6 +58,9 @@ export const TournamentRankingPanel = ({
   const [currentPage, setCurrentPage] = useState(1);
   const shouldShowPodium =
     showPodium !== undefined ? showPodium : status === "finished";
+  // Por privacidad competitiva, solo mostramos el icono de mazo al finalizar.
+  const shouldShowDeckLink =
+    showDeckLink !== undefined ? showDeckLink : status === "finished";
 
   // Ordena los jugadores sin mutar el arreglo original.
   const sortedPlayers = useMemo(() => sortPlayersByRanking(players), [players]);
@@ -128,6 +133,7 @@ export const TournamentRankingPanel = ({
         currentPage={currentPage}
         pageSize={pageSize}
         showPodium={shouldShowPodium}
+        showDeckLink={shouldShowDeckLink}
         classNames={desktopClassNames}
       />
 
@@ -137,6 +143,7 @@ export const TournamentRankingPanel = ({
         currentPage={currentPage}
         pageSize={pageSize}
         showPodium={shouldShowPodium}
+        showDeckLink={shouldShowDeckLink}
         classNames={mobileClassNames}
       />
 

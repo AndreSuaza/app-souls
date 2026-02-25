@@ -9,6 +9,13 @@ export interface DeckArchetype {
   name: string | null;
 }
 
+export interface DeckTournamentInfo {
+  id: string;
+  status: string;
+  finishedAt?: string | null;
+  typeTournamentName?: string | null;
+}
+
 // Opcion reutilizable para selects/filtros por arquetipo.
 export interface ArchetypeOption {
   id: string;
@@ -28,6 +35,7 @@ export interface Deck {
   userId?: string;
   user: DeckUser;
   archetype: DeckArchetype;
+  tournament?: DeckTournamentInfo | null;
 }
 
 export interface DeckPagination {

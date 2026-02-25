@@ -33,7 +33,13 @@ export const getProfileTournament = async (input: Input) => {
       id: true,
       title: true,
       status: true,
+      finishedAt: true,
       currentRoundNumber: true,
+      typeTournament: {
+        select: {
+          name: true,
+        },
+      },
       tournamentPlayers: {
         select: {
           id: true,
@@ -45,7 +51,6 @@ export const getProfileTournament = async (input: Input) => {
           points: true,
           buchholz: true,
           deckId: true,
-          deckAssignedAt: true,
         },
       },
       tournamentRounds: {
@@ -78,7 +83,11 @@ export const getProfileTournament = async (input: Input) => {
       id: tournament.id,
       title: tournament.title,
       status: tournament.status,
+      finishedAt: tournament.finishedAt
+        ? tournament.finishedAt.toISOString()
+        : null,
       currentRoundNumber: tournament.currentRoundNumber,
+      typeTournamentName: tournament.typeTournament?.name ?? null,
     },
     players: tournament.tournamentPlayers.map((player) => ({
       id: player.id,
@@ -90,9 +99,6 @@ export const getProfileTournament = async (input: Input) => {
       points: player.points,
       buchholz: player.buchholz,
       deckId: player.deckId ?? undefined,
-      deckAssignedAt: player.deckAssignedAt
-        ? player.deckAssignedAt.toISOString()
-        : undefined,
       pointsInitial: 0,
       hadBye: false,
       rivals: [],

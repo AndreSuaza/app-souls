@@ -1,4 +1,4 @@
-import {
+﻿import {
   getDeckById,
   getDecksByIds,
   getDeckFiltersAction,
@@ -108,18 +108,28 @@ export default async function Cards({ searchParams }: Props) {
   const isOwnerDeck =
     Boolean(session?.user?.idd) && deckUser?.userId === session?.user?.idd;
   const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
-  const assignedAt =
-    deckUser?.tournamentId && session?.user?.idd
-      ? (deckUser.tournamentPlayers?.find(
-          (player) => player.userId === session.user.idd,
-        )?.deckAssignedAt ?? deckUser.createdAt)
-      : null;
-  const canEditDeck =
-    !deckUser?.tournamentId || !assignedAt
-      ? true
+  const tournamentTypeName = deckUser?.tournament?.typeTournamentName ?? "";
+  const tournamentStatus = deckUser?.tournament?.status ?? "";
+  const tournamentFinishedAt = deckUser?.tournament?.finishedAt
+    ? new Date(deckUser.tournament.finishedAt)
+    : null;
+  const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(tournamentTypeName);
+  const canEditDeck = !deckUser?.tournamentId
+    ? true
+    : isCompetitiveTier
+      ? false
       : (() => {
-          // Respeta la ventana de edición para mazos asociados a torneos.
-          const deadline = new Date(assignedAt);
+          if (
+            tournamentStatus === "pending" ||
+            tournamentStatus === "in_progress"
+          ) {
+            return true;
+          }
+          if (tournamentStatus !== "finished" || !tournamentFinishedAt) {
+            return false;
+          }
+          // Respeta la ventana de edición para Tier 3 luego de finalizar.
+          const deadline = new Date(tournamentFinishedAt);
           deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
           return new Date() <= deadline;
         })();

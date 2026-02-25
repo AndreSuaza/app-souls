@@ -10,6 +10,7 @@ export interface Tournament {
   date: Date;
   image?: string | null;
   status: "pending" | "in_progress" | "finished" | "cancelled";
+  finishedAt?: string | null;
   currentRoundNumber: number;
   maxRounds: number;
   createDate: Date;
@@ -67,7 +68,6 @@ export interface TournamentPlayerInterface {
   buchholz: number;
   rivals: string[];
   deckId?: string;
-  deckAssignedAt?: string;
 }
 
 export interface MatchInterface {
@@ -91,7 +91,9 @@ export interface TournamentSnapshot {
     id: string;
     title: string;
     status: "pending" | "in_progress" | "finished" | "cancelled";
+    finishedAt?: string | null;
     currentRoundNumber: number;
+    typeTournamentName?: string | null;
   };
   players: TournamentPlayerInterface[];
   rounds: RoundInterface[];
@@ -104,6 +106,7 @@ export interface PublicTournamentDetail {
     description: string | null;
     date: string;
     status: "pending" | "in_progress" | "finished" | "cancelled";
+    finishedAt?: string | null;
     currentRoundNumber: number;
     maxRounds: number;
     format?: string | null;

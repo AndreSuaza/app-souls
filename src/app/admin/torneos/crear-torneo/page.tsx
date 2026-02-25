@@ -1,6 +1,6 @@
 import { CreateTournamentForm } from "@/components";
 
-export default function CrearTorneoPage() {
+export default async function CrearTorneoPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">

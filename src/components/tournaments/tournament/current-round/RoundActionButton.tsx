@@ -12,6 +12,7 @@ export const RoundActionButton = () => {
     startCurrentRound,
     finalizeRound,
     finalizeTournament,
+    setShowMissingDeckIndicator,
   } = useTournamentStore();
 
   const showLoading = useUIStore((s) => s.showLoading);
@@ -31,9 +32,37 @@ export const RoundActionButton = () => {
 
   const canGenerateFirstRound =
     tournament.status !== "finished" && !hasRounds && players.length > 3;
+  const requiresDeckAssociation = ["Tier 1", "Tier 2"].includes(
+    tournament.typeTournamentName ?? ""
+  );
+  const missingDeckCount = players.filter((player) => !player.deckId).length;
+  const hasAllPlayersDecks = missingDeckCount === 0;
+
+  const validateDeckAssociation = (context: "tournament" | "round") => {
+    // En torneos Tier 1/2 se exige mazo asociado antes de iniciar.
+    if (!requiresDeckAssociation) return true;
+    if (hasAllPlayersDecks) return true;
+
+    // Redirige al tab de jugadores y habilita el aviso visual en la lista.
+    window.dispatchEvent(
+      new CustomEvent("changeTournamentTab", {
+        detail: "players",
+      }),
+    );
+    setShowMissingDeckIndicator(true);
+
+    showToast(
+      context === "tournament"
+        ? `No puedes generar la ronda. Faltan ${missingDeckCount} jugadores por asociar mazo.`
+        : `No puedes iniciar la ronda. Faltan ${missingDeckCount} jugadores por asociar mazo.`,
+      "warning",
+    );
+    return false;
+  };
 
   // Handlers con loading
   const handleGenerateRound = async () => {
+    if (!validateDeckAssociation("tournament")) return;
     showLoading("Generando ronda");
     try {
       await generateRound();
@@ -89,6 +118,7 @@ export const RoundActionButton = () => {
     return (
       <button
         onClick={async () => {
+          if (!validateDeckAssociation("round")) return;
           showLoading("Iniciando ronda");
           try {
             await startCurrentRound();

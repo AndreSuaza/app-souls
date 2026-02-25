@@ -19,6 +19,8 @@ import { GiCardDraw } from "react-icons/gi";
 import { TbCardsFilled } from "react-icons/tb";
 import { Modal } from "../ui/modal/modal";
 import { UserDeckLibrary } from "../mazos/deck-library/UserDeckLibrary";
+import { TournamentDeckConfirmModal } from "./TournamentDeckConfirmModal";
+import { orderMatchesByBye } from "@/utils/matches";
 
 const EMPTY_ROUNDS: [] = [];
 
@@ -60,9 +62,14 @@ export const ProfileCurrentTournament = ({
     currentPlayer?.deckId ?? null,
   );
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
+  const [isDeckConfirmModalOpen, setIsDeckConfirmModalOpen] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
   const currentRound =
     rounds.length > 0 ? rounds[rounds.length - 1] : undefined;
-
+  const orderedCurrentMatches = useMemo(
+    () => orderMatchesByBye(currentRound?.matches ?? []),
+    [currentRound?.matches],
+  );
   useEffect(() => {
     setAssociatedDeckId(currentPlayer?.deckId ?? null);
   }, [currentPlayer?.deckId]);
@@ -80,6 +87,9 @@ export const ProfileCurrentTournament = ({
     currentRound && currentMatchIndex >= 0
       ? currentRound.matches[currentMatchIndex]
       : null;
+  const orderedCurrentMatchIndex = currentMatch
+    ? orderedCurrentMatches.findIndex((match) => match.id === currentMatch.id)
+    : -1;
 
   // Coloca la ronda actual primero (si existe) y luego ordena el resto en descendente.
   const historyRounds = useMemo(() => {
@@ -99,23 +109,68 @@ export const ProfileCurrentTournament = ({
 
   const showCurrentRoundSection = tournament?.status === "in_progress";
   const showPodium = tournament?.status === "finished";
+  const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
   const shouldShowWarning =
     data.inProgressCount > 1 &&
     tournament?.status === "in_progress" &&
     !hasShownInProgressWarning;
 
+  const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(
+    tournament?.typeTournamentName ?? ""
+  );
+  const tournamentFinishedAt = tournament?.finishedAt
+    ? new Date(tournament.finishedAt)
+    : null;
   const hasAssociatedDeck = Boolean(associatedDeckId);
+  const canAssociateDuring =
+    tournament?.status === "pending" || tournament?.status === "in_progress";
+  const canAssociateAfterFinish =
+    tournament?.status === "finished" &&
+    tournamentFinishedAt !== null &&
+    (() => {
+      // Ventana de 7 días para Tier 3 después de finalizar.
+      const deadline = new Date(tournamentFinishedAt);
+      deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
+      return new Date() <= deadline;
+    })();
   const canAssociateDeck =
     enableDeckAssociation &&
     hasSession &&
     Boolean(currentPlayer) &&
-    tournament?.status === "finished" &&
+    (isCompetitiveTier ? canAssociateDuring : canAssociateDuring || canAssociateAfterFinish) &&
     !hasAssociatedDeck;
   const canViewDeck =
     enableDeckAssociation && Boolean(currentPlayer) && hasAssociatedDeck;
 
   const handleOpenDeckModal = () => {
     setIsDeckModalOpen(true);
+  };
+
+  const handleAssociateDeck = async (deckId: string) => {
+    if (!tournament) return false;
+    showLoading("Asociando mazo...");
+    try {
+      const result = await associateDeckToTournamentAction({
+        tournamentId: tournament.id,
+        deckId,
+      });
+      setAssociatedDeckId(result.deckId);
+      setIsDeckModalOpen(false);
+      setIsDeckConfirmModalOpen(false);
+      setSelectedDeck(null);
+      showToast("Mazo asociado correctamente.", "success");
+      return true;
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudo asociar el mazo.",
+        "error",
+      );
+      return false;
+    } finally {
+      hideLoading();
+    }
   };
 
   const handleDeckSelect = (
@@ -126,36 +181,30 @@ export const ProfileCurrentTournament = ({
     event.stopPropagation();
     if (!tournament) return;
 
+    if (isCompetitiveTier) {
+      // En Tier 1/2 se muestra el detalle completo antes de confirmar.
+      setSelectedDeck(deck);
+      setIsDeckModalOpen(false);
+      setIsDeckConfirmModalOpen(true);
+      return;
+    }
     openAlertConfirmation({
       text: "¿Deseas asociar este mazo al torneo?",
       description:
         "Se duplicará el mazo seleccionado y quedará asociado a este torneo.",
-      action: async () => {
-        showLoading("Asociando mazo...");
-        try {
-          const result = await associateDeckToTournamentAction({
-            tournamentId: tournament.id,
-            deckId: deck.id,
-          });
-          setAssociatedDeckId(result.deckId);
-          setIsDeckModalOpen(false);
-          showToast("Mazo asociado correctamente.", "success");
-          return true;
-        } catch (error) {
-          showToast(
-            error instanceof Error
-              ? error.message
-              : "No se pudo asociar el mazo.",
-            "error",
-          );
-          return false;
-        } finally {
-          hideLoading();
-        }
-      },
+      action: async () => await handleAssociateDeck(deck.id),
     });
   };
+  const handleChangeSelectedDeck = () => {
+    setIsDeckConfirmModalOpen(false);
+    setSelectedDeck(null);
+    setIsDeckModalOpen(true);
+  };
 
+  const handleCloseDeckConfirmModal = () => {
+    setIsDeckConfirmModalOpen(false);
+    setSelectedDeck(null);
+  };
   useEffect(() => {
     if (!shouldShowWarning) return;
     showToast("Tienes mas de un torneo en progreso registrado.", "warning");
@@ -244,7 +293,7 @@ export const ProfileCurrentTournament = ({
                     {tournament.title}
                   </h2>
                 </div>
-                <div className="flex items-end gap-2">
+                <div className="flex items-center gap-2">
                   {canAssociateDeck && (
                     <button
                       type="button"
@@ -292,7 +341,11 @@ export const ProfileCurrentTournament = ({
                 {currentRound && currentMatch ? (
                   <MatchCard
                     match={stripMatchResult(currentMatch)}
-                    tableNumber={currentMatchIndex + 1}
+                    tableNumber={
+                      orderedCurrentMatchIndex >= 0
+                        ? orderedCurrentMatchIndex + 1
+                        : currentMatchIndex + 1
+                    }
                     players={players}
                     readOnly
                     decorated
@@ -397,6 +450,18 @@ export const ProfileCurrentTournament = ({
           </div>
         </Modal>
       )}
+
+      {isDeckConfirmModalOpen && selectedDeck && (
+        <TournamentDeckConfirmModal
+          deck={selectedDeck}
+          hasSession={hasSession}
+          onConfirm={() => handleAssociateDeck(selectedDeck.id)}
+          onChangeDeck={handleChangeSelectedDeck}
+          onClose={handleCloseDeckConfirmModal}
+        />
+      )}
     </div>
   );
 };
+
+

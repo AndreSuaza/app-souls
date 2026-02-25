@@ -12,6 +12,7 @@ import {
   startRoundAction,
   deleteTournamentAction,
   updateTournamentInfoAction,
+  removeTournamentDeckAction,
 } from "@/actions";
 import { applySwissResults, calculateBuchholzForPlayers } from "@/logic";
 import {
@@ -40,8 +41,10 @@ type TournamentStoreState = {
   rounds: RoundInterface[];
   loading: boolean;
   error: string | null;
+  showMissingDeckIndicator: boolean;
 
   setTournamentId: (id: string) => void;
+  setShowMissingDeckIndicator: (value: boolean) => void;
   fetchTournament: (id?: string) => Promise<void>;
 
   addPlayerByUserId: (
@@ -69,6 +72,7 @@ type TournamentStoreState = {
   startCurrentRound: () => Promise<void>;
   recalculateCurrentRound: () => Promise<boolean>;
   deleteTournament: () => Promise<boolean>;
+  removePlayerDeck: (playerId: string) => Promise<boolean>;
   updateTournamentInfo: (data: {
     title: string;
     description?: string | null;
@@ -83,8 +87,11 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
   rounds: [] as RoundInterface[],
   loading: false,
   error: null,
+  showMissingDeckIndicator: false,
 
   setTournamentId: (id: string) => set({ tournamentId: id }),
+  setShowMissingDeckIndicator: (value: boolean) =>
+    set({ showMissingDeckIndicator: value }),
 
   fetchTournament: async (id?: string) => {
     const tournamentId = id ?? get().tournamentId;
@@ -109,6 +116,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       set({
         tournamentId,
         error: null,
+        showMissingDeckIndicator: false,
         tournament: {
           id: data.id,
           title: data.title,
@@ -742,6 +750,33 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     }
   },
 
+  removePlayerDeck: async (playerId: string) => {
+    const { tournamentId, tournament, players } = get();
+    if (!tournamentId || !tournament) return false;
+
+    const player = players.find((p) => p.id === playerId);
+    if (!player?.deckId) return false;
+
+    try {
+      await removeTournamentDeckAction({
+        tournamentId,
+        tournamentPlayerId: playerId,
+      });
+
+      set({
+        players: players.map((current) =>
+          current.id === playerId ? { ...current, deckId: undefined } : current,
+        ),
+      });
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error removiendo el mazo del jugador" });
+      return false;
+    }
+  },
+
   updateTournamentInfo: async (data) => {
     const { tournamentId, tournament } = get();
     if (!tournamentId || !tournament) return false;
@@ -757,6 +792,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         description: data.description ?? undefined,
         date: data.date,
         status: tournament.status ?? "pending",
+        typeTournamentName: tournament.typeTournamentName ?? undefined,
       });
 
       // Actualización del store

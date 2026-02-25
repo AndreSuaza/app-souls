@@ -2,25 +2,29 @@
 
 import clsx from "clsx";
 import Image from "next/image";
+import Link from "next/link";
 import { IoTrashOutline } from "react-icons/io5";
+import { GiCardBurn } from "react-icons/gi";
+import { TbCardsFilled } from "react-icons/tb";
+import { TournamentPlayerInterface } from "@/interfaces";
 
 type PlayerListViewProps = {
-  players: {
-    id: string;
-    playerNickname: string;
-    name?: string | null;
-    lastname?: string | null;
-    image?: string;
-  }[];
+  players: TournamentPlayerInterface[];
   isFinished?: boolean;
+  showMissingDeckIndicator?: boolean;
+  onDeckClick?: (payload: { playerId: string; deckId: string }) => void;
   onDelete?: (playerId: string) => void;
 };
 
 export const PlayerListView = ({
   players,
   isFinished = false,
+  showMissingDeckIndicator = false,
+  onDeckClick,
   onDelete,
 }: PlayerListViewProps) => {
+  const shouldUseDeckModal = Boolean(onDeckClick);
+
   return (
     <ul>
       {players.map((p, idx) => (
@@ -28,12 +32,12 @@ export const PlayerListView = ({
           key={p.id}
           className="border-b border-tournament-dark-accent px-2 py-4 font-semibold text-slate-900 dark:border-tournament-dark-border dark:text-white"
         >
-          <div className="flex justify-between items-center">
-            <span className="w-6 text-left text-slate-400 dark:text-slate-500">
-              {idx + 1}
-            </span>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <span className="w-6 text-left text-slate-400 dark:text-slate-500">
+                {idx + 1}
+              </span>
 
-            <div className="ml-4 flex items-center gap-3 flex-1 text-left">
               {/* Avatar */}
               <Image
                 src={`/profile/${p.image ?? "player"}.webp`}
@@ -44,7 +48,7 @@ export const PlayerListView = ({
               />
 
               {/* Texto */}
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <span>{p.playerNickname}</span>
 
                 {(p.name || p.lastname) && (
@@ -53,6 +57,40 @@ export const PlayerListView = ({
                   </span>
                 )}
               </div>
+
+              {p.deckId ? (
+                shouldUseDeckModal ? (
+                  <button
+                    type="button"
+                    title="Gestionar mazo asociado"
+                    onClick={() =>
+                      onDeckClick?.({ playerId: p.id, deckId: p.deckId! })
+                    }
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-purple-300"
+                  >
+                    <TbCardsFilled className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <Link
+                    href={`/mazos/${p.deckId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Ver mazo jugado"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-purple-300"
+                  >
+                    <TbCardsFilled className="h-4 w-4" />
+                  </Link>
+                )
+              ) : (
+                showMissingDeckIndicator && (
+                  <span
+                    title="Falta asociar mazo"
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-rose-200 text-rose-500 dark:border-rose-500/50 dark:text-rose-400"
+                  >
+                    <GiCardBurn className="h-4 w-4" />
+                  </span>
+                )
+              )}
             </div>
 
             {/* Mostrar ícono de eliminar solo si hay callback */}

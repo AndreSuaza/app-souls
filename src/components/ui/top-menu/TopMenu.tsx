@@ -11,14 +11,25 @@ import { signOut, useSession } from "next-auth/react";
 
 export const TopMenu = () => {
   const openMenu = useUIStore((state) => state.openSideMenu);
-  const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<string | null>(null);
   const [openProfile, setOpenProfile] = useState<boolean>(false);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const dropdownRefProfile = useRef<HTMLDivElement | null>(null);
 
   const { data: session } = useSession();
-  const canSeeAdminTournaments =
-    session?.user?.role === "admin" || session?.user?.role === "store";
+  const adminShortcut = (() => {
+    const role = session?.user?.role;
+    if (role === "admin") {
+      return { label: "Administrar", href: "/admin" };
+    }
+    if (role === "store") {
+      return { label: "Torneos", href: "/admin/torneos" };
+    }
+    if (role === "news") {
+      return { label: "Noticias", href: "/admin/noticias" };
+    }
+    return null;
+  })();
 
   const handleClick = async () => {
     await signOut();
@@ -26,16 +37,16 @@ export const TopMenu = () => {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
+      if (!open) return;
+      const currentRef = dropdownRefs.current[open];
+      if (currentRef && currentRef.contains(event.target as Node)) {
+        return;
       }
+      setOpen(null);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [open]);
 
   useEffect(() => {
     function handleClickOutsideProfile(event: MouseEvent) {
@@ -50,6 +61,8 @@ export const TopMenu = () => {
     return () =>
       document.removeEventListener("mousedown", handleClickOutsideProfile);
   }, []);
+
+  const visibleRoutes = Routes.filter((route) => route.name !== "Noticias");
 
   return (
     <nav className="flex px-5 justify-between items-center w-full bg-gray-950 text-white py-3">
@@ -75,48 +88,52 @@ export const TopMenu = () => {
 
       <div className="hidden lg:block lg:text-xs xl:text-base">
         <ul className="flex">
-          {Routes.map((route) => (
+          {visibleRoutes.map((route) => (
             <li key={route.name}>
               {route.menu ? (
                 <div
                   className="relative inline-block text-left"
-                  ref={dropdownRef}
+                  ref={(node) => {
+                    dropdownRefs.current[route.name] = node;
+                  }}
                 >
                   {/* Botón */}
                   <a
-                    onMouseEnter={() => setOpen(!open)}
+                    onMouseEnter={() => setOpen(route.name)}
                     className="m-2 xl:p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                   >
                     {route.name}
                   </a>
 
                   {/* Menú */}
-                  {open && (
+                  {open === route.name && (
                     <ul
-                      onMouseLeave={() => setOpen(!open)}
+                      onMouseLeave={() => setOpen(null)}
                       className="absolute mt-6 w-56 bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50"
                     >
-                      {route.menu.map((menu) => (
-                        <li key={menu.name}>
-                          <Link
-                            href={menu.path}
-                            className="m-2 xl:p-2 transition-all uppercase font-bold flex flex-col hover:text-yellow-600"
-                          >
-                            {menu.name}
-                          </Link>
-                        </li>
-                      ))}
+                      {route.menu.map((menu) =>
+                        menu.path ? (
+                          <li key={menu.name}>
+                            <Link
+                              href={menu.path}
+                              className="m-2 xl:p-2 transition-all uppercase font-bold flex flex-col hover:text-yellow-600"
+                            >
+                              {menu.name}
+                            </Link>
+                          </li>
+                        ) : null,
+                      )}
                     </ul>
                   )}
                 </div>
-              ) : (
+              ) : route.path ? (
                 <Link
                   href={route.path}
                   className="m-2 xl:p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                 >
                   {route.name}
                 </Link>
-              )}
+              ) : null}
             </li>
           ))}
         </ul>
@@ -164,13 +181,13 @@ export const TopMenu = () => {
                     Tu perfil
                   </Link>
                 </li>
-                {canSeeAdminTournaments && (
+                {adminShortcut && (
                   <li>
                     <Link
-                      href="/admin/torneos"
+                      href={adminShortcut.href}
                       className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
                     >
-                      Torneos
+                      {adminShortcut.label}
                     </Link>
                   </li>
                 )}

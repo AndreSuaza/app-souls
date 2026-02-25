@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -37,26 +37,50 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
   }
 
   if (deck.tournamentId) {
-    const tournamentPlayer = await prisma.tournamentPlayer.findFirst({
-      where: {
-        deckId: deck.id,
-        userId: session.user.idd,
-      },
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: deck.tournamentId },
       select: {
-        id: true,
-        deckAssignedAt: true,
+        status: true,
+        finishedAt: true,
+        typeTournament: {
+          select: { name: true },
+        },
       },
     });
 
-    const lockStart = tournamentPlayer?.deckAssignedAt ?? deck.createdAt;
-    const deadline = new Date(lockStart);
-    deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
+    if (!tournament) {
+      throw new Error("No se encontró el torneo asociado.");
+    }
 
-    // Bloquea la eliminación si ya pasó la ventana permitida del torneo.
-    if (new Date() > deadline) {
+    const tournamentTypeName = tournament.typeTournament?.name ?? "";
+    const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(tournamentTypeName);
+    const now = new Date();
+
+    if (isCompetitiveTier) {
+      // En Tier 1/2 el mazo asociado queda bloqueado desde la asociacion.
       throw new Error(
-        "Ya no puedes eliminar este mazo porque superaste el tiempo permitido.",
+        "No puedes eliminar este mazo porque está asociado a un torneo competitivo.",
       );
+    } else {
+      const canDeleteDuring =
+        tournament.status === "pending" || tournament.status === "in_progress";
+      const canDeleteAfterFinish =
+        tournament.status === "finished" &&
+        tournament.finishedAt instanceof Date &&
+        (() => {
+          // Respeta la ventana de 7 días después de finalizar en Tier 3.
+          const deadline = new Date(tournament.finishedAt);
+          deadline.setDate(
+            deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS,
+          );
+          return now <= deadline;
+        })();
+
+      if (!canDeleteDuring && !canDeleteAfterFinish) {
+        throw new Error(
+          "Ya no puedes eliminar este mazo porque superaste el tiempo permitido.",
+        );
+      }
     }
 
     await prisma.$transaction(async (tx) => {

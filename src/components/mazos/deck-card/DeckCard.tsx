@@ -72,7 +72,7 @@ export const DeckCard = ({
     setLikesCount(mazo.likesCount);
   }, [mazo.likesCount]);
 
-  const displayLiked = disableLikeButton ? likesCount > 0 : liked;
+  const displayLiked = liked;
 
   const handleLikeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();

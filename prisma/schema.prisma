@@ -18,6 +18,7 @@ enum Role {
   admin
   store
   seller
+  news
 }
 
 model Type {
@@ -155,6 +156,7 @@ model Tournament {
   date               DateTime         @default(now())
   image              String?
   status             TournamentStatus @default(pending)
+  finishedAt         DateTime?
   currentRoundNumber Int              @default(0)
   maxRounds          Int              @default(1)
   createDate         DateTime         @default(now())
@@ -212,9 +214,8 @@ model TournamentPlayer {
   rivals         String[] @default([]) @db.ObjectId
   createDate     DateTime @default(now())
 
-  deckId         String?   @db.ObjectId
-  deck           Deck?     @relation(fields: [deckId], references: [id])
-  deckAssignedAt DateTime?
+  deckId String? @db.ObjectId
+  deck   Deck?   @relation(fields: [deckId], references: [id])
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
 
@@ -288,6 +289,46 @@ model User {
 
   storeId String? @db.ObjectId
   store   Store?  @relation(fields: [storeId], references: [id])
+  news    New[]
+}
+
+enum NewStatus {
+  draft
+  scheduled
+  published
+  deleted
+}
+
+model NewCategory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  news      New[]
+}
+
+model New {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  subtitle      String
+  shortSummary  String
+  content       String
+  featuredImage String
+  cardImage     String
+  publishedAt   DateTime?
+  status        NewStatus   @default(draft)
+  tags          String[]    @default([])
+  userId        String      @db.ObjectId
+  user          User        @relation(fields: [userId], references: [id])
+  newCategoryId String      @db.ObjectId
+  newCategory   NewCategory @relation(fields: [newCategoryId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([newCategoryId])
+  @@index([status])
+  @@index([publishedAt])
 }
 
 model Account {

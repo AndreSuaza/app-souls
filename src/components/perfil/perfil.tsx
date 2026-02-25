@@ -482,6 +482,7 @@ export const Pefil = ({
               archetypes={[]}
               hasSession={hasSession}
               refreshToken={deckRefreshToken}
+              disableLikeButton={false}
               headerContent={
                 <div className="flex flex-wrap items-center gap-3">
                   {hasSession && hasLoadedDecks ? (
