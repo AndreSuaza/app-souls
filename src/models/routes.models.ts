@@ -19,6 +19,10 @@ export const Routes: Route[] = [
     ],
   },
   {
+    path: "/noticias",
+    name: "Noticias",
+  },
+  {
     name: "Cartas",
     menu: [
       {

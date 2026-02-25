@@ -62,6 +62,8 @@ export const TopMenu = () => {
       document.removeEventListener("mousedown", handleClickOutsideProfile);
   }, []);
 
+  const visibleRoutes = Routes.filter((route) => route.name !== "Noticias");
+
   return (
     <nav className="flex px-5 justify-between items-center w-full bg-gray-950 text-white py-3">
       {/* Logo */}
@@ -86,7 +88,7 @@ export const TopMenu = () => {
 
       <div className="hidden lg:block lg:text-xs xl:text-base">
         <ul className="flex">
-          {Routes.map((route) => (
+          {visibleRoutes.map((route) => (
             <li key={route.name}>
               {route.menu ? (
                 <div

@@ -17,6 +17,7 @@ import {
   IoLogoInstagram,
   IoLogoTiktok,
   IoLogoYoutube,
+  IoNewspaperOutline,
   IoLogInOutline,
   IoLogOutOutline,
   IoTrophyOutline,
@@ -48,6 +49,7 @@ export const Sidebar = () => {
 
   const sectionIcons: Record<string, typeof IoFlashOutline> = {
     Jugar: IoFlashOutline,
+    Noticias: IoNewspaperOutline,
     Cartas: IoBookOutline,
     Mazos: IoLayers,
     Torneos: IoTrophyOutline,
@@ -57,6 +59,8 @@ export const Sidebar = () => {
   const toggleSection = (name: string) => {
     setOpenSections((prev) => ({ ...prev, [name]: !prev[name] }));
   };
+
+  const visibleRoutes = Routes.filter((route) => route.name !== "Noticias");
 
   return (
     <div>
@@ -96,7 +100,7 @@ export const Sidebar = () => {
             <IoTrophyOutline className="w-6 h-6 mr-3" />
             Torneo Nacional
           </Link> */}
-          {Routes.map((route) => {
+          {visibleRoutes.map((route) => {
             const Icon = sectionIcons[route.name];
 
             if (route.menu?.length) {

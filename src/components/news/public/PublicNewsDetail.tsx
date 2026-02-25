@@ -44,7 +44,7 @@ export const PublicNewsDetailView = ({ news, recommended }: Props) => {
 
   return (
     <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
-      <div className="relative w-full overflow-hidden h-[150px] md:h-[180px]">
+      <div className="relative w-full overflow-hidden h-[calc(100vh-4.5rem)]">
         <Image
           src={`/news/banners/${news.featuredImage}`}
           alt={news.title}
@@ -53,29 +53,27 @@ export const PublicNewsDetailView = ({ news, recommended }: Props) => {
           sizes="100vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/10 to-transparent" />
-        <div className="absolute inset-0 flex items-end">
-          <div className="mx-auto w-full max-w-5xl px-4 pb-10 sm:px-6 lg:px-8">
-            <h1 className="text-2xl font-extrabold uppercase tracking-wide text-white md:text-4xl">
-              {news.title}
-            </h1>
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-transparent to-transparent dark:from-tournament-dark-bg/90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/10 to-transparent dark:from-tournament-dark-bg/95" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+            <div className="flex flex-col items-center gap-3 text-center text-white">
+              <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100/90">
+                <span className="inline-flex cursor-default items-center rounded-full border border-purple-300/60 bg-purple-600/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm">
+                  {categoryLabel}
+                </span>
+                <span>{formattedDate}</span>
+              </div>
+              <h1 className="text-3xl font-extrabold uppercase tracking-wide md:text-5xl">
+                {news.title}
+              </h1>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-10 sm:px-6 lg:px-8">
         <div className="space-y-6">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-300">
-              <span className="inline-flex cursor-default items-center rounded-full border border-purple-300/70 bg-purple-100/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-purple-700 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100">
-                {categoryLabel}
-              </span>
-              <span className="text-sm font-semibold text-slate-500 dark:text-slate-300">
-                {formattedDate}
-              </span>
-            </div>
-          </div>
-
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <h2 className="text-xl font-medium text-slate-900 dark:text-white md:text-2xl">
               {news.subtitle}
