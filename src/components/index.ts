@@ -85,6 +85,7 @@ export * from "./tournaments/tournament/public/PublicTournamentDetail";
 export * from "./tournaments/public/PublicTournamentsDateBadge";
 export * from "./tournaments/public/PublicTournamentsFilters";
 export * from "./tournaments/public/PublicTournamentsHero";
+export * from "./tournaments/public/PublicTournamentsHighlights";
 export * from "./tournaments/public/PublicTournamentsList";
 export * from "./tournaments/public/PublicTournamentsMobileList";
 export * from "./tournaments/public/PublicTournamentsTable";

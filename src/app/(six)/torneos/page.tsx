@@ -1,7 +1,11 @@
 import { Suspense } from "react";
 import { getPublicTournaments } from "@/actions";
 import { Metadata } from "next";
-import { PublicTournamentsHero, PublicTournamentsList } from "@/components";
+import {
+  PublicTournamentsHero,
+  PublicTournamentsHighlights,
+  PublicTournamentsList,
+} from "@/components";
 
 export const metadata: Metadata = {
   title: "Torneos de Souls In Xtinction TCG | Compite y Demuestra tu Habilidad",
@@ -30,7 +34,9 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const isHeroTournament = (
-  tournament: Awaited<ReturnType<typeof getPublicTournaments>>["heroTournament"],
+  tournament: Awaited<
+    ReturnType<typeof getPublicTournaments>
+  >["heroTournament"],
 ): tournament is NonNullable<
   Awaited<ReturnType<typeof getPublicTournaments>>["heroTournament"]
 > & {
@@ -41,7 +47,8 @@ const isHeroTournament = (
 };
 
 export default async function EventosPage() {
-  const { tournaments, heroTournament } = await getPublicTournaments();
+  const { tournaments, heroTournament, tierTournaments, topPlayers } =
+    await getPublicTournaments();
   const resolvedHeroTournament = isHeroTournament(heroTournament)
     ? heroTournament
     : null;
@@ -51,6 +58,14 @@ export default async function EventosPage() {
     status: tournament.status,
     date: tournament.date.toISOString(),
     storeName: tournament.store.name,
+  }));
+  const tierListTournaments = tierTournaments.map((tournament) => ({
+    id: tournament.id,
+    title: tournament.title,
+    status: tournament.status,
+    date: tournament.date.toISOString(),
+    storeName: tournament.store.name,
+    tierName: tournament.tierName,
   }));
 
   return (
@@ -72,6 +87,13 @@ export default async function EventosPage() {
         </div>
 
         <div className="px-3 sm:px-6 md:px-10 lg:px-16">
+          <PublicTournamentsHighlights
+            tierTournaments={tierListTournaments}
+            topPlayers={topPlayers}
+          />
+        </div>
+
+        <div className="px-3 sm:px-6 md:px-10 lg:px-16 md:mt-6">
           <Suspense
             fallback={
               <div className="rounded-xl border border-dashed border-tournament-dark-accent bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">

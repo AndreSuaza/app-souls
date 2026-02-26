@@ -145,7 +145,8 @@ export function PublicTournamentsList({ tournaments }: Props) {
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900 dark:text-white">
+          <IoCalendarOutline className="h-5 w-5 text-purple-600 dark:text-purple-300" />
           Próximos torneos
         </h2>
 
