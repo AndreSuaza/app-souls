@@ -1,5 +1,8 @@
 import { prisma } from "../lib/prisma";
 
+// Evita depender de tipos de Node para este script de seed.
+declare const process: { env: { NODE_ENV?: string } };
+
 async function main() {
   const cards = await prisma.card.findMany({
     include: {
@@ -30,15 +33,6 @@ async function main() {
         select: {
           name: true,
         },
-      },
-      price: {
-        include: {
-          rarity: true,
-        },
-        orderBy: {
-          price: "asc",
-        },
-        distinct: ["rarityId"],
       },
     },
     orderBy: [

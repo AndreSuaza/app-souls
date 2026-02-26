@@ -1,5 +1,8 @@
 import { prisma } from "../lib/prisma";
 
+// Evita depender de tipos de Node para este script de seed.
+declare const process: { env: { NODE_ENV?: string } };
+
 const expData = [
   {
     idd: "3501",
