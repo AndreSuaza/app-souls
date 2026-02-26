@@ -88,7 +88,7 @@ export function PublicTournamentsHighlights({
   }, [currentPage, totalPages]);
 
   return (
-    <section className="grid space-y-4 gap-6 lg:grid-cols-3">
+    <section className="grid space-y-4 md:space-y-0 gap-6 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
         <div className="flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-2xl font-extrabold text-slate-900 dark:text-white">

@@ -132,8 +132,8 @@ export const getPublicTournaments = async () => {
     const topPlayersNormalized = topPlayers.map((player) => {
       const matches = player.matchesPlayed ?? 0;
       const elo = player.eloPoints ?? 0;
-      // Por requerimiento, el winrate se calcula con matchesPlayed / eloPoints.
-      const winrateRaw = elo > 0 ? (matches / elo) * 100 : 0;
+      // Por requerimiento, el winrate se calcula como eloPoints / matchesPlayed.
+      const winrateRaw = matches > 0 ? (elo / matches) * 100 : 0;
       const winrate = Math.min(100, Math.max(0, Math.round(winrateRaw)));
 
       return {
