@@ -51,10 +51,9 @@ model Keyword {
 }
 
 model Rarity {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   name       String
-  createDate DateTime    @default(now())
-  Card       CardPrice[]
+  createDate DateTime @default(now())
 
   cardsIDs String[] @db.ObjectId
   cards    Card[]   @relation(fields: [cardsIDs], references: [id])
@@ -97,8 +96,7 @@ model Card {
   effect     String
   createDate DateTime @default(now())
 
-  price        Float?
-  priceHistory CardPrice[]
+  price Float?
 
   typeIds String[] @db.ObjectId
   types   Type[]   @relation(fields: [typeIds], references: [id])
@@ -116,18 +114,6 @@ model Card {
   productId String  @db.ObjectId
 
   @@index([cost, force, defense])
-}
-
-model CardPrice {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  price      Float    @default(0)
-  createDate DateTime @default(now())
-
-  rarityId String @db.ObjectId
-  rarity   Rarity @relation(fields: [rarityId], references: [id])
-
-  cardId String @db.ObjectId
-  card   Card   @relation(fields: [cardId], references: [id])
 }
 
 model Store {

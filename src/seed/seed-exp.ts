@@ -362,19 +362,12 @@ async function main() {
           keywordsIds: expDataCard.keywordsIds,
           raritiesIds: expDataCard.raritiesIds,
           productId: expDataCard.productId,
+          price: expDataCard.price,
         },
       });
 
       if (cardIns) {
-        const priceCardInt = await prisma.cardPrice.create({
-          data: {
-            price: expDataCard.price,
-            rarityId: expDataCard.raritiesIds[0],
-            cardId: cardIns.id,
-          },
-        });
-
-        console.log(priceCardInt);
+        console.log(cardIns);
       }
     });
   } catch (error) {
@@ -383,11 +376,6 @@ async function main() {
 
   // console.log(cardIns);
 
-  // await prisma.cardPrice.createMany({data:{
-  //     price:28000,
-  //     rarityId:"67c5d1595d56151173f8f244",
-  //     cardId: cardIns.Card,
-  // }})
 }
 
 (() => {
