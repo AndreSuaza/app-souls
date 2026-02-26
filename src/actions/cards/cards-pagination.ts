@@ -137,15 +137,6 @@ export const getPaginatedCards = async ({
             name: true,
           },
         },
-        price: {
-          include: {
-            rarity: true,
-          },
-          orderBy: {
-            price: "asc",
-          },
-          distinct: ["rarityId"],
-        },
       },
       where: whereConstruction(),
       orderBy: [
@@ -167,9 +158,7 @@ export const getPaginatedCards = async ({
       perPage: take,
       cards: cards.map((card) => ({
         ...card,
-        price: card.price.map((p) => {
-          return { price: p.price, rarity: p.rarity.name };
-        }),
+        price: card.price ?? null,
       })),
     };
   } catch (error) {

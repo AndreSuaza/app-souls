@@ -28,11 +28,6 @@ interface Product {
   url: string;
 }
 
-interface Price {
-  price: number;
-  rarity: string;
-}
-
 export interface Card {
   id: string;
   idd: string;
@@ -48,7 +43,7 @@ export interface Card {
   name: string;
   effect: string;
   product: Product;
-  price: Price[];
+  price?: number | null;
 }
 
 export interface PaginationFilters {

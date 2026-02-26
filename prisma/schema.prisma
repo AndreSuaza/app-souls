@@ -97,7 +97,8 @@ model Card {
   effect     String
   createDate DateTime @default(now())
 
-  price CardPrice[]
+  price        Float?
+  priceHistory CardPrice[]
 
   typeIds String[] @db.ObjectId
   types   Type[]   @relation(fields: [typeIds], references: [id])
