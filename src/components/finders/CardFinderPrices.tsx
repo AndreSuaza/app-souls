@@ -123,7 +123,7 @@ export const CardFinderPrices = ({ propertiesCards }: Props) => {
         <Form className="space-y-4">
           <AutoSubmitText values={values} onAutoSubmit={handleSubmitWith} />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] lg:flex lg:flex-wrap lg:items-end">
-            <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[220px] lg:flex-1">
+            <div className="flex w-full min-w-0 flex-col lg:w-auto lg:min-w-[220px] lg:flex-1 gap-1">
               <span className={labelClass}>Buscar</span>
               <div className="relative">
                 <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-300" />

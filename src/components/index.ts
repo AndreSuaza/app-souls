@@ -46,6 +46,8 @@ export * from "./ui/form";
 export * from "./stores/store-grid/StoreItem";
 export * from "./stores/store-grid/StoreItemSimple";
 export * from "./stores/StoreListCard";
+export * from "./stores/StoreDetailInfo";
+export * from "./stores/StoreTournamentCard";
 export * from "./stores/StoresExplorer";
 export * from "./stores/StoresMap";
 
