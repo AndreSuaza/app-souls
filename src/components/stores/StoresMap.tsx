@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
 
 interface StoreMarker {
@@ -17,14 +17,17 @@ interface Props {
   center: { lat: number; lng: number };
   markers: StoreMarker[];
   className?: string;
+  zoom?: number;
+  onMapReady?: (map: google.maps.Map) => void;
 }
 
-export function StoresMap({ center, markers, className }: Props) {
+export function StoresMap({ center, markers, className, zoom, onMapReady }: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const initialCenterRef = useRef(center);
+  const [mapReady, setMapReady] = useState(false);
   const storefrontIcon = useMemo(
     () =>
       encodeURIComponent(
@@ -46,11 +49,15 @@ export function StoresMap({ center, markers, className }: Props) {
 
       mapInstanceRef.current = new Map(mapRef.current, {
         center: initialCenterRef.current,
-        zoom: 13,
+        zoom: typeof zoom === "number" ? zoom : 13,
         mapId: "MY_NEXTJS_MAPID",
       });
 
       infoWindowRef.current = new google.maps.InfoWindow();
+      setMapReady(true);
+      if (mapInstanceRef.current) {
+        onMapReady?.(mapInstanceRef.current);
+      }
 
       const styleId = "stores-map-infowindow";
       if (!document.getElementById(styleId)) {
@@ -69,13 +76,17 @@ export function StoresMap({ center, markers, className }: Props) {
     };
 
     initMap();
-  }, []);
+  }, [onMapReady, zoom]);
 
   useEffect(() => {
+    if (!mapReady) return;
     const map = mapInstanceRef.current;
     if (!map) return;
 
     map.setCenter(center);
+    if (typeof zoom === "number") {
+      map.setZoom(zoom);
+    }
 
     // Limpia los marcadores previos antes de dibujar los nuevos.
     markersRef.current.forEach((marker) => marker.setMap(null));
@@ -154,7 +165,7 @@ export function StoresMap({ center, markers, className }: Props) {
 
       markersRef.current.push(marker);
     });
-  }, [center, markers, storefrontIcon]);
+  }, [center, markers, storefrontIcon, mapReady, zoom]);
 
   return <div ref={mapRef} className={className} />;
 }

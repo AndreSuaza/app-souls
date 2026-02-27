@@ -53,7 +53,7 @@ export default async function BovedaPage({ searchParams }: Props) {
     });
 
   const resolvedTotal = totalCount ?? cards.length;
-  const resolvedPerPage = perPage ?? 25;
+  const resolvedPerPage = perPage ?? 24;
   const resolvedPage = currentPage ?? page2;
   const start =
     resolvedTotal === 0 ? 0 : (resolvedPage - 1) * resolvedPerPage + 1;

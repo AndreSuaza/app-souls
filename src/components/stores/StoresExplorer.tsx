@@ -35,10 +35,12 @@ interface Props {
 }
 
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
+const COLOMBIA_CENTER = { lat: 4.5709, lng: -74.2973 };
 
 export function StoresExplorer({ initialData, initialPosition }: Props) {
   const [data, setData] = useState<StoresData>(initialData);
   const [position, setPosition] = useState(initialPosition);
+  const [mapCenter] = useState(COLOMBIA_CENTER);
   const [isPending, startTransition] = useTransition();
   const lastPositionRef = useRef(initialPosition);
 
@@ -91,7 +93,7 @@ export function StoresExplorer({ initialData, initialPosition }: Props) {
     <section className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
       <div>
         <div className="grid min-h-[calc(100vh-72px)] lg:h-[calc(100vh-72px)] lg:grid-cols-[minmax(0,2fr)_minmax(0,5fr)]">
-          <aside className="flex h-full min-h-[calc(100vh-72px)] flex-col overflow-hidden border border-slate-200 bg-white/90 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface/90 lg:min-h-0">
+          <aside className="order-2 flex h-full min-h-[calc(100vh-72px)] flex-col overflow-hidden border border-slate-200 bg-white/90 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface/90 lg:order-1 lg:min-h-0">
             <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-4 text-lg font-semibold text-slate-900 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white">
               Tiendas
             </div>
@@ -115,9 +117,10 @@ export function StoresExplorer({ initialData, initialPosition }: Props) {
             </div>
           </aside>
 
-          <div className="relative h-[60vh] overflow-hidden border border-slate-200 shadow-sm dark:border-tournament-dark-border lg:h-full">
+          <div className="order-1 relative h-[60vh] overflow-hidden border border-slate-200 shadow-sm dark:border-tournament-dark-border lg:order-2 lg:h-full">
             <StoresMap
-              center={position}
+              center={mapCenter}
+              zoom={5}
               markers={data.markers}
               className={`h-full w-full ${isPending ? "opacity-80" : ""}`}
             />

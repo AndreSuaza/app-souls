@@ -1,5 +1,5 @@
 import { getStoreDetailAction } from "@/actions";
-import { StoreDetailInfo, StoresMap } from "@/components";
+import { StoreDetailInfo, StoreDetailMap } from "@/components";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -53,8 +53,6 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 
-  const center = { lat: detail.store.lat, lng: detail.store.lgn };
-
   return (
     <section className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
       <div className="mx-auto w-full px-4 py-8 lg:px-8">
@@ -65,11 +63,7 @@ export default async function Page({ params }: Props) {
           />
 
           <div className="relative h-[60vh] overflow-hidden rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border lg:h-[calc(100vh-72px)]">
-            <StoresMap
-              center={center}
-              markers={[detail.store]}
-              className="h-full w-full"
-            />
+            <StoreDetailMap store={detail.store} />
           </div>
         </div>
       </div>
