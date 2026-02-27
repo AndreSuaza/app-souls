@@ -7,7 +7,7 @@ interface Props {
 
 export function BovedaPriceCard({ priceLabel, priceValue }: Props) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+    <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
       <p className="text-[11px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
         {priceLabel}
       </p>

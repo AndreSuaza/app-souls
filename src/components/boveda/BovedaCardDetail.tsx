@@ -112,7 +112,7 @@ export function BovedaCardDetail({ card }: Props) {
       </h1>
 
       <div className="flex justify-center lg:h-[560px]">
-        <div className="h-full w-full max-w-[380px] md:max-w-none overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+        <div className="h-full w-full max-w-[380px] md:max-w-none overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
           <Image
             src={`/cards/${card.code}-${card.idd}.webp`}
             alt={card.name}

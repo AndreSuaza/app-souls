@@ -35,7 +35,7 @@ export function BovedaProductCardsTable({ cards }: Props) {
           <Link
             key={card.id}
             href={`/boveda/${card.id}`}
-            className="group grid grid-cols-[minmax(0,1fr)_auto] gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:border-purple-400/40 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] sm:items-center"
+            className="group grid grid-cols-[minmax(0,1fr)_auto] gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:border-purple-400/40 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] sm:items-center"
           >
             <div className="flex items-center gap-4">
               <div className="h-20 w-14 overflow-hidden rounded-lg border border-slate-200 dark:border-tournament-dark-border">

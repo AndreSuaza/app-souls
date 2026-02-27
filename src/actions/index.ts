@@ -39,6 +39,7 @@ export * from "./tournaments/tournaments-pagination";
 export * from "./tournaments/update-tournament-info.action";
 
 export * from "./stores/stores-pagination";
+export * from "./stores/get-stores-by-distance.action";
 export * from "./stores/get-store-options.action";
 
 export * from "./auth/login";

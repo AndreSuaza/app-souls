@@ -1,6 +1,5 @@
-import { getStorePagination } from "@/actions";
-import { Title } from "@/components";
-import { StoreGrid } from "@/components/stores/store-grid/StoreGrid";
+import { getStoresByDistanceAction } from "@/actions";
+import { StoresExplorer } from "@/components";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -24,18 +23,25 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function TiendasPage() {
+const FALLBACK_POSITION = {
+  lat: 4.711,
+  lng: -74.0721,
+};
 
-  const stores = await getStorePagination();
+export const dynamic = "force-dynamic";
+
+export default async function TiendasPage() {
+  const initialData = await getStoresByDistanceAction({
+    lat: FALLBACK_POSITION.lat,
+    lng: FALLBACK_POSITION.lng,
+    page: 1,
+    perPage: 10,
+  });
 
   return (
-    <>
-    <Title 
-      title="Tiendas"
+    <StoresExplorer
+      initialData={initialData}
+      initialPosition={FALLBACK_POSITION}
     />
-    
-    <StoreGrid stores={stores}/>
-
-    </>
-  )
+  );
 }
