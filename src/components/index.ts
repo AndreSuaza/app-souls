@@ -92,3 +92,7 @@ export * from "./tournaments/public/PublicTournamentsTable";
 
 export * from "./news/admin/AdminNewsList";
 export * from "./news/form/NewsForm";
+
+export * from "./boveda/BovedaCardDetail";
+export * from "./boveda/BovedaPriceCard";
+export * from "./boveda/BovedaProductCardsTable";
