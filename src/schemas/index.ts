@@ -17,6 +17,9 @@ export * from "./decks/deck-search.schema";
 export * from "./cards/card-images.schema";
 export * from "./cards/card-search.schema";
 export * from "./cards/card-id.schema";
+export * from "./cards/boveda-product-cards.schema";
 export * from "./products/product-search.schema";
+export * from "./stores/stores-by-distance.schema";
+export * from "./stores/store-id.schema";
 
 export * from "./news/news.schema";

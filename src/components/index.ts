@@ -45,6 +45,12 @@ export * from "./ui/form";
 
 export * from "./stores/store-grid/StoreItem";
 export * from "./stores/store-grid/StoreItemSimple";
+export * from "./stores/StoreListCard";
+export * from "./stores/StoreDetailInfo";
+export * from "./stores/StoreDetailMap";
+export * from "./stores/StoreTournamentCard";
+export * from "./stores/StoresExplorer";
+export * from "./stores/StoresMap";
 
 export * from "./map/Map";
 export * from "./map/MapXl";
@@ -85,9 +91,14 @@ export * from "./tournaments/tournament/public/PublicTournamentDetail";
 export * from "./tournaments/public/PublicTournamentsDateBadge";
 export * from "./tournaments/public/PublicTournamentsFilters";
 export * from "./tournaments/public/PublicTournamentsHero";
+export * from "./tournaments/public/PublicTournamentsHighlights";
 export * from "./tournaments/public/PublicTournamentsList";
 export * from "./tournaments/public/PublicTournamentsMobileList";
 export * from "./tournaments/public/PublicTournamentsTable";
 
 export * from "./news/admin/AdminNewsList";
 export * from "./news/form/NewsForm";
+
+export * from "./boveda/BovedaCardDetail";
+export * from "./boveda/BovedaPriceCard";
+export * from "./boveda/BovedaProductCardsTable";

@@ -116,7 +116,7 @@ export const ProfileCurrentTournament = ({
     !hasShownInProgressWarning;
 
   const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(
-    tournament?.typeTournamentName ?? ""
+    tournament?.typeTournamentName ?? "",
   );
   const tournamentFinishedAt = tournament?.finishedAt
     ? new Date(tournament.finishedAt)
@@ -137,7 +137,9 @@ export const ProfileCurrentTournament = ({
     enableDeckAssociation &&
     hasSession &&
     Boolean(currentPlayer) &&
-    (isCompetitiveTier ? canAssociateDuring : canAssociateDuring || canAssociateAfterFinish) &&
+    (isCompetitiveTier
+      ? canAssociateDuring
+      : canAssociateDuring || canAssociateAfterFinish) &&
     !hasAssociatedDeck;
   const canViewDeck =
     enableDeckAssociation && Boolean(currentPlayer) && hasAssociatedDeck;
@@ -162,9 +164,7 @@ export const ProfileCurrentTournament = ({
       return true;
     } catch (error) {
       showToast(
-        error instanceof Error
-          ? error.message
-          : "No se pudo asociar el mazo.",
+        error instanceof Error ? error.message : "No se pudo asociar el mazo.",
         "error",
       );
       return false;
@@ -207,7 +207,7 @@ export const ProfileCurrentTournament = ({
   };
   useEffect(() => {
     if (!shouldShowWarning) return;
-    showToast("Tienes mas de un torneo en progreso registrado.", "warning");
+    showToast("Tienes más de un torneo en progreso registrado.", "warning");
     onInProgressWarningShown?.();
   }, [onInProgressWarningShown, shouldShowWarning, showToast]);
 
@@ -463,5 +463,3 @@ export const ProfileCurrentTournament = ({
     </div>
   );
 };
-
-

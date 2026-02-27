@@ -6,6 +6,8 @@ export * from "./cards/cards-by-product-id";
 export * from "./cards/cards-and-prices";
 export * from "./cards/card-images.action";
 export * from "./cards/search-cards.action";
+export * from "./cards/get-boveda-card-detail.action";
+export * from "./cards/get-boveda-product-cards.action";
 export * from "./cards/get-card-by-id.action";
 export * from "./cards/get-card-products-by-idd.action";
 
@@ -37,7 +39,9 @@ export * from "./tournaments/tournaments-pagination";
 export * from "./tournaments/update-tournament-info.action";
 
 export * from "./stores/stores-pagination";
+export * from "./stores/get-stores-by-distance.action";
 export * from "./stores/get-store-options.action";
+export * from "./stores/get-store-detail.action";
 
 export * from "./auth/login";
 export * from "./auth/logout";

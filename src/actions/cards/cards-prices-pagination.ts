@@ -18,14 +18,16 @@ interface PaginationOptions {
   products?: string;
   rarities?: string;
   text?: string;
+  order?: string;
 }
 
 export const getPaginatedPricesCards = async ({
   page = 1,
-  take = 25,
+  take = 24,
   products,
   rarities,
   text,
+  order,
 }: PaginationOptions) => {
   if (isNaN(Number(page))) page = 1;
   if (page < 1) page = 1;
@@ -54,6 +56,8 @@ export const getPaginatedPricesCards = async ({
       }
       return where;
     };
+
+    const resolvedOrder = order === "asc" || order === "desc" ? order : null;
 
     const cards = await prisma.card.findMany({
       take: take,
@@ -88,11 +92,13 @@ export const getPaginatedPricesCards = async ({
         },
       },
       where: whereConstruction(),
-      orderBy: [
-        {
-          id: "desc",
-        },
-      ],
+      orderBy: resolvedOrder
+        ? [{ price: resolvedOrder }, { id: "desc" }]
+        : [
+            {
+              id: "desc",
+            },
+          ],
     });
 
     const totalCount = await prisma.card.count({
@@ -103,6 +109,8 @@ export const getPaginatedPricesCards = async ({
     return {
       currentPage: page,
       totalPage: totalPages,
+      totalCount,
+      perPage: take,
       cards: cards,
     };
   } catch (error) {
