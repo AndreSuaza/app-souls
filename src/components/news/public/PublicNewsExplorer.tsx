@@ -46,6 +46,7 @@ const formatStatsRange = (page: number, perPage: number, total: number) => {
 
 const mapToPublicCard = (item: PublicNewsListItem): PublicNewsCard => ({
   id: item.id,
+  slug: item.slug,
   title: item.title,
   shortSummary: item.shortSummary,
   featuredImage: item.cardImage,

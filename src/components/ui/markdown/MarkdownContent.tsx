@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+/* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
 import React, { isValidElement, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
@@ -292,6 +293,17 @@ const components: Components = {
     }
 
     if (!src) return null;
+    const isExternal = typeof src === "string" && /^https?:\/\//i.test(src);
+
+    if (isExternal) {
+      return (
+        <img
+          src={src}
+          alt={alt ?? "Imagen"}
+          className="h-auto w-[240px] max-w-full rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border"
+        />
+      );
+    }
 
     return (
       <Image

@@ -19,9 +19,17 @@ interface Props {
   className?: string;
   zoom?: number;
   onMapReady?: (map: google.maps.Map) => void;
+  showDetailsLink?: boolean;
 }
 
-export function StoresMap({ center, markers, className, zoom, onMapReady }: Props) {
+export function StoresMap({
+  center,
+  markers,
+  className,
+  zoom,
+  onMapReady,
+  showDetailsLink = true,
+}: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -147,25 +155,24 @@ export function StoresMap({ center, markers, className, zoom, onMapReady }: Prop
         locationText.appendChild(address);
         locationRow.appendChild(locationIcon);
         locationRow.appendChild(locationText);
-
-        const link = document.createElement("a");
-        link.className =
-          "inline-flex w-full items-center justify-center rounded-lg bg-purple-600 mt-2 px-3 py-2 text-xs font-semibold text-white transition hover:bg-purple-500";
-        link.href = `/tiendas/${store.id}`;
-        link.textContent = "Ver más";
-
         content.appendChild(close);
         content.appendChild(title);
         content.appendChild(locationRow);
-        content.appendChild(link);
-
+        if (showDetailsLink) {
+          const link = document.createElement("a");
+          link.className =
+            "inline-flex w-full items-center justify-center rounded-lg bg-purple-600 mt-2 px-3 py-2 text-xs font-semibold text-white transition hover:bg-purple-500";
+          link.href = `/tiendas/${store.id}`;
+          link.textContent = "Ver más";
+          content.appendChild(link);
+        }
         infoWindow.setContent(content);
         infoWindow.open({ anchor: marker, map });
       });
 
       markersRef.current.push(marker);
     });
-  }, [center, markers, storefrontIcon, mapReady, zoom]);
+  }, [center, markers, storefrontIcon, mapReady, zoom, showDetailsLink]);
 
   return <div ref={mapRef} className={className} />;
 }

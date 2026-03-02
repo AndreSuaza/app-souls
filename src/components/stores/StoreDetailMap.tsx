@@ -72,6 +72,7 @@ export function StoreDetailMap({ store }: Props) {
         markers={[store]}
         className="h-full w-full"
         onMapReady={handleMapReady}
+        showDetailsLink={false}
       />
 
       <div className="absolute right-4 top-4 flex flex-col gap-2">

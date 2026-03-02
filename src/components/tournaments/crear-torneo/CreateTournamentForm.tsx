@@ -221,6 +221,7 @@ export const CreateTournamentForm = () => {
             enableCardInsert={false}
             enableDeckInsert={false}
             enableProductInsert={false}
+            enableUrlImageInsert
           />
         )}
       />
