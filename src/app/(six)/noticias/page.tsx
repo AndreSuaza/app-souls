@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 const mapToPublicCard = (item: PublicNewsListItem): PublicNewsCard => ({
   id: item.id,
+  slug: item.slug,
   title: item.title,
   shortSummary: item.shortSummary,
   featuredImage: item.cardImage,

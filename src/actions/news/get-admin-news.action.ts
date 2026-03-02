@@ -23,6 +23,7 @@ export async function getAdminNewsAction(): Promise<AdminNewsListItem[]> {
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
+        slug: true,
         title: true,
         subtitle: true,
         status: true,
@@ -47,6 +48,7 @@ export async function getAdminNewsAction(): Promise<AdminNewsListItem[]> {
 
     return news.map((item) => ({
       id: item.id,
+      slug: item.slug,
       title: item.title,
       subtitle: item.subtitle,
       status: item.status,

@@ -7,6 +7,7 @@ export type NewsCategoryOption = {
 
 export type AdminNewsListItem = {
   id: string;
+  slug: string;
   title: string;
   subtitle: string;
   status: NewsStatus;
@@ -20,6 +21,7 @@ export type AdminNewsListItem = {
 
 export type NewsDetail = {
   id: string;
+  slug: string;
   title: string;
   subtitle: string;
   shortSummary: string;
@@ -42,6 +44,7 @@ export type NewsImageOptions = {
 
 export type PublicNewsCard = {
   id: string;
+  slug: string;
   title: string;
   shortSummary: string;
   featuredImage: string;
@@ -53,6 +56,7 @@ export type PublicNewsCard = {
 
 export type PublicNewsListItem = {
   id: string;
+  slug: string;
   title: string;
   subtitle: string;
   shortSummary: string;
@@ -66,6 +70,7 @@ export type PublicNewsListItem = {
 
 export type PublicNewsDetail = {
   id: string;
+  slug: string;
   title: string;
   subtitle: string;
   content: string;

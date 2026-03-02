@@ -27,7 +27,7 @@ export const NewsHeroCard = ({ item, className }: Props) => {
 
   return (
     <Link
-      href={`/noticias/${item.id}`}
+      href={`/noticias/${item.slug}`}
       className={clsx(
         "group relative grid h-full w-full overflow-hidden rounded-lg border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:grid-cols-[1fr,1fr]",
         className,

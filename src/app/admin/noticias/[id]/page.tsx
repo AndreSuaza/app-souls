@@ -11,7 +11,11 @@ import {
 } from "@/actions";
 import { NewsForm, type NewsSubmitValues } from "@/components";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import type { NewsCategoryOption, NewsDetail, NewsImageOptions } from "@/interfaces";
+import type {
+  NewsCategoryOption,
+  NewsDetail,
+  NewsImageOptions,
+} from "@/interfaces";
 
 const STATUS_STYLES: Record<
   NewsDetail["status"],
@@ -106,6 +110,7 @@ export default function EditNewsPage() {
   }
 
   const handleSubmit = (values: NewsSubmitValues) => {
+    if (!news) return;
     const initialDate = news?.publishedAt ? new Date(news.publishedAt) : null;
     const nextDate = values.publishedAt ? new Date(values.publishedAt) : null;
     const dateChanged =
@@ -121,31 +126,41 @@ export default function EditNewsPage() {
     openConfirmation({
       text: confirmationText,
       action: async () => {
-        showLoading("Actualizando noticia...");
-        await updateNewsAction({
-          newsId: id,
-          ...values,
-        });
-        hideLoading();
-        return true;
+        try {
+          showLoading("Actualizando noticia...");
+          await updateNewsAction({
+            newsId: news.id,
+            ...values,
+          });
+          hideLoading();
+          return true;
+        } catch (error) {
+          hideLoading();
+          const message =
+            error instanceof Error
+              ? error.message
+              : "No se pudo actualizar la noticia";
+          showToast(message, "error");
+          return false;
+        }
       },
       onSuccess: () => {
         showToast("Noticia actualizada", "success");
       },
       onError: () => {
         hideLoading();
-        showToast("No se pudo actualizar la noticia", "error");
       },
     });
   };
 
   const handleDelete = () => {
+    if (!news) return;
     openConfirmation({
       text: "¿Deseas eliminar esta noticia?",
       description: "Esta acción no se puede deshacer.",
       action: async () => {
         showLoading("Eliminando noticia...");
-        await deleteNewsAction(id);
+        await deleteNewsAction(news.id);
         hideLoading();
         router.push("/admin/noticias");
         return true;
@@ -169,7 +184,6 @@ export default function EditNewsPage() {
   }
 
   if (loading || !news) return null;
-
 
   return (
     <section className="space-y-6">

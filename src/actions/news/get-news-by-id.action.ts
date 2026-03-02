@@ -5,10 +5,10 @@ import { prisma } from "@/lib/prisma";
 import type { NewsDetail } from "@/interfaces";
 import { z } from "zod";
 
-const NewsIdSchema = z.string().min(1);
+const NewsSlugSchema = z.string().min(1);
 
 export async function getNewsByIdAction(
-  id: string,
+  slug: string,
 ): Promise<NewsDetail | null> {
   try {
     const session = await auth();
@@ -21,12 +21,13 @@ export async function getNewsByIdAction(
       return null;
     }
 
-    const newsId = NewsIdSchema.parse(id);
+    const newsSlug = NewsSlugSchema.parse(slug);
 
     const news = await prisma.new.findUnique({
-      where: { id: newsId },
+      where: { slug: newsSlug },
       select: {
         id: true,
+        slug: true,
         title: true,
         subtitle: true,
         shortSummary: true,
@@ -54,6 +55,7 @@ export async function getNewsByIdAction(
 
     return {
       id: news.id,
+      slug: news.slug,
       title: news.title,
       subtitle: news.subtitle,
       shortSummary: news.shortSummary,

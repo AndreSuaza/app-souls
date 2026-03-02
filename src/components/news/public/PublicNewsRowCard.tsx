@@ -26,7 +26,7 @@ export const PublicNewsRowCard = ({ item }: Props) => {
 
   return (
     <Link
-      href={`/noticias/${item.id}`}
+      href={`/noticias/${item.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:flex-row"
     >
       <div className="relative h-[200px] w-full md:h-full md:min-h-[220px] md:w-1/3">

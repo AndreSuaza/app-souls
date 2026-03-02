@@ -28,7 +28,7 @@ export const NewsCarouselCard = ({
 
   return (
     <Link
-      href={`/noticias/${item.id}`}
+      href={`/noticias/${item.slug}`}
       className={clsx(
         "group relative grid min-h-[440px] w-full grid-rows-[1fr,1fr] overflow-hidden rounded-lg border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface",
         className,

@@ -59,18 +59,27 @@ export default function CreateNewsPage() {
     openConfirmation({
       text: "¿Deseas crear esta noticia?",
       action: async () => {
-        showLoading("Creando noticia...");
-        const newsId = await createNewsAction(values);
+        try {
+          showLoading("Creando noticia...");
+        const newsSlug = await createNewsAction(values);
         hideLoading();
-        router.push(`/admin/noticias/${newsId}`);
+        router.push(`/admin/noticias/${newsSlug}`);
         return true;
+        } catch (error) {
+          hideLoading();
+          const message =
+            error instanceof Error
+              ? error.message
+              : "No se pudo crear la noticia";
+          showToast(message, "error");
+          return false;
+        }
       },
       onSuccess: () => {
         showToast("Noticia creada correctamente", "success");
       },
       onError: () => {
         hideLoading();
-        showToast("No se pudo crear la noticia", "error");
       },
     });
   };

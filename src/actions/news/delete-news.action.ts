@@ -19,12 +19,22 @@ export async function deleteNewsAction(id: string) {
     }
 
     const newsId = NewsIdSchema.parse(id);
+    const existing = await prisma.new.findUnique({
+      where: { id: newsId },
+      select: { slug: true },
+    });
+
+    if (!existing) {
+      throw new Error("Noticia no encontrada");
+    }
 
     await prisma.new.update({
       where: { id: newsId },
       data: {
         // Marcamos como eliminada para conservar historial sin exponerla en listados.
         status: "deleted",
+        // Se libera el slug para poder reutilizar el titulo en el futuro.
+        slug: `${existing.slug}-deleted-${newsId}`,
       },
     });
 
