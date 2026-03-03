@@ -60,7 +60,7 @@ export const Sidebar = () => {
     setOpenSections((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
-  const visibleRoutes = Routes.filter((route) => route.name !== "Noticias");
+  const visibleRoutes = Routes.filter((route) => route.name !== "");
 
   return (
     <div>

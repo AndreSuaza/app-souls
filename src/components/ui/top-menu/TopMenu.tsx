@@ -62,7 +62,7 @@ export const TopMenu = () => {
       document.removeEventListener("mousedown", handleClickOutsideProfile);
   }, []);
 
-  const visibleRoutes = Routes.filter((route) => route.name !== "Noticias");
+  const visibleRoutes = Routes.filter((route) => route.name !== "");
 
   return (
     <nav className="flex px-5 justify-between items-center w-full bg-gray-950 text-white py-3">
