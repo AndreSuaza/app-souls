@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import type { PublicNewsCard, PublicNewsDetail } from "@/interfaces";
 import { z } from "zod";
 
-const NewsIdSchema = z.string().min(1);
+const NewsSlugSchema = z.string().min(1);
 
 type PublicNewsDetailResponse = {
   news: PublicNewsDetail;
@@ -12,16 +12,17 @@ type PublicNewsDetailResponse = {
 };
 
 export async function getPublicNewsDetailAction(
-  id: string,
+  slug: string,
 ): Promise<PublicNewsDetailResponse | null> {
   try {
-    const newsId = NewsIdSchema.parse(id);
+    const newsSlug = NewsSlugSchema.parse(slug);
 
     const news = await prisma.new.findUnique({
-      where: { id: newsId },
+      where: { slug: newsSlug },
       select: {
         id: true,
         title: true,
+        slug: true,
         subtitle: true,
         shortSummary: true,
         content: true,
@@ -44,6 +45,7 @@ export async function getPublicNewsDetailAction(
 
     const baseSelect = {
       id: true,
+      slug: true,
       title: true,
       shortSummary: true,
       featuredImage: true,
@@ -60,7 +62,7 @@ export async function getPublicNewsDetailAction(
     const sameCategoryNews = await prisma.new.findMany({
       where: {
         status: "published",
-        id: { not: newsId },
+        id: { not: news.id },
         newCategoryId: news.newCategoryId,
       },
       orderBy: { publishedAt: "desc" },
@@ -74,7 +76,7 @@ export async function getPublicNewsDetailAction(
         ? await prisma.new.findMany({
             where: {
               status: "published",
-              id: { not: newsId },
+              id: { not: news.id },
               newCategoryId: { not: news.newCategoryId },
             },
             orderBy: { publishedAt: "desc" },
@@ -87,6 +89,7 @@ export async function getPublicNewsDetailAction(
       item: typeof sameCategoryNews[number],
     ): PublicNewsCard => ({
       id: item.id,
+      slug: item.slug,
       title: item.title,
       shortSummary: item.shortSummary,
       featuredImage: item.featuredImage,
@@ -99,6 +102,7 @@ export async function getPublicNewsDetailAction(
     return {
       news: {
         id: news.id,
+        slug: news.slug,
         title: news.title,
         subtitle: news.subtitle,
         shortSummary: news.shortSummary,

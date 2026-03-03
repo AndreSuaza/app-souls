@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { resolveNewsStatus } from "@/logic";
 import { UpdateNewsSchema, type UpdateNewsInput } from "@/schemas";
+import { buildNewsSlug } from "@/utils/news-slug";
 
 export async function updateNewsAction(input: UpdateNewsInput) {
   try {
@@ -31,6 +32,25 @@ export async function updateNewsAction(input: UpdateNewsInput) {
       throw new Error("No se puede editar una noticia eliminada");
     }
 
+    const slug = buildNewsSlug(data.title);
+
+    if (!slug) {
+      throw new Error("El título no es válido");
+    }
+
+    const existingSlug = await prisma.new.findFirst({
+      where: {
+        slug,
+        status: { not: "deleted" },
+        id: { not: data.newsId },
+      },
+      select: { id: true },
+    });
+
+    if (existingSlug) {
+      throw new Error("El título ya existe");
+    }
+
     const parsedPublishedAt = data.publishedAt
       ? new Date(data.publishedAt)
       : null;
@@ -43,6 +63,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
       where: { id: data.newsId },
       data: {
         title: data.title,
+        slug,
         subtitle: data.subtitle,
         shortSummary: data.shortSummary,
         content: data.content,

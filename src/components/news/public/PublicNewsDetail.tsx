@@ -29,7 +29,7 @@ const formatNewsDate = (value?: string | null) => {
 export const PublicNewsDetailView = ({ news, recommended }: Props) => {
   const categoryLabel = news.categoryName ?? "Sin categoría";
   const formattedDate = formatNewsDate(news.publishedAt);
-  const shareUrl = `https://soulsinxtinction.com/noticias/${news.id}`;
+  const shareUrl = `https://soulsinxtinction.com/noticias/${news.slug}`;
   const whatsappShareLink = `https://wa.me/?text=${encodeURIComponent(
     shareUrl,
   )}`;

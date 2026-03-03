@@ -12,6 +12,7 @@ export async function getPublicNewsAction(): Promise<PublicNewsListItem[]> {
       orderBy: { publishedAt: "desc" },
       select: {
         id: true,
+        slug: true,
         title: true,
         subtitle: true,
         shortSummary: true,
@@ -30,6 +31,7 @@ export async function getPublicNewsAction(): Promise<PublicNewsListItem[]> {
 
     return news.map((item) => ({
       id: item.id,
+      slug: item.slug,
       title: item.title,
       subtitle: item.subtitle,
       shortSummary: item.shortSummary,

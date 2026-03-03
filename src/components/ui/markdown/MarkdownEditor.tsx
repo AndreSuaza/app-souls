@@ -13,6 +13,7 @@ import {
   FiBold,
   FiChevronDown,
   FiItalic,
+  FiImage,
   FiLink,
   FiList,
   FiShoppingBag,
@@ -32,6 +33,7 @@ import { MarkdownContent } from "./MarkdownContent";
 import { MarkdownCardModal } from "./MarkdownCardModal";
 import { MarkdownDeckModal } from "./MarkdownDeckModal";
 import { MarkdownProductModal } from "./MarkdownProductModal";
+import { MarkdownImageUrlModal } from "./MarkdownImageUrlModal";
 
 type Props = {
   label?: string;
@@ -45,6 +47,7 @@ type Props = {
   enableCardInsert?: boolean;
   enableDeckInsert?: boolean;
   enableProductInsert?: boolean;
+  enableUrlImageInsert?: boolean;
   readOnly?: boolean;
 };
 
@@ -149,6 +152,7 @@ export const MarkdownEditor = ({
   enableCardInsert = true,
   enableDeckInsert = true,
   enableProductInsert = true,
+  enableUrlImageInsert = true,
   readOnly = false,
 }: Props) => {
   const headingMenuRef = useRef<HTMLDivElement | null>(null);
@@ -158,6 +162,7 @@ export const MarkdownEditor = ({
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isImageUrlModalOpen, setIsImageUrlModalOpen] = useState(false);
   const [isHeadingMenuOpen, setIsHeadingMenuOpen] = useState(false);
   const [isListMenuOpen, setIsListMenuOpen] = useState(false);
   const [cardSearch, setCardSearch] = useState("");
@@ -610,6 +615,24 @@ export const MarkdownEditor = ({
     setIsDeckModalOpen(false);
   };
 
+  const handleInsertImageUrl = (url: string) => {
+    if (!editor) return;
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "image",
+        attrs: {
+          src: url,
+          alt: "Imagen",
+        },
+      })
+      .run();
+
+    setIsImageUrlModalOpen(false);
+  };
+
   const handleInsertProduct = () => {
     if (!editor || !selectedProductId) return;
 
@@ -853,6 +876,16 @@ export const MarkdownEditor = ({
                 </div>
               )}
             </div>
+            {enableUrlImageInsert && (
+              <button
+                type="button"
+                onClick={() => setIsImageUrlModalOpen(true)}
+                className={toolbarButtonClass(false)}
+                title="Insertar imagen"
+              >
+                <FiImage className="h-4 w-4" />
+              </button>
+            )}
             {enableCardInsert && (
               <button
                 type="button"
@@ -925,7 +958,10 @@ export const MarkdownEditor = ({
                   {placeholder ?? "Escribe la descripción del torneo"}
                 </div>
               ) : (
-                <MarkdownContent content={value} />
+                <MarkdownContent
+                  content={value}
+                  enableInstagramEmbeds={isPublicPreview}
+                />
               )
             ) : (
               <>
@@ -963,6 +999,14 @@ export const MarkdownEditor = ({
           )}
         </div>
       </div>
+
+      {enableUrlImageInsert && (
+        <MarkdownImageUrlModal
+          isOpen={isImageUrlModalOpen}
+          onClose={() => setIsImageUrlModalOpen(false)}
+          onInsert={handleInsertImageUrl}
+        />
+      )}
 
       {enableCardInsert && (
         <MarkdownCardModal

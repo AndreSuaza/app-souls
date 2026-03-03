@@ -117,6 +117,7 @@ export const TournamentInfoCard = ({
             enableCardInsert={false}
             enableDeckInsert={false}
             enableProductInsert={false}
+            enableUrlImageInsert
           />
         </div>
       </div>

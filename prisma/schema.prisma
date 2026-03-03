@@ -297,6 +297,7 @@ model NewCategory {
 model New {
   id            String      @id @default(auto()) @map("_id") @db.ObjectId
   title         String
+  slug          String      @unique
   subtitle      String
   shortSummary  String
   content       String

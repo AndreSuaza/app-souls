@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { resolveNewsStatus } from "@/logic";
 import { CreateNewsSchema, type CreateNewsInput } from "@/schemas";
+import { buildNewsSlug } from "@/utils/news-slug";
 
 export async function createNewsAction(input: CreateNewsInput) {
   try {
@@ -18,6 +19,23 @@ export async function createNewsAction(input: CreateNewsInput) {
     }
 
     const data = CreateNewsSchema.parse(input);
+    const slug = buildNewsSlug(data.title);
+
+    if (!slug) {
+      throw new Error("El título no es válido");
+    }
+
+    const existingSlug = await prisma.new.findFirst({
+      where: {
+        slug,
+        status: { not: "deleted" },
+      },
+      select: { id: true },
+    });
+
+    if (existingSlug) {
+      throw new Error("El título ya existe");
+    }
     const parsedPublishedAt = data.publishedAt
       ? new Date(data.publishedAt)
       : null;
@@ -29,6 +47,7 @@ export async function createNewsAction(input: CreateNewsInput) {
     const created = await prisma.new.create({
       data: {
         title: data.title,
+        slug,
         subtitle: data.subtitle,
         shortSummary: data.shortSummary,
         content: data.content,
@@ -40,10 +59,10 @@ export async function createNewsAction(input: CreateNewsInput) {
         userId: session.user.idd,
         newCategoryId: data.newCategoryId,
       },
-      select: { id: true },
+      select: { id: true, slug: true },
     });
 
-    return created.id;
+    return created.slug;
   } catch (error) {
     console.error("[createNewsAction]", error);
     throw new Error(

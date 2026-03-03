@@ -231,8 +231,8 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
     });
   };
 
-  const handleRowClick = (id: string) => {
-    router.push(`/admin/noticias/${id}`);
+  const handleRowClick = (slug: string) => {
+    router.push(`/admin/noticias/${slug}`);
   };
 
   return (
@@ -335,7 +335,7 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
                       <tr
                         key={item.id}
                         role="button"
-                        onClick={() => handleRowClick(item.id)}
+                      onClick={() => handleRowClick(item.slug)}
                         className="cursor-pointer border-b border-tournament-dark-border/40 text-slate-700 transition hover:bg-slate-50 last:border-b-0 dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
                       >
                         <td className="px-4 py-3">
@@ -396,7 +396,7 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
                 <div
                   key={item.id}
                   role="button"
-                  onClick={() => handleRowClick(item.id)}
+                  onClick={() => handleRowClick(item.slug)}
                   className="rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm transition hover:bg-slate-50 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:bg-tournament-dark-muted"
                 >
                   <div className="flex items-start justify-between gap-3">
