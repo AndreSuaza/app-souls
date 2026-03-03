@@ -3,7 +3,7 @@
 import clsx from "clsx";
 /* eslint-disable @next/next/no-img-element */
 import Image from "next/image";
-import React, { isValidElement, useMemo } from "react";
+import React, { isValidElement, useEffect, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
@@ -15,6 +15,7 @@ import { MarkdownProductPreview } from "./MarkdownProductPreview";
 type Props = {
   content: string;
   className?: string;
+  enableInstagramEmbeds?: boolean;
 };
 
 const normalizeImageParagraphs = (value: string) => {
@@ -92,6 +93,53 @@ const renderInlineWithUnderline = (children: React.ReactNode) => {
   return processNode(children);
 };
 
+const isInstagramUrl = (href: string) =>
+  /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)\/[^/?#]+/i.test(href);
+
+const normalizeInstagramUrl = (href: string) => {
+  const cleaned = href.split("?")[0];
+  return cleaned.endsWith("/") ? cleaned : `${cleaned}/`;
+};
+
+const InstagramEmbed = ({ url }: { url: string }) => {
+  const permalink = useMemo(() => normalizeInstagramUrl(url), [url]);
+
+  useEffect(() => {
+    // Carga el script de Instagram una sola vez y reprocesa el embed.
+    const existingScript = document.getElementById("instagram-embed-script");
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.id = "instagram-embed-script";
+      script.async = true;
+      script.src = "https://www.instagram.com/embed.js";
+      script.onload = () => {
+        (window as { instgrm?: { Embeds?: { process: () => void } } })
+          .instgrm?.Embeds?.process();
+      };
+      document.body.appendChild(script);
+    } else {
+      (window as { instgrm?: { Embeds?: { process: () => void } } })
+        .instgrm?.Embeds?.process();
+    }
+  }, [permalink]);
+
+  return (
+    <div className="my-6 flex w-full justify-center">
+      <div className="w-full max-w-[560px] rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/60 p-3 shadow-lg shadow-black/10 backdrop-blur">
+        <blockquote
+          className="instagram-media w-full"
+          data-instgrm-permalink={permalink}
+          data-instgrm-version="14"
+        >
+          <a href={permalink} target="_blank" rel="noreferrer">
+            {permalink}
+          </a>
+        </blockquote>
+      </div>
+    </div>
+  );
+};
+
 // Permite <u> para el subrayado sin abrir el resto del HTML arbitrario.
 const markdownSchema = {
   ...defaultSchema,
@@ -119,7 +167,7 @@ const isCardReference = (value: string) => {
   return true;
 };
 
-const components: Components = {
+const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
   h1: ({ children }) => (
     <h1 className="text-2xl font-bold text-slate-900 dark:text-white md:text-3xl">
       {renderInlineWithUnderline(children)}
@@ -161,6 +209,14 @@ const components: Components = {
           isDeckIdHref(child.properties?.href))) ||
       (child?.type === "link" &&
         (isDecklistHref(child.url) || isDeckIdHref(child.url)));
+    const isInstagramNode = (child?: HastNode) =>
+      (child?.type === "element" &&
+        child.tagName === "a" &&
+        typeof child.properties?.href === "string" &&
+        isInstagramUrl(child.properties.href)) ||
+      (child?.type === "link" &&
+        typeof child.url === "string" &&
+        isInstagramUrl(child.url));
     const meaningfulNodes = nodeChildren.filter(
       (child) => !isBlankTextNode(child),
     );
@@ -169,12 +225,19 @@ const components: Components = {
       meaningfulNodes.every((child) => isImageNode(child));
     const onlyDeckPreview =
       meaningfulNodes.length === 1 && isDecklistNode(meaningfulNodes[0]);
+    const onlyInstagram =
+      enableInstagramEmbeds &&
+      meaningfulNodes.length === 1 &&
+      isInstagramNode(meaningfulNodes[0]);
     const hasBlockElement = meaningfulNodes.some(
       (child) => isImageNode(child) || isDecklistNode(child),
     );
 
     const paragraphClass =
       "text-sm leading-relaxed text-slate-700 dark:text-slate-200 md:text-base";
+    const hasInstagramElement = childrenArray.some(
+      (child) => isValidElement(child) && child.type === InstagramEmbed,
+    );
 
     if (onlyImages) {
       const imageChildren = childrenArray.filter((child, index) => {
@@ -196,6 +259,19 @@ const components: Components = {
         return true;
       });
       return <div className="w-full">{deckChildren}</div>;
+    }
+
+    if (hasInstagramElement) {
+      return <div className="w-full">{childrenArray}</div>;
+    }
+
+    if (onlyInstagram) {
+      const node = meaningfulNodes[0];
+      const url =
+        node?.type === "element"
+          ? (node.properties?.href as string)
+          : (node?.url as string);
+      return <InstagramEmbed url={url} />;
     }
 
     if (hasBlockElement) {
@@ -260,6 +336,14 @@ const components: Components = {
 
     if (isDeckId) {
       return <MarkdownDeckPreview deckId={href.trim()} />;
+    }
+
+    if (
+      enableInstagramEmbeds &&
+      typeof href === "string" &&
+      isInstagramUrl(href)
+    ) {
+      return <InstagramEmbed url={href} />;
     }
 
     return (
@@ -349,12 +433,20 @@ const components: Components = {
       {children}
     </pre>
   ),
-};
+});
 
-export function MarkdownContent({ content, className }: Props) {
+export function MarkdownContent({
+  content,
+  className,
+  enableInstagramEmbeds = true,
+}: Props) {
   const normalizedContent = useMemo(
     () => normalizeImageParagraphs(content),
     [content],
+  );
+  const components = useMemo(
+    () => buildComponents(enableInstagramEmbeds),
+    [enableInstagramEmbeds],
   );
 
   return (

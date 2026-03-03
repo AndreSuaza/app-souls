@@ -958,7 +958,10 @@ export const MarkdownEditor = ({
                   {placeholder ?? "Escribe la descripción del torneo"}
                 </div>
               ) : (
-                <MarkdownContent content={value} />
+                <MarkdownContent
+                  content={value}
+                  enableInstagramEmbeds={isPublicPreview}
+                />
               )
             ) : (
               <>
