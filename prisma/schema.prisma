@@ -65,6 +65,7 @@ model Product {
   name         String
   code         String         @unique
   releaseDate  String
+  price        Float?
   description  String
   url          String
   numberCards  Int

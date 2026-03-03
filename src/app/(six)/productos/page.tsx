@@ -1,5 +1,5 @@
 import { getProductsPagination } from "@/actions";
-import { ProductGrid, Title } from "@/components";
+import { ProductGrid } from "@/components";
 import { Metadata } from "next";
 
 
@@ -25,18 +25,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ProductosPage() {
-
   const products = await getProductsPagination();
 
-  return (
-    <>
-    <Title 
-      title="Productos"
-    />
-
-    <ProductGrid 
-      products={products}
-    />
-    </>
-  )
+  return <ProductGrid products={products} />;
 }
