@@ -66,6 +66,7 @@ export * from "./mazos/deck-card/DeckCard";
 export * from "./mazos/deck-save/SaveDeckForm";
 export * from "./mazos/deck-filters/DeckFiltersBar";
 export * from "./mazos/deck-library/DeckLibrary";
+export * from "./mazos/admin/AdminDecksList";
 
 export * from "./login/ButtonSocial";
 export * from "./login/ButtonLogOut";

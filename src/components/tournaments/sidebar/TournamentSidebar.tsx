@@ -9,6 +9,7 @@ import {
   IoArrowBackOutline,
   IoCloseOutline,
   IoHomeOutline,
+  IoLayers,
   IoNewspaperOutline,
 } from "react-icons/io5";
 import { IoMdTrophy } from "react-icons/io";
@@ -24,6 +25,7 @@ export const TournamentSidebar = () => {
   const pathname = usePathname();
   const isTournamentSection = pathname.startsWith("/admin/torneos");
   const isNewsSection = pathname.startsWith("/admin/noticias");
+  const isDeckSection = pathname.startsWith("/admin/mazos");
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
 
   const menuItems = [
@@ -46,6 +48,11 @@ export const TournamentSidebar = () => {
           label: "Noticias",
           href: "/admin/noticias",
           icon: IoNewspaperOutline,
+        },
+        {
+          label: "Mazos",
+          href: "/admin/mazos",
+          icon: IoLayers,
         },
       );
     }
@@ -93,6 +100,29 @@ export const TournamentSidebar = () => {
     }
 
     if (role === "admin") {
+      menuItems.push({
+        label: "Volver",
+        href: "/admin",
+        icon: IoArrowBackOutline,
+      });
+    }
+  }
+
+  if (isDeckSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Crear mazo",
+          href: "/admin/mazos/laboratorio",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Mazos",
+          href: "/admin/mazos",
+          icon: IoLayers,
+        },
+      );
+
       menuItems.push({
         label: "Volver",
         href: "/admin",

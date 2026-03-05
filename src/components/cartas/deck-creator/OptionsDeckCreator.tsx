@@ -58,6 +58,10 @@ interface Props {
   isOwnerDeck?: boolean;
   archetypeName?: string | null;
   onRefreshCurrentDeck?: () => void;
+  showShareButton?: boolean;
+  forcePrivateSave?: boolean;
+  isAdminDeck?: boolean;
+  skipDeckLimitCheck?: boolean;
 }
 
 export const OptionsDeckCreator = ({
@@ -85,6 +89,10 @@ export const OptionsDeckCreator = ({
   isOwnerDeck = false,
   archetypeName,
   onRefreshCurrentDeck,
+  showShareButton = true,
+  forcePrivateSave = false,
+  isAdminDeck = false,
+  skipDeckLimitCheck = false,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -268,6 +276,14 @@ export const OptionsDeckCreator = ({
       return;
     }
 
+    if (skipDeckLimitCheck) {
+      // En mazos admin no se controla el limite de 12 mazos.
+      setSaveMode("create");
+      setSaveInitialValues(null);
+      setShowSaveDeck(true);
+      return;
+    }
+
     const maxDecks = 12;
     try {
       // Evita abrir el modal si ya se alcanzó el límite de mazos sin torneo.
@@ -314,7 +330,8 @@ export const OptionsDeckCreator = ({
           showToast("Mazo eliminado correctamente.", "success");
           isNavigating = true;
           showLoading("Cargando mazo...");
-          router.push("/laboratorio");
+          // En mazos admin se regresa al listado del panel para evitar salir del admin.
+          router.push(isAdminDeck ? "/admin/mazos" : "/laboratorio");
           return true;
         } catch (error) {
           showToast(
@@ -354,11 +371,12 @@ export const OptionsDeckCreator = ({
           name: deckData.name,
           description: deckData.description ?? "",
           archetypesId: resolvedArchetypeId,
-          visible: deckData.visible ?? false,
+          visible: forcePrivateSave ? false : (deckData.visible ?? false),
           cardsNumber: mainDeckCount,
           deckList: deckListText(),
           imgDeck: deckImage(),
           deckId: deckData.id,
+          isAdminDeck,
         });
         hideLoading();
 
@@ -430,13 +448,15 @@ export const OptionsDeckCreator = ({
             </button>
           )}
 
-          <button
-            className={actionButtonClass}
-            title="Exportar Mazo"
-            onClick={createCodeDeck}
-          >
-            <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
-          </button>
+          {showShareButton && (
+            <button
+              className={actionButtonClass}
+              title="Exportar Mazo"
+              onClick={createCodeDeck}
+            >
+              <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+            </button>
+          )}
 
           {hasSession && showUserDecksButton && (
             <button
@@ -677,9 +697,14 @@ export const OptionsDeckCreator = ({
                 mode={saveMode}
                 autoArchetypeId={resolvedArchetypeId}
                 archetypeName={resolvedArchetypeName}
+                forcePrivate={forcePrivateSave}
+                isAdminDeck={isAdminDeck}
+                skipPublicValidation={forcePrivateSave || isAdminDeck}
                 // En mazos de torneo no se permite cambiar visibilidad al editar.
                 hideVisibilityToggle={
-                  Boolean(deckData?.tournamentId) && saveMode === "edit"
+                  (Boolean(deckData?.tournamentId) && saveMode === "edit") ||
+                  forcePrivateSave ||
+                  isAdminDeck
                 }
               />
             </div>
@@ -720,7 +745,8 @@ export const OptionsDeckCreator = ({
                 onDeleteDeck={(deckId) => {
                   openAlertConfirmation({
                     text: "¿Deseas eliminar este mazo?",
-                    description: "Esta acción eliminará el mazo permanentemente.",
+                    description:
+                      "Esta acción eliminará el mazo permanentemente.",
                     action: async () => {
                       showLoading("Eliminando mazo...");
                       const success = await deleteUserDeck(deckId);

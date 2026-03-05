@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -9,6 +9,9 @@ const isObjectId = (value: string) => /^[0-9a-fA-F]{24}$/.test(value);
 export async function searchDecksAction(input: DeckSearchInput = {}) {
   const { text, take = 24, page = 1 } = DeckSearchSchema.parse(input);
   const currentPage = Math.max(1, page);
+  const adminDeckFilter: Prisma.DeckWhereInput = {
+    OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }],
+  };
 
   const trimmedText = text?.trim();
   const hasSearch = Boolean(trimmedText);
@@ -39,7 +42,8 @@ export async function searchDecksAction(input: DeckSearchInput = {}) {
   }
 
   const where: Prisma.DeckWhereInput = {
-    visible: true, // Solo mazos públicos para el buscador del editor.
+    visible: true, // Solo mazos publicos para el buscador del editor.
+    AND: [adminDeckFilter],
     ...(hasSearch ? { OR: orFilters } : {}),
   };
 

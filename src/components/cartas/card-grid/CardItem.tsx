@@ -18,6 +18,7 @@ interface Props {
   showDeckActions?: boolean;
   count?: number;
   highlightLegendaryCount?: boolean;
+  allowRestrictedTypes?: boolean;
 }
 
 export const CardItem = ({
@@ -30,6 +31,7 @@ export const CardItem = ({
   showDeckActions = false,
   count,
   highlightLegendaryCount = false,
+  allowRestrictedTypes = false,
 }: Props) => {
   const openDetail = () => {
     detailCard(index);
@@ -111,8 +113,9 @@ export const CardItem = ({
               </div>
             )}
             {addCard &&
-              card.types.filter((type) => type.name === "Alma").length ===
-                0 && (
+              (allowRestrictedTypes ||
+                card.types.filter((type) => type.name === "Alma").length ===
+                  0) && (
                 <>
                   <button
                     type="button"
@@ -122,14 +125,16 @@ export const CardItem = ({
                   >
                     <IoAddCircleOutline className="h-5 w-5" />
                   </button>
-                  <button
-                    type="button"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/40 text-sky-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-sky-200"
-                    title="Anadir carta mazo apoyo"
-                    onClick={() => addCardSidedeck && addCardSidedeck(card)}
-                  >
-                    <IoMedkitOutline className="h-5 w-5" />
-                  </button>
+                  {addCardSidedeck && (
+                    <button
+                      type="button"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/40 text-sky-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-sky-200"
+                      title="Anadir carta mazo apoyo"
+                      onClick={() => addCardSidedeck(card)}
+                    >
+                      <IoMedkitOutline className="h-5 w-5" />
+                    </button>
+                  )}
                 </>
               )}
           </div>

@@ -31,6 +31,7 @@ export interface Deck {
   likesCount: number;
   createdAt: Date | string;
   visible?: boolean;
+  isAdminDeck?: boolean | null;
   tournamentId?: string | null;
   userId?: string;
   user: DeckUser;
@@ -48,4 +49,14 @@ export interface DeckPagination {
 export interface DeckFilteredResult extends DeckPagination {
   decks: Deck[];
   likedDeckIds: string[];
+}
+
+export interface AdminDeckListItem {
+  id: string;
+  name: string;
+  cardsNumber: number;
+  createdAt: string;
+  archetypeName?: string | null;
+  authorName?: string | null;
+  userNickname?: string | null;
 }

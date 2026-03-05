@@ -375,13 +375,15 @@ model Like {
 }
 
 model Deck {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String?
   imagen      String
   cards       String
-  cardsNumber Int     @default(0) // Solo visible al publico si tiene las 40 cartas
+  cardsNumber Int      @default(0) // Solo visible al publico si tiene las 40 cartas
   visible     Boolean
+  // Marca los mazos estructurados creados desde el panel admin.
+  isAdminDeck Boolean? @default(false)
 
   likesCount Int @default(0)
 

@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import {
   getDeckById,
@@ -26,7 +26,7 @@ export default async function Page({ params }: Props) {
     auth(),
     getDeckFiltersAction(),
   ]);
-  if (!deck) {
+  if (!deck || deck.isAdminDeck) {
     notFound();
   }
 
@@ -36,15 +36,20 @@ export default async function Page({ params }: Props) {
   const isOwner = Boolean(userId && deck.userId === userId);
   const isPrivate = deck.visible === false;
   const hasTournament = Boolean(deck.tournamentId);
-  // Regla de acceso: admin/store pueden ver mazos privados solo si están asociados a torneo.
+  // Regla de acceso: admin/store pueden ver mazos privados solo si estan asociados a torneo.
   const canViewPrivateAsAdmin = role === "admin" && hasTournament;
-  // Para store, además el torneo debe pertenecer a su misma tienda.
+  // Para store, ademas el torneo debe pertenecer a su misma tienda.
   const canViewPrivateAsStore =
     role === "store" &&
     hasTournament &&
     Boolean(storeId && deck.tournament?.storeId === storeId);
 
-  if (isPrivate && !isOwner && !canViewPrivateAsAdmin && !canViewPrivateAsStore) {
+  if (
+    isPrivate &&
+    !isOwner &&
+    !canViewPrivateAsAdmin &&
+    !canViewPrivateAsStore
+  ) {
     notFound();
   }
 

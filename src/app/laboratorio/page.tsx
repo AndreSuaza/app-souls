@@ -8,6 +8,7 @@
 import { auth } from "@/auth";
 import { DeckCreator } from "@/components";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +100,9 @@ export default async function Cards({ searchParams }: Props) {
   if (id) {
     const getDeck = await getDeckById(id);
     if (getDeck) {
+      if (getDeck.isAdminDeck && session?.user?.role !== "admin") {
+        notFound();
+      }
       deckUser = getDeck;
       decklistCards = deckUser.cards.replaceAll("%2C", ",");
     }

@@ -11,11 +11,16 @@ export async function getDecksFilteredAction(
 ): Promise<DeckFilteredResult> {
   const filters = DeckFiltersSchema.parse(input);
   const perPage = 32;
+  const adminDeckFilter: Prisma.DeckWhereInput = {
+    OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }],
+  };
 
   const where: Prisma.DeckWhereInput = {
     // Regla de negocio: solo mazos publicos y con el minimo de cartas.
     visible: true,
     cardsNumber: { gte: 40 },
+    // Excluye mazos estructurados del panel admin.
+    AND: [adminDeckFilter],
   };
 
   // El filtro de torneos ahora prioriza el orden sin excluir mazos.

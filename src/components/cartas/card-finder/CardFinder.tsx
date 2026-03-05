@@ -78,6 +78,7 @@ interface Props {
   disableGridTransitions?: boolean;
   cardCounts?: Record<string, number>;
   highlightLegendaryCount?: boolean;
+  allowRestrictedTypes?: boolean;
 }
 
 export const CardFinder = ({
@@ -103,6 +104,7 @@ export const CardFinder = ({
   disableGridTransitions = false,
   cardCounts,
   highlightLegendaryCount = false,
+  allowRestrictedTypes = false,
 }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -405,6 +407,7 @@ export const CardFinder = ({
           onOpenDetail={onOpenDetail}
           cardCounts={cardCounts}
           highlightLegendaryCount={highlightLegendaryCount}
+          allowRestrictedTypes={allowRestrictedTypes}
         />
       </div>
     </Pagination>
