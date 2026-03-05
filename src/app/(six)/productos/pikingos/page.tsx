@@ -2,7 +2,7 @@
 import { PikingosShowcaseSection } from "@/components/productos/pikingos/PikingosShowcaseSection";
 import { PikingosInfoSection } from "@/components/productos/pikingos/PikingosInfoSection";
 import { PikingosCollectionSection } from "@/components/productos/pikingos/PikingosCollectionSection";
-import { getCardsByProductId, getProductUrl } from "@/actions";
+import { getDecksByIds, getProductUrl } from "@/actions";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 
@@ -36,7 +36,8 @@ export default async function Page() {
     notFound();
   }
 
-  const cards = await getCardsByProductId(product.id);
+  const { mainDeck, sideDeck } = await getDecksByIds(product.deckCards ?? "");
+  const decklist = [...mainDeck, ...sideDeck];
 
   return (
     <>
@@ -46,7 +47,7 @@ export default async function Page() {
           <PikingosHeroSection />
           <PikingosShowcaseSection />
           <PikingosInfoSection />
-          <PikingosCollectionSection cards={cards} />
+          <PikingosCollectionSection decklist={decklist} />
         </div>
       </main>
     </>

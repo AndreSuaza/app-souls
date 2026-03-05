@@ -8,6 +8,7 @@ type Props = {
   decklist: Decklist[];
   columns?: number;
   className?: string;
+  variant?: "default" | "product";
 };
 
 const getBaseGridClass = (value: number) => {
@@ -35,40 +36,103 @@ export const MarkdownDeckStackGrid = ({
   decklist,
   columns,
   className,
+  variant = "default",
 }: Props) => {
   if (decklist.length === 0) return null;
 
+  const productStackOffsets = [
+    "mt-0",
+    "mt-4",
+    "mt-8",
+    "mt-12",
+    "mt-16",
+    "mt-20",
+    "mt-24",
+  ];
+  const productStackPadding = [
+    "pb-0",
+    "pb-4",
+    "pb-8",
+    "pb-12",
+    "pb-16",
+    "pb-20",
+    "pb-24",
+  ];
+  const defaultStackOffsets = ["mt-0", "mt-8"];
   const gridClassName = columns
     ? clsx("grid gap-4", getBaseGridClass(columns))
-    : clsx(
-        "grid gap-4 grid-cols-1",
-        "sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6",
-      );
+    : variant === "product"
+      ? clsx(
+          "grid gap-3 grid-cols-2",
+          "sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-9",
+          "mx-2",
+        )
+      : clsx(
+          "grid gap-4 grid-cols-1",
+          "sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6",
+        );
+
+  const cardContainerClass =
+    variant === "product" ? "relative w-full" : "relative w-full max-w-[150px]";
+  const cardItemClass =
+    variant === "product" ? "relative mb-3" : "relative mb-4";
+  const cardImageClass =
+    variant === "product"
+      ? "h-auto w-full rounded-lg object-cover"
+      : "h-auto w-full rounded-md object-cover";
 
   return (
     <ul className={clsx("justify-items-start pb-6", gridClassName, className)}>
-      {decklist.map((item) => (
-        <li key={item.card.id} className="relative mb-8 overflow-visible">
-          <div className="relative w-full max-w-[150px]">
-            <Image
-              src={`/cards/${item.card.code}-${item.card.idd}.webp`}
-              alt={item.card.name}
-              width={500}
-              height={718}
-              className="h-auto w-full rounded-md object-cover"
-            />
-            {item.count > 1 && (
-              <Image
-                src={`/cards/${item.card.code}-${item.card.idd}.webp`}
-                alt={item.card.name}
-                width={500}
-                height={718}
-                className="absolute left-0 top-0 mt-8 h-auto w-full rounded-md object-cover"
-              />
+      {decklist.map((item) => {
+        const stackLayers =
+          variant === "product"
+            ? Math.min(item.count, productStackOffsets.length)
+            : Math.min(item.count, defaultStackOffsets.length);
+        const stackPaddingClass =
+          variant === "product"
+            ? (productStackPadding[stackLayers - 1] ?? "pb-0")
+            : "";
+
+        return (
+          <li
+            key={item.card.id}
+            className={clsx(
+              cardItemClass,
+              stackPaddingClass,
+              "overflow-visible",
             )}
-          </div>
-        </li>
-      ))}
+          >
+            <div className={cardContainerClass}>
+              {(() => {
+                const offsets =
+                  variant === "product"
+                    ? productStackOffsets
+                    : defaultStackOffsets;
+                // Limitamos el número de capas para evitar stacks demasiado altos.
+                const maxLayers = Math.min(item.count, offsets.length);
+
+                return Array.from({ length: maxLayers }).map((_, index) => {
+                  const isBase = index === 0;
+                  return (
+                    <Image
+                      key={`${item.card.id}-${index}`}
+                      src={`/cards/${item.card.code}-${item.card.idd}.webp`}
+                      alt={item.card.name}
+                      width={500}
+                      height={718}
+                      className={clsx(
+                        cardImageClass,
+                        isBase ? "" : "absolute left-0 top-0",
+                        offsets[index],
+                      )}
+                    />
+                  );
+                });
+              })()}
+            </div>
+          </li>
+        );
+      })}
     </ul>
   );
 };
