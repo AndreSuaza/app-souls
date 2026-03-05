@@ -9,7 +9,9 @@ export interface Product {
   url: string;
   numberCards: number;
   show: boolean;
+  status?: "active" | "deleted" | null;
   ProductImage: ProductImage[];
+  deckId?: string | null;
 }
 
 export interface ProductImage {
@@ -17,3 +19,28 @@ export interface ProductImage {
   url: string;
   alt: string;
 }
+
+export type AdminProductListItem = {
+  id: string;
+  name: string;
+  code: string;
+  releaseDate: string;
+  index: number;
+  show: boolean;
+  imageUrl?: string | null;
+};
+
+export type AdminProductDetail = {
+  id: string;
+  name: string;
+  code: string;
+  releaseDate: string;
+  description: string;
+  url: string;
+  index: number;
+  numberCards: number;
+  show: boolean;
+  imageUrl?: string | null;
+  deckId?: string | null;
+  deckName?: string | null;
+};

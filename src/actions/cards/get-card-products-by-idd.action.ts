@@ -18,6 +18,7 @@ export async function getCardProductsByIddAction(input: CardIdInput) {
           name: true,
           show: true,
           url: true,
+          status: true,
         },
       },
     },
@@ -38,13 +39,17 @@ export async function getCardProductsByIddAction(input: CardIdInput) {
           name: true,
           show: true,
           url: true,
+          status: true,
         },
       },
     },
   });
 
   const uniqueProducts = new Map(
-    cards.map((item) => [item.product.code, item.product]),
+    cards
+      .map((item) => item.product)
+      .filter((product) => product.show && product.status !== "deleted")
+      .map((product) => [product.code, product]),
   );
 
   return {

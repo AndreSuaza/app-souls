@@ -69,10 +69,21 @@ model Product {
   description  String
   url          String
   numberCards  Int
-  show         Boolean
+  show         Boolean        @default(true)
+  status       ProductStatus? @default(active)
   createDate   DateTime       @default(now())
   Card         Card[]
   ProductImage ProductImage[]
+
+  deckId String? @db.ObjectId
+  deck   Deck?   @relation(fields: [deckId], references: [id])
+
+  @@index([deckId])
+}
+
+enum ProductStatus {
+  active
+  deleted
 }
 
 model ProductImage {
@@ -400,6 +411,7 @@ model Deck {
   archetype         Archetype          @relation(fields: [archetypeId], references: [id])
   likes             Like[]
   tournamentPlayers TournamentPlayer[]
+  Product           Product[]
 }
 
 enum AvatarRarity {

@@ -17,7 +17,8 @@ export const getProductUrl = async(url: string) => {
                 }
             },
             where: {
-                url: url
+                url: url,
+                OR: [{ status: "active" }, { status: { isSet: false } }],
             },
         })     
 

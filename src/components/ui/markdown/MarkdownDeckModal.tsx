@@ -31,6 +31,9 @@ type Props = {
   currentPage: number;
   onPageChange: (page: number) => void;
   onInsert: () => void;
+  title?: string;
+  description?: string;
+  confirmLabel?: string;
 };
 
 export const MarkdownDeckModal = ({
@@ -48,6 +51,9 @@ export const MarkdownDeckModal = ({
   currentPage,
   onPageChange,
   onInsert,
+  title = "Seleccionar mazo",
+  description = "Busca por id, nombre del mazo o nickname del jugador.",
+  confirmLabel = "Insertar mazo",
 }: Props) => {
   if (!isOpen) return null;
 
@@ -62,10 +68,10 @@ export const MarkdownDeckModal = ({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Seleccionar mazo
+                {title}
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Busca por id, nombre del mazo o nickname del jugador.
+                {description}
               </p>
             </div>
             <button
@@ -165,7 +171,7 @@ export const MarkdownDeckModal = ({
                 className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
                 disabled={!selectedDeckId}
               >
-                Insertar mazo
+                {confirmLabel}
               </button>
             </div>
           </div>
