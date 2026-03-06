@@ -61,9 +61,9 @@ export default function CreateNewsPage() {
       action: async () => {
         try {
           showLoading("Creando noticia...");
-        const newsSlug = await createNewsAction(values);
+        await createNewsAction(values);
         hideLoading();
-        router.push(`/admin/noticias/${newsSlug}`);
+        router.push("/admin/noticias");
         return true;
         } catch (error) {
           hideLoading();

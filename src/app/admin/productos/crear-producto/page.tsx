@@ -51,9 +51,9 @@ export default function CreateProductPage() {
       action: async () => {
         try {
           showLoading("Creando producto...");
-          const productId = await createProductAction(values);
+          await createProductAction(values);
           hideLoading();
-          router.push(`/admin/productos/${productId}`);
+          router.push("/admin/productos");
           return true;
         } catch (error) {
           hideLoading();

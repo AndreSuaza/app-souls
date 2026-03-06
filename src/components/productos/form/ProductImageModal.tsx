@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import Image from "next/image";
-import { FiX } from "react-icons/fi";
+import { FiSearch, FiX } from "react-icons/fi";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { Modal } from "@/components/ui/modal/modal";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
@@ -29,17 +29,30 @@ export const ProductImageModal = ({
   onConfirm,
 }: Props) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchValue, setSearchValue] = useState("");
 
-  const totalPages = Math.max(1, Math.ceil(images.length / PAGE_SIZE));
+  const filteredImages = useMemo(() => {
+    const query = searchValue.trim().toLowerCase();
+    if (!query) return images;
+
+    return images.filter((image) => {
+      const normalized = image.toLowerCase();
+      const code = image.replace(/\.[^/.]+$/, "").toLowerCase();
+      return normalized.includes(query) || code.includes(query);
+    });
+  }, [images, searchValue]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredImages.length / PAGE_SIZE));
 
   const pageImages = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
-    return images.slice(start, start + PAGE_SIZE);
-  }, [images, currentPage]);
+    return filteredImages.slice(start, start + PAGE_SIZE);
+  }, [filteredImages, currentPage]);
 
   useEffect(() => {
     if (!isOpen) return;
     setCurrentPage(1);
+    setSearchValue("");
   }, [isOpen]);
 
   useEffect(() => {
@@ -47,6 +60,11 @@ export const ProductImageModal = ({
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setCurrentPage(1);
+  }, [searchValue, isOpen]);
 
   if (!isOpen) return null;
 
@@ -78,9 +96,19 @@ export const ProductImageModal = ({
             </button>
           </div>
 
-          <div className="flex items-center justify-end">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <label className="relative">
+              <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchValue}
+                onChange={(event) => setSearchValue(event.target.value)}
+                placeholder="Buscar por código"
+                className="w-full rounded-lg border border-tournament-dark-accent bg-white py-2 pl-9 pr-3 text-sm text-slate-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+              />
+            </label>
             <span className="text-xs text-slate-400 dark:text-slate-500">
-              {images.length} resultados
+              {filteredImages.length} resultados
             </span>
           </div>
 

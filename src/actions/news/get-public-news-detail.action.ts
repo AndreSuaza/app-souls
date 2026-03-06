@@ -39,7 +39,7 @@ export async function getPublicNewsDetailAction(
       },
     });
 
-    if (!news || news.status !== "published") {
+    if (!news || news.status === "deleted" || news.status === "draft") {
       return null;
     }
 

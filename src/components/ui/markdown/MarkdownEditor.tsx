@@ -440,6 +440,7 @@ export const MarkdownEditor = ({
           text: searchTerm.length > 0 ? searchTerm : undefined,
           take: 24,
           page: deckPage,
+          includeAdmin: true,
         })) as DeckSearchResponse;
         if (!isActive) return;
         setDeckResults(results.decks);
