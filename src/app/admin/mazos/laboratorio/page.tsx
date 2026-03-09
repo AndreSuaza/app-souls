@@ -123,6 +123,7 @@ export default async function Page({ searchParams }: Props) {
       forcePrivateSave
       isAdminDeck
       skipDeckLimitCheck
+      enableBulkAdd
     />
   );
 }

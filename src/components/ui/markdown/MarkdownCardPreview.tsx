@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { getCardByIdAction } from "@/actions";
 
 type Props = {
@@ -120,27 +121,32 @@ export const MarkdownCardPreview = ({ src, alt }: Props) => {
   const finalSrc = cardId ? resolvedCard?.src : src;
   const finalAlt = cardId ? (resolvedCard?.name ?? "Carta") : (alt ?? "Carta");
   const rarityLabel = resolvedCard?.rarityName ?? "Sin rareza";
+  const fallbackSrc = "/howtoplay/mazo-principal.webp";
 
   if (!finalSrc && !cardId) return null;
 
-  return (
-    <div className="w-[140px] sm:w-[170px] md:w-[190px]">
+  const content = (
+    <div className="w-[210px] sm:w-[255px] md:w-[285px]">
       <div className="rounded-lg border border-transparent bg-white p-2 text-center shadow-sm transition hover:border-purple-400 dark:bg-tournament-dark-surface">
         <div className="content-visibility-auto overflow-hidden rounded-md bg-slate-950/70 dark:bg-tournament-dark-muted-strong/40">
           {isLoading && cardId ? (
-            <div className="flex h-[200px] items-center justify-center text-xs text-slate-400">
-              Cargando carta...
-            </div>
+            <Image
+              src={fallbackSrc}
+              alt="Cargando carta"
+              width={270}
+              height={390}
+              className="h-auto w-full rounded-md"
+            />
           ) : hasError && cardId ? (
-            <div className="flex h-[200px] items-center justify-center text-xs text-rose-400">
+            <div className="flex h-[300px] items-center justify-center text-xs text-rose-400">
               Carta no encontrada
             </div>
           ) : finalSrc ? (
             <Image
               src={finalSrc}
               alt={finalAlt}
-              width={180}
-              height={260}
+              width={270}
+              height={390}
               className="h-auto w-full rounded-md"
             />
           ) : null}
@@ -154,4 +160,20 @@ export const MarkdownCardPreview = ({ src, alt }: Props) => {
       </div>
     </div>
   );
+
+  if (cardId && !hasError) {
+    return (
+      <Link
+        href={`/boveda/${cardId}`}
+        className="inline-block cursor-pointer"
+        title="Ver carta en la bóveda"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 };

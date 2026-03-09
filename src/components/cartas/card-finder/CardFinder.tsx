@@ -79,6 +79,14 @@ interface Props {
   cardCounts?: Record<string, number>;
   highlightLegendaryCount?: boolean;
   allowRestrictedTypes?: boolean;
+  onFiltersUpdate?: (
+    filters: PaginationFilters,
+    selection: FilterSelections,
+  ) => void;
+  showBulkAction?: boolean;
+  onBulkAction?: () => void;
+  isBulkActionLoading?: boolean;
+  bulkActionTitle?: string;
 }
 
 export const CardFinder = ({
@@ -105,6 +113,11 @@ export const CardFinder = ({
   cardCounts,
   highlightLegendaryCount = false,
   allowRestrictedTypes = false,
+  onFiltersUpdate,
+  showBulkAction = false,
+  onBulkAction,
+  isBulkActionLoading = false,
+  bulkActionTitle = "Agregar cartas filtradas",
 }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -311,9 +324,11 @@ export const CardFinder = ({
     (selection: FilterSelections) => {
       setAdvancedSelection(selection);
       updateUrlWithFilters(selection, 1);
-      void handleAdvancedSearch(buildPaginationFilters(selection));
+      const filters = buildPaginationFilters(selection);
+      onFiltersUpdate?.(filters, selection);
+      void handleAdvancedSearch(filters);
     },
-    [handleAdvancedSearch, updateUrlWithFilters],
+    [handleAdvancedSearch, updateUrlWithFilters, onFiltersUpdate],
   );
 
   const cardsSource = useAdvancedFilters ? cardsState : cards;
@@ -447,6 +462,10 @@ export const CardFinder = ({
             onCompactSearchLayoutChange={setIsCompactSearchLayout}
             stackPanelLayout={stackPanelLayout}
             enableCompactSearchLayout={enableCompactSearchLayout}
+            showBulkAction={showBulkAction}
+            onBulkAction={onBulkAction}
+            isBulkActionLoading={isBulkActionLoading}
+            bulkActionTitle={bulkActionTitle}
           />
         </div>
         {!hideEmbeddedContent && (

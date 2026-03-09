@@ -7,7 +7,7 @@ import { Decklist } from "@/interfaces/decklist.interface";
 import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
 import { CardDetail } from "../card-detail/CardDetail";
-import { getPaginatedCards } from "@/actions";
+import { getCardsByFiltersAction, getPaginatedCards } from "@/actions";
 import type {
   PaginationFilters,
   Card,
@@ -56,6 +56,7 @@ interface Props {
   isAdminDeck?: boolean;
   skipDeckLimitCheck?: boolean;
   showSaveControls?: boolean;
+  enableBulkAdd?: boolean;
 }
 
 const addCardLogic = (
@@ -195,7 +196,9 @@ export const DeckCreator = ({
   isAdminDeck = false,
   skipDeckLimitCheck = false,
   showSaveControls = true,
+  enableBulkAdd = false,
 }: Props) => {
+  const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const hasImportedRef = useRef(false);
   const lastDeckSignatureRef = useRef<string | null>(null);
@@ -220,6 +223,19 @@ export const DeckCreator = ({
   const [detailIndex, setDetailIndex] = useState(0);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [manualRefreshKey, setManualRefreshKey] = useState(0);
+  const [bulkFilters, setBulkFilters] = useState<PaginationFilters>(
+    initialFilters ?? {},
+  );
+  const [isBulkAdding, setIsBulkAdding] = useState(false);
+  const handleBulkFiltersUpdate = useCallback((filters: PaginationFilters) => {
+    setBulkFilters((prev) => {
+      // Evita loops de estado cuando los filtros no cambian realmente.
+      if (JSON.stringify(prev) === JSON.stringify(filters)) {
+        return prev;
+      }
+      return filters;
+    });
+  }, []);
 
   const importDeck = useCallback(() => {
     const manualRefreshTriggered =
@@ -598,6 +614,54 @@ export const DeckCreator = ({
     return totals;
   }, [deckListMain, deckListLimbo, deckListSide]);
 
+  const hasBulkFilters = useMemo(
+    () =>
+      Object.values(bulkFilters).some(
+        (value) => typeof value === "string" && value.trim().length > 0,
+      ),
+    [bulkFilters],
+  );
+
+  const handleBulkAdd = useCallback(async () => {
+    if (!enableBulkAdd || !hasBulkFilters || isBulkAdding) return;
+    setIsBulkAdding(true);
+    try {
+      showLoading("Agregando cartas filtradas...");
+      const cards = await getCardsByFiltersAction(bulkFilters);
+
+      setDeckListMain((prev) => {
+        const map = new Map<string, Decklist>();
+        prev.forEach((item) => {
+          map.set(item.card.id, { ...item });
+        });
+
+        cards.forEach((card) => {
+          const existing = map.get(card.id);
+          if (existing) {
+            // Suma una copia adicional por carta filtrada.
+            existing.count += 1;
+          } else {
+            map.set(card.id, { card, count: 1 });
+          }
+        });
+
+        return Array.from(map.values());
+      });
+    } catch {
+      // El estado UI ya muestra el error general.
+    } finally {
+      hideLoading();
+      setIsBulkAdding(false);
+    }
+  }, [
+    bulkFilters,
+    enableBulkAdd,
+    hasBulkFilters,
+    hideLoading,
+    isBulkAdding,
+    showLoading,
+  ]);
+
   return (
     <div
       className={clsx("flex h-full flex-row gap-0 overflow-hidden", className)}
@@ -637,6 +701,11 @@ export const DeckCreator = ({
             cardCounts={cardCounts}
             highlightLegendaryCount
             allowRestrictedTypes={disableDeckRules}
+            onFiltersUpdate={handleBulkFiltersUpdate}
+            showBulkAction={enableBulkAdd && hasBulkFilters}
+            onBulkAction={handleBulkAdd}
+            isBulkActionLoading={isBulkAdding}
+            bulkActionTitle="Agregar cartas filtradas"
           />
         </div>
       </section>

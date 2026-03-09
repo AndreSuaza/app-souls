@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Card } from "@/interfaces/cards.interface";
 import {
@@ -33,6 +34,11 @@ export const CardItem = ({
   highlightLegendaryCount = false,
   allowRestrictedTypes = false,
 }: Props) => {
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsImageLoaded(false);
+  }, [card.code, card.idd]);
   const openDetail = () => {
     detailCard(index);
   };
@@ -62,13 +68,27 @@ export const CardItem = ({
             className="block w-full cursor-pointer"
             onClick={openDetail}
           >
-            <Image
-              src={`/cards/${card.code}-${card.idd}.webp`}
-              alt={card.name}
-              className="block w-full object-cover"
-              width={500}
-              height={718}
-            />
+            <div className="relative">
+              {!isImageLoaded && (
+                <Image
+                  src="/howtoplay/mazo-principal.webp"
+                  alt="Cargando carta"
+                  className="block w-full object-cover"
+                  width={500}
+                  height={718}
+                />
+              )}
+              <Image
+                src={`/cards/${card.code}-${card.idd}.webp`}
+                alt={card.name}
+                className={`block w-full object-cover transition-opacity ${
+                  isImageLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                width={500}
+                height={718}
+                onLoadingComplete={() => setIsImageLoaded(true)}
+              />
+            </div>
           </button>
         </div>
         {showDeckActions ? (
