@@ -1,6 +1,9 @@
 
 
 import { YoutubeList } from "@/components";
+import { getPublicNewsAction } from "@/actions";
+import { NewsCarousel } from "@/components/news/public/NewsCarousel";
+import type { PublicNewsCard } from "@/interfaces";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,7 +29,20 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Home() {
+export default async function Home() {
+  const news = await getPublicNewsAction();
+  const latestNews: PublicNewsCard[] = news.slice(0, 6).map((item) => ({
+    id: item.id,
+    slug: item.slug,
+    title: item.title,
+    shortSummary: item.shortSummary,
+    featuredImage: item.cardImage,
+    cardImage: item.cardImage,
+    publishedAt: item.publishedAt,
+    newCategoryId: item.newCategoryId,
+    categoryName: item.categoryName,
+  }));
+
   return (
     <div className="">
       <section className="card-animation grid grid-cols-3 md:grid-cols-6">
@@ -131,6 +147,20 @@ export default function Home() {
           <YoutubeList name="Herosbran" playlistId="PLBSLhQCb0owr3A8x_-Q0QTyJh4Z_wFXKa"/>
           <YoutubeList name="Black Widow" playlistId="PLeZObnb91fKhclJrIj-JWuUYYpYhVx9Np"/>
           <YoutubeList name="Chris Cards" playlistId="PLOrS4jKwbHb6A3D4BlKuCTx0GRRxTaQS0"/>
+        </div>
+      </section>
+
+      <section className="px-6 md:px-20 bg-tournament-dark-surface text-white py-14">
+        <div className="mx-auto max-w-6xl space-y-8">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl md:text-4xl font-bold uppercase tracking-wide">
+              Últimas noticias
+            </h2>
+            <p className="text-sm text-slate-300">
+              Mantente al día con los anuncios y lanzamientos recientes.
+            </p>
+          </div>
+          <NewsCarousel items={latestNews} />
         </div>
       </section>
     </div>
