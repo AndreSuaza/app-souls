@@ -24,6 +24,7 @@ import type {
   NewsImageOptions,
 } from "@/interfaces";
 import { NewsImageModal } from "./NewsImageModal";
+import { uploadNewsImageAction } from "@/actions/news/upload-news-image.action";
 
 type NewsFormValues = {
   title: string;
@@ -124,6 +125,30 @@ export const NewsForm = ({
   const [imageFolder, setImageFolder] = useState<"banners" | "cards">(
     "banners",
   );
+  const [imageOptionsState, setImageOptionsState] =
+    useState<NewsImageOptions>(imageOptions);
+  const [pendingFeaturedFile, setPendingFeaturedFile] = useState<File | null>(
+    null,
+  );
+  const [pendingFeaturedPreview, setPendingFeaturedPreview] = useState<
+    string | null
+  >(null);
+  const [pendingCardFile, setPendingCardFile] = useState<File | null>(null);
+  const [pendingCardPreview, setPendingCardPreview] = useState<string | null>(
+    null,
+  );
+  const [stagedFeaturedFile, setStagedFeaturedFile] = useState<File | null>(
+    null,
+  );
+  const [stagedFeaturedPreview, setStagedFeaturedPreview] = useState<
+    string | null
+  >(null);
+  const [stagedCardFile, setStagedCardFile] = useState<File | null>(null);
+  const [stagedCardPreview, setStagedCardPreview] = useState<string | null>(
+    null,
+  );
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(initialValues?.tags ?? []);
   const [publishNow, setPublishNow] = useState(false);
@@ -152,6 +177,32 @@ export const NewsForm = ({
   }, [initialPublishedAt]);
 
   useEffect(() => {
+    setImageOptionsState(imageOptions);
+  }, [imageOptions]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingFeaturedPreview) {
+        URL.revokeObjectURL(pendingFeaturedPreview);
+      }
+      if (pendingCardPreview) {
+        URL.revokeObjectURL(pendingCardPreview);
+      }
+      if (stagedFeaturedPreview) {
+        URL.revokeObjectURL(stagedFeaturedPreview);
+      }
+      if (stagedCardPreview) {
+        URL.revokeObjectURL(stagedCardPreview);
+      }
+    };
+  }, [
+    pendingFeaturedPreview,
+    pendingCardPreview,
+    stagedFeaturedPreview,
+    stagedCardPreview,
+  ]);
+
+  useEffect(() => {
     if (!isSubmitAttempted) return;
     // Re-valida para que los bordes se sincronicen con el estado de errores.
     trigger([
@@ -164,20 +215,153 @@ export const NewsForm = ({
     ]);
   }, [isSubmitAttempted, trigger]);
 
+  const clearFeaturedLocal = () => {
+    setPendingFeaturedFile(null);
+    setPendingFeaturedPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  };
+
+  const clearCardLocal = () => {
+    setPendingCardFile(null);
+    setPendingCardPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  };
+
+  const clearStagedFeatured = () => {
+    setStagedFeaturedFile(null);
+    setStagedFeaturedPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  };
+
+  const clearStagedCard = () => {
+    setStagedCardFile(null);
+    setStagedCardPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  };
+
   const handleOpenImageModal = (folder: "banners" | "cards") => {
     setImageFolder(folder);
-    setPendingImage(
-      folder === "banners" ? featuredImageValue || null : cardImageValue || null,
-    );
+    if (folder === "banners") {
+      const currentFeatured =
+        featuredImageValue.startsWith("local:") ? null : featuredImageValue;
+      clearStagedFeatured();
+      setPendingImage(pendingFeaturedPreview ?? currentFeatured ?? null);
+    } else {
+      const currentCard =
+        cardImageValue.startsWith("local:") ? null : cardImageValue;
+      clearStagedCard();
+      setPendingImage(pendingCardPreview ?? currentCard ?? null);
+    }
     setIsImageModalOpen(true);
   };
+
+  const handleSelectImage = (image: string) => {
+    setPendingImage(image);
+    if (imageFolder === "banners") {
+      clearStagedFeatured();
+    } else {
+      clearStagedCard();
+    }
+  };
+
+  const handleSelectLocalPreview = () => {
+    if (imageFolder === "banners") {
+      const preview = stagedFeaturedPreview ?? pendingFeaturedPreview;
+      if (preview) setPendingImage(preview);
+    }
+    if (imageFolder === "cards") {
+      const preview = stagedCardPreview ?? pendingCardPreview;
+      if (preview) setPendingImage(preview);
+    }
+  };
+
+  const handleSelectLocalFile = (file: File, previewUrl: string) => {
+    if (imageFolder === "banners") {
+      clearStagedFeatured();
+      setStagedFeaturedFile(file);
+      setStagedFeaturedPreview(previewUrl);
+      setPendingImage(previewUrl);
+    } else {
+      clearStagedCard();
+      setStagedCardFile(file);
+      setStagedCardPreview(previewUrl);
+      setPendingImage(previewUrl);
+    }
+  };
+
+  const getImageLabel = (value: string) =>
+    value.split("?")[0].split("/").pop() ?? value;
+
+  const featuredImageDisplay = pendingFeaturedFile
+    ? `Archivo local: ${pendingFeaturedFile.name}`
+    : featuredImageValue
+      ? getImageLabel(featuredImageValue)
+      : "";
+
+  const cardImageDisplay = pendingCardFile
+    ? `Archivo local: ${pendingCardFile.name}`
+    : cardImageValue
+      ? getImageLabel(cardImageValue)
+      : "";
 
   const handleConfirmImage = () => {
     if (!pendingImage) return;
     if (imageFolder === "banners") {
-      setValue("featuredImage", pendingImage, { shouldValidate: true });
+      if (stagedFeaturedFile && stagedFeaturedPreview === pendingImage) {
+        clearFeaturedLocal();
+        setPendingFeaturedFile(stagedFeaturedFile);
+        setPendingFeaturedPreview(stagedFeaturedPreview);
+        clearStagedFeatured();
+        setValue("featuredImage", `local:${stagedFeaturedFile.name}`, {
+          shouldValidate: true,
+        });
+      } else if (
+        pendingFeaturedFile &&
+        pendingFeaturedPreview === pendingImage
+      ) {
+        setValue("featuredImage", `local:${pendingFeaturedFile.name}`, {
+          shouldValidate: true,
+        });
+      } else {
+        clearFeaturedLocal();
+        clearStagedFeatured();
+        setValue("featuredImage", pendingImage, { shouldValidate: true });
+      }
     } else {
-      setValue("cardImage", pendingImage, { shouldValidate: true });
+      if (stagedCardFile && stagedCardPreview === pendingImage) {
+        clearCardLocal();
+        setPendingCardFile(stagedCardFile);
+        setPendingCardPreview(stagedCardPreview);
+        clearStagedCard();
+        setValue("cardImage", `local:${stagedCardFile.name}`, {
+          shouldValidate: true,
+        });
+      } else if (pendingCardFile && pendingCardPreview === pendingImage) {
+        setValue("cardImage", `local:${pendingCardFile.name}`, {
+          shouldValidate: true,
+        });
+      } else {
+        clearCardLocal();
+        clearStagedCard();
+        setValue("cardImage", pendingImage, { shouldValidate: true });
+      }
+    }
+    setIsImageModalOpen(false);
+  };
+
+  const handleCloseImageModal = () => {
+    if (imageFolder === "banners") {
+      clearStagedFeatured();
+    } else {
+      clearStagedCard();
     }
     setIsImageModalOpen(false);
   };
@@ -246,19 +430,54 @@ export const NewsForm = ({
     }
   };
 
-  const handleFormSubmit = handleSubmit((values) => {
-    onSubmit({
-      title: values.title,
-      subtitle: values.subtitle,
-      shortSummary: values.shortSummary,
-      content: values.content,
-      featuredImage: values.featuredImage,
-      cardImage: values.cardImage,
-      publishedAt: values.publishedAt ? values.publishedAt : undefined,
-      newCategoryId: values.newCategoryId,
-      tags,
-      publishNow,
-    });
+  const handleFormSubmit = handleSubmit(async (values) => {
+    try {
+      setIsUploadingImages(true);
+      setUploadError(null);
+
+      let featuredImage = values.featuredImage;
+      let cardImage = values.cardImage;
+
+      // Subimos a Blob solo cuando el usuario confirma el guardado.
+      if (pendingFeaturedFile) {
+        const formData = new FormData();
+        formData.append("file", pendingFeaturedFile);
+        formData.append("folder", "banners");
+        const response = await uploadNewsImageAction(formData);
+        featuredImage = response.url;
+        clearFeaturedLocal();
+        setValue("featuredImage", featuredImage, { shouldValidate: true });
+      }
+
+      if (pendingCardFile) {
+        const formData = new FormData();
+        formData.append("file", pendingCardFile);
+        formData.append("folder", "cards");
+        const response = await uploadNewsImageAction(formData);
+        cardImage = response.url;
+        clearCardLocal();
+        setValue("cardImage", cardImage, { shouldValidate: true });
+      }
+
+      onSubmit({
+        title: values.title,
+        subtitle: values.subtitle,
+        shortSummary: values.shortSummary,
+        content: values.content,
+        featuredImage,
+        cardImage,
+        publishedAt: values.publishedAt ? values.publishedAt : undefined,
+        newCategoryId: values.newCategoryId,
+        tags,
+        publishNow,
+      });
+    } catch (error) {
+      setUploadError(
+        error instanceof Error ? error.message : "Error subiendo imágenes",
+      );
+    } finally {
+      setIsUploadingImages(false);
+    }
   }, handleInvalidSubmit);
 
   const handlePublishNow = () => {
@@ -380,7 +599,7 @@ export const NewsForm = ({
               hasError={!!errors.featuredImage}
               readOnly
               disabled={readOnly}
-              value={featuredImageValue}
+              value={featuredImageDisplay}
               onClick={readOnly ? undefined : () => handleOpenImageModal("banners")}
               {...register("featuredImage", {
                 required: "La imagen destacada es obligatoria",
@@ -410,7 +629,7 @@ export const NewsForm = ({
               hasError={!!errors.cardImage}
               readOnly
               disabled={readOnly}
-              value={cardImageValue}
+              value={cardImageDisplay}
               onClick={readOnly ? undefined : () => handleOpenImageModal("cards")}
               {...register("cardImage", {
                 required: "La imagen para tarjeta es obligatoria",
@@ -553,24 +772,46 @@ export const NewsForm = ({
           {!readOnly && (
             <button
               type="submit"
+              disabled={isUploadingImages}
               className="inline-flex h-10 items-center justify-center rounded-lg bg-purple-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
             >
-              {submitLabel}
+              {isUploadingImages ? "Subiendo..." : submitLabel}
             </button>
           )}
         </div>
       </div>
 
+      {uploadError && (
+        <p className="text-sm text-red-500 dark:text-red-300">
+          {uploadError}
+        </p>
+      )}
+
       <NewsImageModal
         isOpen={isImageModalOpen}
         images={
           imageFolder === "banners"
-            ? imageOptions.banners
-            : imageOptions.cards
+            ? imageOptionsState.banners
+            : imageOptionsState.cards
         }
         selectedImage={pendingImage}
-        onSelect={setPendingImage}
-        onClose={() => setIsImageModalOpen(false)}
+        onSelect={handleSelectImage}
+        onSelectFile={handleSelectLocalFile}
+        onSelectLocalPreview={handleSelectLocalPreview}
+        localPreview={
+          imageFolder === "banners"
+            ? stagedFeaturedPreview && stagedFeaturedFile
+              ? { url: stagedFeaturedPreview, name: stagedFeaturedFile.name }
+              : pendingFeaturedPreview && pendingFeaturedFile
+                ? { url: pendingFeaturedPreview, name: pendingFeaturedFile.name }
+                : null
+            : stagedCardPreview && stagedCardFile
+              ? { url: stagedCardPreview, name: stagedCardFile.name }
+              : pendingCardPreview && pendingCardFile
+                ? { url: pendingCardPreview, name: pendingCardFile.name }
+                : null
+        }
+        onClose={handleCloseImageModal}
         onConfirm={handleConfirmImage}
         folder={imageFolder}
         title={

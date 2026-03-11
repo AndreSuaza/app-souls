@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import type { PublicNewsListItem } from "@/interfaces";
+import { resolveNewsImageUrl } from "@/utils/news-image";
 
 export async function getPublicNewsAction(): Promise<PublicNewsListItem[]> {
   try {
@@ -35,7 +36,7 @@ export async function getPublicNewsAction(): Promise<PublicNewsListItem[]> {
       title: item.title,
       subtitle: item.subtitle,
       shortSummary: item.shortSummary,
-      cardImage: item.cardImage,
+      cardImage: resolveNewsImageUrl(item.cardImage, "cards"),
       publishedAt: item.publishedAt ? item.publishedAt.toISOString() : null,
       tags: item.tags ?? [],
       newCategoryId: item.newCategoryId,

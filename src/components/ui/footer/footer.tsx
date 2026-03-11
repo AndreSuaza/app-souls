@@ -21,7 +21,7 @@ export const Footer = () => {
             <Link href="/" className="inline-flex items-center gap-4">
               <div className="relative">
                 <Image
-                  src="/logo-six.webp"
+                  src="/global/RuedaSouls.svg"
                   alt="Logo Souls In Xtinction"
                   width={64}
                   height={64}

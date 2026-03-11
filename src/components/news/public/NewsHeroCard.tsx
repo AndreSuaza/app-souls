@@ -35,7 +35,7 @@ export const NewsHeroCard = ({ item, className }: Props) => {
     >
       <div className="relative min-h-[220px] w-full overflow-hidden md:min-h-0">
         <Image
-          src={`/news/cards/${item.cardImage}`}
+          src={item.cardImage}
           alt={item.title}
           fill
           sizes="(max-width: 768px) 100vw, 50vw"

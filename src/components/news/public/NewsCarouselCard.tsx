@@ -36,7 +36,7 @@ export const NewsCarouselCard = ({
     >
       <div className={clsx("relative w-full overflow-hidden", imageClassName)}>
         <Image
-          src={`/news/cards/${item.cardImage}`}
+          src={item.cardImage}
           alt={item.title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

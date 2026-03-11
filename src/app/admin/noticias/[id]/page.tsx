@@ -118,13 +118,15 @@ export default function EditNewsPage() {
       !(initialDate === null && nextDate === null);
     const isPublished = news?.status === "published";
     // Advierte cuando una noticia publicada cambiaría su visibilidad al reprogramar.
-    const confirmationText =
+    const confirmationText = "¿Deseas guardar los cambios?";
+    const confirmationDescription =
       isPublished && dateChanged
-        ? "Esta noticia está publicada. Al cambiar la fecha puede quedar programada y dejar de estar visible hasta la nueva fecha. ¿Deseas guardar los cambios?"
-        : "¿Deseas guardar los cambios?";
+        ? "Esta noticia está publicada. Al cambiar la fecha puede quedar programada y dejar de estar visible hasta la nueva fecha."
+        : undefined;
 
     openConfirmation({
       text: confirmationText,
+      description: confirmationDescription,
       action: async () => {
         try {
           showLoading("Actualizando noticia...");

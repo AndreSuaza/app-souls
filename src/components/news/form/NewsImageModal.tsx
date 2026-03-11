@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
 import Image from "next/image";
 import { FiX } from "react-icons/fi";
@@ -19,6 +19,9 @@ type Props = {
   title: string;
   description: string;
   onSelect: (image: string) => void;
+  onSelectFile?: (file: File, previewUrl: string) => void;
+  onSelectLocalPreview?: () => void;
+  localPreview?: { url: string; name: string } | null;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -27,25 +30,38 @@ export const NewsImageModal = ({
   isOpen,
   images,
   selectedImage,
-  folder,
   title,
   description,
   onSelect,
+  onSelectFile,
+  onSelectLocalPreview,
+  localPreview,
   onClose,
   onConfirm,
 }: Props) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
 
-  const totalPages = Math.max(1, Math.ceil(images.length / PAGE_SIZE));
+  const filteredImages = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return images;
+    return images.filter((image) => {
+      const label = image.split("?")[0].split("/").pop() ?? image;
+      return label.toLowerCase().includes(term);
+    });
+  }, [images, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredImages.length / PAGE_SIZE));
 
   const pageImages = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
-    return images.slice(start, start + PAGE_SIZE);
-  }, [images, currentPage]);
+    return filteredImages.slice(start, start + PAGE_SIZE);
+  }, [filteredImages, currentPage]);
 
   useEffect(() => {
     if (!isOpen) return;
     setCurrentPage(1);
+    setSearch("");
   }, [isOpen]);
 
   useEffect(() => {
@@ -53,6 +69,21 @@ export const NewsImageModal = ({
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    onSelectFile?.(file, previewUrl);
+    event.target.value = "";
+  };
+
+  const getLabel = (image: string) =>
+    image.split("?")[0].split("/").pop() ?? image;
 
   if (!isOpen) return null;
 
@@ -86,14 +117,62 @@ export const NewsImageModal = ({
 
           <div className="flex items-center justify-end">
             <span className="text-xs text-slate-400 dark:text-slate-500">
-              {images.length} resultados
+              {filteredImages.length} resultados
             </span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex w-full max-w-sm items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+              <input
+                type="text"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Buscar por nombre de archivo"
+                className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-200 dark:placeholder:text-slate-500"
+              />
+            </div>
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-purple-500 bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              Subir nueva
+            </label>
           </div>
 
           <div className="relative max-h-[420px] min-h-[320px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {localPreview && (
+                <button
+                  type="button"
+                  onClick={onSelectLocalPreview}
+                  className={clsx(
+                    "relative flex h-full min-h-[220px] flex-col rounded-lg border bg-white p-2 text-left transition hover:border-purple-400 dark:bg-tournament-dark-surface",
+                    localPreview.url === selectedImage
+                      ? "border-purple-500 ring-2 ring-purple-400/40"
+                      : "border-transparent",
+                  )}
+                >
+                  <div className="flex flex-1 items-center justify-center">
+                    <Image
+                      src={localPreview.url}
+                      alt={localPreview.name}
+                      width={520}
+                      height={260}
+                      unoptimized
+                      className="h-auto w-full rounded-md object-cover"
+                    />
+                  </div>
+                  <span className="mt-auto block truncate pt-2 text-xs text-slate-500 dark:text-slate-400">
+                    {localPreview.name} (local)
+                  </span>
+                </button>
+              )}
               {pageImages.map((image) => {
                 const isSelected = image === selectedImage;
+                const label = getLabel(image);
 
                 return (
                   <button
@@ -109,15 +188,15 @@ export const NewsImageModal = ({
                   >
                     <div className="flex flex-1 items-center justify-center">
                       <Image
-                        src={`/news/${folder}/${image}`}
-                        alt={image}
+                        src={image}
+                        alt={label}
                         width={520}
                         height={260}
                         className="h-auto w-full rounded-md object-cover"
                       />
                     </div>
                     <span className="mt-auto block truncate pt-2 text-xs text-slate-500 dark:text-slate-400">
-                      {image}
+                      {label}
                     </span>
                   </button>
                 );
@@ -125,7 +204,7 @@ export const NewsImageModal = ({
 
               {pageImages.length === 0 && (
                 <div className="col-span-full flex items-center justify-center py-10 text-sm text-slate-500 dark:text-slate-400">
-                  No hay imágenes disponibles en /public/news.
+                  No hay imágenes disponibles en Blob para esta búsqueda.
                 </div>
               )}
             </div>

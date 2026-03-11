@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import type { PublicNewsCard, PublicNewsDetail } from "@/interfaces";
 import { z } from "zod";
+import { resolveNewsImageUrl } from "@/utils/news-image";
 
 const NewsSlugSchema = z.string().min(1);
 
@@ -92,8 +93,8 @@ export async function getPublicNewsDetailAction(
       slug: item.slug,
       title: item.title,
       shortSummary: item.shortSummary,
-      featuredImage: item.featuredImage,
-      cardImage: item.cardImage,
+      featuredImage: resolveNewsImageUrl(item.featuredImage, "banners"),
+      cardImage: resolveNewsImageUrl(item.cardImage, "cards"),
       publishedAt: item.publishedAt ? item.publishedAt.toISOString() : null,
       newCategoryId: item.newCategoryId,
       categoryName: item.newCategory?.name ?? null,
@@ -107,8 +108,8 @@ export async function getPublicNewsDetailAction(
         subtitle: news.subtitle,
         shortSummary: news.shortSummary,
         content: news.content,
-        featuredImage: news.featuredImage,
-        cardImage: news.cardImage,
+        featuredImage: resolveNewsImageUrl(news.featuredImage, "banners"),
+        cardImage: resolveNewsImageUrl(news.cardImage, "cards"),
         publishedAt: news.publishedAt ? news.publishedAt.toISOString() : null,
         newCategoryId: news.newCategoryId,
         categoryName: news.newCategory?.name ?? null,

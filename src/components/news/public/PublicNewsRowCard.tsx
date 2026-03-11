@@ -31,7 +31,7 @@ export const PublicNewsRowCard = ({ item }: Props) => {
     >
       <div className="relative h-[200px] w-full md:h-full md:min-h-[220px] md:w-1/3">
         <Image
-          src={`/news/cards/${item.cardImage}`}
+          src={item.cardImage}
           alt={item.title}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"

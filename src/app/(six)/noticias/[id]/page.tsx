@@ -21,7 +21,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { news } = detail;
-  const imageUrl = `https://soulsinxtinction.com/news/banners/${news.featuredImage}`;
+  const imageUrl = news.featuredImage.startsWith("http")
+    ? news.featuredImage
+    : `https://soulsinxtinction.com${news.featuredImage}`;
 
   return {
     title: news.title,
