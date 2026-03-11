@@ -29,6 +29,7 @@ export const NewsCarouselCard = ({
   return (
     <Link
       href={`/noticias/${item.slug}`}
+      title={item.title}
       className={clsx(
         "group relative grid min-h-[440px] w-full grid-rows-[1fr,1fr] overflow-hidden rounded-lg border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface",
         className,
@@ -38,6 +39,7 @@ export const NewsCarouselCard = ({
         <Image
           src={item.cardImage}
           alt={item.title}
+          title={item.title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover"

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { titleFont } from "@/config/fonts";
@@ -68,11 +68,12 @@ export const TopMenu = () => {
     <nav className="flex px-5 justify-between items-center w-full bg-gray-950 text-white py-3">
       {/* Logo */}
 
-      <Link href="/">
+      <Link href="/" title="Ir al inicio">
         <div className="flex flex-grow">
           <Image
             src={`/souls-in-xtinction-logo-sm.png`}
-            alt={"logo-icono-souls-in-xtinction"}
+            alt="logo-icono-souls-in-xtinction"
+            title="Souls In Xtinction | TCG"
             className="w-12 h-12"
             width={40}
             height={40}
@@ -80,7 +81,6 @@ export const TopMenu = () => {
           <span
             className={`${titleFont.className} antialiased font-bold my-auto ml-2 text-xl`}
           >
-            {" "}
             Souls In Xtinction | TCG
           </span>
         </div>
@@ -98,12 +98,16 @@ export const TopMenu = () => {
                   }}
                 >
                   {/* Botón */}
-                  <a
+                  <button
+                    type="button"
                     onMouseEnter={() => setOpen(route.name)}
-                    className="m-2 xl:p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                    className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                    title={`Abrir menú ${route.name}`}
+                    aria-haspopup="menu"
+                    aria-expanded={open === route.name}
                   >
                     {route.name}
-                  </a>
+                  </button>
 
                   {/* Menú */}
                   {open === route.name && (
@@ -116,7 +120,8 @@ export const TopMenu = () => {
                           <li key={menu.name}>
                             <Link
                               href={menu.path}
-                              className="m-2 xl:p-2 transition-all uppercase font-bold flex flex-col hover:text-yellow-600"
+                              title={`Ir a ${menu.name}`}
+                              className="m-2 inline-flex items-center whitespace-nowrap xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600"
                             >
                               {menu.name}
                             </Link>
@@ -129,7 +134,8 @@ export const TopMenu = () => {
               ) : route.path ? (
                 <Link
                   href={route.path}
-                  className="m-2 xl:p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                  title={`Ir a ${route.name}`}
+                  className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                 >
                   {route.name}
                 </Link>
@@ -147,15 +153,20 @@ export const TopMenu = () => {
             ref={dropdownRefProfile}
           >
             {/* Botón */}
-            <a
+            <button
+              type="button"
               onMouseEnter={() => setOpenProfile(!openProfile)}
               className="flex flex-grow bg-slate-900 py-2 px-3 rounded hover:bg-slate-800 transition-all"
+              title="Abrir menú de perfil"
+              aria-haspopup="menu"
+              aria-expanded={openProfile}
             >
               {session?.user.image && (
                 <>
                   <Image
                     src={`/profile/${session?.user.image}.webp`}
                     alt="Imagen de perfil"
+                    title={`Avatar de ${session?.user.nickname ?? "usuario"}`}
                     className="w-8 rounded-full mr-2"
                     width={80}
                     height={80}
@@ -165,7 +176,7 @@ export const TopMenu = () => {
                   </p>
                 </>
               )}
-            </a>
+            </button>
 
             {/* Menú */}
             {openProfile && (
@@ -176,6 +187,7 @@ export const TopMenu = () => {
                 <li>
                   <Link
                     href="/perfil"
+                    title="Ir a tu perfil"
                     className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
                   >
                     Tu perfil
@@ -185,6 +197,7 @@ export const TopMenu = () => {
                   <li>
                     <Link
                       href={adminShortcut.href}
+                      title={`Ir a ${adminShortcut.label}`}
                       className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
                     >
                       {adminShortcut.label}
@@ -194,6 +207,7 @@ export const TopMenu = () => {
                 <li>
                   <button
                     onClick={handleClick}
+                    title="Cerrar sesión"
                     className="block w-full h-full text-left mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
                   >
                     Cerrar sesión
@@ -204,7 +218,8 @@ export const TopMenu = () => {
           </div>
         ) : (
           <Link
-            href={"/auth/login"}
+            href="/auth/login"
+            title="Iniciar sesión"
             className="uppercase font-semibold bg-yellow-600 px-4 py-2 rounded text-sm hover:bg-yellow-700 transition-all"
           >
             iniciar sesión
@@ -214,8 +229,10 @@ export const TopMenu = () => {
 
       <div className="block lg:hidden">
         <button
+          type="button"
           className="m-2 p-2 rounded-md transition-all hover:bg-gray-100"
           onClick={openMenu}
+          title="Abrir menú"
         >
           <IoMenuSharp className="w-6 h-6" />
         </button>
