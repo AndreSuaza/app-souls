@@ -69,17 +69,17 @@ export const TopMenu = () => {
       {/* Logo */}
 
       <Link href="/" title="Ir al inicio">
-        <div className="flex flex-grow">
+        <div className="flex flex-grow items-center gap-2">
           <Image
             src={`/souls-in-xtinction-logo-sm.png`}
             alt="logo-icono-souls-in-xtinction"
             title="Souls In Xtinction | TCG"
-            className="w-12 h-12"
+            className="order-1 h-12 w-12"
             width={40}
             height={40}
           />
           <span
-            className={`${titleFont.className} antialiased font-bold my-auto ml-2 text-xl`}
+            className={`${titleFont.className} order-2 text-xl font-bold antialiased`}
           >
             Souls In Xtinction | TCG
           </span>
@@ -156,7 +156,7 @@ export const TopMenu = () => {
             <button
               type="button"
               onMouseEnter={() => setOpenProfile(!openProfile)}
-              className="flex flex-grow bg-slate-900 py-2 px-3 rounded hover:bg-slate-800 transition-all"
+              className="flex flex-grow items-center gap-2 rounded bg-slate-900 px-3 py-2 transition-all hover:bg-slate-800"
               title="Abrir menú de perfil"
               aria-haspopup="menu"
               aria-expanded={openProfile}
@@ -167,11 +167,11 @@ export const TopMenu = () => {
                     src={`/profile/${session?.user.image}.webp`}
                     alt="Imagen de perfil"
                     title={`Avatar de ${session?.user.nickname ?? "usuario"}`}
-                    className="w-8 rounded-full mr-2"
+                    className="order-1 w-8 rounded-full"
                     width={80}
                     height={80}
                   />
-                  <p className="uppercase font-semibold mt-1">
+                  <p className="order-2 uppercase font-semibold">
                     {session?.user.nickname}
                   </p>
                 </>
