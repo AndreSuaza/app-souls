@@ -49,6 +49,7 @@ export const PlayerCell = ({
       <Image
         src={`/profile/${imageName}.webp`}
         alt={player.playerNickname}
+        title={player.playerNickname}
         width={36}
         height={36}
         className={`w-9 h-9 rounded-full object-cover border ${

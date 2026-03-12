@@ -114,6 +114,7 @@ export function PublicTournamentsMobileList({
               {showActionColumn && (
                 <Link
                   href={tournamentUrl}
+                  title={`Ver torneo ${tournament.title}`}
                   className="text-sm font-semibold text-purple-700 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
                 >
                   {actionLabel}

@@ -98,6 +98,7 @@ export function PublicTournamentsTable({
                   {isPublicView ? (
                     <Link
                       href={tournamentUrl}
+                      title={`Ver torneo ${tournament.title}`}
                       className="hover:text-purple-600 dark:hover:text-purple-300"
                     >
                       {tournament.title}
@@ -138,6 +139,7 @@ export function PublicTournamentsTable({
                   <td className="px-3 py-4 text-right">
                     <Link
                       href={tournamentUrl}
+                      title={`Ver torneo ${tournament.title}`}
                       className="text-purple-700 font-semibold hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
                     >
                       {actionLabel}

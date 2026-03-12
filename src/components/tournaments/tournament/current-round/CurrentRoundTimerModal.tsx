@@ -102,6 +102,7 @@ export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
               <Image
                 src="/souls-in-xtinction-logo-sm.png"
                 alt="logo-icono-souls-in-xtinction"
+                title="Souls In Xtinction TCG"
                 className="w-12 h-12"
                 width={40}
                 height={40}
