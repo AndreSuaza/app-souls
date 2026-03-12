@@ -25,6 +25,7 @@ export const ProductItem = ({ product }: Props) => {
       href={`/productos/${product.url}`}
       className="group block h-full"
       aria-label={`Ver producto ${product.name}`}
+      title={`Ver producto ${product.name}`}
     >
       <article className="flex max-w-72 h-full flex-col overflow-hidden rounded-lg border border-tournament-dark-accent bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:border-purple-400 hover:shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
         <div className="flex h-64 items-center justify-center bg-slate-100 dark:bg-tournament-dark-muted">
@@ -32,6 +33,7 @@ export const ProductItem = ({ product }: Props) => {
             <Image
               src={imageUrl}
               alt={product.name}
+              title={product.name}
               className="h-full w-full object-full"
               width={520}
               height={420}

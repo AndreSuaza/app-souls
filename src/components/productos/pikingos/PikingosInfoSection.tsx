@@ -24,6 +24,7 @@ export function PikingosInfoSection() {
               href="https://wa.me/573180726340?text=Hola%2C+me+gustar%C3%ADa+conocer+m%C3%A1s+de+sus+productos+de+la+colecci%C3%B3n+Pikingos."
               target="_blank"
               rel="noreferrer"
+              title="Contactar por WhatsApp"
               className="inline-flex items-center justify-center rounded-lg border border-purple-500 px-6 py-2 text-sm font-semibold uppercase tracking-wide text-purple-300 transition hover:bg-purple-500 hover:text-white"
             >
               Pídelo ya
@@ -34,6 +35,7 @@ export function PikingosInfoSection() {
             <Image
               src="/products/pikingos/Mokut-cajas-Pikingos.webp"
               alt="Cajas Pikingos"
+              title="Cajas Pikingos"
               width={340}
               height={285}
               className="h-auto w-full max-w-[300px] object-contain cursor-crosshair"
