@@ -197,11 +197,13 @@ export const DeckCard = ({
         href={href ?? `/mazos/${mazo.id}`}
         className="flex h-full flex-col rounded-lg"
         onClick={(event) => onCardClick?.(mazo, event)}
+        title={`Ver mazo ${mazo.name}`}
       >
         <div className="relative h-56 w-full shrink-0 overflow-hidden">
           <Image
             src={`/cards/${mazo.imagen}.webp`}
             alt={mazo.name}
+            title={mazo.name}
             fill
             sizes="(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 28vw, 46vw"
             className="scale-110 object-cover"
