@@ -73,6 +73,7 @@ export const CardItem = ({
                 <Image
                   src="/howtoplay/mazo-principal.webp"
                   alt="Cargando carta"
+                  title="Cargando carta"
                   className="block w-full object-cover"
                   width={500}
                   height={718}
@@ -81,6 +82,7 @@ export const CardItem = ({
               <Image
                 src={`/cards/${card.code}-${card.idd}.webp`}
                 alt={card.name}
+                title={card.name}
                 className={`block w-full object-cover transition-opacity ${
                   isImageLoaded ? "opacity-100" : "opacity-0"
                 }`}

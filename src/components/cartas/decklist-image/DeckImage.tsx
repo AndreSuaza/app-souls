@@ -19,6 +19,7 @@ export const DeckImage = ({decklist, className, title}: Props) => {
                 <Image
                     src={`/cards/${c.card.code}-${c.card.idd}.webp`}
                     alt={c.card.name}
+                    title={c.card.name}
                     className='w-full object-cover rounded md:rounded-md'
                     fill
                 />
@@ -27,6 +28,7 @@ export const DeckImage = ({decklist, className, title}: Props) => {
                     <Image
                         src={`/cards/${c.card.code}-${c.card.idd}.webp`}
                         alt={c.card.name}
+                        title={c.card.name}
                         className='absolute object-cover rounded-md mt-4 top-0'
                         fill
                     />

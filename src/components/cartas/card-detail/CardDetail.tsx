@@ -226,6 +226,7 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
                 <Image
                   src={`/cards/${card.code}-${card.idd}.webp`}
                   alt={card.name}
+                  title={card.name}
                   className="block w-full object-cover"
                   width={500}
                   height={718}

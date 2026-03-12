@@ -118,6 +118,7 @@ export const MarkdownDeckStackGrid = ({
                       key={`${item.card.id}-${index}`}
                       src={`/cards/${item.card.code}-${item.card.idd}.webp`}
                       alt={item.card.name}
+                      title={item.card.name}
                       width={500}
                       height={718}
                       className={clsx(
