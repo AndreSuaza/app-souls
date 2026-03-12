@@ -3,6 +3,8 @@
 import Image from "next/image";
 import clsx from "clsx";
 import type { Decklist } from "@/interfaces";
+import { useState } from "react";
+import { CardDetail } from "@/components/cartas/card-detail/CardDetail";
 
 type Props = {
   decklist: Decklist[];
@@ -38,6 +40,10 @@ export const MarkdownDeckStackGrid = ({
   className,
   variant = "default",
 }: Props) => {
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const detailCards = decklist.map((item) => item.card);
+
   if (decklist.length === 0) return null;
 
   const productStackOffsets = [
@@ -81,9 +87,15 @@ export const MarkdownDeckStackGrid = ({
       ? "h-auto w-full rounded-lg object-cover"
       : "h-auto w-full rounded-md object-cover";
 
+  const handleOpenDetail = (index: number) => {
+    setActiveIndex(index);
+    setIsDetailOpen(true);
+  };
+
   return (
-    <ul className={clsx("justify-items-start pb-6", gridClassName, className)}>
-      {decklist.map((item) => {
+    <>
+      <ul className={clsx("justify-items-start pb-6", gridClassName, className)}>
+        {decklist.map((item, index) => {
         const stackLayers =
           variant === "product"
             ? Math.min(item.count, productStackOffsets.length)
@@ -102,7 +114,12 @@ export const MarkdownDeckStackGrid = ({
               "overflow-visible",
             )}
           >
-            <div className={cardContainerClass}>
+            <button
+              type="button"
+              onClick={() => handleOpenDetail(index)}
+              className={clsx(cardContainerClass, "block text-left")}
+              title={`Ver carta ${item.card.name}`}
+            >
               {(() => {
                 const offsets =
                   variant === "product"
@@ -130,10 +147,20 @@ export const MarkdownDeckStackGrid = ({
                   );
                 });
               })()}
-            </div>
+            </button>
           </li>
         );
-      })}
-    </ul>
+        })}
+      </ul>
+
+      {isDetailOpen && (
+        <CardDetail
+          cards={detailCards}
+          indexList={activeIndex}
+          isOpen={isDetailOpen}
+          onClose={() => setIsDetailOpen(false)}
+        />
+      )}
+    </>
   );
 };
