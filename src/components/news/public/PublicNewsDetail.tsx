@@ -48,6 +48,7 @@ export const PublicNewsDetailView = ({ news, recommended }: Props) => {
         <Image
           src={news.featuredImage}
           alt={news.title}
+          title={news.title}
           fill
           priority
           sizes="100vw"

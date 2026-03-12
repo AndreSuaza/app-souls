@@ -133,6 +133,7 @@ export const MarkdownCardPreview = ({ src, alt }: Props) => {
             <Image
               src={fallbackSrc}
               alt="Cargando carta"
+              title="Cargando carta"
               width={270}
               height={390}
               className="h-auto w-full rounded-md"
@@ -145,6 +146,7 @@ export const MarkdownCardPreview = ({ src, alt }: Props) => {
             <Image
               src={finalSrc}
               alt={finalAlt}
+              title={finalAlt}
               width={270}
               height={390}
               className="h-auto w-full rounded-md"

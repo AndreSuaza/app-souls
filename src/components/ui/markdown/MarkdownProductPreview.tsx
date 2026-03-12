@@ -17,6 +17,7 @@ export const MarkdownProductPreview = ({ src, alt }: Props) => {
           <Image
             src={src}
             alt={alt ?? "Producto"}
+            title={alt ?? "Producto"}
             width={300}
             height={340}
             className="h-full w-full rounded-md object-cover"
