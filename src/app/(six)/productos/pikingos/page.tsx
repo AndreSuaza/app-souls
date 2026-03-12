@@ -24,7 +24,7 @@ export const metadata: Metadata = {
         alt: "Pikingos Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };

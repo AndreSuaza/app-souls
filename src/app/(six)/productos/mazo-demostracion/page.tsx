@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         alt: "Mazo De Demostración Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };

@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         alt: "Génesis del Caos Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
