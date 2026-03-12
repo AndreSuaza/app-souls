@@ -3,17 +3,27 @@ import { CardFinder } from "@/components";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title:
-    "Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG",
+  title: "Cartas Souls In Xtinction TCG | Catalogo",
   description:
-    "Diseña el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. ¡Prepara tu mazo y domina el campo de batalla!",
+    "Explora el catalogo de cartas de Souls In Xtinction TCG. Filtra por arquetipos, rarezas, costos y tipos, y descubre cada carta con sus detalles para construir tu mazo ideal.",
+  keywords: [
+    "Souls In Xtinction",
+    "cartas",
+    "catalogo de cartas",
+    "TCG",
+    "arquetipos",
+    "rareza",
+    "mazos",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/cartas",
+  },
   openGraph: {
-    title:
-      "Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG",
+    title: "Cartas Souls In Xtinction TCG | Catalogo",
     description:
-      "Diseña el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. ¡Prepara tu mazo y domina el campo de batalla!",
-    url: "https://soulsinxtinction.com/tiendas",
-    siteName: "Laboratorio Souls In Xtinction TCG",
+      "Explora el catalogo de cartas de Souls In Xtinction TCG. Filtra por arquetipos, rarezas, costos y tipos, y descubre cada carta con sus detalles para construir tu mazo ideal.",
+    url: "https://soulsinxtinction.com/cartas",
+    siteName: "Cartas - Souls In Xtinction TCG",
     images: [
       {
         url: "https://soulsinxtinction.com/souls-in-xtinction.webp",
@@ -22,7 +32,7 @@ export const metadata: Metadata = {
         alt: "Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -78,15 +88,18 @@ export default async function Cards({ searchParams }: Props) {
   });
 
   return (
-    <CardFinder
-      cards={cards}
-      propertiesCards={propertiesCards}
-      totalPage={totalPage}
-      totalCards={totalCount}
-      perPage={perPage}
-      useAdvancedFilters
-      disableGridInitialAnimation
-      disableGridAnimations
-    />
+    <>
+      <h1 className="sr-only">Cartas de Souls In Xtinction TCG</h1>
+      <CardFinder
+        cards={cards}
+        propertiesCards={propertiesCards}
+        totalPage={totalPage}
+        totalCards={totalCount}
+        perPage={perPage}
+        useAdvancedFilters
+        disableGridInitialAnimation
+        disableGridAnimations
+      />
+    </>
   );
 }

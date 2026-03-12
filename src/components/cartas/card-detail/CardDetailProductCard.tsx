@@ -56,7 +56,12 @@ export function CardDetailProductCard({ product }: Props) {
   }
 
   return (
-    <Link href={`/productos/${product.url}`} target="_blank" className="block">
+    <Link
+      href={`/productos/${product.url}`}
+      target="_blank"
+      className="block"
+      title={`Ver producto ${product.name}`}
+    >
       {content}
     </Link>
   );
