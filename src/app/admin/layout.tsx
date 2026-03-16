@@ -9,6 +9,13 @@ import {
   AdminFooter,
 } from "@/components";
 import moment from "moment";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Administrador | Souls In Xtinction TCG",
+  description:
+    "Panel de administracion de Souls In Xtinction TCG para gestionar noticias, torneos, productos, tiendas y mazos del sistema.",
+};
 
 export default function TournamentLayout({
   children,
