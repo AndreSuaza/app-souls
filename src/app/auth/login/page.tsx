@@ -1,10 +1,49 @@
 import Image from "next/image";
 import { LoginForm } from "@/components";
 import Link from "next/link";
+import { Metadata } from "next";
 
 interface Props {
-  searchParams: Promise<{ verified: string; error: string; callbackUrl?: string }>;
+  searchParams: Promise<{
+    verified: string;
+    error: string;
+    callbackUrl?: string;
+  }>;
 }
+
+export const metadata: Metadata = {
+  title: "Iniciar sesión | Souls In Xtinction TCG",
+  description:
+    "Accede a tu cuenta de Souls In Xtinction TCG para gestionar tu perfil, mazos y participaciones en torneos. Inicia sesión de forma segura y continua tu progreso en el juego.",
+  keywords: [
+    "Souls In Xtinction",
+    "login",
+    "iniciar sesión",
+    "TCG",
+    "mazos",
+    "torneos",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/auth/login",
+  },
+  openGraph: {
+    title: "Iniciar sesión | Souls In Xtinction TCG",
+    description:
+      "Accede a tu cuenta de Souls In Xtinction TCG para gestionar tu perfil, mazos y participaciones en torneos. Inicia sesión de forma segura y continua tu progreso en el juego.",
+    url: "https://soulsinxtinction.com/auth/login",
+    siteName: "Souls In Xtinction TCG",
+    images: [
+      {
+        url: "https://soulsinxtinction.com/souls-in-xtinction.webp",
+        width: 800,
+        height: 600,
+        alt: "Souls In Xtinction TCG",
+      },
+    ],
+    locale: "es_ES",
+    type: "website",
+  },
+};
 
 export default async function LogInPage({ searchParams }: Props) {
   const { verified, callbackUrl } = await searchParams;
@@ -12,10 +51,11 @@ export default async function LogInPage({ searchParams }: Props) {
 
   return (
     <div className="flex items-start bg-gray-800 min-h-[100dvh] bg-[url(/bg-registro.webp)] bg-cover bg-scroll sm:items-end sm:min-h-screen sm:bg-fixed">
+      <h1 className="sr-only">Iniciar sesión</h1>
       <div className="relative z-10 mx-auto mt-6 w-full max-w-[600px] px-4 pb-6 sm:m-auto sm:mt-0 sm:w-[600px] sm:px-0 sm:pb-0">
         <div className="mx-auto lg:ml-16 mb-6">
           <div className="relative w-[300px] h-[61px] lg:w-[446px] lg:h-[85px] mx-auto lg:mx-0">
-            <Link href="/">
+            <Link href="/" title="Ir al inicio">
               <Image
                 fill
                 src="/souls-in-xtinction-logo-white.webp"
