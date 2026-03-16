@@ -3,17 +3,24 @@ import { StoresExplorer } from "@/components";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title:
-    "Tiendas Oficiales de Souls In Xtinction TCG | Encuentra Cartas y Mazos",
-  description:
-    "Encuentra las mejores tiendas oficiales y puntos de venta de Souls In Xtinction TCG. Compra cartas coleccionables, mazos y expansiones en distribuidores confiables. ¡Consigue lo que necesitas para mejorar tu estrategia en este TCG competitivo!",
+  title: "Tiendas Souls In Xtinction TCG | Cartas y mazos",
+  description: "Encuentra tiendas oficiales y puntos de venta de Souls In Xtinction TCG. Compra cartas, mazos y expansiones en distribuidores confiables, con ubicaciones y contacto directo para planear tu proxima visita.",
+  keywords: [
+    "Souls In Xtinction",
+    "tiendas",
+    "cartas",
+    "mazos",
+    "TCG",
+    "puntos de venta",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/tiendas",
+  },
   openGraph: {
-    title:
-      "Tiendas Oficiales de Souls In Xtinction TCG | Encuentra Cartas y Mazos",
-    description:
-      "Encuentra las mejores tiendas oficiales y puntos de venta de Souls In Xtinction TCG. Compra cartas coleccionables, mazos y expansiones en distribuidores confiables. ¡Consigue lo que necesitas para mejorar tu estrategia en este TCG competitivo!",
+    title: "Tiendas Souls In Xtinction TCG | Cartas y mazos",
+    description: "Encuentra tiendas oficiales y puntos de venta de Souls In Xtinction TCG. Compra cartas, mazos y expansiones en distribuidores confiables, con ubicaciones y contacto directo para planear tu proxima visita.",
     url: "https://soulsinxtinction.com/tiendas",
-    siteName: "Productos de Souls In Xtinction TCG",
+    siteName: "Tiendas Souls In Xtinction TCG",
     images: [
       {
         url: "https://soulsinxtinction.com/souls-in-xtinction.webp",
@@ -43,9 +50,12 @@ export default async function TiendasPage() {
   });
 
   return (
-    <StoresExplorer
-      initialData={initialData}
-      initialPosition={FALLBACK_POSITION}
-    />
+    <>
+      <h1 className="sr-only">Tiendas Souls In Xtinction TCG</h1>
+      <StoresExplorer
+        initialData={initialData}
+        initialPosition={FALLBACK_POSITION}
+      />
+    </>
   );
 }

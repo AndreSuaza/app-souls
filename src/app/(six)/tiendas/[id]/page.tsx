@@ -21,11 +21,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { store } = detail;
-  const description = `Conoce ${store.name} en ${store.city}, ${store.country}.`;
+  const description = `Conoce ${store.name} en ${store.city}, ${store.country}. Ubicación, horarios y contacto directo para visitar esta tienda oficial de Souls In Xtinction TCG y encontrar cartas, mazos y expansiones.`;
 
   return {
     title: `${store.name} | Tiendas Souls In Xtinction`,
     description,
+    keywords: [
+      "Souls In Xtinction",
+      "tiendas",
+      "cartas",
+      "mazos",
+      "TCG",
+      store.city,
+      store.country,
+    ],
+    alternates: {
+      canonical: `https://soulsinxtinction.com/tiendas/${store.id}`,
+    },
     openGraph: {
       title: `${store.name} | Tiendas Souls In Xtinction`,
       description,
@@ -56,6 +68,7 @@ export default async function Page({ params }: Props) {
   return (
     <section className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
       <div className="mx-auto w-full px-4 py-8 lg:px-8">
+        <h1 className="sr-only">{detail.store.name}</h1>
         <div className="grid gap-6 lg:min-h-[calc(100vh-72px)] lg:grid-cols-2 lg:items-start">
           <StoreDetailInfo
             store={detail.store}
