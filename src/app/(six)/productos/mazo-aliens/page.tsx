@@ -9,7 +9,7 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mazo Alíens - Protocolo K: Raptar y Adaptar TCG",
+  title: "Mazo Alíens - Protocolo K | Souls In Xtinction TCG",
   description:
     "El Mazo Amanecer Celestial está diseñado para los jugadores de Souls In Xtinction TCG que buscan el máximo poder del arquetipo Ángeles. Estas cartas poseen algunas de las habilidades y conjuros más poderosos del juego, permitiéndote tomar el control del campo de batalla con estrategias implacables.",
   openGraph: {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         alt: "Mazo Alíens Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Mazo Alíens Protocolo K: Raptar y Adaptar"}
+            title={"Mazo Alíens Protocolo K: Raptar y Adaptar"}
             className="my-auto"
             width={400}
             height={160}

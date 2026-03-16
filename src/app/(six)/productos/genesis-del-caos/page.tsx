@@ -9,7 +9,7 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Génesis del Caos, nueva expansión - TCG",
+  title: "Génesis del Caos, nueva expansión | Souls In Xtinction TCG",
   description:
     "Génesis del Caos es la nueva expansión de Souls In Xtinction TCG, donde el equilibrio del mundo se tambalea y nuevas fuerzas emergen en la batalla. Esta edición introduce un poderoso soporte para Humanos, Ángeles y muchas otras facciones, permitiendo a los jugadores ampliar sus estrategias y dominar el juego.",
   openGraph: {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         alt: "Génesis del Caos Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Génesis del Caos Expansión Souls"}
+            title={"Génesis del Caos Expansión Souls"}
             className="my-auto"
             width={400}
             height={160}

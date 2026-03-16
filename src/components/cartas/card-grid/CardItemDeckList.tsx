@@ -59,6 +59,7 @@ export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
                   <Image
                     src="/howtoplay/mazo-principal.webp"
                     alt="Cargando carta"
+                    title="Cargando carta"
                     className="-mt-[50%]"
                     width={500}
                     height={50}
@@ -67,6 +68,7 @@ export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
                 <Image
                     src={`/cards/${card.code}-${card.idd}.webp`}
                     alt={card.name}
+                    title={card.name}
                     className={`-mt-[50%] transition-opacity ${isImageLoaded ? "opacity-100" : "opacity-0"}`}
                     width={500}
                     height={50}

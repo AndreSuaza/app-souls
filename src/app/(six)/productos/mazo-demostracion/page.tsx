@@ -9,13 +9,13 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mazo De Demostración - Primer Estallido - TCG",
+  title: "Mazo De Demostración - Primer Estallido | Souls In Xtinction TCG",
   description:
     "El Mazo de Demostración - Primer Estallido es la puerta de entrada perfecta al emocionante mundo de Souls In Xtinction TCG. Este mazo contiene una selección de cartas coleccionables que representan todos los tipos, mecánicas y la mayoría de los arquetipos de la primera temporada, ofreciéndote una experiencia completa desde el primer duelo.",
   openGraph: {
     title: "Mazo De Demostración - Primer Estallido - TCG",
     description:
-      "El Mazo de Demostración - Primer Estallido es la puerta de entrada perfecta al emocionante mundo de Souls In Xtinction TCG. Este mazo contiene una selección de cartas coleccionables que representan todos los tipos, mecánicas y la mayoría de los arquetipos de la primera temporada, ofreciéndote una experiencia completa desde el primer duelo.",
+      "El Mazo de Demostración - Primer Estallido es la puerta de entrada ideal a Souls In Xtinction TCG. Incluye cartas de todos los tipos, mecánicas y arquetipos clave de la primera temporada para vivir duelos completos desde el inicio.",
     url: "https://soulsinxtinction.com/productos/mazo-demostracion",
     siteName: "Mazo De Demostración Souls In Xtinction",
     images: [
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         alt: "Mazo De Demostración Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Mazo De Demostración Primer Estallido"}
+            title={"Mazo De Demostración Primer Estallido"}
             className="my-auto"
             width={400}
             height={160}

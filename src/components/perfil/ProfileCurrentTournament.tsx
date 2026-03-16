@@ -311,6 +311,7 @@ export const ProfileCurrentTournament = ({
                       href={`/laboratorio?id=${associatedDeckId}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      title="Ver mazo asociado en el laboratorio"
                       className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-yellow-300 bg-yellow-400 px-3 text-xs font-semibold leading-none text-slate-900 shadow-sm transition hover:bg-yellow-300 dark:border-yellow-300 dark:bg-yellow-400 dark:text-slate-900 dark:hover:bg-yellow-300"
                     >
                       <TbCardsFilled className="h-5 w-5" />

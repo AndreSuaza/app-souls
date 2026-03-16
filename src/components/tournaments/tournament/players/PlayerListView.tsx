@@ -42,6 +42,7 @@ export const PlayerListView = ({
               <Image
                 src={`/profile/${p.image ?? "player"}.webp`}
                 alt={p.playerNickname}
+                title={p.playerNickname}
                 width={36}
                 height={36}
                 className="w-9 h-9 rounded-full object-cover border border-tournament-dark-accent dark:border-tournament-dark-border"

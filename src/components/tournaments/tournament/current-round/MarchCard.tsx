@@ -122,6 +122,7 @@ export const MatchCard = ({
               <Image
                 src="/profile/player.webp"
                 alt="BYE"
+                title="BYE"
                 width={36}
                 height={36}
                 className={clsx(
@@ -180,6 +181,7 @@ export const MatchCard = ({
             <Image
               src="/profile/player.webp"
               alt="BYE"
+              title="BYE"
               width={36}
               height={36}
               className={clsx(

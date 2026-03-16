@@ -70,7 +70,9 @@ const renderInlineWithUnderline = (children: React.ReactNode) => {
     }
 
     if (isValidElement(node)) {
-      const element = node as React.ReactElement<{ children?: React.ReactNode }>;
+      const element = node as React.ReactElement<{
+        children?: React.ReactNode;
+      }>;
       if (typeof element.type === "string" && element.props?.children) {
         const processedChildren = processNode(element.props.children);
         return [
@@ -113,13 +115,15 @@ const InstagramEmbed = ({ url }: { url: string }) => {
       script.async = true;
       script.src = "https://www.instagram.com/embed.js";
       script.onload = () => {
-        (window as { instgrm?: { Embeds?: { process: () => void } } })
-          .instgrm?.Embeds?.process();
+        (
+          window as { instgrm?: { Embeds?: { process: () => void } } }
+        ).instgrm?.Embeds?.process();
       };
       document.body.appendChild(script);
     } else {
-      (window as { instgrm?: { Embeds?: { process: () => void } } })
-        .instgrm?.Embeds?.process();
+      (
+        window as { instgrm?: { Embeds?: { process: () => void } } }
+      ).instgrm?.Embeds?.process();
     }
   }, [permalink]);
 
@@ -131,7 +135,12 @@ const InstagramEmbed = ({ url }: { url: string }) => {
           data-instgrm-permalink={permalink}
           data-instgrm-version="14"
         >
-          <a href={permalink} target="_blank" rel="noreferrer">
+          <a
+            href={permalink}
+            target="_blank"
+            rel="noreferrer"
+            title="Ver publicación en Instagram"
+          >
             {permalink}
           </a>
         </blockquote>
@@ -247,7 +256,9 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       });
       // Centra y agrupa imagenes para que ocupen la misma fila mientras haya espacio.
       return (
-        <div className="flex flex-wrap justify-center gap-4">{imageChildren}</div>
+        <div className="flex flex-wrap justify-center gap-4">
+          {imageChildren}
+        </div>
       );
     }
 
@@ -318,7 +329,9 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       return <>{chunks}</>;
     }
 
-    return <p className={paragraphClass}>{renderInlineWithUnderline(children)}</p>;
+    return (
+      <p className={paragraphClass}>{renderInlineWithUnderline(children)}</p>
+    );
   },
   a: ({ children, href }) => {
     const isDecklist =
@@ -346,11 +359,21 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       return <InstagramEmbed url={href} />;
     }
 
+    const anchorText = React.Children.toArray(children)
+      .filter((child) => typeof child === "string" || typeof child === "number")
+      .map((child) => String(child))
+      .join(" ")
+      .trim();
+    // Usamos el texto visible como title para mejorar SEO; si no hay texto, cae al href.
+    const anchorTitle =
+      anchorText || (typeof href === "string" ? href : "Enlace externo");
+
     return (
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
+        title={anchorTitle}
         className="font-semibold text-purple-600 underline decoration-purple-300 transition hover:text-purple-700 dark:text-purple-300"
       >
         {children}
@@ -384,6 +407,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
         <img
           src={src}
           alt={alt ?? "Imagen"}
+          title={alt ?? "Imagen"}
           className="h-auto w-[240px] max-w-full rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border"
         />
       );
@@ -393,6 +417,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       <Image
         src={src}
         alt={alt ?? "Imagen"}
+        title={alt ?? "Imagen"}
         width={800}
         height={600}
         sizes="(max-width: 640px) 240px, 320px"

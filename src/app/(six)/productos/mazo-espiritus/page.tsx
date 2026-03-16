@@ -9,7 +9,7 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mazo Espíritus - El Árbol de la Vida - TCG",
+  title: "Mazo Espíritus - El Árbol de la Vida | Souls In Xtinction TCG",
   description:
     "El Mazo El Árbol de la Vida de Souls In Xtinction TCG está basado en el arquetipo de Espíritus, los enigmáticos guardianes del bosque encantado. Este mazo te permite desatar el poder de criaturas raras y mágicas, que protegen los secretos más antiguos con habilidades fenomenales.",
   openGraph: {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         alt: "Mazo El Árbol de la Vida Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Mazo Espíritus El Árbol de la Vida"}
+            title={"Mazo Espíritus El Árbol de la Vida"}
             className="my-auto"
             width={400}
             height={160}

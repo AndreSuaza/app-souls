@@ -1,10 +1,46 @@
 import Image from "next/image";
 import Link from "next/link";
 import { RegisterForm } from "@/components";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Registro de jugador | Souls In Xtinction TCG",
+  description:
+    "Crea tu cuenta en Souls In Xtinction TCG para coleccionar cartas, construir mazos y participar en torneos. Completa tu registro y accede a herramientas y contenido exclusivo.",
+  keywords: [
+    "Souls In Xtinction",
+    "registro",
+    "crear cuenta",
+    "TCG",
+    "cartas",
+    "mazos",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/auth/register",
+  },
+  openGraph: {
+    title: "Registro de jugador | Souls In Xtinction TCG",
+    description:
+      "Crea tu cuenta en Souls In Xtinction TCG para coleccionar cartas, construir mazos y participar en torneos. Completa tu registro y accede a herramientas y contenido exclusivo.",
+    url: "https://soulsinxtinction.com/auth/register",
+    siteName: "Souls In Xtinction TCG",
+    images: [
+      {
+        url: "https://soulsinxtinction.com/souls-in-xtinction.webp",
+        width: 800,
+        height: 600,
+        alt: "Souls In Xtinction TCG",
+      },
+    ],
+    locale: "es_ES",
+    type: "website",
+  },
+};
 
 export default async function LogInPage() {
   return (
     <div className="relative grid min-h-screen grid-cols-1 bg-gray-900 bg-[url(/bg-registro.webp)] bg-cover bg-fixed lg:grid-cols-2 before:absolute before:inset-0 before:bg-gradient-to-r before:from-gray-900/80 before:via-gray-900/60 before:to-gray-900/30 before:content-['']">
+      <h1 className="sr-only">Registro de jugador</h1>
       <div className="relative lg:h-screen text-white">
         <div className="mt-16 mx-auto lg:ml-16">
           <Link
@@ -16,6 +52,7 @@ export default async function LogInPage() {
               fill
               src="/souls-in-xtinction-logo-white.webp"
               alt="Souls In Xtinction"
+              title="Ir al inicio"
             />
           </Link>
 

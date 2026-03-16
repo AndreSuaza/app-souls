@@ -9,11 +9,11 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Ecos del Abismos - TCG",
+  title: "Ecos del Abismos | Souls In Xtinction TCG",
   description:
     "Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.",
   openGraph: {
-    title: "Ecos del Abismos - TCG",
+    title: "Ecos del Abismo | Souls In Xtinction TCG",
     description:
       "Ecos del Abismo es un producto exclusivo de Souls In Xtinction TCG que desata el poder oculto de las profundidades más oscuras. Este set especial introduce cartas coleccionables con habilidades únicas, ideales para potenciar tus estrategias.",
     url: "https://soulsinxtinction.com/productos/ecos-del-abismo",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         alt: "Ecos del Abismos Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"logo ecos del abismo"}
+            title={"logo ecos del abismo"}
             className="my-auto"
             width={400}
             height={160}

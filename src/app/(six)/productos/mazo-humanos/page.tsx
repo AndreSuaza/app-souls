@@ -9,7 +9,7 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mazo Humanos - Depliegue de la Armada - TCG",
+  title: "Mazo Humanos - Depliegue de la Armada | Souls In Xtinction TCG",
   description:
     "El Mazo Despliegue de la Armada está basado en el arquetipo de los Humanos y el mas completo set de Armas para que tomes ventaja de tus oponentes, al usar mecánicas como equipar Armas y usar sus efectos instantáneos, también deberás saber administrar tus recursos para alzarte con la victoria.",
   openGraph: {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
         alt: "Mazo Depliegue de la Armada Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Mazo Humanos Depliegue de la Armada"}
+            title={"Mazo Humanos Depliegue de la Armada"}
             className="my-auto"
             width={400}
             height={160}

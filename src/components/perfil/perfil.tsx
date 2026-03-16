@@ -331,8 +331,16 @@ export const Pefil = ({
                 width={270}
                 height={287}
                 src={`/profile/${selectedAvatar || user.image}.webp`}
-                alt="Carta Prime Wenddygo"
-                title="Prime Wenddygo"
+                alt={
+                  user.nickname
+                    ? `Avatar de ${user.nickname}`
+                    : "Avatar de usuario"
+                }
+                title={
+                  user.nickname
+                    ? `Avatar de ${user.nickname}`
+                    : "Avatar de usuario"
+                }
               />
             </div>
             <button
@@ -511,6 +519,7 @@ export const Pefil = ({
                           <>
                             <Link
                               href="/laboratorio"
+                              title="Crear un mazo en el laboratorio"
                               className="inline-flex h-10 items-center justify-center gap-1 sm:gap-2 rounded-lg border border-emerald-200 bg-emerald-600 px-1 sm:px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
                             >
                               <IoAddOutline className="h-4 w-4" />
@@ -672,6 +681,7 @@ export const Pefil = ({
                   <Image
                     src={`/profile/${avatar.imageUrl}.webp`}
                     alt={avatar.name}
+                    title={`Seleccionar avatar ${avatar.name}`}
                     width={200}
                     height={200}
                     className="object-cover"

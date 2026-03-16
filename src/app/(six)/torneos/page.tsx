@@ -8,25 +8,35 @@ import {
 } from "@/components";
 
 export const metadata: Metadata = {
-  title: "Torneos de Souls In Xtinction TCG | Compite y Demuestra tu Habilidad",
+  title: "Torneos Souls In Xtinction TCG | Calendario",
   description:
     "Participa en los torneos oficiales de Souls In Xtinction TCG y enfrentate a los mejores jugadores. Consulta fechas, inscripciones, reglas y premios.",
+  keywords: [
+    "Souls In Xtinction",
+    "torneos",
+    "calendario",
+    "eventos",
+    "TCG",
+    "competitivo",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/torneos",
+  },
   openGraph: {
-    title:
-      "Torneos de Souls In Xtinction TCG | Compite y Demuestra tu Habilidad",
+    title: "Torneos Souls In Xtinction TCG | Calendario",
     description:
       "Participa en los torneos oficiales de Souls In Xtinction TCG y enfrentate a los mejores jugadores. Consulta fechas, inscripciones, reglas y premios.",
-    url: "https://soulsinxtinction.com/tiendas",
-    siteName: "Torneos Souls In Xtinction TCG",
+    url: "https://soulsinxtinction.com/torneos",
+    siteName: "Torneos - Souls In Xtinction TCG",
     images: [
       {
-        url: "https://soulsinxtinction.com/souls-in-xtinction.webp",
+        url: "https://soulsinxtinction.com/tournaments/SMCC-baner.jpg",
         width: 800,
         height: 600,
-        alt: "Souls In Xtinction TCG",
+        alt: "Torneos Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };

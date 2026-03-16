@@ -85,6 +85,37 @@ export function StoresMap({
 
     initMap();
   }, [onMapReady, zoom]);
+  useEffect(() => {
+    const mapElement = mapRef.current;
+    if (!mapElement) return;
+
+    const applySeoAttributes = () => {
+      // Refuerza ALT y TITLE para elementos que Google Maps inserta sin etiquetas.
+      const images = mapElement.querySelectorAll("img");
+      images.forEach((img) => {
+        if (!img.getAttribute("alt")) {
+          img.setAttribute("alt", "Mapa de tiendas Souls In Xtinction TCG");
+        }
+        if (!img.getAttribute("title")) {
+          img.setAttribute("title", "Mapa de tiendas Souls In Xtinction TCG");
+        }
+      });
+
+      const links = mapElement.querySelectorAll("a");
+      links.forEach((link) => {
+        if (link.getAttribute("title")) return;
+        const text = link.textContent?.trim();
+        link.setAttribute("title", text || "Enlace de Google Maps");
+      });
+    };
+
+    applySeoAttributes();
+    const observer = new MutationObserver(applySeoAttributes);
+    observer.observe(mapElement, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [mapReady]);
+
 
   useEffect(() => {
     if (!mapReady) return;
@@ -164,6 +195,7 @@ export function StoresMap({
             "inline-flex w-full items-center justify-center rounded-lg bg-purple-600 mt-2 px-3 py-2 text-xs font-semibold text-white transition hover:bg-purple-500";
           link.href = `/tiendas/${store.id}`;
           link.textContent = "Ver más";
+          link.title = `Ver detalles de ${store.name}`;
           content.appendChild(link);
         }
         infoWindow.setContent(content);

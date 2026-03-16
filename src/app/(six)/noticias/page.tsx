@@ -3,8 +3,32 @@ import type { PublicNewsCard, PublicNewsListItem } from "@/interfaces";
 import { NewsCarouselCard } from "@/components/news/public/NewsCarouselCard";
 import { NewsHeroCard } from "@/components/news/public/NewsHeroCard";
 import { PublicNewsExplorer } from "@/components/news/public/PublicNewsExplorer";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Noticias de Souls In Xtinction TCG",
+  description:
+    "Descubre las últimas noticias, lanzamientos y novedades de Souls In Xtinction TCG. Mantente al día con anuncios oficiales, eventos y actualizaciones del juego.",
+  openGraph: {
+    title: "Noticias de Souls In Xtinction TCG",
+    description:
+      "Descubre las últimas noticias, lanzamientos y novedades de Souls In Xtinction TCG. Mantente al día con anuncios oficiales, eventos y actualizaciones del juego.",
+    url: "https://soulsinxtinction.com/noticias",
+    siteName: "Souls In Xtinction - Noticias",
+    images: [
+      {
+        url: "https://soulsinxtinction.com/souls-in-xtinction.webp",
+        width: 800,
+        height: 600,
+        alt: "Noticias de Souls In Xtinction TCG",
+      },
+    ],
+    locale: "es_ES",
+    type: "website",
+  },
+};
 
 const mapToPublicCard = (item: PublicNewsListItem): PublicNewsCard => ({
   id: item.id,
@@ -48,6 +72,7 @@ export default async function NoticiasPage() {
 
   return (
     <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
+      <h1 className="sr-only">Noticias de Souls In Xtinction TCG</h1>
       <div className="mx-auto flex min-h-screen flex-col space-y-6 px-6 py-12 sm:px-8 lg:px-16 md:space-y-14">
         <section className="flex min-h-[calc(100vh-7.5rem)] md:max-h-[calc(100vh-7.5rem)] flex-col space-y-6 overflow-hidden pb-10">
           <div className="grid min-h-full flex-1 items-stretch gap-6 md:grid-cols-6 md:grid-rows-1 md:px-2">

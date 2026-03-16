@@ -112,6 +112,7 @@ export const Sidebar = () => {
                     onClick={() => toggleSection(route.name)}
                     className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                     aria-expanded={isOpen}
+                    title={`Abrir sección ${route.name}`}
                   >
                     {Icon && <Icon className="w-6 h-6 mr-3" />}
                     <span>{route.name}</span>
@@ -132,6 +133,7 @@ export const Sidebar = () => {
                       <Link
                         key={`${route.name}-${item.name}`}
                         href={item.path ?? "/"}
+                        title={`Ir a ${item.name}`}
                         onClick={closeMenu}
                         className="rounded-md px-2 py-1 text-xs font-semibold uppercase text-slate-200 transition-all hover:text-yellow-600"
                       >
@@ -148,6 +150,7 @@ export const Sidebar = () => {
                 key={route.name}
                 className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                 href={route.path ?? "/"}
+                title={`Ir a ${route.name}`}
                 onClick={closeMenu}
               >
                 {Icon && <Icon className="w-6 h-6 mr-3" />}
@@ -160,24 +163,28 @@ export const Sidebar = () => {
             <Link
               href="https://www.instagram.com/soulsinxtinction"
               target="blank"
+              title="Instagram"
             >
               <IoLogoInstagram className="w-6 h-6 ml-4 transition-all hover:text-yellow-600" />
             </Link>
             <Link
               href="https://www.facebook.com/soulsinxtinction"
               target="blank"
+              title="Facebook"
             >
               <IoLogoFacebook className="w-6 h-6 ml-4 transition-all hover:text-yellow-600" />
             </Link>
             <Link
               href="https://www.youtube.com/@SoulsInXtinction"
               target="blank"
+              title="YouTube"
             >
               <IoLogoYoutube className="w-6 h-6 ml-4 transition-all hover:text-yellow-600" />
             </Link>
             <Link
               href="https://www.tiktok.com/@soulsinxtinction"
               target="blank"
+              title="TikTok"
             >
               <IoLogoTiktok className="w-6 h-6 ml-4 transition-all hover:text-yellow-600" />
             </Link>
@@ -186,6 +193,7 @@ export const Sidebar = () => {
             <div className="mt-6 border-t-2 pt-4">
               <Link
                 href="/perfil"
+                title="Ir a tu perfil"
                 className="block w-full h-full mb-2 mt-2 p-1  pl-6 md:pl-0 hover:bg-gray-800 transition-transform"
                 onClick={closeMenu}
               >
@@ -195,6 +203,7 @@ export const Sidebar = () => {
               {adminShortcut && (
                 <Link
                   href={adminShortcut.href}
+                  title={`Ir a ${adminShortcut.label}`}
                   className="block w-full h-full mb-2 mt-2 p-1  pl-6 md:pl-0 hover:bg-gray-800 transition-transform"
                   onClick={closeMenu}
                 >
@@ -214,6 +223,7 @@ export const Sidebar = () => {
             <div className="mt-6 border-t-2 pt-4">
               <Link
                 href="/auth/login"
+                title="Iniciar sesión"
                 className="flex m-2 p-2 transition-all uppercase font-bold hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                 onClick={closeMenu}
               >

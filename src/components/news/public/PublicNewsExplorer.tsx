@@ -29,7 +29,7 @@ const DATE_OPTIONS: Array<{ value: DateFilter; label: string }> = [
   { value: "thisMonth", label: "Este mes" },
 ];
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 9;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
 
 const normalizeText = (value: string) => value.trim().toUpperCase();

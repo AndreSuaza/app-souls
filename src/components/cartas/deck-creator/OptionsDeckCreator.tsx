@@ -545,6 +545,7 @@ export const OptionsDeckCreator = ({
                 {showEditButton && editDeckUrl && (
                   <Link
                     href={editDeckUrl}
+                    title="Editar mazo"
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-blue-500 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-200"
                   >
                     Editar
@@ -554,6 +555,7 @@ export const OptionsDeckCreator = ({
                 {showCloneButton && cloneDeckUrl && (
                   <Link
                     href={cloneDeckUrl}
+                    title="Clonar mazo"
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-purple-200 bg-purple-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-purple-500 dark:border-purple-500/40 dark:bg-purple-500/20 dark:text-purple-200"
                   >
                     Clonar

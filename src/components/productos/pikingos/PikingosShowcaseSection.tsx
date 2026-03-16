@@ -62,6 +62,7 @@ export function PikingosShowcaseSection() {
                       <Image
                         src={card.src}
                         alt={card.alt}
+                        title={card.alt}
                         width={360}
                         height={520}
                         className="h-auto w-full rounded-2xl object-cover"

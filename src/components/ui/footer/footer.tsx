@@ -18,11 +18,16 @@ export const Footer = () => {
       <div className="relative mx-auto w-full max-w-7xl px-6 pb-10 pt-16">
         <div className="grid grid-cols-1 gap-6 lg:gap-12 md:grid-cols-12">
           <div className="space-y-6 md:col-span-4">
-            <Link href="/" className="inline-flex items-center gap-4">
+            <Link
+              href="/"
+              title="Ir al inicio"
+              className="inline-flex items-center gap-4"
+            >
               <div className="relative">
                 <Image
                   src="/global/RuedaSouls.svg"
                   alt="Logo Souls In Xtinction"
+                  title="Souls In Xtinction"
                   width={64}
                   height={64}
                   className="h-16 w-16 drop-shadow-[0_0_8px_rgba(88,76,228,0.6)]"
@@ -36,7 +41,7 @@ export const Footer = () => {
                   SOULS IN XTINCTION
                 </h2>
                 <p className="text-xs font-bold tracking-[0.2em] text-purple-400">
-                  THE TRADING CARD GAME
+                  TRADING CARD GAME
                 </p>
               </div>
             </Link>
@@ -60,6 +65,7 @@ export const Footer = () => {
                         <li key={menu.name}>
                           <Link
                             href={menu.path}
+                            title={`Ir a ${menu.name}`}
                             className="inline-flex items-center gap-2 transition hover:translate-x-2 hover:text-purple-400"
                           >
                             {menu.name}
@@ -71,6 +77,7 @@ export const Footer = () => {
                       <li key={route.name}>
                         <Link
                           href={route.path}
+                          title={`Ir a ${route.name}`}
                           className="inline-flex items-center gap-2 transition hover:translate-x-2 hover:text-purple-400"
                         >
                           {route.name}
@@ -94,6 +101,7 @@ export const Footer = () => {
                         <li key={menu.name}>
                           <Link
                             href={menu.path}
+                            title={`Ir a ${menu.name}`}
                             className="inline-flex items-center gap-2 transition hover:translate-x-2 hover:text-purple-400"
                           >
                             {menu.name}
@@ -105,6 +113,7 @@ export const Footer = () => {
                       <li key={route.name}>
                         <Link
                           href={route.path}
+                          title={`Ir a ${route.name}`}
                           className="inline-flex items-center gap-2 transition hover:translate-x-2 hover:text-purple-400"
                         >
                           {route.name}
