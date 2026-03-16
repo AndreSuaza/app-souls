@@ -9,13 +9,24 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Memorias Olvidadas",
+  title: "Memorias Olvidadas | Souls In Xtinction TCG",
   description:
-    "La nueva expansión de Souls In Xtinction abre las puertas al pasado prohibido del alma. Entre sombras y ecos antiguos emergen los Vampiros, maestros de la corrupción y la eternidad, y los Isiras, guardianes de la esencia espiritual. Dos fuerzas opuestas unidas por un mismo destino: revelar los secretos que el tiempo intentó enterrar.",
+    "Memorias Olvidadas es una expansion de Souls In Xtinction TCG que abre el pasado prohibido del alma. Vampiros e Isiras chocan en una historia de sombras y esencia espiritual, con cartas estrategicas para coleccionistas y jugadores.",
+  keywords: [
+    "Souls In Xtinction",
+    "Memorias Olvidadas",
+    "expansion",
+    "TCG",
+    "cartas",
+    "coleccion",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/productos/memorias-olvidadas",
+  },
   openGraph: {
-    title: "Memorias Olvidadas - TCG",
+    title: "Memorias Olvidadas | Souls In Xtinction TCG",
     description:
-      "La nueva expansión de Souls In Xtinction abre las puertas al pasado prohibido del alma. Entre sombras y ecos antiguos emergen los Vampiros, maestros de la corrupción y la eternidad, y los Isiras, guardianes de la esencia espiritual. Dos fuerzas opuestas unidas por un mismo destino: revelar los secretos que el tiempo intentó enterrar.",
+      "Memorias Olvidadas es una expansion de Souls In Xtinction TCG que abre el pasado prohibido del alma. Vampiros e Isiras chocan en una historia de sombras y esencia espiritual, con cartas estrategicas para coleccionistas y jugadores.",
     url: "https://soulsinxtinction.com/productos/memorias-olvidadas",
     siteName: "Memorias Olvidadas",
     images: [
@@ -49,7 +60,8 @@ export default async function getProductBySlug() {
         <div className="flex flex-col items-center justify-center w-full p-12">
           <Image
             src={`/products/${product.code}S.webp`}
-            alt={"Memorias Olvidadas Expansión Souls"}
+            alt="Memorias Olvidadas Expansion Souls"
+            title="Memorias Olvidadas Expansion Souls"
             className="my-auto"
             width={400}
             height={160}

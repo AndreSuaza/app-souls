@@ -9,7 +9,7 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mazo de Demostracíon 2.0 - TCG",
+  title: "Mazo de Demostracíon 2.0 | Souls In Xtinction TCG",
   description:
     "El Mazo de Demostración **Alma Renacida** de Souls In Xtinction TCG es la puerta de entrada perfecta para nuevos jugadores y una herramienta esencial para quienes buscan perfeccionar su estrategia.",
   openGraph: {
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"logo mazo demostracíon 2.0"}
+            title={"logo mazo demostracíon 2.0"}
             className="my-auto"
             width={400}
             height={160}

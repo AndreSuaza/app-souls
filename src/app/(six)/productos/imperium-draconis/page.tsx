@@ -9,7 +9,7 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Imperium Draconis, expansión souls in xtinction- TCG",
+  title: "Imperium Draconis - expansión | Souls In Xtinction TCG",
   description:
     "Imperium Draconis es la nueva expansión del TCG colombiano Souls In Xtinction, y marca el inicio de una era donde el fuego, la corrupción y la lealtad se entrelazan.",
   openGraph: {
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Imperio Draconis Caja"}
+            title={"Imperio Draconis Caja"}
             className="my-auto"
             width={400}
             height={160}

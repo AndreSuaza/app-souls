@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description:
     "Reinos de Luthiria es la nueva expansión de Souls In Xtinction, Una nueva era se abre paso… Los reinos se alzan en poder, criaturas ancestrales despiertan y la guerra por el destino del mundo comienza. ¿Estás listo para conquistar Luthiria y forjar tu propia leyenda?",
   openGraph: {
-    title: "Reinos de Luthiria, nueva expansión - TCG",
+    title: "Reinos de Luthiria, nueva expansión | Souls In Xtinction TCG",
     description:
       "Reinos de Luthiria es la nueva expansión de Souls In Xtinction, Una nueva era se abre paso… Los reinos se alzan en poder, criaturas ancestrales despiertan y la guerra por el destino del mundo comienza. ¿Estás listo para conquistar Luthiria y forjar tu propia leyenda?",
     url: "https://soulsinxtinction.com/productos/reinos-de-luthiria",
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Reinos de Luthiria Expansión Souls"}
+            title={"Reinos de Luthiria Expansión Souls"}
             className="my-auto"
             width={400}
             height={160}

@@ -41,7 +41,7 @@ export const Footer = () => {
                   SOULS IN XTINCTION
                 </h2>
                 <p className="text-xs font-bold tracking-[0.2em] text-purple-400">
-                  THE TRADING CARD GAME
+                  TRADING CARD GAME
                 </p>
               </div>
             </Link>

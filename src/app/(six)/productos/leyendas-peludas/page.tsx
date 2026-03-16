@@ -9,7 +9,7 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Producto Especial Leyendas Peludas - TCG",
+  title: "Producto Especial Leyendas Peludas | Souls In Xtinction TCG",
   description:
     'Nuevas cartas coleccionables de "Leyendas Peludas", emergen en tiempos de caos para proteger el equilibrio entre los mundos.',
   openGraph: {
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Leyendas Peludas Producto Especial"}
+            title={"Leyendas Peludas Producto Especial"}
             className="my-auto"
             width={400}
             height={160}

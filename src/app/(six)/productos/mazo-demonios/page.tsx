@@ -9,7 +9,7 @@ import "../style.css";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mazo Demonios - Arte de la Destrucción - TCG",
+  title: "Mazo Demonios - Arte de la Destrucción | Souls In Xtinction TCG",
   description:
     "El Mazo Arte de la Destrucción de Souls In Xtinction TCG está basado en el arquetipo de Demonios, criaturas caóticas que buscan acabar los duelos de manera rápida y letal. Estos pequeños diablillos se multiplican con facilidad, invocando más aliados a su juego de destrucción y asegurando la victoria en pocos turnos.",
   openGraph: {
@@ -50,6 +50,7 @@ export default async function getProductBySlug() {
           <Image
             src={`/products/${product.code}S.webp`}
             alt={"Mazo Demonios Arte de la Destrucción"}
+            title={"Mazo Demonios Arte de la Destrucción"}
             className="my-auto"
             width={400}
             height={160}
