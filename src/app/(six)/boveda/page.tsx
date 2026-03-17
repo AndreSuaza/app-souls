@@ -90,7 +90,7 @@ export default async function BovedaPage({ searchParams }: Props) {
             {cards.map((card) => (
               <li key={card.id}>
                 <Link
-                  href={`/boveda/${card.id}`}
+                  href={`/boveda/${card.slug}`}
                   title={`Ver detalles de ${card.name}`}
                   className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:border-purple-400/40"
                 >

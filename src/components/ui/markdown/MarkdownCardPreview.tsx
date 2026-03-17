@@ -14,6 +14,7 @@ type CardPreview = {
   src: string;
   name: string;
   rarityName: string | null;
+  slug: string;
 };
 
 const cardPreviewCache = new Map<string, CardPreview>();
@@ -86,6 +87,7 @@ export const MarkdownCardPreview = ({ src, alt }: Props) => {
               src: `/cards/${card.code}-${card.idd}.webp`,
               name: card.name ?? "Carta",
               rarityName: card.rarityName ?? null,
+              slug: card.slug,
             };
           })();
           cardPreviewPromiseCache.set(cardId, promise);
@@ -163,10 +165,10 @@ export const MarkdownCardPreview = ({ src, alt }: Props) => {
     </div>
   );
 
-  if (cardId && !hasError) {
+  if (cardId && !hasError && resolvedCard?.slug) {
     return (
       <Link
-        href={`/boveda/${cardId}`}
+        href={`/boveda/${resolvedCard.slug}`}
         className="inline-block cursor-pointer"
         title="Ver carta en la bóveda"
         target="_blank"

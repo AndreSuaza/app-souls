@@ -24,7 +24,7 @@ const formatStatsRange = (page: number, perPage: number, total: number) => {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const detail = await getBovedaCardDetailAction({ cardId: id });
+  const detail = await getBovedaCardDetailAction({ slug: id });
 
   if (!detail) {
     return {
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     detail.name,
     detail.code,
   ];
-  const canonical = `https://soulsinxtinction.com/boveda/${detail.id}`;
+  const canonical = `https://soulsinxtinction.com/boveda/${detail.slug}`;
 
   return {
     title: `${detail.name} | Bóveda`,
@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params, searchParams }: Props) {
   const { id } = await params;
-  const detail = await getBovedaCardDetailAction({ cardId: id });
+  const detail = await getBovedaCardDetailAction({ slug: id });
   if (!detail) {
     notFound();
   }
@@ -81,7 +81,7 @@ export default async function Page({ params, searchParams }: Props) {
   const pageNumber = page ? Number(page) : 1;
 
   const productCards = await getBovedaProductCardsAction({
-    cardId: id,
+    cardId: detail.id,
     page: isNaN(pageNumber) || pageNumber < 1 ? 1 : pageNumber,
   });
 

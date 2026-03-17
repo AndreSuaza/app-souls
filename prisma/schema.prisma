@@ -105,6 +105,7 @@ model Card {
   force      String
   defense    String
   name       String
+  slug       String   @unique
   effect     String
   createDate DateTime @default(now())
 
