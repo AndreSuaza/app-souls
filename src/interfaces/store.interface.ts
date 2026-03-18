@@ -3,6 +3,7 @@
 export interface Store {
     id: string,
     name: string,     
+    slug?: string,
     city: string,
     address: string,
     country: string,
@@ -22,6 +23,7 @@ export interface StoreOption {
 export interface StoreDetail {
     id: string,
     name: string,
+    slug: string,
     city: string,
     address: string,
     country: string,

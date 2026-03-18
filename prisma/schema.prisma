@@ -132,6 +132,7 @@ model Card {
 model Store {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   name       String
+  slug       String   @unique
   city       String
   address    String
   country    String

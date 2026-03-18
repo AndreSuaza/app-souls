@@ -7,6 +7,7 @@ import { StoresMap } from "./StoresMap";
 interface StoreMarker {
   id: string;
   name: string;
+  slug: string;
   city: string;
   address: string;
   country: string;

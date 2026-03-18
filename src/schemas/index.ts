@@ -23,5 +23,6 @@ export * from "./products/product-search.schema";
 export * from "./products/product.schema";
 export * from "./stores/stores-by-distance.schema";
 export * from "./stores/store-id.schema";
+export * from "./stores/store-slug.schema";
 
 export * from "./news/news.schema";

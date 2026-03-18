@@ -9,6 +9,7 @@ import {
 type StoreResult = {
   id: string;
   name: string;
+  slug: string;
   city: string;
   address: string;
   country: string;
@@ -55,6 +56,7 @@ export const getStoresByDistanceAction = async (
       select: {
         id: true,
         name: true,
+        slug: true,
         city: true,
         address: true,
         country: true,

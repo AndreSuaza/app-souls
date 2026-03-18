@@ -10,6 +10,7 @@ import {
 interface StoreListItem {
   id: string;
   name: string;
+  slug: string;
   city: string;
   address: string;
   country: string;
@@ -52,7 +53,7 @@ export function StoreListCard({ store }: Props) {
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Link
-          href={`/tiendas/${store.id}`}
+          href={`/tiendas/${store.slug}`}
           title={`Ver detalles de ${store.name}`}
           className="inline-flex w-full items-center justify-center rounded-lg border border-purple-600 px-4 py-2 text-xs font-semibold text-purple-600 transition hover:bg-purple-600 hover:text-white dark:border-purple-400 dark:text-purple-300 dark:hover:bg-purple-500 dark:hover:text-white"
         >

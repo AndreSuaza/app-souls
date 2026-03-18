@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const detail = await getStoreDetailAction({ storeId: id });
+  const detail = await getStoreDetailAction({ storeSlug: id });
 
   if (!detail) {
     return {
@@ -36,12 +36,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       store.country,
     ],
     alternates: {
-      canonical: `https://soulsinxtinction.com/tiendas/${store.id}`,
+      canonical: `https://soulsinxtinction.com/tiendas/${store.slug}`,
     },
     openGraph: {
       title: `${store.name} | Tiendas Souls In Xtinction`,
       description,
-      url: `https://soulsinxtinction.com/tiendas/${store.id}`,
+      url: `https://soulsinxtinction.com/tiendas/${store.slug}`,
       siteName: "Souls In Xtinction TCG",
       images: [
         {
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { id } = await params;
-  const detail = await getStoreDetailAction({ storeId: id });
+  const detail = await getStoreDetailAction({ storeSlug: id });
 
   if (!detail) {
     notFound();

@@ -6,6 +6,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 interface StoreMarker {
   id: string;
   name: string;
+  slug: string;
   city: string;
   address: string;
   country: string;
@@ -193,7 +194,7 @@ export function StoresMap({
           const link = document.createElement("a");
           link.className =
             "inline-flex w-full items-center justify-center rounded-lg bg-purple-600 mt-2 px-3 py-2 text-xs font-semibold text-white transition hover:bg-purple-500";
-          link.href = `/tiendas/${store.id}`;
+          link.href = `/tiendas/${store.slug}`;
           link.textContent = "Ver más";
           link.title = `Ver detalles de ${store.name}`;
           content.appendChild(link);
