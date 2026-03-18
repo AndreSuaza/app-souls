@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import clsx from "clsx";
 import type { Decklist } from "@/interfaces";
 import { useState } from "react";
@@ -136,6 +137,8 @@ export const MarkdownDeckStackGrid = ({
                       src={`/cards/${item.card.code}-${item.card.idd}.webp`}
                       alt={item.card.name}
                       title={item.card.name}
+                      placeholder="blur"
+                      blurDataURL={cardImageBlurDataURL}
                       width={500}
                       height={718}
                       className={clsx(

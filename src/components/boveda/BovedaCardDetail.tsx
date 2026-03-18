@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { CardDetailStatCard } from "@/components/cartas/card-detail/CardDetailStatCard";
 import { CardDetailProductCard } from "@/components/cartas/card-detail/CardDetailProductCard";
 import { BovedaPriceCard } from "./BovedaPriceCard";
@@ -67,11 +68,13 @@ export function BovedaCardDetail({ card }: Props) {
       </h2>
 
       <div className="flex justify-center lg:h-[560px]">
-        <div className="h-full w-full max-w-[380px] md:max-w-none overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+        <div className="h-full w-full md:w-auto max-w-[380px] md:max-w-none overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
           <Image
             src={`/cards/${card.code}-${card.idd}.webp`}
             alt={card.name}
             title={card.name}
+            placeholder="blur"
+            blurDataURL={cardImageBlurDataURL}
             width={500}
             height={718}
             className="h-full w-full object-fill"
@@ -86,9 +89,7 @@ export function BovedaCardDetail({ card }: Props) {
 
         <div className="grid gap-6 lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="relative w-full">
-            <div
-              className="space-y-6"
-            >
+            <div className="space-y-6">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {stats.map((item) => (
                   <CardDetailStatCard

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import Link from "next/link";
 import { IoChevronForwardOutline } from "react-icons/io5";
 
@@ -45,6 +46,8 @@ export function BovedaProductCardsTable({ cards }: Props) {
                   src={`/cards/${card.code}-${card.idd}.webp`}
                   alt={card.name}
                   title={card.name}
+                  placeholder="blur"
+                  blurDataURL={cardImageBlurDataURL}
                   width={200}
                   height={280}
                   className="h-full w-full object-cover"

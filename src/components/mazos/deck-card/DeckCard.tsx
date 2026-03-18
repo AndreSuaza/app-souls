@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import Link from "next/link";
 import {
   IoHeart,
@@ -204,6 +205,8 @@ export const DeckCard = ({
             src={`/cards/${mazo.imagen}.webp`}
             alt={mazo.name}
             title={mazo.name}
+            placeholder="blur"
+            blurDataURL={cardImageBlurDataURL}
             fill
             sizes="(min-width: 1280px) 16vw, (min-width: 1024px) 20vw, (min-width: 768px) 28vw, 46vw"
             className="scale-110 object-cover"

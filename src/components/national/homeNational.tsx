@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 
 const MotionImage = motion(Image);
 
@@ -153,6 +154,9 @@ export const HomeNational = () => {
           <Image
             src="/cards/GNC-044-6547.webp"
             alt="Guerrero Caído"
+            title="Guerrero Caído"
+            placeholder="blur"
+            blurDataURL={cardImageBlurDataURL}
             width={240}
             height={336}
             className="mx-auto w-60 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-400/30 hover:scale-105 transition-transform duration-500"
@@ -160,6 +164,9 @@ export const HomeNational = () => {
           <Image
             src="/cards/ME3-016-3938.webp"
             alt="Esporas Somníferas"
+            title="Esporas Somníferas"
+            placeholder="blur"
+            blurDataURL={cardImageBlurDataURL}
             width={240}
             height={336}
             className="mx-auto w-60 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-400/30 hover:scale-105 transition-transform duration-500"
@@ -167,6 +174,9 @@ export const HomeNational = () => {
           <Image
             src="/cards/LP-018-6874.webp"
             alt="Aplasta Insectos"
+            title="Aplasta Insectos"
+            placeholder="blur"
+            blurDataURL={cardImageBlurDataURL}
             width={240}
             height={336}
             className="mx-auto w-60 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-400/30 hover:scale-105 transition-transform duration-500"
@@ -191,6 +201,9 @@ export const HomeNational = () => {
             <Image
               src="/cards/P-004-8477.webp"
               alt="Aleksandra"
+              title="Aleksandra"
+              placeholder="blur"
+              blurDataURL={cardImageBlurDataURL}
               width={240}
               height={336}
               className="w-72 md:w-80 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-400/30 hover:scale-105 transition-transform duration-500"
@@ -250,3 +263,7 @@ export const HomeNational = () => {
     </div>
   );
 };
+
+
+
+

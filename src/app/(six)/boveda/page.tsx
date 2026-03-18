@@ -4,6 +4,7 @@ import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { cardImageBlurDataURL } from "@/models/images.models";
 
 interface Props {
   searchParams: Promise<{
@@ -98,6 +99,8 @@ export default async function BovedaPage({ searchParams }: Props) {
                     src={`/cards/${card.code}-${card.idd}.webp`}
                     alt={card.name}
                     title={card.name}
+                    placeholder="blur"
+                    blurDataURL={cardImageBlurDataURL}
                     className="h-full w-full object-cover rounded-lg"
                     width={500}
                     height={718}

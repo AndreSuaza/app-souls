@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { getCardByIdAction } from "@/actions";
 
 type Props = {
@@ -123,6 +124,9 @@ export const MarkdownCardImage = ({ src, alt }: Props) => {
             <Image
               src={finalSrc}
               alt={finalAlt}
+              title={finalAlt}
+              placeholder="blur"
+              blurDataURL={cardImageBlurDataURL}
               className="block h-auto w-full object-cover"
               width={500}
               height={718}

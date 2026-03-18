@@ -2,6 +2,7 @@ import { Map } from "@/components";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { cardImageBlurDataURL } from "@/models/images.models";
 
 export const metadata: Metadata = {
   title: "Forja tu Legión de Almas Torneo Souls In Xticition",
@@ -95,6 +96,9 @@ export default function Tournaments() {
             <Image
               src={`/cards/IMP-PC-011-6072.webp`}
               alt={"Imagen Cartas Escudos Gemelos Arte Alterno"}
+              title="Imagen Cartas Escudos Gemelos Arte Alterno"
+              placeholder="blur"
+              blurDataURL={cardImageBlurDataURL}
               className="rounded-lg mx-auto mb-10"
               width={300}
               height={718}

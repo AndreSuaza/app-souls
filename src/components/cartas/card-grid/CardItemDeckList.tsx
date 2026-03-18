@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/interfaces";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { IoAddCircleOutline } from "react-icons/io5";
 import clsx from 'clsx';
 
@@ -69,6 +70,8 @@ export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
                     src={`/cards/${card.code}-${card.idd}.webp`}
                     alt={card.name}
                     title={card.name}
+                    placeholder="blur"
+                    blurDataURL={cardImageBlurDataURL}
                     className={`-mt-[50%] transition-opacity ${isImageLoaded ? "opacity-100" : "opacity-0"}`}
                     width={500}
                     height={50}

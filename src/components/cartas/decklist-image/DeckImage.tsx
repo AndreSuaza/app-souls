@@ -1,5 +1,6 @@
 import { Decklist } from "@/interfaces/decklist.interface"
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 
 interface Props {
     decklist: Decklist[];
@@ -20,6 +21,8 @@ export const DeckImage = ({decklist, className, title}: Props) => {
                     src={`/cards/${c.card.code}-${c.card.idd}.webp`}
                     alt={c.card.name}
                     title={c.card.name}
+                    placeholder="blur"
+                    blurDataURL={cardImageBlurDataURL}
                     className='w-full object-cover rounded md:rounded-md'
                     fill
                 />
@@ -29,6 +32,8 @@ export const DeckImage = ({decklist, className, title}: Props) => {
                         src={`/cards/${c.card.code}-${c.card.idd}.webp`}
                         alt={c.card.name}
                         title={c.card.name}
+                        placeholder="blur"
+                        blurDataURL={cardImageBlurDataURL}
                         className='absolute object-cover rounded-md mt-4 top-0'
                         fill
                     />

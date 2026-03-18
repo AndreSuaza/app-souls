@@ -19,6 +19,7 @@ import { Modal, Decklistimage, SaveDeckForm } from "@/components";
 import { UserDeckLibrary } from "@/components/mazos/deck-library/UserDeckLibrary";
 import Link from "next/link";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { useUserDecksStore } from "@/store/mazos/user-decks.store";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -652,7 +653,7 @@ export const OptionsDeckCreator = ({
                         src={`/cards/${card.code}-${card.idd}.webp`}
                         alt={card.name}
                         title={card.name}
-                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
+                        blurDataURL={cardImageBlurDataURL}
                         placeholder="blur"
                         className="rounded-lg drop-shadow-md"
                       />

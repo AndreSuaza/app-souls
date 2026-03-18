@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { Card } from "@/interfaces/cards.interface";
 import {
   IoAddCircleOutline,
@@ -83,6 +84,8 @@ export const CardItem = ({
                 src={`/cards/${card.code}-${card.idd}.webp`}
                 alt={card.name}
                 title={card.name}
+                placeholder="blur"
+                blurDataURL={cardImageBlurDataURL}
                 className={`block w-full object-cover transition-opacity ${
                   isImageLoaded ? "opacity-100" : "opacity-0"
                 }`}

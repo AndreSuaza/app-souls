@@ -4,6 +4,7 @@ import { CardDetail } from "@/components/cartas/card-detail/CardDetail";
 import { Card } from "@/interfaces";
 import { useCardDetailStore } from "@/store";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { useState } from "react";
 import clsx from "clsx";
 
@@ -49,6 +50,9 @@ export const CompleteCollection = ({
                 <Image
                   src={`/cards/${card.code}-${card.idd}.webp`}
                   alt={card.name}
+                  title={card.name}
+                  placeholder="blur"
+                  blurDataURL={cardImageBlurDataURL}
                   className="object-cover rounded-lg"
                   width={500}
                   height={718}
@@ -73,6 +77,9 @@ export const CompleteCollection = ({
               <Image
                 src={`/cards/${card.code}-${card.idd}.webp`}
                 alt={card.name}
+                title={card.name}
+                placeholder="blur"
+                blurDataURL={cardImageBlurDataURL}
                 className="object-cover rounded-lg"
                 width={500}
                 height={718}

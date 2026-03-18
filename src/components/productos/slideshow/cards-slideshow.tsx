@@ -1,18 +1,16 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
+import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { FreeMode, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from "swiper/react";
+import { FreeMode, Pagination } from "swiper/modules";
 
+import "swiper/css";
+import "swiper/css/free-mode";
+import "swiper/css/pagination";
 
-import 'swiper/css';
-import 'swiper/css/free-mode';
-import 'swiper/css/pagination';
-
-import './slideshow.css';
-
-
+import "./slideshow.css";
 
 interface Props {
   images: string[];
@@ -20,46 +18,37 @@ interface Props {
   className?: string;
 }
 
-
-
-export const ProductMobileSlideshow = ( { images, title, className }: Props ) => {
-
-
+export const ProductMobileSlideshow = ({ images, title, className }: Props) => {
   return (
-    <div className={ className }>
-
+    <div className={className}>
       <Swiper
         style={{
-          width: '90vw',
+          width: "90vw",
         }}
         pagination
         autoplay={{
-          delay: 2500
+          delay: 2500,
         }}
-        modules={ [ FreeMode, Pagination ] }
+        modules={[FreeMode, Pagination]}
         className=""
       >
-
-        {
-          images.map( image => (
-            <SwiperSlide key={ image }>
-                <div className='m-4'>
-                    <Image
-                        width={ 300 }
-                        height={ 718 }
-                        src={ `/cards/${ image }` }
-                        alt={ title }
-                        className="rounded-xl mb-10"
-                    />
-                </div>
-            </SwiperSlide>
-
-          ) )
-        }
+        {images.map((image) => (
+          <SwiperSlide key={image}>
+            <div className="m-4">
+              <Image
+                width={300}
+                height={718}
+                src={`/cards/${image}`}
+                alt={title}
+                title={title}
+                placeholder="blur"
+                blurDataURL={cardImageBlurDataURL}
+                className="rounded-xl mb-10"
+              />
+            </div>
+          </SwiperSlide>
+        ))}
       </Swiper>
-
-
-
     </div>
   );
 };
