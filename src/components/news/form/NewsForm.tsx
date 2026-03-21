@@ -25,6 +25,8 @@ import type {
 } from "@/interfaces";
 import { NewsImageModal } from "./NewsImageModal";
 import { uploadNewsImageAction } from "@/actions/news/upload-news-image.action";
+import { useToastStore } from "@/store";
+import { useUIStore } from "@/store";
 
 type NewsFormValues = {
   title: string;
@@ -102,6 +104,8 @@ export const NewsForm = ({
     () => formatDateForInput(initialValues?.publishedAt),
     [initialValues?.publishedAt],
   );
+  const showToast = useToastStore((s) => s.showToast);
+  const { showLoading, hideLoading } = useUIStore();
 
   const {
     register,
@@ -432,6 +436,7 @@ export const NewsForm = ({
 
   const handleFormSubmit = handleSubmit(async (values) => {
     try {
+      showLoading("Subiendo imágenes...");
       setIsUploadingImages(true);
       setUploadError(null);
 
@@ -472,10 +477,12 @@ export const NewsForm = ({
         publishNow,
       });
     } catch (error) {
-      setUploadError(
-        error instanceof Error ? error.message : "Error subiendo imágenes",
-      );
+      const message =
+        error instanceof Error ? error.message : "Error subiendo imágenes";
+      setUploadError(message);
+      showToast(message, "error");
     } finally {
+      hideLoading();
       setIsUploadingImages(false);
     }
   }, handleInvalidSubmit);
@@ -775,7 +782,7 @@ export const NewsForm = ({
               disabled={isUploadingImages}
               className="inline-flex h-10 items-center justify-center rounded-lg bg-purple-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700"
             >
-              {isUploadingImages ? "Subiendo..." : submitLabel}
+              {submitLabel}
             </button>
           )}
         </div>

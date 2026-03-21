@@ -74,6 +74,9 @@ export async function uploadNewsImageAction(formData: FormData) {
     return { url: blob.url };
   } catch (error) {
     console.error("[uploadNewsImageAction]", error);
-    throw new Error("Error subiendo la imagen");
+    // Propaga el mensaje real para mostrar el motivo exacto en UI.
+    throw new Error(
+      error instanceof Error ? error.message : "Error subiendo la imagen",
+    );
   }
 }
