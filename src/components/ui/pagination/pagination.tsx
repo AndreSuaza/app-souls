@@ -38,11 +38,21 @@ const PaginationControlled = ({
   );
 };
 
-const PaginationUncontrolled = ({ children, totalPages }: Props) => {
+const PaginationUncontrolled = ({
+  children,
+  totalPages,
+  currentPage,
+}: Props) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const pageString = searchParams.get("page") ?? 1;
-  const resolvedPage = isNaN(+pageString) ? 1 : +pageString;
+  // Mantiene el mismo numero de pagina entre SSR y cliente cuando viene desde el servidor.
+  const resolvedPage =
+    typeof currentPage === "number"
+      ? currentPage
+      : isNaN(+pageString)
+        ? 1
+        : +pageString;
 
   if (resolvedPage < 1 || isNaN(+pageString)) {
     redirect(pathname);

@@ -113,7 +113,10 @@ export default async function Page({ params, searchParams }: Props) {
         </div>
 
         <div className="mt-6">
-          <Pagination totalPages={productCards.totalPage}>
+          <Pagination
+            totalPages={productCards.totalPage}
+            currentPage={productCards.currentPage}
+          >
             <BovedaProductCardsTable cards={productCards.cards} />
           </Pagination>
         </div>

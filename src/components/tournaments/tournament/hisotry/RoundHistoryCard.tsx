@@ -48,7 +48,10 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
       ? "IN_PROGRESS"
       : "FINISHED";
 
-  const canPrintRound = Boolean(round.finishedAt);
+  const currentRoundNumber = tournament.currentRoundNumber + 1;
+  const isCurrentRound = round.roundNumber === currentRoundNumber;
+  // Solo se imprime la ronda actual mientras el torneo esta en progreso.
+  const canPrintRound = tournament.status === "in_progress" && isCurrentRound;
 
   // Determina si la ronda puede editarse
   const canEditRound =
@@ -182,6 +185,15 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
     return `${date} - ${time}`;
   };
 
+  const formatPrintOnlyDate = () => {
+    const now = new Date();
+    return now.toLocaleDateString("es-CO", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   const resolvePlayer = (playerId: string) =>
     players.find((player) => player.id === playerId);
 
@@ -216,6 +228,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
   const buildPrintHtml = () => {
     // Se construye HTML plano para imprimir la ronda sin depender del layout actual.
     const printDate = formatPrintDate();
+    const printOnlyDate = formatPrintOnlyDate();
 
     const rows = round.matches
       .map((match, index) => {
@@ -225,7 +238,13 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
 
         return `
           <tr>
-            <td class="table-number" rowspan="2">${tableNumber}</td>
+            <td class="table-number" rowspan="2">
+              <div class="table-meta">
+                <span class="table-date">${printOnlyDate}</span>
+                <span class="table-round">Ronda ${round.roundNumber}</span>
+                <span class="table-seat">Mesa ${tableNumber}</span>
+              </div>
+            </td>
             <td class="player-cell">
               <div class="player-info">
                 <img src="${player1.avatar}" alt="${player1.nickname}" />
@@ -241,9 +260,18 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
             </td>
             <td class="result-cell" rowspan="2">
               <div class="result-box">
-                <span class="result-label">Victoria J1</span>
-                <span class="result-label">Empate</span>
-                <span class="result-label">Victoria J2</span>
+                <div class="result-item">
+                  <span class="result-label">Victoria J1</span>
+                  <span class="result-check"></span>
+                </div>
+                <div class="result-item">
+                  <span class="result-label">Empate</span>
+                  <span class="result-check"></span>
+                </div>
+                <div class="result-item">
+                  <span class="result-label">Victoria J2</span>
+                  <span class="result-check"></span>
+                </div>
               </div>
             </td>
             <td class="player-cell">
@@ -349,10 +377,28 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
             .table-number {
               text-align: center;
               font-weight: 700;
-              font-size: 16px;
+              font-size: 12px;
               color: #1f2937;
-              width: 72px;
+              width: 110px;
               background: #f1f5f9;
+            }
+            .table-meta {
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+              align-items: center;
+              font-weight: 600;
+            }
+            .table-date {
+              font-size: 10px;
+              color: #475569;
+            }
+            .table-round {
+              font-size: 11px;
+            }
+            .table-seat {
+              font-size: 12px;
+              font-weight: 700;
             }
             .player-info {
               display: flex;
@@ -388,10 +434,22 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
               font-size: 11px;
               color: #475569;
             }
-            .result-label {
+            .result-item {
               flex: 1;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 6px;
+            }
+            .result-label {
               text-align: center;
               white-space: nowrap;
+            }
+            .result-check {
+              width: 16px;
+              height: 16px;
+              border: 1px solid #94a3b8;
+              border-radius: 2px;
             }
             .signature-row td {
               padding-top: 8px;

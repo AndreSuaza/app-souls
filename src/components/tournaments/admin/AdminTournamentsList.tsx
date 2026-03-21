@@ -297,6 +297,7 @@ export const AdminTournamentsList = ({
             showStoreColumn={showStoreColumn}
             showPlayersColumn
             showTierColumn={isAdmin}
+            basePath="/admin/torneos"
             onSelect={(tournament) =>
               handleRowClick(tournament.id, tournament.status)
             }
