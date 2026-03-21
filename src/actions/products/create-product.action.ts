@@ -70,7 +70,7 @@ export async function createProductAction(input: CreateProductInput) {
         status: "active",
         ProductImage: {
           create: {
-            url: data.code,
+            url: data.imageUrl,
             alt: data.name,
           },
         },

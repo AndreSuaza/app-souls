@@ -20,6 +20,7 @@ export * from "./cards/card-id.schema";
 export * from "./cards/card-slug.schema";
 export * from "./cards/boveda-product-cards.schema";
 export * from "./products/product-search.schema";
+export * from "./media/media.schema";
 export * from "./products/product.schema";
 export * from "./stores/stores-by-distance.schema";
 export * from "./stores/store-id.schema";

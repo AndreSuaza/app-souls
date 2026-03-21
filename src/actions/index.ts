@@ -87,3 +87,7 @@ export * from "./news/get-news-images.action";
 export * from "./news/get-public-news.action";
 export * from "./news/get-public-news-categories.action";
 export * from "./news/get-public-news-detail.action";
+
+export * from "./media/get-media-images.action";
+export * from "./media/upload-media-image.action";
+export * from "./media/delete-media-image.action";

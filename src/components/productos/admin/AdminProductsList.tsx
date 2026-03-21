@@ -21,6 +21,12 @@ type VisibilityFilter = "all" | "visible" | "hidden";
 
 const PAGE_SIZE = 10;
 
+const resolveProductImage = (value?: string | null) => {
+  if (!value) return null;
+  if (value.startsWith("http")) return value;
+  return `/products/${value}.webp`;
+};
+
 export const AdminProductsList = ({ products, onDeleted }: Props) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -205,9 +211,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
                 </thead>
                 <tbody>
                   {paginated.map((product) => {
-                    const imageSrc = product.imageUrl
-                      ? `/products/${product.imageUrl}.webp`
-                      : null;
+                    const imageSrc = resolveProductImage(product.imageUrl);
 
                     return (
                       <tr
@@ -278,9 +282,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
 
           <div className="space-y-3 md:hidden">
             {paginated.map((product) => {
-              const imageSrc = product.imageUrl
-                ? `/products/${product.imageUrl}.webp`
-                : null;
+              const imageSrc = resolveProductImage(product.imageUrl);
 
               return (
                 <div
