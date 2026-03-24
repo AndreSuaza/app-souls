@@ -26,6 +26,7 @@ import {
 import { ProfileCurrentTournament } from "./ProfileCurrentTournament";
 import { ProfileTournamentHistory } from "./ProfileTournamentHistory";
 import { UserDeckLibrary } from "../mazos/deck-library/UserDeckLibrary";
+import { getAvatarUrl, getAvatarValue } from "@/utils/avatar-image";
 
 interface User {
   name?: string | null;
@@ -154,12 +155,12 @@ export const Pefil = ({
   const [hasShownInProgressWarning, setHasShownInProgressWarning] =
     useState(false);
   const [showAvatars, setShowAvatars] = useState(false);
-  const [baseAvatar, setBaseAvatar] = useState(user.image ?? "");
+  const [baseAvatar, setBaseAvatar] = useState(getAvatarValue(user.image));
   const [selectedAvatar, setSelectedAvatar] = useState(baseAvatar);
   const isAvatarChanged = selectedAvatar !== baseAvatar;
 
   useEffect(() => {
-    const nextAvatar = user.image ?? "";
+    const nextAvatar = getAvatarValue(user.image);
     setBaseAvatar(nextAvatar);
     setSelectedAvatar(nextAvatar);
   }, [user.image]);
@@ -182,7 +183,7 @@ export const Pefil = ({
   const [deckRefreshToken, setDeckRefreshToken] = useState(0);
 
   const handleSelect = (avatar: Avatar) => {
-    setSelectedAvatar(avatar.imageUrl);
+    setSelectedAvatar(getAvatarValue(avatar.imageUrl));
     setShowAvatars(false);
   };
 
@@ -330,7 +331,7 @@ export const Pefil = ({
                 className="rounded-lg"
                 width={270}
                 height={287}
-                src={`/profile/${selectedAvatar || user.image}.webp`}
+                src={getAvatarUrl(selectedAvatar || user.image)}
                 alt={
                   user.nickname
                     ? `Avatar de ${user.nickname}`
@@ -673,13 +674,13 @@ export const Pefil = ({
                   key={avatar.id}
                   onClick={() => handleSelect(avatar)}
                   className={`cursor-pointer rounded border-4 transition-all ${
-                    selectedAvatar === avatar.name
+                    selectedAvatar === getAvatarValue(avatar.imageUrl)
                       ? "border-purple-600 shadow-lg shadow-purple-600/40 scale-105"
                       : "border-transparent hover:border-purple-500"
                   }`}
                 >
                   <Image
-                    src={`/profile/${avatar.imageUrl}.webp`}
+                    src={getAvatarUrl(avatar.imageUrl)}
                     alt={avatar.name}
                     title={`Seleccionar avatar ${avatar.name}`}
                     width={200}

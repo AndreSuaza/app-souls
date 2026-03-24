@@ -27,6 +27,7 @@ import { NewsImageModal } from "./NewsImageModal";
 import { uploadNewsImageAction } from "@/actions/news/upload-news-image.action";
 import { useToastStore } from "@/store";
 import { useUIStore } from "@/store";
+import { toBlobPath } from "@/utils/blob-path";
 
 type NewsFormValues = {
   title: string;
@@ -255,12 +256,16 @@ export const NewsForm = ({
     setImageFolder(folder);
     if (folder === "banners") {
       const currentFeatured =
-        featuredImageValue.startsWith("local:") ? null : featuredImageValue;
+        featuredImageValue.startsWith("local:")
+          ? null
+          : toBlobPath(featuredImageValue);
       clearStagedFeatured();
       setPendingImage(pendingFeaturedPreview ?? currentFeatured ?? null);
     } else {
       const currentCard =
-        cardImageValue.startsWith("local:") ? null : cardImageValue;
+        cardImageValue.startsWith("local:")
+          ? null
+          : toBlobPath(cardImageValue);
       clearStagedCard();
       setPendingImage(pendingCardPreview ?? currentCard ?? null);
     }
@@ -449,7 +454,7 @@ export const NewsForm = ({
         formData.append("file", pendingFeaturedFile);
         formData.append("folder", "banners");
         const response = await uploadNewsImageAction(formData);
-        featuredImage = response.url;
+        featuredImage = response.pathname;
         clearFeaturedLocal();
         setValue("featuredImage", featuredImage, { shouldValidate: true });
       }
@@ -459,7 +464,7 @@ export const NewsForm = ({
         formData.append("file", pendingCardFile);
         formData.append("folder", "cards");
         const response = await uploadNewsImageAction(formData);
-        cardImage = response.url;
+        cardImage = response.pathname;
         clearCardLocal();
         setValue("cardImage", cardImage, { shouldValidate: true });
       }

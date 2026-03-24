@@ -34,6 +34,7 @@ import { MarkdownCardModal } from "./MarkdownCardModal";
 import { MarkdownDeckModal } from "./MarkdownDeckModal";
 import { MarkdownProductModal } from "./MarkdownProductModal";
 import { MarkdownImageUrlModal } from "./MarkdownImageUrlModal";
+import { toBlobUrl } from "@/utils/blob-path";
 
 type Props = {
   label?: string;
@@ -652,7 +653,7 @@ export const MarkdownEditor = ({
       .insertContent({
         type: "image",
         attrs: {
-          src: `/products/${selectedProduct.imageUrl}.webp`,
+          src: toBlobUrl(selectedProduct.imageUrl),
           alt: selectedProduct.name ?? "Producto",
         },
       })

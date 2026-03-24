@@ -4,10 +4,10 @@ import { auth } from "@/auth";
 import { listBlob } from "@/lib/blob";
 import type { NewsImageOptions } from "@/interfaces";
 
-const mapToUrls = (items: { pathname: string; url: string }[]) =>
+const mapToPathnames = (items: { pathname: string; url: string }[]) =>
   items
     .sort((a, b) => a.pathname.localeCompare(b.pathname))
-    .map((item) => item.url);
+    .map((item) => item.pathname);
 
 export async function getNewsImagesAction(): Promise<NewsImageOptions> {
   try {
@@ -27,8 +27,8 @@ export async function getNewsImagesAction(): Promise<NewsImageOptions> {
     ]);
 
     return {
-      banners: mapToUrls(banners),
-      cards: mapToUrls(cards),
+      banners: mapToPathnames(banners),
+      cards: mapToPathnames(cards),
     };
   } catch (error) {
     console.error("[getNewsImagesAction]", error);

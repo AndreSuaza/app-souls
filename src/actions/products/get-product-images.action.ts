@@ -14,7 +14,7 @@ export async function getProductImagesAction(): Promise<string[]> {
     const list = await listBlob("souls/products/");
     return list
       .sort((a, b) => a.pathname.localeCompare(b.pathname))
-      .map((item) => item.url);
+      .map((item) => item.pathname);
   } catch (error) {
     console.error("[getProductImagesAction]", error);
     throw new Error("Error cargando las imágenes del producto");

@@ -10,6 +10,7 @@ import { PaginationLine } from "@/components/ui";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import type { AdminProductListItem } from "@/interfaces";
 import { AdminProductsSearch } from "./AdminProductsSearch";
+import { toBlobUrl } from "@/utils/blob-path";
 
 type Props = {
   products: AdminProductListItem[];
@@ -23,7 +24,12 @@ const PAGE_SIZE = 10;
 
 const resolveProductImage = (value?: string | null) => {
   if (!value) return null;
-  if (value.startsWith("http")) return value;
+  if (value.startsWith("http") || value.startsWith("/")) return value;
+  const blobCandidate = value.includes("/")
+    ? value
+    : `souls/products/${value}.webp`;
+  const resolved = toBlobUrl(blobCandidate);
+  if (resolved.startsWith("http") || resolved.startsWith("/")) return resolved;
   return `/products/${value}.webp`;
 };
 

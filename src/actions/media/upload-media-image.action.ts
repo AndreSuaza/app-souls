@@ -76,7 +76,7 @@ export async function uploadMediaImageAction(formData: FormData) {
       contentType: "image/webp",
     });
 
-    return { url: blob.url };
+    return { pathname: blob.pathname };
   } catch (error) {
     console.error("[uploadMediaImageAction]", error);
     throw new Error(

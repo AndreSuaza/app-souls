@@ -71,7 +71,7 @@ export async function uploadNewsImageAction(formData: FormData) {
       contentType: "image/webp",
     });
 
-    return { url: blob.url };
+    return { pathname: blob.pathname };
   } catch (error) {
     console.error("[uploadNewsImageAction]", error);
     // Propaga el mensaje real para mostrar el motivo exacto en UI.

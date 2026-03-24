@@ -5,10 +5,10 @@ import { listBlob } from "@/lib/blob";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import { MediaSectionSchema } from "@/schemas";
 
-const mapToUrls = (items: { pathname: string; url: string }[]) =>
+const mapToPathnames = (items: { pathname: string; url: string }[]) =>
   items
     .sort((a, b) => a.pathname.localeCompare(b.pathname))
-    .map((item) => item.url);
+    .map((item) => item.pathname);
 
 export async function getMediaImagesAction(section: string): Promise<string[]> {
   try {
@@ -23,7 +23,7 @@ export async function getMediaImagesAction(section: string): Promise<string[]> {
     const prefix = `${config.folder}/`;
 
     const list = await listBlob(prefix);
-    return mapToUrls(list);
+    return mapToPathnames(list);
   } catch (error) {
     console.error("[getMediaImagesAction]", error);
     throw new Error("Error cargando las imágenes");

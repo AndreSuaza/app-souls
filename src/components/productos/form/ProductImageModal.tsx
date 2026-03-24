@@ -7,6 +7,7 @@ import { FiSearch, FiX } from "react-icons/fi";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { Modal } from "@/components/ui/modal/modal";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
+import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
 
 const PAGE_SIZE = 32;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
@@ -37,7 +38,7 @@ export const ProductImageModal = ({
 
     return images.filter((image) => {
       const normalized = image.toLowerCase();
-      const filename = image.split("?")[0].split("/").pop() ?? image;
+      const filename = toBlobPath(image).split("/").pop() ?? image;
       const code = filename.replace(/\.[^/.]+$/, "").toLowerCase();
       return normalized.includes(query) || code.includes(query);
     });
@@ -117,10 +118,8 @@ export const ProductImageModal = ({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pageImages.map((image) => {
                 const isSelected = image === selectedImage;
-                const filename = image.split("?")[0].split("/").pop() ?? image;
-                const resolvedSrc = image.startsWith("http")
-                  ? image
-                  : `/products/${image}`;
+                const filename = toBlobPath(image).split("/").pop() ?? image;
+                const resolvedSrc = toBlobUrl(image);
 
                 return (
                   <button

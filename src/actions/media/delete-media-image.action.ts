@@ -5,11 +5,20 @@ import { deleteBlob } from "@/lib/blob";
 import { prisma } from "@/lib/prisma";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import { MediaSectionSchema } from "@/schemas";
+import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
 
 const validateUsage = async (section: string, url: string) => {
+  const pathname = toBlobPath(url);
+  const fullUrl = toBlobUrl(url);
+  const candidates = [url, pathname, fullUrl].filter(Boolean);
+
   if (section === "news-banners") {
     const used = await prisma.new.findFirst({
-      where: { featuredImage: url },
+      where: {
+        featuredImage: {
+          in: candidates,
+        },
+      },
       select: { id: true },
     });
     return Boolean(used);
@@ -17,7 +26,11 @@ const validateUsage = async (section: string, url: string) => {
 
   if (section === "news-cards") {
     const used = await prisma.new.findFirst({
-      where: { cardImage: url },
+      where: {
+        cardImage: {
+          in: candidates,
+        },
+      },
       select: { id: true },
     });
     return Boolean(used);
@@ -25,7 +38,11 @@ const validateUsage = async (section: string, url: string) => {
 
   if (section === "products") {
     const used = await prisma.productImage.findFirst({
-      where: { url },
+      where: {
+        url: {
+          in: candidates,
+        },
+      },
       select: { id: true },
     });
     return Boolean(used);

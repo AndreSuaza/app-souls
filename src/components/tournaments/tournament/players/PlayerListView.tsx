@@ -7,6 +7,7 @@ import { IoTrashOutline } from "react-icons/io5";
 import { GiCardBurn } from "react-icons/gi";
 import { TbCardsFilled } from "react-icons/tb";
 import { TournamentPlayerInterface } from "@/interfaces";
+import { getAvatarUrl } from "@/utils/avatar-image";
 
 type PlayerListViewProps = {
   players: TournamentPlayerInterface[];
@@ -40,7 +41,7 @@ export const PlayerListView = ({
 
               {/* Avatar */}
               <Image
-                src={`/profile/${p.image ?? "player"}.webp`}
+                src={getAvatarUrl(p.image)}
                 alt={p.playerNickname}
                 title={p.playerNickname}
                 width={36}

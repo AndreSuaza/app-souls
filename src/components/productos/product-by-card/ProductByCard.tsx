@@ -1,6 +1,7 @@
 
 import Image from "next/image";
 import Link from 'next/link';
+import { toBlobUrl } from "@/utils/blob-path";
 
 interface Product {
     code: string;
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export const ProductsByCard = ({product}: Props) => {
+  const imageSrc = toBlobUrl(`souls/products/${product.code}.webp`);
+  const fallbackSrc = toBlobUrl(`souls/products/${product}LOGO.webp`);
 
   return (
     <div className="grid grid-cols-2 gap-1 ml-2 h-[300px] mb-6">
@@ -24,7 +27,7 @@ export const ProductsByCard = ({product}: Props) => {
             <Image 
                 width={300} 
                 height={300} 
-                src={ `/products/${product.code}.webp`} 
+                src={imageSrc} 
                 alt={product.name} 
                 className="rounded-md m-auto"
                 blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
@@ -37,7 +40,7 @@ export const ProductsByCard = ({product}: Props) => {
         <Image 
             width={300} 
             height={300} 
-            src={ `/products/${product}LOGO.webp`} 
+            src={fallbackSrc} 
             alt={product.name} 
             className="rounded-t m-auto"
             blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="

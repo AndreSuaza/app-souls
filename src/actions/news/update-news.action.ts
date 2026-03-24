@@ -6,6 +6,7 @@ import { resolveNewsStatus } from "@/logic";
 import { UpdateNewsSchema, type UpdateNewsInput } from "@/schemas";
 import { buildNewsSlug } from "@/utils/news-slug";
 import { deleteBlob } from "@/lib/blob";
+import { isBlobValue } from "@/utils/blob-path";
 
 export async function updateNewsAction(input: UpdateNewsInput) {
   try {
@@ -85,11 +86,11 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     const shouldDeleteFeatured =
       existing.featuredImage &&
       existing.featuredImage !== data.featuredImage &&
-      existing.featuredImage.includes("vercel-storage.com");
+      isBlobValue(existing.featuredImage);
     const shouldDeleteCard =
       existing.cardImage &&
       existing.cardImage !== data.cardImage &&
-      existing.cardImage.includes("vercel-storage.com");
+      isBlobValue(existing.cardImage);
 
     if (shouldDeleteFeatured || shouldDeleteCard) {
       // Limpiamos imágenes anteriores para evitar basura en Blob.

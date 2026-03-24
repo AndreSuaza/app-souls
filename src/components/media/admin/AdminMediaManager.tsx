@@ -5,6 +5,9 @@ import Image from "next/image";
 import clsx from "clsx";
 import {
   IoCloudUploadOutline,
+  IoChevronBack,
+  IoChevronForward,
+  IoCloseOutline,
   IoImagesOutline,
   IoTrashOutline,
 } from "react-icons/io5";
@@ -19,9 +22,10 @@ import {
   type MediaSectionKey,
 } from "@/models/media.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
 
 const getFileLabel = (url: string) => {
-  const clean = url.split("?")[0];
+  const clean = toBlobPath(url);
   return clean.split("/").pop() ?? url;
 };
 
@@ -42,6 +46,8 @@ export const AdminMediaManager = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(0);
 
   const currentGroup = useMemo(
     () => MEDIA_GROUPS.find((group) => group.id === activeGroup),
@@ -98,6 +104,9 @@ export const AdminMediaManager = () => {
     );
   }, [images, debouncedSearch]);
 
+  const previewImages = filteredImages.length > 0 ? filteredImages : images;
+  const previewImage = previewImages[previewIndex] ?? null;
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDebouncedSearch(search);
@@ -106,17 +115,56 @@ export const AdminMediaManager = () => {
     return () => clearTimeout(timeoutId);
   }, [search]);
 
-  const handleUpload = async (file: File | null) => {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("section", activeSection);
-    formData.append("file", file);
+  useEffect(() => {
+    if (previewIndex >= previewImages.length) {
+      setPreviewIndex(0);
+    }
+  }, [previewImages.length, previewIndex]);
+
+  useEffect(() => {
+    if (!isPreviewOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+    // Bloquea el scroll del body mientras el modal esta abierto.
+    document.body.style.overflow = "hidden";
+    // Evita el salto visual al ocultar el scrollbar.
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+    };
+  }, [isPreviewOpen]);
+
+  const handleUpload = async (files: File[]) => {
+    if (files.length === 0) {
+      return;
+    }
+
+    if (files.length > 20) {
+      showToast("Solo puedes subir hasta 20 imágenes por carga.", "error");
+      return;
+    }
 
     try {
-      showLoading("Subiendo imagen...");
-      const response = await uploadMediaImageAction(formData);
-      setImages((prev) => [response.url, ...prev]);
-      showToast("Imagen subida correctamente", "success");
+      showLoading("Subiendo imágenes...");
+      const uploaded: string[] = [];
+
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("section", activeSection);
+        formData.append("file", file);
+        const response = await uploadMediaImageAction(formData);
+        uploaded.push(response.pathname);
+      }
+
+      if (uploaded.length > 0) {
+        setImages((prev) => [...uploaded, ...prev]);
+        showToast("Imágenes subidas correctamente", "success");
+      }
     } catch (err) {
       showToast(
         err instanceof Error ? err.message : "No se pudo subir la imagen",
@@ -125,6 +173,48 @@ export const AdminMediaManager = () => {
     } finally {
       hideLoading();
     }
+  };
+
+  const handleRequestUpload = (files: File[]) => {
+    if (files.length === 0) return;
+    if (files.length > 20) {
+      showToast("Solo puedes subir hasta 20 imágenes por carga.", "error");
+      return;
+    }
+
+    openConfirmation({
+      text: "¿Deseas subir estas imágenes?",
+      description: `Se subirán ${files.length} archivo(s) a ${sectionConfig.label}.`,
+      action: async () => {
+        await handleUpload(files);
+        return true;
+      },
+      onSuccess: () => {},
+      onError: () => {},
+    });
+  };
+
+  const handleOpenPreview = (index: number) => {
+    setPreviewIndex(index);
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+  };
+
+  const handlePrevPreview = () => {
+    if (previewImages.length === 0) return;
+    setPreviewIndex((prev) =>
+      prev === 0 ? previewImages.length - 1 : prev - 1,
+    );
+  };
+
+  const handleNextPreview = () => {
+    if (previewImages.length === 0) return;
+    setPreviewIndex((prev) =>
+      prev === previewImages.length - 1 ? 0 : prev + 1,
+    );
   };
 
   const handleDelete = (url: string) => {
@@ -170,45 +260,48 @@ export const AdminMediaManager = () => {
         </p>
       </header>
 
-      <div className="flex flex-wrap gap-2">
-        {MEDIA_GROUPS.map((group) => (
-          <button
-            key={group.id}
-            type="button"
-            onClick={() => setActiveGroup(group.id)}
-            className={clsx(
-              "rounded-full border px-4 py-2 text-sm font-semibold transition",
-              activeGroup === group.id
-                ? "border-purple-500 bg-purple-600 text-white"
-                : "border-tournament-dark-accent bg-white text-slate-600 hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200",
-            )}
-          >
-            {group.label}
-          </button>
-        ))}
-      </div>
-
-      {currentGroup && currentGroup.sections.length > 1 && (
-        <div className="flex flex-wrap gap-2">
-          {currentGroup.sections.map((section) => (
+      <div className="space-y-0 overflow-hidden rounded-tr-2xl">
+        <div className="flex flex-wrap items-end gap-2 border-b border-tournament-dark-accent dark:border-tournament-dark-border">
+        {MEDIA_GROUPS.map((group) => {
+          const isActive = activeGroup === group.id;
+          return (
             <button
-              key={section}
+              key={group.id}
               type="button"
-              onClick={() => setActiveSection(section)}
+              onClick={() => setActiveGroup(group.id)}
               className={clsx(
-                "rounded-lg border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition",
-                activeSection === section
-                  ? "border-purple-500 bg-purple-100 text-purple-700 dark:bg-purple-600/20 dark:text-purple-200"
-                  : "border-tournament-dark-accent bg-white text-slate-600 hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200",
+                "relative -mb-px rounded-t-xl border border-b-0 px-5 py-2 text-sm font-semibold transition",
+                isActive
+                  ? "border-purple-500 bg-white text-purple-700 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-purple-200"
+                  : "border-tournament-dark-accent bg-slate-100 text-slate-500 hover:border-purple-400 hover:text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300 dark:hover:bg-tournament-dark-muted-strong dark:hover:text-purple-100",
               )}
             >
-              {MEDIA_SECTION_CONFIG[section].label}
+              {group.label}
             </button>
-          ))}
+          );
+        })}
         </div>
-      )}
 
-      <section className="space-y-5 rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+        <section className="-mt-px space-y-5 rounded-b-2xl border border-tournament-dark-accent border-t-0 bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+          {currentGroup && currentGroup.sections.length > 1 && (
+            <div className="flex flex-wrap gap-2">
+              {currentGroup.sections.map((section) => (
+                <button
+                  key={section}
+                  type="button"
+                  onClick={() => setActiveSection(section)}
+                  className={clsx(
+                    "rounded-lg border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition",
+                    activeSection === section
+                      ? "border-purple-500 bg-purple-100 text-purple-700 dark:bg-purple-600/20 dark:text-purple-200"
+                      : "border-tournament-dark-accent bg-white text-slate-600 hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200",
+                  )}
+                >
+                  {MEDIA_SECTION_CONFIG[section].label}
+                </button>
+              ))}
+            </div>
+          )}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-600/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-200">
@@ -230,11 +323,14 @@ export const AdminMediaManager = () => {
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 className="hidden"
                 onChange={(event) => {
-                  const file = event.target.files?.[0] ?? null;
+                  const files = event.target.files
+                    ? Array.from(event.target.files)
+                    : [];
                   event.target.value = "";
-                  handleUpload(file);
+                  handleRequestUpload(files);
                 }}
               />
             </label>
@@ -277,37 +373,45 @@ export const AdminMediaManager = () => {
                 </div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {filteredImages.map((url) => (
-                    <div
-                      key={url}
-                      className="relative flex flex-col overflow-hidden rounded-lg border border-transparent bg-white shadow-sm transition hover:border-purple-400 dark:bg-tournament-dark-surface"
-                    >
-                      <div className="relative flex h-36 items-center justify-center bg-slate-100 dark:bg-tournament-dark-muted">
-                        <Image
-                          src={url}
-                          alt={getFileLabel(url)}
-                          width={480}
-                          height={240}
-                          className="h-full w-full object-contain"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2 p-3">
-                        <span className="truncate text-xs text-slate-500 dark:text-slate-400">
-                          {getFileLabel(url)}
-                        </span>
-                      </div>
-                      {sectionConfig.allowDelete && (
+                  {filteredImages.map((url, index) => {
+                    const imageSrc = toBlobUrl(url);
+                    return (
+                      <div
+                        key={url}
+                        className="relative flex flex-col overflow-hidden rounded-lg border border-transparent bg-white shadow-sm transition hover:border-purple-400 dark:bg-tournament-dark-surface"
+                      >
                         <button
                           type="button"
-                          onClick={() => handleDelete(url)}
-                          className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-500 text-red-600 transition hover:bg-red-50 dark:border-red-400 dark:text-red-300 dark:hover:bg-red-500/10"
-                          title="Eliminar imagen"
+                          onClick={() => handleOpenPreview(index)}
+                          className="relative flex h-36 items-center justify-center bg-slate-100 dark:bg-tournament-dark-muted"
+                          title="Ver imagen"
                         >
-                          <IoTrashOutline size={18} />
+                          <Image
+                            src={imageSrc}
+                            alt={getFileLabel(url)}
+                            width={480}
+                            height={240}
+                            className="h-full w-full object-contain"
+                          />
                         </button>
-                      )}
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-2 p-3">
+                          <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                            {getFileLabel(url)}
+                          </span>
+                        </div>
+                        {sectionConfig.allowDelete && (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(url)}
+                            className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-500 bg-red-50 text-red-600 transition hover:bg-red-100 dark:border-red-400 dark:bg-red-500/10 dark:text-red-200 dark:hover:bg-red-500/20"
+                            title="Eliminar imagen"
+                          >
+                            <IoTrashOutline size={18} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
 
                   {filteredImages.length === 0 && !loading && (
                     <div className="col-span-full flex items-center justify-center py-12 text-sm text-slate-500 dark:text-slate-400">
@@ -318,8 +422,73 @@ export const AdminMediaManager = () => {
               )}
             </div>
           </>
-        )}
-      </section>
+          )}
+        </section>
+      </div>
+
+      {isPreviewOpen && previewImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm fade-in"
+            onClick={handleClosePreview}
+          />
+
+          <div className="relative z-10 h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-5xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg">
+            <div className="flex items-center justify-between border-b border-purple-600 bg-slate-100/90 px-6 py-4 dark:border-tournament-dark-border dark:bg-slate-950/70">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900 sm:text-xl dark:text-white">
+                  {sectionConfig.label}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {getFileLabel(previewImage)}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Cerrar vista previa"
+                onClick={handleClosePreview}
+                className="flex h-11 w-11 items-center justify-center rounded-lg border border-gray-300 bg-white text-slate-600 transition hover:border-purple-400 hover:text-purple-600 dark:border dark:border-tournament-dark-border dark:bg-slate-950/80 dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+              >
+                <IoCloseOutline className="h-6 w-6" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              aria-label="Imagen anterior"
+              onClick={handlePrevPreview}
+              className="absolute left-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
+            >
+              <IoChevronBack className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              aria-label="Imagen siguiente"
+              onClick={handleNextPreview}
+              className="absolute right-2 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-purple-600 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/90 dark:text-white dark:hover:bg-tournament-dark-muted-hover"
+            >
+              <IoChevronForward className="h-6 w-6" />
+            </button>
+
+            <div className="grid h-[calc(100vh-72px)] grid-cols-1 overflow-y-auto px-4 pb-6 sm:h-auto sm:max-h-[calc(85vh-72px)]">
+              <div className="relative flex flex-col items-center gap-4 py-6">
+                <div className="w-full max-w-3xl overflow-hidden rounded-lg bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
+                  <Image
+                    src={toBlobUrl(previewImage)}
+                    alt={getFileLabel(previewImage)}
+                    width={1400}
+                    height={900}
+                    className="block w-full object-contain"
+                  />
+                </div>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  {previewIndex + 1} / {previewImages.length}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

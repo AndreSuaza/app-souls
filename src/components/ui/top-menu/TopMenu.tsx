@@ -8,6 +8,7 @@ import { Routes } from "@/models/routes.models";
 import { useEffect, useRef, useState } from "react";
 import { IoMenuSharp } from "react-icons/io5";
 import { signOut, useSession } from "next-auth/react";
+import { getAvatarUrl } from "@/utils/avatar-image";
 
 export const TopMenu = () => {
   const openMenu = useUIStore((state) => state.openSideMenu);
@@ -164,7 +165,7 @@ export const TopMenu = () => {
               {session?.user.image && (
                 <>
                   <Image
-                    src={`/profile/${session?.user.image}.webp`}
+                    src={getAvatarUrl(session?.user.image)}
                     alt="Imagen de perfil"
                     title={`Avatar de ${session?.user.nickname ?? "usuario"}`}
                     className="order-1 w-8 rounded-full"

@@ -10,6 +10,7 @@ import { FormField, FormInput, FormSelect } from "@/components/ui/form";
 import type { AdminProductDetail } from "@/interfaces";
 import { MarkdownDeckModal } from "@/components/ui/markdown/MarkdownDeckModal";
 import { ProductImageModal } from "./ProductImageModal";
+import { toBlobPath } from "@/utils/blob-path";
 
 type ProductFormValues = {
   name: string;
@@ -72,7 +73,7 @@ const MONTHS = [
 
 const stripExtension = (filename: string) => filename.replace(/\.[^/.]+$/, "");
 const getLabelFromUrl = (url: string) => {
-  const clean = url.split("?")[0];
+  const clean = toBlobPath(url);
   return clean.split("/").pop() ?? url;
 };
 
@@ -198,8 +199,11 @@ export const ProductForm = ({
 
   useEffect(() => {
     if (!initialValues?.imageUrl && !initialValues?.code) return;
+    const initialPath = initialValues?.imageUrl
+      ? toBlobPath(initialValues.imageUrl)
+      : "";
     const match =
-      images.find((image) => image === initialValues?.imageUrl) ??
+      (initialPath ? images.find((image) => image === initialPath) : null) ??
       images.find(
         (image) => stripExtension(getLabelFromUrl(image)) === initialValues.code,
       ) ??

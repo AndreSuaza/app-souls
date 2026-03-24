@@ -1,4 +1,5 @@
 import { del, list, put } from "@vercel/blob";
+import { toBlobUrl } from "@/utils/blob-path";
 
 type ListItem = {
   pathname: string;
@@ -19,7 +20,9 @@ export const uploadBlob = async ({ path, buffer, contentType }: UploadParams) =>
 
 export const deleteBlob = async (url: string) => {
   if (!url) return;
-  await del(url);
+  const resolvedUrl = toBlobUrl(url);
+  if (!resolvedUrl || !resolvedUrl.startsWith("http")) return;
+  await del(resolvedUrl);
 };
 
 export const listBlob = async (prefix: string): Promise<ListItem[]> => {

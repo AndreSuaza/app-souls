@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { TbCardsFilled } from "react-icons/tb";
 import { TournamentPlayerInterface } from "@/interfaces";
+import { getAvatarUrl } from "@/utils/avatar-image";
 
 type Highlight = "blue" | "red" | "yellow";
 
@@ -20,7 +21,7 @@ export const PlayerCell = ({
   highlight,
   showDeckLink = false,
 }: Props) => {
-  const imageName = player.image ?? "player";
+  const imageSrc = getAvatarUrl(player.image);
 
   const highlightText =
     highlight === "blue"
@@ -47,7 +48,7 @@ export const PlayerCell = ({
       }`}
     >
       <Image
-        src={`/profile/${imageName}.webp`}
+        src={imageSrc}
         alt={player.playerNickname}
         title={player.playerNickname}
         width={36}

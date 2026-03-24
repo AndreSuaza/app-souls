@@ -8,6 +8,7 @@ import { PaginationLine } from "@/components/ui";
 import { PublicTournamentsTable } from "./PublicTournamentsTable";
 import { PublicTournamentsMobileList } from "./PublicTournamentsMobileList";
 import { RankBadge } from "../tournament/players/RankBadge";
+import { getAvatarUrl } from "@/utils/avatar-image";
 
 type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
 
@@ -145,7 +146,7 @@ export function PublicTournamentsHighlights({
                 <div className="flex items-center gap-3">
                   <RankBadge rank={index + 1} showPodium />
                   <Image
-                    src={`/profile/${player.image}.webp`}
+                    src={getAvatarUrl(player.image)}
                     alt={player.nickname}
                     title={player.nickname}
                     width={40}

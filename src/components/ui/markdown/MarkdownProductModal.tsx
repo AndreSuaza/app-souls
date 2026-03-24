@@ -6,6 +6,7 @@ import { FiX } from "react-icons/fi";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { Modal } from "../modal/modal";
+import { toBlobUrl } from "@/utils/blob-path";
 
 type ProductSearchResult = {
   id: string;
@@ -83,9 +84,7 @@ export const MarkdownProductModal = ({
           <div className="relative max-h-[420px] min-h-[320px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {products.map((product) => {
-                const src = product.imageUrl
-                  ? `/products/${product.imageUrl}.webp`
-                  : null;
+                const src = product.imageUrl ? toBlobUrl(product.imageUrl) : null;
                 const isSelected = selectedProductId === product.id;
 
                 return (
