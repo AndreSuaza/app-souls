@@ -4,7 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
-import { IoFilterSharp, IoCloseOutline, IoSearch } from "react-icons/io5";
+import {
+  IoFilterSharp,
+  IoCloseOutline,
+  IoSearch,
+  IoAddCircleOutline,
+} from "react-icons/io5";
 import { RiShoppingBagLine, RiHashtag } from "react-icons/ri";
 import {
   GiTreasureMap,
@@ -51,6 +56,10 @@ interface CardFiltersSidebarProps {
   onCompactSearchLayoutChange?: (isCompact: boolean) => void;
   stackPanelLayout?: boolean;
   enableCompactSearchLayout?: boolean;
+  showBulkAction?: boolean;
+  onBulkAction?: () => void;
+  isBulkActionLoading?: boolean;
+  bulkActionTitle?: string;
 }
 
 const LIMIT_OPTIONS = [{ label: "Legendaria", value: "1" }];
@@ -82,6 +91,10 @@ export function CardFiltersSidebar({
   onCompactSearchLayoutChange,
   stackPanelLayout = false,
   enableCompactSearchLayout = false,
+  showBulkAction = false,
+  onBulkAction,
+  isBulkActionLoading = false,
+  bulkActionTitle = "Agregar cartas filtradas",
 }: CardFiltersSidebarProps) {
   const [filters, setFilters] = useState<FilterSelections>(
     () => initialFilters ?? getDefaultFilters(),
@@ -377,21 +390,38 @@ export function CardFiltersSidebar({
                 />
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onPanelToggle}
-              className={clsx(
-                "flex items-center gap-2 px-4 py-2 border border-purple-400 rounded-lg font-semibold text-purple-600 bg-white dark:bg-tournament-dark-muted dark:text-purple-300 shadow-sm hover:border-purple-600 transition",
-                isCompactSearchLayout
-                  ? "w-full justify-center text-xs"
-                  : "text-sm",
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onPanelToggle}
+                className={clsx(
+                  "flex items-center gap-2 px-4 py-2 border border-purple-400 rounded-lg font-semibold text-purple-600 bg-white dark:bg-tournament-dark-muted dark:text-purple-300 shadow-sm hover:border-purple-600 transition",
+                  isCompactSearchLayout
+                    ? "w-full justify-center text-xs"
+                    : "text-sm",
+                )}
+              >
+                <IoFilterSharp
+                  className={isCompactSearchLayout ? "w-4 h-4" : "w-5 h-5"}
+                />
+                <span>Filtrar</span>
+              </button>
+              {showBulkAction && onBulkAction && (
+                <button
+                  type="button"
+                  onClick={onBulkAction}
+                  disabled={isBulkActionLoading}
+                  title={bulkActionTitle}
+                  className={clsx(
+                    "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-purple-400 text-purple-600 bg-white dark:bg-tournament-dark-muted dark:text-purple-300 shadow-sm transition hover:border-purple-600",
+                    isBulkActionLoading ? "cursor-not-allowed opacity-60" : "",
+                  )}
+                  aria-label={bulkActionTitle}
+                >
+                  <IoAddCircleOutline className="h-5 w-5" />
+                </button>
               )}
-            >
-              <IoFilterSharp
-                className={isCompactSearchLayout ? "w-4 h-4" : "w-5 h-5"}
-              />
-              <span>Filtrar</span>
-            </button>
+            </div>
           </div>
           <PaginationStats rangeText={statsRangeText} entityLabel="cartas" />
         </div>

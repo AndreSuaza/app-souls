@@ -34,6 +34,7 @@ type Props = {
   showTierColumn?: boolean;
   onSelect?: (tournament: TournamentItem) => void;
   actionLabel?: string;
+  basePath?: string;
 };
 
 export function PublicTournamentsMobileList({
@@ -45,6 +46,7 @@ export function PublicTournamentsMobileList({
   showTierColumn = false,
   onSelect,
   actionLabel = "Ver torneo",
+  basePath = "/torneos",
 }: Props) {
   const router = useRouter();
 
@@ -52,7 +54,7 @@ export function PublicTournamentsMobileList({
     <div className="space-y-3 md:hidden">
       {tournaments.map((tournament) => {
         const status = statusConfig[tournament.status];
-        const tournamentUrl = `/torneos/${tournament.id}`;
+        const tournamentUrl = `${basePath}/${tournament.id}`;
         const handleSelect = () => {
           if (onSelect) {
             onSelect(tournament);
@@ -114,6 +116,7 @@ export function PublicTournamentsMobileList({
               {showActionColumn && (
                 <Link
                   href={tournamentUrl}
+                  title={`Ver torneo ${tournament.title}`}
                   className="text-sm font-semibold text-purple-700 hover:text-purple-500 dark:text-purple-300 dark:hover:text-purple-200"
                 >
                   {actionLabel}

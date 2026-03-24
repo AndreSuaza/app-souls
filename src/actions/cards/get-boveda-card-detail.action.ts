@@ -1,20 +1,21 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { CardIdSchema, type CardIdInput } from "@/schemas";
+import { CardSlugSchema, type CardSlugInput } from "@/schemas";
 
-export async function getBovedaCardDetailAction(input: CardIdInput) {
-  const { cardId } = CardIdSchema.parse(input);
+export async function getBovedaCardDetailAction(input: CardSlugInput) {
+  const { slug } = CardSlugSchema.parse(input);
 
   const card = await prisma.card.findUnique({
     where: {
-      id: cardId,
+      slug,
     },
     select: {
       id: true,
       idd: true,
       code: true,
       name: true,
+      slug: true,
       cost: true,
       force: true,
       defense: true,

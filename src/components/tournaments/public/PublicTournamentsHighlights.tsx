@@ -147,6 +147,7 @@ export function PublicTournamentsHighlights({
                   <Image
                     src={`/profile/${player.image}.webp`}
                     alt={player.nickname}
+                    title={player.nickname}
                     width={40}
                     height={40}
                     className="h-10 w-10 rounded-full object-cover border border-slate-200 dark:border-tournament-dark-border"

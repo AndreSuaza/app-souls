@@ -9,7 +9,9 @@ import {
   IoArrowBackOutline,
   IoCloseOutline,
   IoHomeOutline,
+  IoLayers,
   IoNewspaperOutline,
+  IoBagRemoveOutline,
 } from "react-icons/io5";
 import { IoMdTrophy } from "react-icons/io";
 import { signOut } from "next-auth/react";
@@ -24,6 +26,8 @@ export const TournamentSidebar = () => {
   const pathname = usePathname();
   const isTournamentSection = pathname.startsWith("/admin/torneos");
   const isNewsSection = pathname.startsWith("/admin/noticias");
+  const isDeckSection = pathname.startsWith("/admin/mazos");
+  const isProductSection = pathname.startsWith("/admin/productos");
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
 
   const menuItems = [
@@ -46,6 +50,16 @@ export const TournamentSidebar = () => {
           label: "Noticias",
           href: "/admin/noticias",
           icon: IoNewspaperOutline,
+        },
+        {
+          label: "Productos",
+          href: "/admin/productos",
+          icon: IoBagRemoveOutline,
+        },
+        {
+          label: "Mazos",
+          href: "/admin/mazos",
+          icon: IoLayers,
         },
       );
     }
@@ -93,6 +107,52 @@ export const TournamentSidebar = () => {
     }
 
     if (role === "admin") {
+      menuItems.push({
+        label: "Volver",
+        href: "/admin",
+        icon: IoArrowBackOutline,
+      });
+    }
+  }
+
+  if (isProductSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Crear producto",
+          href: "/admin/productos/crear-producto",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Productos",
+          href: "/admin/productos",
+          icon: IoBagRemoveOutline,
+        },
+      );
+
+      menuItems.push({
+        label: "Volver",
+        href: "/admin",
+        icon: IoArrowBackOutline,
+      });
+    }
+  }
+
+  if (isDeckSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Crear mazo",
+          href: "/admin/mazos/laboratorio",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Mazos",
+          href: "/admin/mazos",
+          icon: IoLayers,
+        },
+      );
+
       menuItems.push({
         label: "Volver",
         href: "/admin",

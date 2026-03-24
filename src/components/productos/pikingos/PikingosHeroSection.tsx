@@ -13,6 +13,7 @@ export function PikingosHeroSection() {
                   <Image
                     src="/products/pikingos/logo_pik.webp"
                     alt="Logo Pikingos"
+                    title="Logo Pikingos"
                     width={350}
                     height={150}
                     className="h-auto w-full object-contain"
@@ -39,6 +40,7 @@ export function PikingosHeroSection() {
             <Image
               src="/products/pikingos/LokiWeb.webp"
               alt="Mazo Pikingos Loki"
+              title="Mazo Pikingos Loki"
               fill
               priority
               sizes="(min-width: 1024px) 70vw, 100vw"

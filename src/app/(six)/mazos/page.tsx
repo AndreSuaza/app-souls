@@ -7,13 +7,25 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title:
-    "Biblioteca de Mazos | La biblioteca donde nacen y evolucionan los mejores mazos de Souls In Xtinction TCG",
-  description: "Explora, comparte y descubre mazos creados por la comunidad",
+  title: "Mazos Souls In Xtinction TCG | Biblioteca",
+  description:
+    "Explora la biblioteca de mazos de Souls In Xtinction TCG. Filtra por arquetipos, fechas y torneos, descubre listas creadas por la comunidad y guarda tus favoritos para inspirar tu proximo deck.",
+  keywords: [
+    "Souls In Xtinction",
+    "mazos",
+    "biblioteca de mazos",
+    "TCG",
+    "arquetipos",
+    "torneos",
+    "estrategias",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/mazos",
+  },
   openGraph: {
-    title:
-      "Biblioteca de Mazos | La biblioteca donde nacen y evolucionan los mejores mazos de Souls In Xtinction TCG",
-    description: "Explora, comparte y descubre mazos creados por la comunidad",
+    title: "Mazos Souls In Xtinction TCG | Biblioteca",
+    description:
+      "Explora la biblioteca de mazos de Souls In Xtinction TCG. Filtra por arquetipos, fechas y torneos, descubre listas creadas por la comunidad y guarda tus favoritos para inspirar tu proximo deck.",
     url: "https://soulsinxtinction.com/mazos",
     siteName: "Biblioteca de Mazos Souls In Xtinction TCG",
     images: [
@@ -24,7 +36,7 @@ export const metadata: Metadata = {
         alt: "Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -87,7 +99,9 @@ export default async function Page({ searchParams }: PageProps) {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 px-4 pb-12 pt-6 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg sm:px-6 lg:px-10">
-      <div className="mx-auto w-full max-w-7xl space-y-6">
+      <div className="mx-auto w-full max-w-7xl space-y-6 -mt-6">
+        <h1 className="sr-only">Biblioteca de mazos</h1>
+        <h2 className="sr-only">Explora mazos creados por la comunidad</h2>
         <DeckLibrary
           initialDecks={decksResult.decks}
           initialPagination={{

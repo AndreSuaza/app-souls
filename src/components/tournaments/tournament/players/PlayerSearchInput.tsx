@@ -194,6 +194,7 @@ export const PlayerSearchInput = ({
                 <Image
                   src={`/profile/${user.image ?? "player"}.webp`}
                   alt={user.nickname}
+                  title={user.nickname}
                   width={32}
                   height={32}
                   className="w-8 h-8 rounded-full object-cover border border-tournament-dark-accent dark:border-tournament-dark-border"

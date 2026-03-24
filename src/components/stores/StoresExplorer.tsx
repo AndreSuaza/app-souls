@@ -10,6 +10,7 @@ import { StoresMap } from "./StoresMap";
 interface StoreItem {
   id: string;
   name: string;
+  slug: string;
   city: string;
   address: string;
   country: string;

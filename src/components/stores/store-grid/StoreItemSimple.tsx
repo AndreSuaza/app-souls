@@ -15,7 +15,7 @@ export const StoreItemSimple = ({ store }: Props) => {
     <div className='rounded-md overflow-hidden fade-in mb-4 bg-white pb-2 shadow-md'>
 
         <div className='ml-4 my-2'>
-            <Link href={"/tiendas"} target='blank'>
+            <Link href={"/tiendas"} target="blank" title="Ver todas las tiendas">
             <span className='flex flex-row font-bold text-indigo-600'>{store.city}, {store.country}</span>
             <h3 className='text-xl font-bold'>{store.name}</h3>
             <p className='flex flex-row font-semibold mt-1'>

@@ -23,17 +23,26 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
   const deck = await prisma.deck.findFirst({
     where: {
       id: deckId,
-      userId: session.user.idd,
     },
     select: {
       id: true,
       tournamentId: true,
       createdAt: true,
+      userId: true,
+      isAdminDeck: true,
     },
   });
 
   if (!deck) {
-    throw new Error("No se encontró el mazo.");
+    throw new Error("No se encontro el mazo.");
+  }
+
+  const isAdmin = session.user.role === "admin";
+  const canManage =
+    deck.userId === session.user.idd || (isAdmin && deck.isAdminDeck);
+
+  if (!canManage) {
+    throw new Error("No tienes permisos para eliminar este mazo.");
   }
 
   if (deck.tournamentId) {
@@ -68,11 +77,9 @@ export async function deleteDeckAction(input: DeleteDeckInput) {
         tournament.status === "finished" &&
         tournament.finishedAt instanceof Date &&
         (() => {
-          // Respeta la ventana de 7 días después de finalizar en Tier 3.
+          // Respeta la ventana de 7 dias despues de finalizar en Tier 3.
           const deadline = new Date(tournament.finishedAt);
-          deadline.setDate(
-            deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS,
-          );
+          deadline.setDate(deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS);
           return now <= deadline;
         })();
 

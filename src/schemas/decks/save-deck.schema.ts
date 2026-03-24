@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const SaveDeckSchema = z.object({
   name: z
@@ -16,6 +16,7 @@ export const SaveDeckSchema = z.object({
   deckList: z.string().min(1),
   imgDeck: z.string().min(1),
   deckId: z.string().optional(),
+  isAdminDeck: z.boolean().optional(),
 });
 
 export type SaveDeckInput = z.infer<typeof SaveDeckSchema>;

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +12,7 @@ export async function saveDeck(input: SaveDeckInput) {
 
   try {
     const data = SaveDeckSchema.parse(input);
+    const isAdminDeck = data.isAdminDeck === true;
 
     if (!session) {
       return {
@@ -29,7 +30,7 @@ export async function saveDeck(input: SaveDeckInput) {
       };
     }
 
-    if (data.visible && data.cardsNumber < 40) {
+    if (!isAdminDeck && data.visible && data.cardsNumber < 40) {
       return {
         success: false,
         message:
@@ -37,14 +38,48 @@ export async function saveDeck(input: SaveDeckInput) {
       };
     }
 
+    if (isAdminDeck && session.user.role !== "admin") {
+      return {
+        success: false,
+        message: "No tienes permisos para crear este tipo de mazo.",
+      };
+    }
+
     if (data.deckId) {
       const existingDeck = await prisma.deck.findUnique({
         where: { id: data.deckId },
-        select: { id: true, userId: true, tournamentId: true, createdAt: true },
+        select: {
+          id: true,
+          userId: true,
+          tournamentId: true,
+          createdAt: true,
+          isAdminDeck: true,
+        },
       });
 
-      if (existingDeck && existingDeck.userId === session.user.idd) {
+      if (!existingDeck) {
+        return { success: false, message: "No se encontro el mazo." };
+      }
+
+      const canEdit =
+        existingDeck.userId === session.user.idd ||
+        (session.user.role === "admin" && existingDeck.isAdminDeck);
+
+      if (!canEdit) {
+        return {
+          success: false,
+          message: "No tienes permisos para editar este mazo.",
+        };
+      }
+
+      if (existingDeck) {
         let resolvedVisible = data.visible;
+        const nextIsAdminDeck = existingDeck.isAdminDeck || isAdminDeck;
+
+        if (nextIsAdminDeck) {
+          // Los mazos admin siempre se guardan privados.
+          resolvedVisible = false;
+        }
         if (existingDeck.tournamentId) {
           const tournament = await prisma.tournament.findUnique({
             where: { id: existingDeck.tournamentId },
@@ -85,7 +120,7 @@ export async function saveDeck(input: SaveDeckInput) {
               tournament.status === "finished" &&
               tournament.finishedAt instanceof Date &&
               (() => {
-                // Respeta la ventana de 7 días después de finalizar en Tier 3.
+                // Respeta la ventana de 7 dias despues de finalizar en Tier 3.
                 const deadline = new Date(tournament.finishedAt);
                 deadline.setDate(
                   deadline.getDate() + MAX_TOURNAMENT_DECK_EDIT_DAYS,
@@ -102,7 +137,7 @@ export async function saveDeck(input: SaveDeckInput) {
             }
           }
 
-          // En mazos de torneo la visibilidad se fuerza según el estado.
+          // En mazos de torneo la visibilidad se fuerza segun el estado.
           resolvedVisible = tournament.status === "finished";
         }
 
@@ -116,38 +151,42 @@ export async function saveDeck(input: SaveDeckInput) {
             cards: data.deckList,
             visible: resolvedVisible,
             cardsNumber: data.cardsNumber,
+            isAdminDeck: nextIsAdminDeck,
           },
         });
         return { success: true };
       }
     }
 
-    // verificar si existe el usuario en la base de datos
-    const decksNumber = await prisma.deck.count({
-      where: {
-        userId: session.user.idd,
-        // Solo se consideran los mazos que no esten asociados a un torneo.
-        OR: [{ tournamentId: null }, { tournamentId: { isSet: false } }],
-      },
-    });
-
-    if (decksNumber < 12) {
-      const createdDeck = await prisma.deck.create({
-        data: {
+    if (!isAdminDeck) {
+      // verificar si existe el usuario en la base de datos
+      const decksNumber = await prisma.deck.count({
+        where: {
           userId: session.user.idd,
-          name: data.name,
-          description: data.description,
-          archetypeId: data.archetypesId,
-          imagen: data.imgDeck,
-          cards: data.deckList,
-          visible: data.visible,
-          cardsNumber: data.cardsNumber,
+          // Solo se consideran los mazos que no esten asociados a un torneo.
+          OR: [{ tournamentId: null }, { tournamentId: { isSet: false } }],
         },
       });
-      return { success: true, deckId: createdDeck.id };
+
+      if (decksNumber >= 12) {
+        return { success: false, message: "Limite de 12 mazos alcanzado" };
+      }
     }
 
-    return { success: false, message: "Límite de 12 mazos alcanzado" };
+    const createdDeck = await prisma.deck.create({
+      data: {
+        userId: session.user.idd,
+        name: data.name,
+        description: data.description,
+        archetypeId: data.archetypesId,
+        imagen: data.imgDeck,
+        cards: data.deckList,
+        visible: isAdminDeck ? false : data.visible,
+        cardsNumber: data.cardsNumber,
+        isAdminDeck,
+      },
+    });
+    return { success: true, deckId: createdDeck.id };
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: error.cause?.err?.message };

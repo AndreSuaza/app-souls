@@ -4,6 +4,7 @@ import type { Archetype, Card, Keyword, Rarity, Type } from "@/interfaces";
 import { getCardProductsByIddAction } from "@/actions";
 import { useCardDetailStore } from "@/store";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -226,6 +227,9 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
                 <Image
                   src={`/cards/${card.code}-${card.idd}.webp`}
                   alt={card.name}
+                  title={card.name}
+                  placeholder="blur"
+                  blurDataURL={cardImageBlurDataURL}
                   className="block w-full object-cover"
                   width={500}
                   height={718}

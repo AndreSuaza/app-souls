@@ -8,6 +8,8 @@ export * from "./perfil";
 export * from "./productos/product-grid/ProductGrid";
 export * from "./productos/slideshow/cards-slideshow";
 export * from "./productos/product-by-card/ProductByCard";
+export * from "./productos/admin/AdminProductsList";
+export * from "./productos/form/ProductForm";
 
 export * from "./cartas/card-grid/CardGrid";
 export * from "./cartas/card-grid/CardItem";
@@ -66,6 +68,7 @@ export * from "./mazos/deck-card/DeckCard";
 export * from "./mazos/deck-save/SaveDeckForm";
 export * from "./mazos/deck-filters/DeckFiltersBar";
 export * from "./mazos/deck-library/DeckLibrary";
+export * from "./mazos/admin/AdminDecksList";
 
 export * from "./login/ButtonSocial";
 export * from "./login/ButtonLogOut";

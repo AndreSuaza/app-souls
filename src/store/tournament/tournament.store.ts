@@ -147,6 +147,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           id: r.id,
           roundNumber: r.roundNumber,
           startedAt: r.startedAt ? r.startedAt.toISOString() : null,
+          finishedAt: r.finishedAt ? r.finishedAt.toISOString() : null,
           matches: r.matches.map((m) => ({
             id: m.id,
             player1Id: m.player1Id,

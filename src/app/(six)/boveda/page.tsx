@@ -4,6 +4,7 @@ import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { cardImageBlurDataURL } from "@/models/images.models";
 
 interface Props {
   searchParams: Promise<{
@@ -16,11 +17,23 @@ interface Props {
 }
 
 export const metadata: Metadata = {
-  title: "Boveda - Referencia precios de las cartas de souls in xtiction",
+  title: "Boveda - Precios de cartas Souls In Xtinction TCG",
   description:
     "Consulta una referencia de los precios actualizados de las cartas coleccionables de Souls In Xtinction TCG en un solo lugar. Encuentra el valor de cada carta, desde las más comunes hasta las más raras y codiciadas.",
+  keywords: [
+    "Boveda",
+    "precios de cartas",
+    "Souls In Xtinction",
+    "cartas",
+    "TCG",
+    "rareza",
+    "catalogo",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/boveda",
+  },
   openGraph: {
-    title: "Boveda - Referencia precios de las cartas de souls in xtiction",
+    title: "Boveda - Precios de cartas Souls In Xtinction TCG",
     description:
       "Consulta una referencia de los precios actualizados de las cartas coleccionables de Souls In Xtinction TCG en un solo lugar. Encuentra el valor de cada carta, desde las más comunes hasta las más raras y codiciadas.",
     url: "https://soulsinxtinction.com/boveda",
@@ -33,7 +46,7 @@ export const metadata: Metadata = {
         alt: "Boveda Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -62,7 +75,8 @@ export default async function BovedaPage({ searchParams }: Props) {
   const priceFormatter = new Intl.NumberFormat("es-CO");
 
   return (
-    <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white space-y-4 pb-10">
+    <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white pb-10 space-y-4 -mt-4">
+      <h1 className="sr-only">Boveda de precios de cartas</h1>
       <div className="px-4 sm:px-6 md:px-10 lg:px-16 pt-6">
         <CardFinderPrices propertiesCards={propertiesCards} />
       </div>
@@ -77,12 +91,16 @@ export default async function BovedaPage({ searchParams }: Props) {
             {cards.map((card) => (
               <li key={card.id}>
                 <Link
-                  href={`/boveda/${card.id}`}
+                  href={`/boveda/${card.slug}`}
+                  title={`Ver detalles de ${card.name}`}
                   className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:border-purple-400/40"
                 >
                   <Image
                     src={`/cards/${card.code}-${card.idd}.webp`}
                     alt={card.name}
+                    title={card.name}
+                    placeholder="blur"
+                    blurDataURL={cardImageBlurDataURL}
                     className="h-full w-full object-cover rounded-lg"
                     width={500}
                     height={718}

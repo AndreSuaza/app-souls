@@ -103,12 +103,15 @@ export const PaginationLine = ({
       );
     }
 
+    const pageTitle = `Ir a la pagina ${pageNumber}`;
+
     return (
       <Link
         className={className}
         href={createPageUrl(pageNumber)}
         scroll={false}
         aria-current={isActive ? "page" : undefined}
+        title={pageTitle}
       >
         {pageNumber}
       </Link>
@@ -135,8 +138,16 @@ export const PaginationLine = ({
       );
     }
 
+    const arrowTitle =
+      direction === "prev" ? "Ir a la pagina anterior" : "Ir a la pagina siguiente";
+
     return (
-      <Link className={sharedClass} href={createPageUrl(targetPage)} scroll={false}>
+      <Link
+        className={sharedClass}
+        href={createPageUrl(targetPage)}
+        scroll={false}
+        title={arrowTitle}
+      >
         {icon}
       </Link>
     );

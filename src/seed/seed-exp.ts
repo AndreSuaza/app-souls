@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { buildCardSlug } from "../utils/card-slug";
 
 // Evita depender de tipos de Node para este script de seed.
 declare const process: { env: { NODE_ENV?: string } };
@@ -356,6 +357,7 @@ async function main() {
           force: expDataCard.force,
           defense: expDataCard.defense,
           name: expDataCard.name,
+          slug: buildCardSlug(expDataCard.name, expDataCard.code),
           effect: expDataCard.effect,
           typeIds: expDataCard.typeIds,
           archetypesIds: expDataCard.archetypesIds,

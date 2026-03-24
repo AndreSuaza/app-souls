@@ -41,6 +41,7 @@ export interface Card {
   archetypes: Archetype[];
   keywords: Keyword[];
   name: string;
+  slug?: string;
   effect: string;
   product: Product;
   price?: number | null;

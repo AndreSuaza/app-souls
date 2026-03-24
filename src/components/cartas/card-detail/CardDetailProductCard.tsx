@@ -24,6 +24,7 @@ export function CardDetailProductCard({ product }: Props) {
           height={200}
           src={`/products/${product.code}.webp`}
           alt={product.name}
+          title={product.name}
           className="h-full w-full object-cover"
           blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
           placeholder="blur"
@@ -55,7 +56,12 @@ export function CardDetailProductCard({ product }: Props) {
   }
 
   return (
-    <Link href={`/productos/${product.url}`} target="_blank" className="block">
+    <Link
+      href={`/productos/${product.url}`}
+      target="_blank"
+      className="block"
+      title={`Ver producto ${product.name}`}
+    >
       {content}
     </Link>
   );

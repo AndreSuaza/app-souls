@@ -65,13 +65,25 @@ model Product {
   name         String
   code         String         @unique
   releaseDate  String
+  price        Float?
   description  String
   url          String
   numberCards  Int
-  show         Boolean
+  show         Boolean        @default(true)
+  status       ProductStatus? @default(active)
   createDate   DateTime       @default(now())
   Card         Card[]
   ProductImage ProductImage[]
+
+  deckId String? @db.ObjectId
+  deck   Deck?   @relation(fields: [deckId], references: [id])
+
+  @@index([deckId])
+}
+
+enum ProductStatus {
+  active
+  deleted
 }
 
 model ProductImage {
@@ -93,6 +105,7 @@ model Card {
   force      String
   defense    String
   name       String
+  slug       String   @unique
   effect     String
   createDate DateTime @default(now())
 
@@ -119,6 +132,7 @@ model Card {
 model Store {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   name       String
+  slug       String   @unique
   city       String
   address    String
   country    String
@@ -374,13 +388,15 @@ model Like {
 }
 
 model Deck {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String?
   imagen      String
   cards       String
-  cardsNumber Int     @default(0) // Solo visible al publico si tiene las 40 cartas
+  cardsNumber Int      @default(0) // Solo visible al publico si tiene las 40 cartas
   visible     Boolean
+  // Marca los mazos estructurados creados desde el panel admin.
+  isAdminDeck Boolean? @default(false)
 
   likesCount Int @default(0)
 
@@ -397,6 +413,7 @@ model Deck {
   archetype         Archetype          @relation(fields: [archetypeId], references: [id])
   likes             Like[]
   tournamentPlayers TournamentPlayer[]
+  Product           Product[]
 }
 
 enum AvatarRarity {

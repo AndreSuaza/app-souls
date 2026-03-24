@@ -19,6 +19,8 @@ interface Props {
   onOpenDetail?: (cards: Card[], index: number) => void;
   allowEdit?: boolean;
   highlightLegendaryCount?: boolean;
+  singleDeck?: boolean;
+  singleDeckTitle?: string;
 }
 
 const GRID_CARD_MIN_WIDTH = 150;
@@ -37,6 +39,8 @@ export const ShowDeck = ({
   onOpenDetail,
   allowEdit = true,
   highlightLegendaryCount = false,
+  singleDeck = false,
+  singleDeckTitle = "Mazo",
 }: Props) => {
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState<number | null>(null);
@@ -162,6 +166,53 @@ export const ShowDeck = ({
   };
   // const statsWrapperClass = "flex flex-wrap items-center gap-2 min-w-0";
   const sectionBodyClass = "px-3 pb-3 pt-3 sm:px-4 sm:pb-4";
+
+  if (singleDeck) {
+    return (
+      <div ref={gridWrapperRef} className="mb-6 flex flex-col gap-4">
+        <DeckSection
+          title={singleDeckTitle}
+          count={mainCount}
+          isOpen={sectionsOpen.main}
+          ariaLabel="Mostrar u ocultar mazo"
+          onToggle={() => toggleSection("main")}
+          containerClassName={clsx(
+            sectionBaseContainerClass,
+            sectionStyles.main.container,
+          )}
+          headerClassName={clsx(
+            sectionBaseHeaderClass,
+            sectionStyles.main.header,
+          )}
+          titleClassName={sectionStyles.main.title}
+          chevronClassName={sectionStyles.main.chevron}
+          countClassName={clsx(
+            "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
+            sectionStyles.main.title,
+            "border-purple-300/70 dark:border-tournament-dark-border",
+          )}
+          titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
+          bodyClassName={sectionBodyClass}
+        >
+          {sectionsOpen.main && autoColumns !== null && (
+            <CardGrid
+              cards={mainCards}
+              autoColumns={autoColumns ?? undefined}
+              lgColumns={columnsLg}
+              xlColumns={columnsXl}
+              addCard={allowEdit ? addCard : undefined}
+              dropCard={allowEdit ? dropCard : undefined}
+              showDeckActions
+              cardCounts={mainCounts}
+              showEmptyState={false}
+              onOpenDetail={onOpenDetail}
+              highlightLegendaryCount={highlightLegendaryCount}
+            />
+          )}
+        </DeckSection>
+      </div>
+    );
+  }
 
   return (
     <div ref={gridWrapperRef} className="mb-6 flex flex-col gap-4">

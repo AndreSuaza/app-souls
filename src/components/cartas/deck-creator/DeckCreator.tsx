@@ -7,8 +7,13 @@ import { Decklist } from "@/interfaces/decklist.interface";
 import { CardFinder } from "../card-finder/CardFinder";
 import { ShowDeck } from "./ShowDeck";
 import { CardDetail } from "../card-detail/CardDetail";
-import { getPaginatedCards } from "@/actions";
-import type { PaginationFilters, Card, ArchetypeOption, Deck } from "@/interfaces";
+import { getCardsByFiltersAction, getPaginatedCards } from "@/actions";
+import type {
+  PaginationFilters,
+  Card,
+  ArchetypeOption,
+  Deck,
+} from "@/interfaces";
 import { useUIStore } from "@/store";
 
 interface Propertie {
@@ -42,6 +47,16 @@ interface Props {
   isOwnerDeck?: boolean;
   canEditDeck?: boolean;
   canDeleteDeck?: boolean;
+  disableDeckRules?: boolean;
+  singleDeck?: boolean;
+  singleDeckTitle?: string;
+  showShareButton?: boolean;
+  showUserDecksButton?: boolean;
+  forcePrivateSave?: boolean;
+  isAdminDeck?: boolean;
+  skipDeckLimitCheck?: boolean;
+  showSaveControls?: boolean;
+  enableBulkAdd?: boolean;
 }
 
 const addCardLogic = (
@@ -63,6 +78,22 @@ const addCardLogic = (
   }
 };
 
+const addCardLogicUnlimited = (
+  deckListSelected: Decklist[],
+  cardfound: Decklist | undefined,
+  cardSeleted: Card,
+) => {
+  if (cardfound) {
+    const updatedCards = deckListSelected.map((deck) =>
+      deck.card.name === cardSeleted.name
+        ? { card: deck.card, count: deck.count + 1 }
+        : deck,
+    );
+    return updatedCards;
+  }
+  return [...deckListSelected, { card: cardSeleted, count: 1 }];
+};
+
 const dropCardLogic = (
   deckListSelected: Decklist[],
   cardfound: Decklist | undefined,
@@ -82,6 +113,24 @@ const dropCardLogic = (
   }
 };
 
+const dropCardLogicUnlimited = (
+  deckListSelected: Decklist[],
+  cardfound: Decklist | undefined,
+  cardSeleted: Card,
+) => {
+  if (!cardfound) return deckListSelected;
+  if (cardfound.count > 1) {
+    return deckListSelected.map((deck) =>
+      deck.card.name === cardSeleted.name
+        ? { card: deck.card, count: deck.count - 1 }
+        : deck,
+    );
+  }
+  return deckListSelected.filter(
+    (cardDeck) => cardDeck.card.name !== cardSeleted.name,
+  );
+};
+
 const addCardDecklist = (deckListSelected: Decklist[], cardSeleted: Card) => {
   const cardfound = deckListSelected.find(
     (cardDeck) => cardDeck.card.name == cardSeleted.name,
@@ -90,12 +139,34 @@ const addCardDecklist = (deckListSelected: Decklist[], cardSeleted: Card) => {
   return addCardLogic(deckListSelected, cardfound, cardSeleted);
 };
 
+const addCardDecklistUnlimited = (
+  deckListSelected: Decklist[],
+  cardSeleted: Card,
+) => {
+  const cardfound = deckListSelected.find(
+    (cardDeck) => cardDeck.card.name == cardSeleted.name,
+  );
+
+  return addCardLogicUnlimited(deckListSelected, cardfound, cardSeleted);
+};
+
 const dropCardDecklist = (deckListSelected: Decklist[], cardSeleted: Card) => {
   const cardfound = deckListSelected.find(
     (cardDeck) => cardDeck.card.name == cardSeleted.name,
   );
 
   return dropCardLogic(deckListSelected, cardfound, cardSeleted);
+};
+
+const dropCardDecklistUnlimited = (
+  deckListSelected: Decklist[],
+  cardSeleted: Card,
+) => {
+  const cardfound = deckListSelected.find(
+    (cardDeck) => cardDeck.card.name == cardSeleted.name,
+  );
+
+  return dropCardLogicUnlimited(deckListSelected, cardfound, cardSeleted);
 };
 
 export const DeckCreator = ({
@@ -116,7 +187,18 @@ export const DeckCreator = ({
   isOwnerDeck = false,
   canEditDeck = true,
   canDeleteDeck = false,
+  disableDeckRules = false,
+  singleDeck = false,
+  singleDeckTitle = "Mazo",
+  showShareButton = true,
+  showUserDecksButton = true,
+  forcePrivateSave = false,
+  isAdminDeck = false,
+  skipDeckLimitCheck = false,
+  showSaveControls = true,
+  enableBulkAdd = false,
 }: Props) => {
+  const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const hasImportedRef = useRef(false);
   const lastDeckSignatureRef = useRef<string | null>(null);
@@ -141,6 +223,19 @@ export const DeckCreator = ({
   const [detailIndex, setDetailIndex] = useState(0);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [manualRefreshKey, setManualRefreshKey] = useState(0);
+  const [bulkFilters, setBulkFilters] = useState<PaginationFilters>(
+    initialFilters ?? {},
+  );
+  const [isBulkAdding, setIsBulkAdding] = useState(false);
+  const handleBulkFiltersUpdate = useCallback((filters: PaginationFilters) => {
+    setBulkFilters((prev) => {
+      // Evita loops de estado cuando los filtros no cambian realmente.
+      if (JSON.stringify(prev) === JSON.stringify(filters)) {
+        return prev;
+      }
+      return filters;
+    });
+  }, []);
 
   const importDeck = useCallback(() => {
     const manualRefreshTriggered =
@@ -177,6 +272,37 @@ export const DeckCreator = ({
     }
     if (hasImportedRef.current) return;
 
+    if (disableDeckRules) {
+      // En modo admin se importa el mazo sin limites ni particiones automaticas.
+      if (singleDeck) {
+        const combined = [...(mainDeck ?? []), ...(sideDeck ?? [])];
+        const combinedMap = new Map<string, Decklist>();
+        combined.forEach((item) => {
+          const key = item.card.id;
+          const existing = combinedMap.get(key);
+          if (existing) {
+            // Unifica cantidades cuando una carta aparece en varias secciones.
+            existing.count += item.count;
+          } else {
+            combinedMap.set(key, { card: item.card, count: item.count });
+          }
+        });
+        setDeckListMain(Array.from(combinedMap.values()));
+        setDeckListLimbo([]);
+        setDeckListSide([]);
+        hasImportedRef.current = true;
+        hideLoading();
+        return;
+      }
+
+      setDeckListMain(mainDeck ?? []);
+      setDeckListLimbo([]);
+      setDeckListSide(sideDeck ?? []);
+      hasImportedRef.current = true;
+      hideLoading();
+      return;
+    }
+
     if (mainDeck) {
       const main = mainDeck.filter(
         (c) => !c.card.types.some((type) => type.name === "Limbo"),
@@ -202,7 +328,14 @@ export const DeckCreator = ({
     hasImportedRef.current = true;
     // Oculta el overlay cuando el mazo seleccionado ya fue importado.
     hideLoading();
-  }, [mainDeck, sideDeck, hideLoading, manualRefreshKey]);
+  }, [
+    mainDeck,
+    sideDeck,
+    hideLoading,
+    manualRefreshKey,
+    disableDeckRules,
+    singleDeck,
+  ]);
 
   useEffect(() => {
     importDeck();
@@ -287,6 +420,31 @@ export const DeckCreator = ({
   );
 
   const addCard = (cardSeleted: Card) => {
+    if (disableDeckRules) {
+      // En mazos estructurados no hay limites ni restricciones por tipo.
+      if (singleDeck) {
+        const result = addCardDecklistUnlimited(deckListMain, cardSeleted);
+        if (result) {
+          setDeckListMain(result);
+        }
+        return;
+      }
+
+      const isLimbo = cardSeleted.types.some((type) => type.name === "Limbo");
+      if (!isLimbo) {
+        const result = addCardDecklistUnlimited(deckListMain, cardSeleted);
+        if (result) {
+          setDeckListMain(result);
+        }
+      } else {
+        const result = addCardDecklistUnlimited(deckListLimbo, cardSeleted);
+        if (result) {
+          setDeckListLimbo(result);
+        }
+      }
+      return;
+    }
+
     const counts = getCardCountsByDeck(cardSeleted.idd);
     const totalCount = counts.main + counts.limbo + counts.side;
     // Las legendarias solo permiten 1 copia y no pueden estar en otro mazo.
@@ -327,6 +485,39 @@ export const DeckCreator = ({
   };
 
   const dropCard = (cardSeleted: Card) => {
+    if (disableDeckRules) {
+      // En mazos estructurados se descuenta una carta a la vez sin limites.
+      if (singleDeck) {
+        const result = dropCardDecklistUnlimited(deckListMain, cardSeleted);
+        if (result) {
+          setDeckListMain(result);
+        }
+        return;
+      }
+
+      const isLimbo = cardSeleted.types.some((type) => type.name === "Limbo");
+      if (!isLimbo) {
+        const result = dropCardDecklistUnlimited(deckListMain, cardSeleted);
+        if (result) {
+          setDeckListMain(result);
+        }
+      } else {
+        const result = dropCardDecklistUnlimited(deckListLimbo, cardSeleted);
+        if (result) {
+          setDeckListLimbo(result);
+        }
+      }
+      return;
+    }
+
+    if (singleDeck) {
+      const result = dropCardDecklist(deckListMain, cardSeleted);
+      if (result) {
+        setDeckListMain(result);
+      }
+      return;
+    }
+
     if (
       cardSeleted.types.filter((type) => type.name === "Limbo").length === 0
     ) {
@@ -343,6 +534,14 @@ export const DeckCreator = ({
   };
 
   const dropCardSideDeck = (cardSeleted: Card) => {
+    if (singleDeck) return;
+    if (disableDeckRules) {
+      const result = dropCardDecklistUnlimited(deckListSide, cardSeleted);
+      if (result) {
+        setDeckListSide(result);
+      }
+      return;
+    }
     const result = dropCardDecklist(deckListSide, cardSeleted);
     if (result) {
       setDeckListSide(result);
@@ -350,6 +549,15 @@ export const DeckCreator = ({
   };
 
   const addCardSideDeck = (cardSeleted: Card) => {
+    if (singleDeck) return;
+    if (disableDeckRules) {
+      const result = addCardDecklistUnlimited(deckListSide, cardSeleted);
+      if (result) {
+        setDeckListSide(result);
+      }
+      return;
+    }
+
     const counts = getCardCountsByDeck(cardSeleted.idd);
     const totalCount = counts.main + counts.limbo + counts.side;
     // Las legendarias solo permiten 1 copia y no pueden estar en otro mazo.
@@ -406,6 +614,54 @@ export const DeckCreator = ({
     return totals;
   }, [deckListMain, deckListLimbo, deckListSide]);
 
+  const hasBulkFilters = useMemo(
+    () =>
+      Object.values(bulkFilters).some(
+        (value) => typeof value === "string" && value.trim().length > 0,
+      ),
+    [bulkFilters],
+  );
+
+  const handleBulkAdd = useCallback(async () => {
+    if (!enableBulkAdd || !hasBulkFilters || isBulkAdding) return;
+    setIsBulkAdding(true);
+    try {
+      showLoading("Agregando cartas filtradas...");
+      const cards = await getCardsByFiltersAction(bulkFilters);
+
+      setDeckListMain((prev) => {
+        const map = new Map<string, Decklist>();
+        prev.forEach((item) => {
+          map.set(item.card.id, { ...item });
+        });
+
+        cards.forEach((card) => {
+          const existing = map.get(card.id);
+          if (existing) {
+            // Suma una copia adicional por carta filtrada.
+            existing.count += 1;
+          } else {
+            map.set(card.id, { card, count: 1 });
+          }
+        });
+
+        return Array.from(map.values());
+      });
+    } catch {
+      // El estado UI ya muestra el error general.
+    } finally {
+      hideLoading();
+      setIsBulkAdding(false);
+    }
+  }, [
+    bulkFilters,
+    enableBulkAdd,
+    hasBulkFilters,
+    hideLoading,
+    isBulkAdding,
+    showLoading,
+  ]);
+
   return (
     <div
       className={clsx("flex h-full flex-row gap-0 overflow-hidden", className)}
@@ -426,7 +682,7 @@ export const DeckCreator = ({
             totalPage={totalPagesState}
             cols={2}
             addCard={addCard}
-            addCardSidedeck={addCardSideDeck}
+            addCardSidedeck={singleDeck ? undefined : addCardSideDeck}
             currentPage={currentPage}
             onPageChange={handlePageChange}
             onSearch={handleSearch}
@@ -444,6 +700,12 @@ export const DeckCreator = ({
             disableGridTransitions={isFullscreenToggling}
             cardCounts={cardCounts}
             highlightLegendaryCount
+            allowRestrictedTypes={disableDeckRules}
+            onFiltersUpdate={handleBulkFiltersUpdate}
+            showBulkAction={enableBulkAdd && hasBulkFilters}
+            onBulkAction={handleBulkAdd}
+            isBulkActionLoading={isBulkAdding}
+            bulkActionTitle="Agregar cartas filtradas"
           />
         </div>
       </section>
@@ -467,11 +729,11 @@ export const DeckCreator = ({
               clearDecklist={clearDecklist}
               isFinderCollapsed={isFinderCollapsed}
               onToggleFinderCollapse={handleToggleFinderCollapse}
-              showSaveControls
+              showSaveControls={showSaveControls}
               hasSession={hasSession}
               archetypes={archetypes}
               deckId={deckId}
-              showUserDecksButton
+              showUserDecksButton={showUserDecksButton}
               showSaveButton={canEditDeck && totalCardsInDecks > 0}
               showEditButton={isOwnerDeck && canEditDeck}
               showCloneButton={isOwnerDeck}
@@ -482,6 +744,10 @@ export const DeckCreator = ({
               onRefreshCurrentDeck={() =>
                 setManualRefreshKey((prev) => prev + 1)
               }
+              showShareButton={showShareButton}
+              forcePrivateSave={forcePrivateSave}
+              isAdminDeck={isAdminDeck}
+              skipDeckLimitCheck={skipDeckLimitCheck}
             />
           </div>
           <ShowDeck
@@ -490,12 +756,14 @@ export const DeckCreator = ({
             deckListSide={deckListSide}
             addCard={addCard}
             dropCard={dropCard}
-            addCardSide={addCardSideDeck}
-            dropCardSide={dropCardSideDeck}
+            addCardSide={singleDeck ? undefined : addCardSideDeck}
+            dropCardSide={singleDeck ? undefined : dropCardSideDeck}
             columnsLg={isFinderCollapsed ? 6 : 4}
             columnsXl={isFinderCollapsed ? 8 : 4}
             onOpenDetail={openDetail}
             highlightLegendaryCount
+            singleDeck={singleDeck}
+            singleDeckTitle={singleDeckTitle}
           />
           <div className="h-6" aria-hidden />
         </div>

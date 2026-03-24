@@ -19,6 +19,7 @@ import { Modal, Decklistimage, SaveDeckForm } from "@/components";
 import { UserDeckLibrary } from "@/components/mazos/deck-library/UserDeckLibrary";
 import Link from "next/link";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { useUserDecksStore } from "@/store/mazos/user-decks.store";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -58,6 +59,10 @@ interface Props {
   isOwnerDeck?: boolean;
   archetypeName?: string | null;
   onRefreshCurrentDeck?: () => void;
+  showShareButton?: boolean;
+  forcePrivateSave?: boolean;
+  isAdminDeck?: boolean;
+  skipDeckLimitCheck?: boolean;
 }
 
 export const OptionsDeckCreator = ({
@@ -85,6 +90,10 @@ export const OptionsDeckCreator = ({
   isOwnerDeck = false,
   archetypeName,
   onRefreshCurrentDeck,
+  showShareButton = true,
+  forcePrivateSave = false,
+  isAdminDeck = false,
+  skipDeckLimitCheck = false,
 }: Props) => {
   const [showDeckImage, setShowDeckImage] = useState(false);
   const [showSaveDeck, setShowSaveDeck] = useState(false);
@@ -268,6 +277,14 @@ export const OptionsDeckCreator = ({
       return;
     }
 
+    if (skipDeckLimitCheck) {
+      // En mazos admin no se controla el limite de 12 mazos.
+      setSaveMode("create");
+      setSaveInitialValues(null);
+      setShowSaveDeck(true);
+      return;
+    }
+
     const maxDecks = 12;
     try {
       // Evita abrir el modal si ya se alcanzó el límite de mazos sin torneo.
@@ -314,7 +331,8 @@ export const OptionsDeckCreator = ({
           showToast("Mazo eliminado correctamente.", "success");
           isNavigating = true;
           showLoading("Cargando mazo...");
-          router.push("/laboratorio");
+          // En mazos admin se regresa al listado del panel para evitar salir del admin.
+          router.push(isAdminDeck ? "/admin/mazos" : "/laboratorio");
           return true;
         } catch (error) {
           showToast(
@@ -354,11 +372,12 @@ export const OptionsDeckCreator = ({
           name: deckData.name,
           description: deckData.description ?? "",
           archetypesId: resolvedArchetypeId,
-          visible: deckData.visible ?? false,
+          visible: forcePrivateSave ? false : (deckData.visible ?? false),
           cardsNumber: mainDeckCount,
           deckList: deckListText(),
           imgDeck: deckImage(),
           deckId: deckData.id,
+          isAdminDeck,
         });
         hideLoading();
 
@@ -430,13 +449,15 @@ export const OptionsDeckCreator = ({
             </button>
           )}
 
-          <button
-            className={actionButtonClass}
-            title="Exportar Mazo"
-            onClick={createCodeDeck}
-          >
-            <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
-          </button>
+          {showShareButton && (
+            <button
+              className={actionButtonClass}
+              title="Exportar Mazo"
+              onClick={createCodeDeck}
+            >
+              <IoShareSocialOutline className="w-4 h-4 sm:w-6 sm:h-6" />
+            </button>
+          )}
 
           {hasSession && showUserDecksButton && (
             <button
@@ -525,6 +546,7 @@ export const OptionsDeckCreator = ({
                 {showEditButton && editDeckUrl && (
                   <Link
                     href={editDeckUrl}
+                    title="Editar mazo"
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-blue-500 dark:border-blue-500/40 dark:bg-blue-500/20 dark:text-blue-200"
                   >
                     Editar
@@ -534,6 +556,7 @@ export const OptionsDeckCreator = ({
                 {showCloneButton && cloneDeckUrl && (
                   <Link
                     href={cloneDeckUrl}
+                    title="Clonar mazo"
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-purple-200 bg-purple-600 px-3 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-purple-500 dark:border-purple-500/40 dark:bg-purple-500/20 dark:text-purple-200"
                   >
                     Clonar
@@ -630,7 +653,7 @@ export const OptionsDeckCreator = ({
                         src={`/cards/${card.code}-${card.idd}.webp`}
                         alt={card.name}
                         title={card.name}
-                        blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
+                        blurDataURL={cardImageBlurDataURL}
                         placeholder="blur"
                         className="rounded-lg drop-shadow-md"
                       />
@@ -677,9 +700,14 @@ export const OptionsDeckCreator = ({
                 mode={saveMode}
                 autoArchetypeId={resolvedArchetypeId}
                 archetypeName={resolvedArchetypeName}
+                forcePrivate={forcePrivateSave}
+                isAdminDeck={isAdminDeck}
+                skipPublicValidation={forcePrivateSave || isAdminDeck}
                 // En mazos de torneo no se permite cambiar visibilidad al editar.
                 hideVisibilityToggle={
-                  Boolean(deckData?.tournamentId) && saveMode === "edit"
+                  (Boolean(deckData?.tournamentId) && saveMode === "edit") ||
+                  forcePrivateSave ||
+                  isAdminDeck
                 }
               />
             </div>
@@ -720,7 +748,8 @@ export const OptionsDeckCreator = ({
                 onDeleteDeck={(deckId) => {
                   openAlertConfirmation({
                     text: "¿Deseas eliminar este mazo?",
-                    description: "Esta acción eliminará el mazo permanentemente.",
+                    description:
+                      "Esta acción eliminará el mazo permanentemente.",
                     action: async () => {
                       showLoading("Eliminando mazo...");
                       const success = await deleteUserDeck(deckId);

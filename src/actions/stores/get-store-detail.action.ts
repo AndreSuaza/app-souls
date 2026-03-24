@@ -1,24 +1,25 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { StoreIdSchema } from "@/schemas";
+import { StoreSlugSchema } from "@/schemas";
 import type { StoreDetailResponse } from "@/interfaces";
 
 interface Input {
-  storeId: string;
+  storeSlug: string;
 }
 
 export async function getStoreDetailAction(
   input: Input,
 ): Promise<StoreDetailResponse | null> {
-  const storeId = StoreIdSchema.parse(input.storeId);
+  const storeSlug = StoreSlugSchema.parse(input.storeSlug);
 
   try {
     const store = await prisma.store.findUnique({
-      where: { id: storeId },
+      where: { slug: storeSlug },
       select: {
         id: true,
         name: true,
+        slug: true,
         city: true,
         address: true,
         country: true,
@@ -32,6 +33,7 @@ export async function getStoreDetailAction(
 
     if (!store) return null;
 
+    const storeId = store.id;
     const tournaments = await prisma.tournament.findMany({
       where: { storeId, status: "pending" },
       orderBy: { date: "asc" },

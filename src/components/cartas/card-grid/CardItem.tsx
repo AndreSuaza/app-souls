@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { Card } from "@/interfaces/cards.interface";
 import {
   IoAddCircleOutline,
@@ -18,6 +20,7 @@ interface Props {
   showDeckActions?: boolean;
   count?: number;
   highlightLegendaryCount?: boolean;
+  allowRestrictedTypes?: boolean;
 }
 
 export const CardItem = ({
@@ -30,7 +33,13 @@ export const CardItem = ({
   showDeckActions = false,
   count,
   highlightLegendaryCount = false,
+  allowRestrictedTypes = false,
 }: Props) => {
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsImageLoaded(false);
+  }, [card.code, card.idd]);
   const openDetail = () => {
     detailCard(index);
   };
@@ -60,13 +69,31 @@ export const CardItem = ({
             className="block w-full cursor-pointer"
             onClick={openDetail}
           >
-            <Image
-              src={`/cards/${card.code}-${card.idd}.webp`}
-              alt={card.name}
-              className="block w-full object-cover"
-              width={500}
-              height={718}
-            />
+            <div className="relative">
+              {!isImageLoaded && (
+                <Image
+                  src="/howtoplay/mazo-principal.webp"
+                  alt="Cargando carta"
+                  title="Cargando carta"
+                  className="block w-full object-cover"
+                  width={500}
+                  height={718}
+                />
+              )}
+              <Image
+                src={`/cards/${card.code}-${card.idd}.webp`}
+                alt={card.name}
+                title={card.name}
+                placeholder="blur"
+                blurDataURL={cardImageBlurDataURL}
+                className={`block w-full object-cover transition-opacity ${
+                  isImageLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                width={500}
+                height={718}
+                onLoadingComplete={() => setIsImageLoaded(true)}
+              />
+            </div>
           </button>
         </div>
         {showDeckActions ? (
@@ -111,8 +138,9 @@ export const CardItem = ({
               </div>
             )}
             {addCard &&
-              card.types.filter((type) => type.name === "Alma").length ===
-                0 && (
+              (allowRestrictedTypes ||
+                card.types.filter((type) => type.name === "Alma").length ===
+                  0) && (
                 <>
                   <button
                     type="button"
@@ -122,14 +150,16 @@ export const CardItem = ({
                   >
                     <IoAddCircleOutline className="h-5 w-5" />
                   </button>
-                  <button
-                    type="button"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/40 text-sky-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-sky-200"
-                    title="Anadir carta mazo apoyo"
-                    onClick={() => addCardSidedeck && addCardSidedeck(card)}
-                  >
-                    <IoMedkitOutline className="h-5 w-5" />
-                  </button>
+                  {addCardSidedeck && (
+                    <button
+                      type="button"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/40 text-sky-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-sky-200"
+                      title="Anadir carta mazo apoyo"
+                      onClick={() => addCardSidedeck(card)}
+                    >
+                      <IoMedkitOutline className="h-5 w-5" />
+                    </button>
+                  )}
                 </>
               )}
           </div>

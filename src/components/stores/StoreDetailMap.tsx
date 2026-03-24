@@ -7,6 +7,7 @@ import { StoresMap } from "./StoresMap";
 interface StoreMarker {
   id: string;
   name: string;
+  slug: string;
   city: string;
   address: string;
   country: string;
@@ -96,6 +97,7 @@ export function StoreDetailMap({ store }: Props) {
           href={directionsUrl}
           target="_blank"
           rel="noreferrer"
+          title="Ver ruta a la tienda en Google Maps"
           className="inline-flex items-center gap-2 rounded-lg border border-purple-600 bg-purple-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-purple-500"
         >
           <IoNavigateOutline />

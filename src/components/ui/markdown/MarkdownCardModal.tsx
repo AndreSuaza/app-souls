@@ -6,6 +6,7 @@ import { FiX } from "react-icons/fi";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { Modal } from "../modal/modal";
+import { cardImageBlurDataURL } from "@/models/images.models";
 
 type CardSearchResult = {
   id: string;
@@ -116,6 +117,9 @@ export const MarkdownCardModal = ({
                     <Image
                       src={src}
                       alt={card.name}
+                      title={card.name}
+                      placeholder="blur"
+                      blurDataURL={cardImageBlurDataURL}
                       width={160}
                       height={230}
                       className="h-auto w-full rounded-md"

@@ -34,6 +34,9 @@ interface Props {
   autoArchetypeId?: string;
   archetypeName?: string | null;
   hideVisibilityToggle?: boolean;
+  forcePrivate?: boolean;
+  isAdminDeck?: boolean;
+  skipPublicValidation?: boolean;
 }
 
 const SIN_ARQUETIPO_ID = "67c5d1595d56151173f8f23b";
@@ -49,6 +52,9 @@ export const SaveDeckForm = ({
   autoArchetypeId,
   archetypeName,
   hideVisibilityToggle = false,
+  forcePrivate = false,
+  isAdminDeck = false,
+  skipPublicValidation = false,
 }: Props) => {
   const {
     register,
@@ -73,7 +79,8 @@ export const SaveDeckForm = ({
   const hideLoading = useUIStore((state) => state.hideLoading);
   const router = useRouter();
   const isPrivate = watch("visible");
-  const shouldWarnPublic = !isPrivate && mainDeckCount < 40;
+  const shouldWarnPublic =
+    !skipPublicValidation && !isPrivate && mainDeckCount < 40;
   const displayArchetypeName =
     archetypeName && archetypeName.trim().length > 0
       ? archetypeName
@@ -114,20 +121,24 @@ export const SaveDeckForm = ({
           : "Se guardará el mazo con la configuración actual.";
 
     const resolvedArchetypeId = autoArchetypeId ?? SIN_ARQUETIPO_ID;
+    const resolvedDeckId = mode === "edit" ? deckId : undefined;
 
     openAlertConfirmation({
       text: confirmationText,
       description: confirmationDescription,
       action: async () => {
         showLoading("Guardando mazo...");
+        // En mazos admin se fuerza a privado para evitar exposicion publica.
+        const resolvedVisible = forcePrivate ? false : !data.visible;
         const resp = await saveDeck({
           ...data,
           archetypesId: resolvedArchetypeId,
           deckList: deck,
           imgDeck,
           cardsNumber: mainDeckCount,
-          visible: !data.visible,
-          deckId,
+          visible: resolvedVisible,
+          deckId: resolvedDeckId,
+          isAdminDeck,
         });
 
         if (resp && resp?.message) {
@@ -141,8 +152,12 @@ export const SaveDeckForm = ({
         showToast("Mazo guardado correctamente.", "success");
         onClose?.();
         if ((mode === "clone" || mode === "create") && resp?.deckId) {
+          // Mantiene al usuario en el laboratorio correcto segun el tipo de mazo.
+          const basePath = isAdminDeck
+            ? "/admin/mazos/laboratorio"
+            : "/laboratorio";
           showLoading("Cargando mazo...");
-          router.push(`/laboratorio?id=${resp.deckId}`);
+          router.push(`${basePath}?id=${resp.deckId}`);
           router.refresh();
           return true;
         }
@@ -181,7 +196,10 @@ export const SaveDeckForm = ({
           placeholder="Ej. Mazo control"
           maxLength={20}
           {...register("name", {
-            required: { value: true, message: "El campo 'Nombre' es requerido" },
+            required: {
+              value: true,
+              message: "El campo 'Nombre' es requerido",
+            },
             maxLength: {
               value: 20,
               message: "El nombre no puede superar 20 caracteres",
@@ -248,4 +266,3 @@ export const SaveDeckForm = ({
     </form>
   );
 };
-

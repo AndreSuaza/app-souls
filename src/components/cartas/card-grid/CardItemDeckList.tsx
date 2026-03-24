@@ -1,5 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card } from "@/interfaces";
 import Image from "next/image";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { IoAddCircleOutline } from "react-icons/io5";
 import clsx from 'clsx';
 
@@ -13,6 +17,11 @@ interface Props {
 
 
 export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsImageLoaded(false);
+  }, [card.code, card.idd]);
 
   // const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
   // const openCardDetail = useCardDetailStore( state => state.openCardDetail);
@@ -46,13 +55,29 @@ export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
             />
             </div>
             </div>
-            <Image
-                    src={`/cards/${card.code}-${card.idd}.webp`}
-                    alt={card.name}
-                    className='-mt-[50%]'
+            <div className="relative">
+                {!isImageLoaded && (
+                  <Image
+                    src="/howtoplay/mazo-principal.webp"
+                    alt="Cargando carta"
+                    title="Cargando carta"
+                    className="-mt-[50%]"
                     width={500}
                     height={50}
+                  />
+                )}
+                <Image
+                    src={`/cards/${card.code}-${card.idd}.webp`}
+                    alt={card.name}
+                    title={card.name}
+                    placeholder="blur"
+                    blurDataURL={cardImageBlurDataURL}
+                    className={`-mt-[50%] transition-opacity ${isImageLoaded ? "opacity-100" : "opacity-0"}`}
+                    width={500}
+                    height={50}
+                    onLoadingComplete={() => setIsImageLoaded(true)}
                 />
+            </div>
         </div>
     </div>
   )

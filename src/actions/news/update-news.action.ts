@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { resolveNewsStatus } from "@/logic";
 import { UpdateNewsSchema, type UpdateNewsInput } from "@/schemas";
 import { buildNewsSlug } from "@/utils/news-slug";
+import { deleteBlob } from "@/lib/blob";
 
 export async function updateNewsAction(input: UpdateNewsInput) {
   try {
@@ -21,7 +22,12 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     const data = UpdateNewsSchema.parse(input);
     const existing = await prisma.new.findUnique({
       where: { id: data.newsId },
-      select: { status: true, publishedAt: true },
+      select: {
+        status: true,
+        publishedAt: true,
+        featuredImage: true,
+        cardImage: true,
+      },
     });
 
     if (!existing) {
@@ -75,6 +81,23 @@ export async function updateNewsAction(input: UpdateNewsInput) {
         newCategoryId: data.newCategoryId,
       },
     });
+
+    const shouldDeleteFeatured =
+      existing.featuredImage &&
+      existing.featuredImage !== data.featuredImage &&
+      existing.featuredImage.includes("vercel-storage.com");
+    const shouldDeleteCard =
+      existing.cardImage &&
+      existing.cardImage !== data.cardImage &&
+      existing.cardImage.includes("vercel-storage.com");
+
+    if (shouldDeleteFeatured || shouldDeleteCard) {
+      // Limpiamos imágenes anteriores para evitar basura en Blob.
+      await Promise.all([
+        shouldDeleteFeatured ? deleteBlob(existing.featuredImage) : null,
+        shouldDeleteCard ? deleteBlob(existing.cardImage) : null,
+      ]);
+    }
 
     return true;
   } catch (error) {

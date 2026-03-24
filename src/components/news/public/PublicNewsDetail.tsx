@@ -46,8 +46,9 @@ export const PublicNewsDetailView = ({ news, recommended }: Props) => {
     <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
       <div className="relative w-full overflow-hidden h-[calc(100vh-4.5rem)]">
         <Image
-          src={`/news/banners/${news.featuredImage}`}
+          src={news.featuredImage}
           alt={news.title}
+          title={news.title}
           fill
           priority
           sizes="100vw"

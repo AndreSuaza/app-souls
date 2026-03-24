@@ -8,20 +8,30 @@
 import { auth } from "@/auth";
 import { DeckCreator } from "@/components";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title:
-    "Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG",
+  title: "Laboratorio de Mazos | Souls In Xtinction",
   description:
     "Diseña el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. ¡Prepara tu mazo y domina el campo de batalla!",
+  keywords: [
+    "Souls In Xtinction",
+    "laboratorio de mazos",
+    "mazos",
+    "TCG",
+    "estrategia",
+    "cartas",
+  ],
+  alternates: {
+    canonical: "https://soulsinxtinction.com/laboratorio",
+  },
   openGraph: {
-    title:
-      "Laboratorio de Mazos | Crea y Optimiza tu Estrategia en Souls In Xtinction TCG",
+    title: "Laboratorio de Mazos | Souls In Xtinction",
     description:
       "Diseña el mazo perfecto en el Laboratorio de Mazos de Souls In Xtinction TCG. Prueba combinaciones, ajusta estrategias y optimiza tu juego con nuestras herramientas avanzadas. ¡Prepara tu mazo y domina el campo de batalla!",
-    url: "https://soulsinxtinction.com/tiendas",
+    url: "https://soulsinxtinction.com/laboratorio",
     siteName: "Laboratorio Souls In Xtinction TCG",
     images: [
       {
@@ -31,7 +41,7 @@ export const metadata: Metadata = {
         alt: "Souls In Xtinction TCG",
       },
     ],
-    locale: "en_ES",
+    locale: "es_ES",
     type: "website",
   },
 };
@@ -99,6 +109,9 @@ export default async function Cards({ searchParams }: Props) {
   if (id) {
     const getDeck = await getDeckById(id);
     if (getDeck) {
+      if (getDeck.isAdminDeck && session?.user?.role !== "admin") {
+        notFound();
+      }
       deckUser = getDeck;
       decklistCards = deckUser.cards.replaceAll("%2C", ",");
     }
@@ -136,35 +149,39 @@ export default async function Cards({ searchParams }: Props) {
   const canDeleteDeck = Boolean(deckUser?.id) && isOwnerDeck && canEditDeck;
 
   return (
-    <DeckCreator
-      cards={cards}
-      propertiesCards={propertiesCards}
-      mainDeck={mainDeck}
-      sideDeck={sideDeck}
-      totalPages={totalPage}
-      totalCards={totalCount}
-      perPage={perPage}
-      initialPage={page2}
-      className="h-full min-h-0"
-      initialFilters={{
-        text,
-        products,
-        types,
-        archetypes,
-        keywords,
-        costs,
-        forces,
-        defenses,
-        rarities,
-        limit,
-      }}
-      hasSession={Boolean(session?.user)}
-      archetypes={deckFilters.archetypes}
-      deckId={deckUser?.id}
-      deckData={deckUser}
-      isOwnerDeck={isOwnerDeck}
-      canEditDeck={canEditDeck}
-      canDeleteDeck={canDeleteDeck}
-    />
+    <>
+      <h1 className="sr-only">Laboratorio de mazos</h1>
+      <h2 className="sr-only">Crea y optimiza tu estrategia</h2>
+      <DeckCreator
+        cards={cards}
+        propertiesCards={propertiesCards}
+        mainDeck={mainDeck}
+        sideDeck={sideDeck}
+        totalPages={totalPage}
+        totalCards={totalCount}
+        perPage={perPage}
+        initialPage={page2}
+        className="h-full min-h-0"
+        initialFilters={{
+          text,
+          products,
+          types,
+          archetypes,
+          keywords,
+          costs,
+          forces,
+          defenses,
+          rarities,
+          limit,
+        }}
+        hasSession={Boolean(session?.user)}
+        archetypes={deckFilters.archetypes}
+        deckId={deckUser?.id}
+        deckData={deckUser}
+        isOwnerDeck={isOwnerDeck}
+        canEditDeck={canEditDeck}
+        canDeleteDeck={canDeleteDeck}
+      />
+    </>
   );
 }

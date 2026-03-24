@@ -15,7 +15,8 @@ export const getProductsPagination = async() => {
                 }
             },
             where: {
-                show: true
+                show: true,
+                OR: [{ status: "active" }, { status: { isSet: false } }],
             },
             orderBy: [
                 {

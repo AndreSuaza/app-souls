@@ -28,6 +28,7 @@ export const NewsHeroCard = ({ item, className }: Props) => {
   return (
     <Link
       href={`/noticias/${item.slug}`}
+      title={item.title}
       className={clsx(
         "group relative grid h-full w-full overflow-hidden rounded-lg border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:grid-cols-[1fr,1fr]",
         className,
@@ -35,8 +36,9 @@ export const NewsHeroCard = ({ item, className }: Props) => {
     >
       <div className="relative min-h-[220px] w-full overflow-hidden md:min-h-0">
         <Image
-          src={`/news/cards/${item.cardImage}`}
+          src={item.cardImage}
           alt={item.title}
+          title={item.title}
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover"

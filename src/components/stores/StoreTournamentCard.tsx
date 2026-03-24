@@ -90,6 +90,7 @@ export function StoreTournamentCard({ tournament }: Props) {
 
           <Link
             href={`/torneos/${tournament.id}`}
+            title={`Ir al torneo ${tournament.title}`}
             className="inline-flex items-center justify-center rounded-lg border border-purple-600 px-4 py-2 text-xs font-semibold text-purple-600 transition hover:bg-purple-600 hover:text-white dark:border-purple-400 dark:text-purple-300 dark:hover:bg-purple-500 dark:hover:text-white"
           >
             Ir al torneo

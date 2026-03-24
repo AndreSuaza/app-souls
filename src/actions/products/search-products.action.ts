@@ -11,6 +11,7 @@ export async function searchProductsAction(input: ProductSearchInput = {}) {
 
   const where: Prisma.ProductWhereInput = {
     show: true,
+    OR: [{ status: "active" }, { status: { isSet: false } }],
     ...(searchText
       ? {
           OR: [

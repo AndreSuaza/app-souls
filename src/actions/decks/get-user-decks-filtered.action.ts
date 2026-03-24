@@ -10,6 +10,10 @@ export async function getUserDecksFilteredAction(input: DeckFiltersInput) {
   const perPage = 16;
   const session = await auth();
   const userId = session?.user?.idd;
+  const adminDeckFilter: Prisma.DeckWhereInput = {
+    OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }],
+  };
+  const andFilters: Prisma.DeckWhereInput[] = [adminDeckFilter];
 
   if (!userId) {
     return {
@@ -24,6 +28,7 @@ export async function getUserDecksFilteredAction(input: DeckFiltersInput) {
 
   const where: Prisma.DeckWhereInput = {
     userId,
+    AND: andFilters,
   };
 
   if (filters.tournament === "with") {
@@ -33,7 +38,9 @@ export async function getUserDecksFilteredAction(input: DeckFiltersInput) {
   if (filters.tournament === "without") {
     // En Mongo, "null" no siempre cubre documentos donde el campo no existe.
     // Cubrimos ambos casos para que "Sin torneo" funcione de forma consistente.
-    where.OR = [{ tournamentId: null }, { tournamentId: { isSet: false } }];
+    andFilters.push({
+      OR: [{ tournamentId: null }, { tournamentId: { isSet: false } }],
+    });
   }
 
   if (filters.archetypeId) {
@@ -136,7 +143,7 @@ export async function getUserDecksFilteredAction(input: DeckFiltersInput) {
   const decksWithTournament = decks.map((deck) => ({
     ...deck,
     tournament: deck.tournamentId
-      ? tournamentMap.get(deck.tournamentId) ?? null
+      ? (tournamentMap.get(deck.tournamentId) ?? null)
       : null,
   }));
 

@@ -24,12 +24,10 @@ interface Props {
   disableInitialAnimation?: boolean;
   onOpenDetail?: (cards: Card[], index: number) => void;
   highlightLegendaryCount?: boolean;
+  allowRestrictedTypes?: boolean;
 }
 
-const getGridClass = (
-  breakpoint: "sm" | "md" | "lg" | "xl",
-  value: number
-) => {
+const getGridClass = (breakpoint: "sm" | "md" | "lg" | "xl", value: number) => {
   switch (value) {
     case 1:
       return `${breakpoint}:grid-cols-1`;
@@ -88,6 +86,7 @@ export const CardGrid = ({
   disableAnimations = false,
   onOpenDetail,
   highlightLegendaryCount = false,
+  allowRestrictedTypes = false,
 }: Props) => {
   const [indexDeck, setIndexDeck] = useState(0);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -112,7 +111,7 @@ export const CardGrid = ({
         getGridClass("sm", smColumns ?? 2),
         getGridClass("md", mdColumns ?? 4),
         getGridClass("lg", lgColumns ?? columns),
-        getGridClass("xl", xlColumns ?? columns)
+        getGridClass("xl", xlColumns ?? columns),
       );
 
   if (cards.length === 0 && !showEmptyState) {
@@ -138,6 +137,7 @@ export const CardGrid = ({
                   showDeckActions={showDeckActions}
                   count={cardCounts?.[card.id]}
                   highlightLegendaryCount={highlightLegendaryCount}
+                  allowRestrictedTypes={allowRestrictedTypes}
                   index={index}
                   detailCard={detailCard}
                 />
@@ -156,6 +156,7 @@ export const CardGrid = ({
                   showDeckActions={showDeckActions}
                   count={cardCounts?.[card.id]}
                   highlightLegendaryCount={highlightLegendaryCount}
+                  allowRestrictedTypes={allowRestrictedTypes}
                   index={index}
                   detailCard={detailCard}
                 />

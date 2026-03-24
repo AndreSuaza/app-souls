@@ -1,6 +1,6 @@
 'use client';
 
-import { Store } from '@prisma/client';
+import { Store } from "@/interfaces";
 
 interface Props {
     store: Store;
