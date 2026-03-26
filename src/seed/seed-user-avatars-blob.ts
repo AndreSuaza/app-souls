@@ -30,6 +30,8 @@ const AVATAR_MAP: AvatarMap = {
   voluntad:
     "souls/profile/avatars/voluntad-dd0069ab-cc1b-4268-b0b5-508dd5117f62.webp",
 };
+const DEFAULT_BANNER =
+  "souls/profile/banners/bg-cardlist-a7c26a26-b921-4e7a-8867-26ed9ad7de54.webp";
 
 async function main() {
   const operations: Array<{
@@ -56,6 +58,14 @@ async function main() {
   );
 
   const updated = result.reduce((acc, item) => acc + item.count, 0);
+  await prisma.user.updateMany({
+    where: {
+      OR: [{ bannerImage: null }, { bannerImage: "" }],
+    },
+    data: {
+      bannerImage: DEFAULT_BANNER,
+    },
+  });
   console.log(
     `[seed-user-avatars-blob] Avatares actualizados: ${updated} usuarios.`,
   );

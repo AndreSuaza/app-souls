@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { useSession } from "next-auth/react";
 import {
@@ -17,7 +17,7 @@ import {
   getProfileTournament,
   updateUser,
 } from "@/actions";
-import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { useToastStore, useUIStore } from "@/store";
 import { useUserDecksStore } from "@/store";
 import {
   type ActiveTournamentData,
@@ -27,6 +27,12 @@ import { ProfileCurrentTournament } from "./ProfileCurrentTournament";
 import { ProfileTournamentHistory } from "./ProfileTournamentHistory";
 import { UserDeckLibrary } from "../mazos/deck-library/UserDeckLibrary";
 import { getAvatarUrl, getAvatarValue } from "@/utils/avatar-image";
+import {
+  DEFAULT_PROFILE_BANNER,
+  getProfileBannerUrl,
+  getProfileBannerValue,
+} from "@/utils/profile-banner";
+import { updateUserBanner } from "@/actions";
 
 interface User {
   name?: string | null;
@@ -34,8 +40,12 @@ interface User {
   email?: string | null;
   nickname?: string | null;
   image?: string | null;
+  bannerImage?: string | null;
   role?: string | null;
   victoryPoints?: number | null;
+  eloPoints?: number | null;
+  matchesPlayed?: number | null;
+  tournamentsPlayed?: number | null;
 }
 
 // interface Archetype {
@@ -46,8 +56,11 @@ type Avatar = {
   id: string;
   name: string;
   imageUrl: string;
-  rarity: string;
-  isExclusive: boolean;
+};
+
+type DeckCounts = {
+  totalDecks: number;
+  publicDecks: number;
 };
 
 type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
@@ -75,16 +88,20 @@ type TabKey = "current" | "history" | "selected" | "mazos";
 
 interface Props {
   user: User;
-  avatars: Avatar[];
+  avatars: string[];
+  banners: string[];
   activeTournament: ActiveTournamentData | null;
   tournaments: TournamentHistoryItem[];
+  deckCounts: DeckCounts;
 }
 
 export const Pefil = ({
   user,
   avatars,
+  banners,
   activeTournament,
   tournaments,
+  deckCounts,
 }: Props) => {
   const InfoTooltip = ({ text }: { text: string }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -155,22 +172,32 @@ export const Pefil = ({
   const [hasShownInProgressWarning, setHasShownInProgressWarning] =
     useState(false);
   const [showAvatars, setShowAvatars] = useState(false);
+  const [showBanners, setShowBanners] = useState(false);
   const [baseAvatar, setBaseAvatar] = useState(getAvatarValue(user.image));
   const [selectedAvatar, setSelectedAvatar] = useState(baseAvatar);
+  const [baseBanner, setBaseBanner] = useState(
+    getProfileBannerValue(user.bannerImage ?? DEFAULT_PROFILE_BANNER),
+  );
+  const [selectedBanner, setSelectedBanner] = useState(baseBanner);
   const isAvatarChanged = selectedAvatar !== baseAvatar;
+  const isBannerChanged = selectedBanner !== baseBanner;
 
   useEffect(() => {
     const nextAvatar = getAvatarValue(user.image);
     setBaseAvatar(nextAvatar);
     setSelectedAvatar(nextAvatar);
   }, [user.image]);
+
+  useEffect(() => {
+    const nextBanner = getProfileBannerValue(
+      user.bannerImage ?? DEFAULT_PROFILE_BANNER,
+    );
+    setBaseBanner(nextBanner);
+    setSelectedBanner(nextBanner);
+  }, [user.bannerImage]);
   const showToast = useToastStore((state) => state.showToast);
-  const openAlertConfirmation = useAlertConfirmationStore(
-    (state) => state.openAlertConfirmation,
-  );
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
-  const deleteDeck = useUserDecksStore((state) => state.deleteDeck);
   const deckFilters = useUserDecksStore((state) => state.filters);
   const setDeckFilters = useUserDecksStore((state) => state.setFilters);
   const fetchDecks = useUserDecksStore((state) => state.fetchDecks);
@@ -186,20 +213,46 @@ export const Pefil = ({
     setSelectedAvatar(getAvatarValue(avatar.imageUrl));
     setShowAvatars(false);
   };
+  const formatMediaLabel = (value: string) => {
+    const clean = value.split("/").pop() ?? value;
+    const withoutExt = clean.replace(/\.[^/.]+$/, "");
+    // Elimina UUID del filename para mostrar un nombre humano en el selector.
+    const match = withoutExt.match(
+      /^(.*)-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
+    const base = match?.[1] ?? withoutExt;
+    return base
+      .split("-")
+      .map((word) =>
+        word ? word[0].toUpperCase() + word.slice(1).toLowerCase() : "",
+      )
+      .join(" ");
+  };
+
+  const handleSelectBanner = (bannerPath: string) => {
+    setSelectedBanner(getProfileBannerValue(bannerPath));
+    setShowBanners(false);
+  };
 
   const updateUserProfile = async () => {
     try {
-      showLoading("Actualizando avatar...");
-      await updateUser(selectedAvatar);
-      // Sincroniza el avatar en la sesion para reflejarlo en el top menu.
-      await update({ user: { image: selectedAvatar } });
-      showToast("Avatar actualizado correctamente", "success");
-      setBaseAvatar(selectedAvatar);
+      showLoading("Actualizando perfil...");
+      if (isAvatarChanged) {
+        await updateUser(selectedAvatar);
+        // Sincroniza el avatar en la sesion para reflejarlo en el top menu.
+        await update({ user: { image: selectedAvatar } });
+        setBaseAvatar(selectedAvatar);
+      }
+      if (isBannerChanged) {
+        await updateUserBanner(selectedBanner);
+        setBaseBanner(selectedBanner);
+      }
+      showToast("Perfil actualizado correctamente", "success");
     } catch (error) {
       showToast(
         error instanceof Error
           ? error.message
-          : "No se pudo actualizar el avatar",
+          : "No se pudo actualizar el perfil",
         "error",
       );
     } finally {
@@ -209,6 +262,7 @@ export const Pefil = ({
 
   const handleDiscardAvatar = () => {
     setSelectedAvatar(baseAvatar);
+    setSelectedBanner(baseBanner);
   };
 
   const isPlayer = user.role === "player";
@@ -227,6 +281,29 @@ export const Pefil = ({
     tabs.push("selected");
   }
   tabs.push("mazos");
+
+  const avatarItems = useMemo(
+    () =>
+      avatars.map((pathname) => ({
+        id: pathname,
+        imageUrl: pathname,
+        name: formatMediaLabel(pathname),
+      })),
+    [avatars],
+  );
+
+  const bannerItems = useMemo(() => banners, [banners]);
+
+  const matchesPlayed = user.matchesPlayed ?? 0;
+  const eloPoints = user.eloPoints ?? 0;
+  // Mantiene la misma formula de winrate usada en el ranking de /torneos.
+  const winrateRaw = matchesPlayed > 0 ? (eloPoints / matchesPlayed) * 100 : 0;
+  const winrate = Math.min(100, Math.max(0, Math.round(winrateRaw)));
+  const tournamentsPlayed = user.tournamentsPlayed ?? 0;
+  const deckCountToShow = hasSession
+    ? deckCounts.totalDecks
+    : deckCounts.publicDecks;
+  const hasProfileChanges = isAvatarChanged || isBannerChanged;
 
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab);
@@ -315,124 +392,144 @@ export const Pefil = ({
     : "Ultimo torneo";
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-tournament-dark-bg dark:via-tournament-dark-muted-strong dark:to-tournament-dark-bg text-slate-900 dark:text-white overflow-hidden p-4">
-      {/* Fondo */}
-      {/* <div className="absolute inset-0 bg-[url('/images/fondo-souls.jpg')] bg-cover bg-center opacity-20 blur-sm"></div> */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-slate-100/80 to-slate-100/90 dark:from-black/70 dark:to-black/90"></div>
-
-      {/* Contenedor principal */}
-      <div className="relative z-10 w-full max-w-6xl bg-white/90 dark:bg-tournament-dark-surface/90 border border-slate-200 dark:border-tournament-dark-border rounded-2xl shadow-xl py-8 px-4 backdrop-blur-md flex flex-col items-center transition">
-        {/* Encabezado */}
-        <div className="flex flex-col md:flex-row items-center gap-8 w-full">
-          {/* Avatar */}
-          <div className="relative group">
-            <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-purple-600 shadow-[0_0_20px_rgba(147,51,234,0.35)] transition group-hover:scale-105">
-              <Image
-                className="rounded-lg"
-                width={270}
-                height={287}
-                src={getAvatarUrl(selectedAvatar || user.image)}
-                alt={
-                  user.nickname
-                    ? `Avatar de ${user.nickname}`
-                    : "Avatar de usuario"
-                }
-                title={
-                  user.nickname
-                    ? `Avatar de ${user.nickname}`
-                    : "Avatar de usuario"
-                }
-              />
-            </div>
+    <div className="min-h-screen bg-tournament-dark-bg text-white">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-10 pt-6">
+        <section className="relative overflow-hidden rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/70 shadow-xl">
+          <div className="relative h-56 w-full sm:h-64 lg:h-72">
+            <Image
+              src={getProfileBannerUrl(selectedBanner)}
+              alt="Banner de perfil"
+              title="Banner de perfil"
+              fill
+              priority
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-tournament-dark-bg" />
             <button
-              onClick={() => setShowAvatars(true)}
-              className="absolute bottom-2 right-2 bg-purple-600 text-white p-2 rounded-full text-xs hover:bg-purple-700 transition"
+              type="button"
+              onClick={() => setShowBanners(true)}
+              aria-label="Cambiar banner"
+              className="absolute inset-0 z-10 cursor-pointer"
+            />
+            <button
+              type="button"
+              onClick={() => setShowBanners(true)}
+              title="Cambiar banner"
+              className="absolute bottom-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
             >
-              <IoImageOutline className="w-6 h-6" />
+              <IoImageOutline className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Info básica */}
-          <div className="flex-1 text-center md:text-left">
-            <h1 className="text-3xl font-bold text-purple-600 dark:text-purple-300">
-              {user.nickname}
-            </h1>
-            {/* <p className="text-gray-300 italic">No soy un mazo... soy un monstruo.</p> */}
-
-            {/* Barra de experiencia */}
-            {/* <div className="mt-4">
-              <p className="text-sm text-gray-400 mb-1">Nivel 12</p>
-              <div className="w-full bg-gray-800 h-3 rounded-full overflow-hidden border border-purple-700/50">
-                <div className="bg-purple-500 h-full w-3/4 transition-all"></div>
-              </div>
-              <p className="text-xs text-gray-400 mt-1">XP: 750 / 1000</p>
-            </div> */}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-sm text-slate-600 dark:text-slate-300">
-              <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
-                <p className="text-slate-500 dark:text-slate-400 text-xs">
-                  Nombre
-                </p>
-                <p className="font-semibold">{user.name}</p>
-              </div>
-              <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
-                <p className="text-slate-500 dark:text-slate-400 text-xs">
-                  Apellido
-                </p>
-                <p className="font-semibold">{user.lastname}</p>
-              </div>
-              <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
-                <p className="text-slate-500 dark:text-slate-400 text-xs">
-                  Email
-                </p>
-                <p className="font-semibold">{user.email}</p>
-              </div>
-              <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
-                <p className="text-slate-500 dark:text-slate-400 text-xs">
-                  Puntos
-                </p>
-                <p className="font-semibold">{user.victoryPoints}</p>
-              </div>
-              {user.role && user.role !== "player" && (
-                <div className="bg-slate-50 dark:bg-tournament-dark-muted p-3 rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border">
-                  <p className="text-slate-500 dark:text-slate-400 text-xs">
-                    Rol
-                  </p>
-                  <p className="font-semibold">{user.role}</p>
+          <div className="relative -mt-16 flex flex-col gap-6 px-6 pb-6 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end">
+              <div className="relative">
+                <div className="h-28 w-28 overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)] sm:h-32 sm:w-32">
+                  <Image
+                    src={getAvatarUrl(selectedAvatar || user.image)}
+                    alt={
+                      user.nickname
+                        ? `Avatar de ${user.nickname}`
+                        : "Avatar de usuario"
+                    }
+                    title={
+                      user.nickname
+                        ? `Avatar de ${user.nickname}`
+                        : "Avatar de usuario"
+                    }
+                    width={200}
+                    height={200}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setShowAvatars(true)}
+                  title="Cambiar avatar"
+                  className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
+                >
+                  <IoImageOutline className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="space-y-2 text-left">
+                <h1 className="text-3xl font-semibold text-white sm:text-4xl">
+                  {user.nickname}
+                </h1>
+                <p className="text-sm text-purple-200 sm:text-base">
+                  {[user.name, user.lastname].filter(Boolean).join(" ")}
+                </p>
+                <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-slate-300">
+                  <span className="rounded-full border border-purple-500/40 bg-purple-600/20 px-3 py-1">
+                    {tournamentsPlayed} torneos jugados
+                  </span>
+                  <span className="rounded-full border border-purple-500/40 bg-purple-600/20 px-3 py-1">
+                    {deckCountToShow} mazos
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {isAvatarChanged && (
-          <div className="flex md:flex-row flex-col w-full justify-end gap-3 mt-6">
-            <button
-              onClick={handleDiscardAvatar}
-              className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted transition"
-            >
-              Descartar
-            </button>
-            <button
-              onClick={updateUserProfile}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-white shadow-md shadow-purple-600/40 transition"
-            >
-              Guardar
-            </button>
+            {hasProfileChanges && (
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={handleDiscardAvatar}
+                  className="rounded-lg border border-slate-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-200 transition hover:bg-slate-700"
+                >
+                  Descartar
+                </button>
+                <button
+                  onClick={updateUserProfile}
+                  className="rounded-lg bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-md shadow-purple-700/40 transition hover:bg-purple-500"
+                >
+                  Guardar cambios
+                </button>
+              </div>
+            )}
           </div>
-        )}
+        </section>
 
-        {/* Tabs */}
+        <section className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/80 p-5 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
+              Win rate
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-white">
+              {winrate}%
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Basado en {matchesPlayed} partidas
+            </p>
+          </div>
+          <div className="rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/80 p-5 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
+              Puntos de victoria
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-white">
+              {user.victoryPoints ?? 0}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">Acumulados</p>
+          </div>
+          <div className="rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/80 p-5 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
+              Elo
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-white">
+              {user.eloPoints ?? 0}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">Ranking actual</p>
+          </div>
+        </section>
+
         {tabs.length > 0 && (
-          <div className="flex mt-10 border-b border-slate-200 dark:border-tournament-dark-border w-full justify-center md:justify-start">
+          <div className="flex w-full justify-center border-b border-tournament-dark-border md:justify-start">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => handleTabChange(tab)}
-                className={`px-6 py-2 text-sm font-semibold transition ${
+                className={`px-6 py-3 text-xs font-semibold uppercase tracking-wide transition ${
                   activeTab === tab
-                    ? "text-purple-600 border-b-2 border-purple-600"
-                    : "text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-300"
+                    ? "text-purple-300 border-b-2 border-purple-400"
+                    : "text-slate-400 hover:text-purple-200"
                 }`}
               >
                 {tab === "current"
@@ -447,8 +544,7 @@ export const Pefil = ({
           </div>
         )}
 
-        {/* Contenido */}
-        <div className="mt-8 w-full">
+        <div className="w-full">
           {isPlayer && activeTab === "current" && activeTournamentState && (
             <ProfileCurrentTournament
               data={activeTournamentState}
@@ -498,7 +594,7 @@ export const Pefil = ({
                     <div className="flex items-center gap-2">
                       {(() => {
                         const tooltipText =
-                          "La cantidad máxima de mazos permitidos es 12.";
+                          "La cantidad maxima de mazos permitidos es 12.";
                         const hasReachedMax =
                           nonTournamentCount >= MAX_USER_DECKS;
                         if (hasReachedMax) {
@@ -533,12 +629,10 @@ export const Pefil = ({
                     </div>
                   ) : null}
                   <div className="ml-auto flex flex-wrap gap-2">
-                    {(
-                      [
-                        { value: "without", label: "Mazos" },
-                        { value: "with", label: "Competitivos" },
-                      ] as const
-                    ).map((filter) => {
+                    {([
+                      { value: "without", label: "Mazos" },
+                      { value: "with", label: "Competitivos" },
+                    ] as const).map((filter) => {
                       const isActive = deckFilters.tournament === filter.value;
                       return (
                         <button
@@ -559,10 +653,10 @@ export const Pefil = ({
                             });
                           }}
                           className={clsx(
-                            "flex h-9 items-center justify-center rounded-lg px-2 sm:px-4 text-sm font-medium transition-colors",
+                            "inline-flex items-center rounded-lg border px-5 py-2 text-xs font-semibold uppercase tracking-wide transition",
                             isActive
-                              ? "bg-purple-600 text-white shadow-sm"
-                              : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-accent dark:hover:text-white",
+                              ? "border-purple-600 bg-purple-600 text-white shadow-sm"
+                              : "border-transparent bg-white text-slate-500 hover:text-purple-600 dark:bg-tournament-dark-muted dark:text-slate-300",
                           )}
                         >
                           {filter.label}
@@ -572,87 +666,13 @@ export const Pefil = ({
                   </div>
                 </div>
               }
-              onDeleteDeck={(deckId) => {
-                openAlertConfirmation({
-                  text: "¿Deseas eliminar este mazo?",
-                  description: "Esta acción eliminará el mazo permanentemente.",
-                  action: async () => {
-                    showLoading("Eliminando mazo...");
-                    const success = await deleteDeck(deckId);
-                    hideLoading();
-                    if (success) {
-                      showToast("Mazo eliminado correctamente.", "success");
-                    } else {
-                      showToast(
-                        "No se pudo eliminar el mazo. Inténtalo de nuevo.",
-                        "error",
-                      );
-                    }
-                    return success;
-                  },
-                });
-              }}
             />
           )}
-
-          {/* {activeTab === "perfil" && (
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <StatCard label="Victorias" value="42" />
-              <StatCard label="Derrotas" value="18" />
-              <StatCard label="Torneos" value="9" />
-            </div>
-          )} */}
-
-          {/* {activeTab === "mazos" && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {decks.map((m, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-800/70 p-5 rounded-xl border border-purple-600/40 hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition"
-                >
-                  <h3 className="text-lg font-bold text-purple-400">{m.name}</h3>
-                  <p className="text-sm text-gray-300">Arquetipo: {m.archetype.name}</p>
-                  <button className="mt-4 w-full py-2 bg-purple-600 rounded-lg hover:bg-purple-700 transition">
-                    Ver Detalles
-                  </button>
-                </div>
-              ))}
-            </div>
-          )} */}
-
-          {/* {activeTab === "torneos" && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm border border-purple-600/40">
-                <thead>
-                  <tr className="bg-purple-800/30 text-purple-300 uppercase text-xs">
-                    <th className="px-4 py-2 text-left">Torneo</th>
-                    <th className="px-4 py-2">Fecha</th>
-                    <th className="px-4 py-2">Resultado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {torneos.map((t, i) => (
-                    <tr
-                      key={i}
-                      className="border-t border-purple-700/30 hover:bg-purple-900/20 transition"
-                    >
-                      <td className="px-4 py-2">{t.nombre}</td>
-                      <td className="px-4 py-2 text-center">{t.fecha}</td>
-                      <td className="px-4 py-2 text-center text-purple-400 font-semibold">
-                        {t.posicion}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )} */}
         </div>
 
-        {/* Botones */}
-        <div className="mt-10 flex flex-wrap gap-4 justify-center">
+        <div className="flex flex-wrap justify-center gap-4">
           <ButtonLogOut className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold shadow-md hover:shadow-red-500/50 transition text-white">
-            Cerrar Sesión
+            Cerrar sesion
           </ButtonLogOut>
         </div>
       </div>
@@ -665,11 +685,11 @@ export const Pefil = ({
           <div className="overflow-auto w-full text-center">
             <div className="text-slate-100 py-4 bg-slate-900 dark:bg-tournament-dark-hero">
               <h1 className="font-bold md:text-2xl uppercase">
-                ¡Elige tu avatar favorito!
+                Elige tu avatar favorito!
               </h1>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mx-10 my-6">
-              {avatars.map((avatar) => (
+              {avatarItems.map((avatar) => (
                 <div
                   key={avatar.id}
                   onClick={() => handleSelect(avatar)}
@@ -686,6 +706,43 @@ export const Pefil = ({
                     width={200}
                     height={200}
                     className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {showBanners && (
+        <Modal
+          className="top-0 left-0 flex justify-center bg-slate-50 dark:bg-tournament-dark-bg z-20 transition-all w-full h-screen md:h-auto md:w-3/4 md:left-[12.5%] md:top-20"
+          close={() => setShowBanners(false)}
+        >
+          <div className="overflow-auto w-full text-center">
+            <div className="text-slate-100 py-4 bg-slate-900 dark:bg-tournament-dark-hero">
+              <h1 className="font-bold md:text-2xl uppercase">
+                Elige tu banner favorito!
+              </h1>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-6 my-6">
+              {bannerItems.map((banner) => (
+                <div
+                  key={banner}
+                  onClick={() => handleSelectBanner(banner)}
+                  className={`cursor-pointer rounded-xl border-2 transition-all overflow-hidden ${
+                    selectedBanner === getProfileBannerValue(banner)
+                      ? "border-purple-600 shadow-lg shadow-purple-600/40 scale-[1.01]"
+                      : "border-transparent hover:border-purple-500"
+                  }`}
+                >
+                  <Image
+                    src={getProfileBannerUrl(banner)}
+                    alt="Banner de perfil"
+                    title="Seleccionar banner de perfil"
+                    width={1200}
+                    height={500}
+                    className="h-40 w-full object-cover"
                   />
                 </div>
               ))}

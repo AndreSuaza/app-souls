@@ -8,6 +8,7 @@ export * from "./tournament/tournament.schema";
 export * from "./user/search-users.schema";
 export * from "./auth/register.schema";
 export * from "./profile/tournament.schema";
+export * from "./profile/profile-banner.schema";
 
 export * from "./decks/deck-filters.schema";
 export * from "./decks/deck-like.schema";
