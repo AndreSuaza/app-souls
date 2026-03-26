@@ -35,6 +35,7 @@ export type AdminProductDetail = {
   name: string;
   code: string;
   releaseDate: string;
+  price?: number | null;
   description: string;
   url: string;
   index: number;

@@ -16,6 +16,7 @@ type ProductFormValues = {
   code: string;
   index?: number;
   releaseDate: string;
+  price: number;
   description: string;
   url: string;
   show: boolean;
@@ -28,6 +29,7 @@ export type ProductSubmitValues = {
   code: string;
   index?: number;
   releaseDate: string;
+  price: number;
   description: string;
   url: string;
   show: boolean;
@@ -95,6 +97,7 @@ export const ProductForm = ({
       code: initialValues?.code ?? "",
       index: initialValues?.index,
       releaseDate: initialValues?.releaseDate ?? "",
+      price: initialValues?.price ?? 0,
       description: initialValues?.description ?? "",
       url: initialValues?.url ?? "",
       show: initialValues?.show ?? true,
@@ -447,6 +450,45 @@ export const ProductForm = ({
 
       <div className="grid gap-4 lg:grid-cols-2">
         <FormField
+          label="Precio"
+          labelFor="product-price"
+          error={errors.price?.message}
+        >
+          <FormInput
+            id="product-price"
+            type="number"
+            min={0}
+            step="0.01"
+            placeholder="Ej. 19900"
+            hasError={!!errors.price}
+            disabled={readOnly}
+            {...register("price", { valueAsNumber: true, required: "El precio es obligatorio" })}
+          />
+        </FormField>
+
+        <FormField
+          label="Número de cartas"
+          labelFor="product-number-cards"
+          error={errors.numberCards?.message}
+        >
+          <FormInput
+            id="product-number-cards"
+            readOnly
+            value={numberCardsValue}
+            hasError={!!errors.numberCards}
+          />
+          <input
+            type="hidden"
+            {...register("numberCards", {
+              valueAsNumber: true,
+              required: "El número de cartas es obligatorio",
+            })}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <FormField
           label="Mazo vinculado"
           labelFor="product-deck"
           error={errors.deckId?.message}
@@ -470,26 +512,6 @@ export const ProductForm = ({
               </button>
             )}
           </div>
-        </FormField>
-
-        <FormField
-          label="Número de cartas"
-          labelFor="product-number-cards"
-          error={errors.numberCards?.message}
-        >
-          <FormInput
-            id="product-number-cards"
-            readOnly
-            value={numberCardsValue}
-            hasError={!!errors.numberCards}
-          />
-          <input
-            type="hidden"
-            {...register("numberCards", {
-              valueAsNumber: true,
-              required: "El número de cartas es obligatorio",
-            })}
-          />
         </FormField>
       </div>
 
