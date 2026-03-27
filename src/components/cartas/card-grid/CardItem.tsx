@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
 import { Card } from "@/interfaces/cards.interface";
@@ -35,11 +34,6 @@ export const CardItem = ({
   highlightLegendaryCount = false,
   allowRestrictedTypes = false,
 }: Props) => {
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsImageLoaded(false);
-  }, [card.code, card.idd]);
   const openDetail = () => {
     detailCard(index);
   };
@@ -78,10 +72,7 @@ export const CardItem = ({
                 blurDataURL={cardImageBlurDataURL}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 200px"
-                className={`object-cover transition-opacity ${
-                  isImageLoaded ? "opacity-100" : "opacity-0"
-                }`}
-                onLoadingComplete={() => setIsImageLoaded(true)}
+                className="object-cover"
               />
             </div>
           </button>

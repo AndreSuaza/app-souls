@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Card } from "@/interfaces";
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
@@ -17,12 +16,6 @@ interface Props {
 
 
 export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsImageLoaded(false);
-  }, [card.code, card.idd]);
-
   // const isCardDetailOpen = useCardDetailStore( state => state.isCardDetailOpen);
   // const openCardDetail = useCardDetailStore( state => state.openCardDetail);
 
@@ -63,10 +56,9 @@ export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
                     title={card.name}
                     placeholder="blur"
                     blurDataURL={cardImageBlurDataURL}
-                    className={`-mt-[50%] transition-opacity ${isImageLoaded ? "opacity-100" : "opacity-0"}`}
+                    className="-mt-[50%]"
                     width={500}
                     height={50}
-                    onLoadingComplete={() => setIsImageLoaded(true)}
                 />
             </div>
         </div>
