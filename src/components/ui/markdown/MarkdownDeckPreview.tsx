@@ -77,7 +77,7 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
           return;
         }
 
-        const decklistCards = deckData.cards?.replaceAll("%2C", ",") ?? "";
+        const decklistCards = deckData.cards ?? "";
         const [deckLists, tournamentSummary, likeStatus] = await Promise.all([
           getDecksByIds(decklistCards),
           deckData.tournamentId
@@ -110,7 +110,7 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
     };
 
     const loadByDecklist = async (rawDecklist: string) => {
-      const normalized = rawDecklist.trim().replaceAll("%2C", ",");
+      const normalized = rawDecklist.trim();
       const cacheKey = `decklist:${normalized}`;
       const cached = deckPreviewCache.get(cacheKey);
       if (cached) {

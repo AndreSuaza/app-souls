@@ -100,7 +100,7 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 
-  const decklistCards = deck.cards?.replaceAll("%2C", ",") ?? "";
+  const decklistCards = deck.cards ?? "";
   const [deckLists, tournamentSummary, likeStatus] = await Promise.all([
     getDecksByIds(decklistCards),
     deck.tournamentId

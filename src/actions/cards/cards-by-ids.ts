@@ -8,14 +8,75 @@ export interface Decklist {
   card: Card;
 }
 
+type DeckPair = { token: string; count: number };
+
+const safeDecodeToken = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (!trimmed.includes("%")) return trimmed;
+  try {
+    return decodeURIComponent(trimmed);
+  } catch {
+    return trimmed;
+  }
+};
+
+const parseLegacyDecklist = (segment: string): DeckPair[] => {
+  if (!segment) return [];
+  const tokens = segment
+    .split(/%2C|,/gi)
+    .map((token) => safeDecodeToken(token))
+    .filter(Boolean);
+
+  const pairs: DeckPair[] = [];
+  for (let index = 0; index < tokens.length; index += 2) {
+    const token = tokens[index]?.trim();
+    if (!token) continue;
+    // Convierte el decklist legacy "token,cantidad" a pares estructurados.
+    const countValue = Number.parseInt(tokens[index + 1] ?? "0");
+    pairs.push({
+      token,
+      count: Number.isNaN(countValue) ? 0 : countValue,
+    });
+  }
+
+  return pairs;
+};
+
+const parseDecklist = (segment: string): DeckPair[] => {
+  if (!segment) return [];
+
+  // Nuevo formato: code:count;code:count; (compat con codigos que contienen comas).
+  if (segment.includes(";") || segment.includes(":")) {
+    const pairs: DeckPair[] = [];
+    segment
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .forEach((item) => {
+        const [rawCode = "", rawCount = ""] = item.split(":");
+        const token = safeDecodeToken(rawCode);
+        if (!token) return;
+        const countValue = Number.parseInt(rawCount ?? "0");
+        pairs.push({
+          token,
+          count: Number.isNaN(countValue) ? 0 : countValue,
+        });
+      });
+    return pairs;
+  }
+
+  return parseLegacyDecklist(segment);
+};
+
 const getCardsByIds = async (ids: string) => {
   if (!ids) return [];
   let deck: Decklist[] = [];
-  const idds = ids.split(",");
+  const pairs = parseDecklist(ids);
+  const tokens = pairs.map((pair) => pair.token);
 
   try {
     const cards = await prisma.card.findMany({
-      distinct: "idd",
       include: {
         product: {
           select: {
@@ -48,13 +109,24 @@ const getCardsByIds = async (ids: string) => {
         },
       },
       where: {
-        idd: {
-          in: idds,
-        },
+        OR: [{ code: { in: tokens } }, { idd: { in: tokens } }],
       },
     });
 
-    cards.map((card) => {
+    const iddMap = new Map<string, (typeof cards)[number]>();
+    const codeMap = new Map<string, (typeof cards)[number]>();
+    cards.forEach((card) => {
+      if (!iddMap.has(card.idd)) {
+        iddMap.set(card.idd, card);
+      }
+      if (!codeMap.has(card.code)) {
+        codeMap.set(card.code, card);
+      }
+    });
+
+    pairs.forEach((pair) => {
+      const card = codeMap.get(pair.token) ?? iddMap.get(pair.token);
+      if (!card) return;
       deck = [
         ...deck,
         {
@@ -75,7 +147,7 @@ const getCardsByIds = async (ids: string) => {
             product: card.product,
             price: card.price ?? null,
           },
-          count: Number.parseInt(idds[idds.indexOf(card.idd) + 1]),
+          count: pair.count,
         },
       ];
     });
@@ -89,17 +161,10 @@ const getCardsByIds = async (ids: string) => {
 export const getDecksByIds = async (ids?: string) => {
   if (!ids) return { mainDeck: [], sideDeck: [] };
 
-  // Normalizamos el decklist porque algunos flujos lo guardan URL-encoded.
-  let normalizedIds = ids;
-  if (normalizedIds.includes("%")) {
-    try {
-      normalizedIds = decodeURIComponent(normalizedIds);
-    } catch {
-      normalizedIds = normalizedIds
-        .replace(/%2C/gi, ",")
-        .replace(/%7C/gi, "|");
-    }
-  }
+  // Normalizamos solo el separador del sideboard para no romper codigos con comas.
+  const normalizedIds = ids.includes("%7C")
+    ? ids.replace(/%7C/gi, "|")
+    : ids;
 
   // Dividimos en [main, side]
   const [mainIds = "", sideIds = ""] = normalizedIds.split("|");

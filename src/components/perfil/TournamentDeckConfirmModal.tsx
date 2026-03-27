@@ -34,7 +34,7 @@ export const TournamentDeckConfirmModal = ({
       setIsLoading(true);
       setHasError(false);
       try {
-        const decklistCards = deck.cards?.replaceAll("%2C", ",") ?? "";
+        const decklistCards = deck.cards ?? "";
         // Replica la vista de /mazos/[id] cargando el detalle completo del mazo.
         const [deckLists, filters] = await Promise.all([
           getDecksByIds(decklistCards),

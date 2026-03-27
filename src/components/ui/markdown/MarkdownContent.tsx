@@ -201,7 +201,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       typeof href === "string" &&
       href.length > 0 &&
       !href.startsWith("http") &&
-      href.includes("%2C");
+      (href.includes("%2C") || (href.includes(";") && href.includes(":")));
     const isDeckIdHref = (href?: string) =>
       typeof href === "string" && /^[0-9a-fA-F]{24}$/.test(href.trim());
     const isBlankTextNode = (child?: HastNode) =>
@@ -338,7 +338,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       typeof href === "string" &&
       href.length > 0 &&
       !href.startsWith("http") &&
-      href.includes("%2C");
+      (href.includes("%2C") || (href.includes(";") && href.includes(":")));
     const isDeckId =
       typeof href === "string" && /^[0-9a-fA-F]{24}$/.test(href.trim());
 

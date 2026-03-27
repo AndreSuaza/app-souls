@@ -211,7 +211,13 @@ export const OptionsDeckCreator = ({
   const deckListText = () => {
     // Funcion auxiliar para convertir una lista en string
     const formatDeckList = (deckList: typeof deckListMain) =>
-      deckList.map((deck) => `${deck.card.idd}%2C${deck.count}%2C`).join("");
+      // Usamos el code para diferenciar variantes de una misma carta.
+      deckList
+        .map(
+          (deck) =>
+            `${encodeURIComponent(deck.card.code)}:${deck.count};`,
+        )
+        .join("");
 
     // Construir cada seccion
     const exportText =

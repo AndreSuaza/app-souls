@@ -113,7 +113,7 @@ export default async function Cards({ searchParams }: Props) {
         notFound();
       }
       deckUser = getDeck;
-      decklistCards = deckUser.cards.replaceAll("%2C", ",");
+    decklistCards = deckUser.cards;
     }
   }
 
