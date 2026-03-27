@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // Limita variantes generadas para reducir transferencia de origen.
+    deviceSizes: [360, 640, 768, 1024, 1280, 1536],
+    imageSizes: [120, 160, 200, 240, 300, 360, 420],
     remotePatterns: [
       {
         protocol: "https",

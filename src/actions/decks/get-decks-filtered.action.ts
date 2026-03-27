@@ -10,7 +10,7 @@ export async function getDecksFilteredAction(
   input: DeckFiltersInput,
 ): Promise<DeckFilteredResult> {
   const filters = DeckFiltersSchema.parse(input);
-  const perPage = 32;
+  const perPage = 24;
   const adminDeckFilter: Prisma.DeckWhereInput = {
     OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }],
   };

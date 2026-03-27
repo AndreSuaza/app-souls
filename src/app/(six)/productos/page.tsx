@@ -2,6 +2,8 @@ import { getProductsPagination } from "@/actions";
 import { ProductGrid } from "@/components";
 import { Metadata } from "next";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Productos Souls In Xtinction TCG | Catalogo",
   description:

@@ -56,7 +56,7 @@ const FILTER_KEYS = [
   "likes",
   "page",
 ] as const;
-const GRID_CARD_MIN_WIDTH = 200;
+const GRID_CARD_MIN_WIDTH = 210;
 const GRID_GAP_PX = 16;
 
 const parseFiltersFromUrl = (params: URLSearchParams): DeckFiltersState => {

@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 interface Props {
   searchParams: Promise<{

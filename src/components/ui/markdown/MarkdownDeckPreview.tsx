@@ -182,7 +182,7 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
     const element = gridWrapperRef.current;
     if (!element) return;
 
-    const GRID_CARD_MIN_WIDTH = 150;
+    const GRID_CARD_MIN_WIDTH = 160;
     const GRID_GAP_PX = 8;
 
     const calculateColumns = (width: number) => {

@@ -25,7 +25,7 @@ const formatStatsRange = (page: number, perPage: number, total: number) => {
   return `${start}-${end} de ${total}`;
 };
 
-const GRID_CARD_MIN_WIDTH = 160;
+const GRID_CARD_MIN_WIDTH = 170;
 // Umbral minimo para permitir una columna cuando el panel esta abierto.
 const GRID_CARD_STACK_MIN_WIDTH = 120;
 const GRID_GAP_PX = 16;
@@ -152,7 +152,7 @@ export const CardFinder = ({
   const [totalCardsState, setTotalCardsState] = useState(
     totalCards ?? cards.length,
   );
-  const [perPageState, setPerPageState] = useState(perPage ?? 30);
+  const [perPageState, setPerPageState] = useState(perPage ?? 24);
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const layoutContainerRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState(1);
@@ -432,7 +432,7 @@ export const CardFinder = ({
     if (!useAdvancedFilters) return undefined;
     return formatStatsRange(
       advancedCurrentPage,
-      perPageState || 30,
+      perPageState || 24,
       totalCardsState,
     );
   }, [advancedCurrentPage, perPageState, totalCardsState, useAdvancedFilters]);

@@ -10,7 +10,7 @@ import {
 import { DeckDetailView } from "@/components";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 interface Props {
   params: Promise<{ id: string }>;

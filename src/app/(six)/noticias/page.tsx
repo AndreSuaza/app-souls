@@ -5,7 +5,7 @@ import { NewsHeroCard } from "@/components/news/public/NewsHeroCard";
 import { PublicNewsExplorer } from "@/components/news/public/PublicNewsExplorer";
 import { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: "Noticias de Souls In Xtinction TCG",

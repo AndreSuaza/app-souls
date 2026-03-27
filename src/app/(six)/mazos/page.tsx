@@ -4,7 +4,7 @@ import { DeckLibrary } from "@/components";
 import type { DeckFiltersState } from "@/components";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: "Mazos Souls In Xtinction TCG | Biblioteca",

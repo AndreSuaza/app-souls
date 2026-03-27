@@ -23,7 +23,7 @@ interface PaginationOptions {
 
 export const getPaginatedPricesCards = async ({
   page = 1,
-  take = 24,
+  take = 16,
   products,
   rarities,
   text,
