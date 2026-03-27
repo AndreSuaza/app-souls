@@ -55,17 +55,8 @@ export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
             />
             </div>
             </div>
-            <div className="relative">
-                {!isImageLoaded && (
-                  <Image
-                    src="/howtoplay/mazo-principal.webp"
-                    alt="Cargando carta"
-                    title="Cargando carta"
-                    className="-mt-[50%]"
-                    width={500}
-                    height={50}
-                  />
-                )}
+            <div className="relative overflow-hidden bg-[url('/howtoplay/mazo-principal.webp')] bg-cover bg-center">
+                {/* El fondo actúa como placeholder para evitar duplicar altura en el grid. */}
                 <Image
                     src={`/cards/${card.code}-${card.idd}.webp`}
                     alt={card.name}
