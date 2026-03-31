@@ -88,8 +88,8 @@ type TabKey = "current" | "history" | "selected" | "mazos";
 
 interface Props {
   user: User;
-  avatars: string[];
-  banners: string[];
+  avatars: Avatar[];
+  banners: Avatar[];
   activeTournament: ActiveTournamentData | null;
   tournaments: TournamentHistoryItem[];
   deckCounts: DeckCounts;
@@ -213,24 +213,9 @@ export const Pefil = ({
     setSelectedAvatar(getAvatarValue(avatar.imageUrl));
     setShowAvatars(false);
   };
-  const formatMediaLabel = (value: string) => {
-    const clean = value.split("/").pop() ?? value;
-    const withoutExt = clean.replace(/\.[^/.]+$/, "");
-    // Elimina UUID del filename para mostrar un nombre humano en el selector.
-    const match = withoutExt.match(
-      /^(.*)-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    );
-    const base = match?.[1] ?? withoutExt;
-    return base
-      .split("-")
-      .map((word) =>
-        word ? word[0].toUpperCase() + word.slice(1).toLowerCase() : "",
-      )
-      .join(" ");
-  };
 
-  const handleSelectBanner = (bannerPath: string) => {
-    setSelectedBanner(getProfileBannerValue(bannerPath));
+  const handleSelectBanner = (banner: Avatar) => {
+    setSelectedBanner(getProfileBannerValue(banner.imageUrl));
     setShowBanners(false);
   };
 
@@ -282,15 +267,7 @@ export const Pefil = ({
   }
   tabs.push("mazos");
 
-  const avatarItems = useMemo(
-    () =>
-      avatars.map((pathname) => ({
-        id: pathname,
-        imageUrl: pathname,
-        name: formatMediaLabel(pathname),
-      })),
-    [avatars],
-  );
+  const avatarItems = useMemo(() => avatars, [avatars]);
 
   const bannerItems = useMemo(() => banners, [banners]);
 
@@ -493,9 +470,7 @@ export const Pefil = ({
             <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
               Win rate
             </p>
-            <p className="mt-2 text-3xl font-semibold text-white">
-              {winrate}%
-            </p>
+            <p className="mt-2 text-3xl font-semibold text-white">{winrate}%</p>
             <p className="mt-1 text-xs text-slate-400">
               Basado en {matchesPlayed} partidas
             </p>
@@ -629,10 +604,12 @@ export const Pefil = ({
                     </div>
                   ) : null}
                   <div className="ml-auto flex flex-wrap gap-2">
-                    {([
-                      { value: "without", label: "Mazos" },
-                      { value: "with", label: "Competitivos" },
-                    ] as const).map((filter) => {
+                    {(
+                      [
+                        { value: "without", label: "Mazos" },
+                        { value: "with", label: "Competitivos" },
+                      ] as const
+                    ).map((filter) => {
                       const isActive = deckFilters.tournament === filter.value;
                       return (
                         <button
@@ -728,16 +705,16 @@ export const Pefil = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mx-6 my-6">
               {bannerItems.map((banner) => (
                 <div
-                  key={banner}
+                  key={banner.id}
                   onClick={() => handleSelectBanner(banner)}
                   className={`cursor-pointer rounded-xl border-2 transition-all overflow-hidden ${
-                    selectedBanner === getProfileBannerValue(banner)
+                    selectedBanner === getProfileBannerValue(banner.imageUrl)
                       ? "border-purple-600 shadow-lg shadow-purple-600/40 scale-[1.01]"
                       : "border-transparent hover:border-purple-500"
                   }`}
                 >
                   <Image
-                    src={getProfileBannerUrl(banner)}
+                    src={getProfileBannerUrl(banner.imageUrl)}
                     alt="Banner de perfil"
                     title="Seleccionar banner de perfil"
                     width={1200}

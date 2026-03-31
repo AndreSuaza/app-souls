@@ -74,6 +74,7 @@ export * from "./decks/toggle-deck-like.action";
 export * from "./profile/avatars";
 export * from "./profile/edit-user-session";
 export * from "./profile/update-user-banner.action";
+export * from "./profile/admin-profile-media.action";
 export * from "./profile/get-active-tournament.action";
 export * from "./profile/get-profile-tournament.action";
 export * from "./profile/get-user-tournaments.action";

@@ -425,20 +425,46 @@ enum AvatarRarity {
   EVENT
 }
 
+enum AvatarType {
+  AVATAR
+  BANNER
+}
+
+enum AvatarAvailability {
+  PUBLIC
+  STORE
+  EVENT
+  TOURNAMENT
+  EXCLUSIVE
+}
+
+enum UserAvatarSource {
+  DEFAULT
+  PURCHASE
+  EVENT
+  ADMIN
+  REWARD
+  PROMO
+}
+
 model Avatar {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  imageUrl    String
-  rarity      AvatarRarity @default(COMMON)
-  isExclusive Boolean      @default(false)
-  userAvatars UserAvatar[]
+  id           String              @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  imageUrl     String
+  rarity       AvatarRarity        @default(COMMON)
+  availability AvatarAvailability? @default(PUBLIC)
+  price        Int?                @default(0)
+  type         AvatarType          @default(AVATAR)
+  userAvatars  UserAvatar[]
 
   createdAt DateTime @default(now())
 }
 
 model UserAvatar {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  unlocked Boolean @default(false)
+  id       String            @id @default(auto()) @map("_id") @db.ObjectId
+  unlocked Boolean           @default(false)
+  source   UserAvatarSource?
+  note     String?
 
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
