@@ -411,16 +411,16 @@ export const ProfileCurrentTournament = ({
         </div>
 
         {!showRounds ? (
-          <div className="rounded-lg border border-tournament-dark-border bg-tournament-dark-surface px-5 py-4 text-sm text-slate-200">
+          <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200">
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tournament-dark-muted text-purple-200">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-purple-600 dark:bg-tournament-dark-muted dark:text-purple-200">
                 <IoInformationCircleOutline className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-purple-100">
+                <p className="text-sm font-semibold text-slate-800 dark:text-purple-100">
                   Rondas ocultas
                 </p>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-slate-500 dark:text-slate-300">
                   Pulsa “Mostrar rondas” para ver el historial completo.
                 </p>
               </div>
@@ -500,3 +500,4 @@ export const ProfileCurrentTournament = ({
     </div>
   );
 };
+

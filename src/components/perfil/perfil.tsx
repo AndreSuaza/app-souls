@@ -255,9 +255,9 @@ export const Pefil = ({
   };
 
   return (
-    <div className="min-h-screen bg-tournament-dark-bg text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-10 pt-6">
-        <section className="relative min-h-[320px] overflow-hidden rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/70 shadow-xl sm:min-h-[360px] lg:min-h-[400px]">
+        <section className="relative min-h-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white/80 shadow-xl sm:min-h-[360px] lg:min-h-[400px] dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70">
           <div className="absolute inset-0">
             <Image
               src={getProfileBannerUrl(selectedBanner)}
@@ -268,7 +268,7 @@ export const Pefil = ({
               className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-tournament-dark-bg/95 via-tournament-dark-bg/60 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-50/95 via-slate-50/60 to-transparent dark:from-tournament-dark-bg/95 dark:via-tournament-dark-bg/60" />
           </div>
           <button
             type="button"
@@ -316,20 +316,20 @@ export const Pefil = ({
                 </button>
               </div>
               <div className="space-y-2 text-left">
-                <h1 className="text-3xl font-semibold text-white sm:text-4xl">
+                <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
                   {user.nickname}
                 </h1>
-                <p className="text-sm text-purple-200 sm:text-base">
+                <p className="text-sm text-slate-600 sm:text-base dark:text-purple-200">
                   {[user.name, user.lastname].filter(Boolean).join(" ")}
                 </p>
-                <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-slate-300">
+                <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
                   <button
                     type="button"
                     onClick={() => handleTabShortcut("history")}
                     title="Ver torneos jugados"
-                    className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/15 px-3 py-1 text-amber-100 transition hover:bg-amber-500/25"
+                    className="inline-flex items-center gap-2 rounded-full border border-amber-300/60 bg-amber-100/70 px-3 py-1 text-amber-700 transition hover:bg-amber-200/70 dark:border-amber-400/40 dark:bg-amber-500/15 dark:text-amber-100 dark:hover:bg-amber-500/25"
                   >
-                    <IoTrophyOutline className="h-4 w-4 text-amber-300" />
+                    <IoTrophyOutline className="h-4 w-4 text-amber-600 dark:text-amber-300" />
                     <span className="text-xs font-semibold">
                       {tournamentsPlayed}
                     </span>
@@ -339,9 +339,9 @@ export const Pefil = ({
                     type="button"
                     onClick={() => handleTabShortcut("decks")}
                     title="Ver mazos"
-                    className="inline-flex items-center gap-2 rounded-full border border-purple-400/40 bg-purple-500/15 px-3 py-1 text-purple-100 transition hover:bg-purple-500/25"
+                    className="inline-flex items-center gap-2 rounded-full border border-purple-300/60 bg-purple-100/70 px-3 py-1 text-purple-700 transition hover:bg-purple-200/70 dark:border-purple-400/40 dark:bg-purple-500/15 dark:text-purple-100 dark:hover:bg-purple-500/25"
                   >
-                    <IoLayersOutline className="h-4 w-4 text-purple-300" />
+                    <IoLayersOutline className="h-4 w-4 text-purple-600 dark:text-purple-300" />
                     <span className="text-xs font-semibold">
                       {deckCountToShow}
                     </span>
@@ -355,7 +355,7 @@ export const Pefil = ({
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={handleDiscardAvatar}
-                  className="rounded-lg border border-slate-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-200 transition hover:bg-slate-700"
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
                 >
                   Descartar
                 </button>
@@ -371,46 +371,50 @@ export const Pefil = ({
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="relative overflow-hidden rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/80 p-5 shadow-lg">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/80">
             <div className="absolute left-1/2 top-0 h-1 w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-amber-400/90 to-transparent" />
             <div className="flex items-center gap-2">
-              <FiTrendingUp className="h-4 w-4 text-amber-300" />
-              <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
+              <FiTrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-300" />
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-purple-300">
                 Win rate
               </p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-amber-200">
+            <p className="mt-2 text-3xl font-semibold text-amber-600 dark:text-amber-200">
               {winrate}%
             </p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Basado en {matchesPlayed} partidas
             </p>
           </div>
-          <div className="relative overflow-hidden rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/80 p-5 shadow-lg">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/80">
             <div className="absolute left-1/2 top-0 h-1 w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-fuchsia-500/90 to-transparent" />
             <div className="flex items-center gap-2">
-              <FiAward className="h-4 w-4 text-fuchsia-300" />
-              <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
+              <FiAward className="h-4 w-4 text-fuchsia-600 dark:text-fuchsia-300" />
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-purple-300">
                 Puntos de victoria
               </p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-fuchsia-200">
+            <p className="mt-2 text-3xl font-semibold text-fuchsia-600 dark:text-fuchsia-200">
               {user.victoryPoints ?? 0}
             </p>
-            <p className="mt-1 text-xs text-slate-400">Acumulados</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Acumulados
+            </p>
           </div>
-          <div className="relative overflow-hidden rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface/80 p-5 shadow-lg">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/80">
             <div className="absolute left-1/2 top-0 h-1 w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-indigo-400/90 to-transparent" />
             <div className="flex items-center gap-2">
-              <FiTarget className="h-4 w-4 text-indigo-300" />
-              <p className="text-xs uppercase tracking-[0.3em] text-purple-300">
+              <FiTarget className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-purple-300">
                 Elo
               </p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-indigo-200">
+            <p className="mt-2 text-3xl font-semibold text-indigo-600 dark:text-indigo-200">
               {user.eloPoints ?? 0}
             </p>
-            <p className="mt-1 text-xs text-slate-400">Ranking actual</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Ranking actual
+            </p>
           </div>
         </section>
 
@@ -455,7 +459,7 @@ export const Pefil = ({
               icon: <IoTrophyOutline className="h-4 w-4" />,
               content: selectedTournament ? (
                 <section className="w-full space-y-4">
-                  <h2 className="text-2xl font-semibold text-purple-200">
+                  <h2 className="text-2xl font-semibold text-slate-800 dark:text-purple-200">
                     Torneo seleccionado
                   </h2>
                   <ProfileCurrentTournament
@@ -484,7 +488,7 @@ export const Pefil = ({
           close={() => setShowAvatars(false)}
           hideCloseButton
         >
-          <div className="w-full max-w-5xl overflow-auto rounded-lg border border-tournament-dark-border bg-slate-50 text-center shadow-xl dark:bg-tournament-dark-bg">
+          <div className="w-full max-w-5xl overflow-auto rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
             <div className="relative flex items-center justify-center bg-slate-900 px-4 py-4 text-slate-100 dark:bg-tournament-dark-hero">
               <h1 className="text-center font-bold uppercase md:text-2xl">
                 Elige tu avatar favorito!
@@ -492,7 +496,7 @@ export const Pefil = ({
               <button
                 type="button"
                 onClick={() => setShowAvatars(false)}
-                className="absolute right-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-tournament-dark-border text-slate-200 transition hover:bg-white/10"
+                className="absolute right-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-200 transition hover:bg-white/10 dark:border-tournament-dark-border"
                 aria-label="Cerrar"
                 title="Cerrar"
               >
@@ -531,7 +535,7 @@ export const Pefil = ({
           close={() => setShowBanners(false)}
           hideCloseButton
         >
-          <div className="w-full max-w-6xl overflow-auto rounded-lg border border-tournament-dark-border bg-slate-50 text-center shadow-xl dark:bg-tournament-dark-bg">
+          <div className="w-full max-w-6xl overflow-auto rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
             <div className="relative flex items-center justify-center bg-slate-900 px-4 py-4 text-slate-100 dark:bg-tournament-dark-hero">
               <h1 className="text-center font-bold uppercase md:text-2xl">
                 Elige tu banner favorito!
@@ -539,7 +543,7 @@ export const Pefil = ({
               <button
                 type="button"
                 onClick={() => setShowBanners(false)}
-                className="absolute right-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-tournament-dark-border text-slate-200 transition hover:bg-white/10"
+                className="absolute right-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-200 transition hover:bg-white/10 dark:border-tournament-dark-border"
                 aria-label="Cerrar"
                 title="Cerrar"
               >

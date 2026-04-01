@@ -11,7 +11,7 @@ export const ProfileTournamentHistorySection = ({
 }: Props) => {
   return (
     <section className="w-full space-y-4">
-      <h2 className="text-2xl font-semibold text-purple-200">
+      <h2 className="text-2xl font-semibold text-slate-800 dark:text-purple-200">
         Torneos jugados
       </h2>
       <ProfileTournamentHistory

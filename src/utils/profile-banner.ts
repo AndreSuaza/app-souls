@@ -1,7 +1,7 @@
 import { toBlobUrl } from "@/utils/blob-path";
 
 const DEFAULT_BANNER =
-  "souls/profile/banners/bg-cardlist-a7c26a26-b921-4e7a-8867-26ed9ad7de54.webp";
+  "souls/profile/banners/angel-ac15be76-16b4-4f45-a5c0-fb30655a89a0.webp";
 
 const isHttpUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
