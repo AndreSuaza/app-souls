@@ -31,10 +31,15 @@ const AVATAR_MAP: AvatarMap = {
     "souls/profile/avatars/voluntad-692530e6-3d0d-4f39-93b7-a1e65aa6ce98.webp",
 };
 const DEFAULT_BANNER =
-  "souls/profile/banners/cardlist-5265e123-1834-40a3-a74a-e3366f140042.webp";
+  "souls/profile/banners/angel-ac15be76-16b4-4f45-a5c0-fb30655a89a0.webp";
 
 async function main() {
-  const operations: Array<{
+  // Actualiza usuarios y jugadores de torneo que aun tengan avatares legacy.
+  const userOperations: Array<{
+    where: { image: string };
+    data: { image: string };
+  }> = [];
+  const tournamentPlayerOperations: Array<{
     where: { image: string };
     data: { image: string };
   }> = [];
@@ -42,32 +47,59 @@ async function main() {
   for (const key in AVATAR_MAP) {
     if (!Object.prototype.hasOwnProperty.call(AVATAR_MAP, key)) continue;
     const pathname = AVATAR_MAP[key];
-    operations.push({
+    userOperations.push({
+      where: { image: key },
+      data: { image: pathname },
+    });
+    tournamentPlayerOperations.push({
       where: { image: key },
       data: { image: pathname },
     });
   }
 
-  if (operations.length === 0) {
+  let updatedUsers = 0;
+  let updatedTournamentPlayers = 0;
+
+  if (userOperations.length > 0) {
+    const [userResult, tournamentPlayerResult] = await Promise.all([
+      prisma.$transaction(
+        userOperations.map((operation) => prisma.user.updateMany(operation)),
+      ),
+      prisma.$transaction(
+        tournamentPlayerOperations.map((operation) =>
+          prisma.tournamentPlayer.updateMany(operation),
+        ),
+      ),
+    ]);
+
+    updatedUsers = userResult.reduce((acc, item) => acc + item.count, 0);
+    updatedTournamentPlayers = tournamentPlayerResult.reduce(
+      (acc, item) => acc + item.count,
+      0,
+    );
+  } else {
     console.log("[seed-user-avatars-blob] No hay avatares para actualizar.");
-    return;
   }
-
-  const result = await prisma.$transaction(
-    operations.map((operation) => prisma.user.updateMany(operation)),
-  );
-
-  const updated = result.reduce((acc, item) => acc + item.count, 0);
-  await prisma.user.updateMany({
+  const bannerResult = await prisma.user.updateMany({
     where: {
-      OR: [{ bannerImage: null }, { bannerImage: "" }],
+      OR: [
+        { bannerImage: { isSet: false } },
+        { bannerImage: null },
+        { bannerImage: "" },
+      ],
     },
     data: {
       bannerImage: DEFAULT_BANNER,
     },
   });
   console.log(
-    `[seed-user-avatars-blob] Avatares actualizados: ${updated} usuarios.`,
+    `[seed-user-avatars-blob] Avatares actualizados: ${updatedUsers} usuarios.`,
+  );
+  console.log(
+    `[seed-user-avatars-blob] Avatares actualizados en torneos: ${updatedTournamentPlayers} jugadores.`,
+  );
+  console.log(
+    `[seed-user-avatars-blob] Banners por defecto asignados: ${bannerResult.count} usuarios.`,
   );
 }
 

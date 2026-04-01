@@ -29,7 +29,6 @@ const getProfileMedia = async (type: "AVATAR" | "BANNER") => {
       type,
       OR: [
         { availability: "PUBLIC" },
-        { availability: null },
         { userAvatars: { some: { userId } } },
       ],
     },

@@ -30,6 +30,7 @@ import {
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
+import { Modal } from "@/components/ui/modal/modal";
 import { ProfileMediaManager } from "./ProfileMediaManager";
 
 const PAGE_SIZE = 16;
@@ -497,13 +498,12 @@ export const AdminMediaManager = () => {
       </div>
 
       {isPreviewOpen && previewImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm fade-in"
-            onClick={handleClosePreview}
-          />
-
-          <div className="relative z-10 h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-5xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg">
+        <Modal
+          className="inset-0 flex items-center justify-center p-4"
+          close={handleClosePreview}
+          hideCloseButton
+        >
+          <div className="relative h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-5xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg">
             <div className="flex items-center justify-between border-b border-purple-600 bg-slate-100/90 px-6 py-4 dark:border-tournament-dark-border dark:bg-slate-950/70">
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 sm:text-xl dark:text-white">
@@ -557,7 +557,7 @@ export const AdminMediaManager = () => {
               </div>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

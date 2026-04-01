@@ -247,8 +247,8 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
 
   const handleDelete = (item: ProfileMediaItem) => {
     openConfirmation({
-      text: "�Deseas eliminar esta imagen?",
-      description: "Solo se eliminar� si no est� en uso dentro del sistema.",
+      text: "¿Deseas eliminar esta imagen?",
+      description: "Solo se eliminará si no está en uso dentro del sistema.",
       action: async () => {
         showLoading("Eliminando imagen...");
         try {
@@ -369,11 +369,11 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
               className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-200 dark:placeholder:text-slate-500"
             />
           </div>
-          <div className="flex w-full items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 sm:w-44 lg:w-44 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+          <div className="flex w-full sm:w-44 lg:w-44">
             <select
               value={selectedRarity}
               onChange={(event) => setSelectedRarity(event.target.value)}
-              className="w-full bg-transparent text-sm text-slate-700 outline-none dark:text-slate-200"
+              className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
             >
               <option value="ALL">Todas las rarezas</option>
               {AVATAR_RARITIES.map((rarity) => (
@@ -383,11 +383,11 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
               ))}
             </select>
           </div>
-          <div className="flex w-full items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 sm:w-48 lg:w-48 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+          <div className="flex w-full sm:w-48 lg:w-48">
             <select
               value={selectedAvailability}
               onChange={(event) => setSelectedAvailability(event.target.value)}
-              className="w-full bg-transparent text-sm text-slate-700 outline-none dark:text-slate-200"
+              className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
             >
               <option value="ALL">Todas las zonas</option>
               {AVATAR_AVAILABILITIES.map((availability) => (
@@ -572,7 +572,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                       rarity: event.target.value,
                     }))
                   }
-                  className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+                  className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
                 >
                   {AVATAR_RARITIES.map((rarity) => (
                     <option key={rarity.value} value={rarity.value}>
@@ -602,7 +602,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                         price: event.target.value === "STORE" ? prev.price : 0,
                       }))
                     }
-                    className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+                    className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
                   >
                     {AVATAR_AVAILABILITIES.map((availability) => (
                       <option
@@ -659,13 +659,12 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
       )}
 
       {isPreviewOpen && previewItem && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm fade-in"
-            onClick={handleClosePreview}
-          />
-
-          <div className="relative z-10 h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-5xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg">
+        <Modal
+          className="inset-0 flex items-center justify-center p-4"
+          close={handleClosePreview}
+          hideCloseButton
+        >
+          <div className="relative h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-5xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg">
             <div className="flex items-center justify-between border-b border-purple-600 bg-slate-100/90 px-6 py-4 dark:border-tournament-dark-border dark:bg-slate-950/70">
               <div>
                 <h3 className="text-lg font-semibold text-slate-900 sm:text-xl dark:text-white">
@@ -719,7 +718,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
               </div>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </>
   );
