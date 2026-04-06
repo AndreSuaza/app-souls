@@ -10,9 +10,11 @@ import { FormField, FormInput, FormSelect } from "@/components/ui/form";
 import type { AdminProductDetail } from "@/interfaces";
 import { MarkdownDeckModal } from "@/components/ui/markdown/MarkdownDeckModal";
 import { ProductImageModal } from "./ProductImageModal";
+import { toBlobPath } from "@/utils/blob-path";
 
 type ProductFormValues = {
   name: string;
+  imageUrl: string;
   code: string;
   index?: number;
   releaseDate: string;
@@ -26,6 +28,7 @@ type ProductFormValues = {
 
 export type ProductSubmitValues = {
   name: string;
+  imageUrl: string;
   code: string;
   index?: number;
   releaseDate: string;
@@ -71,6 +74,10 @@ const MONTHS = [
 ];
 
 const stripExtension = (filename: string) => filename.replace(/\.[^/.]+$/, "");
+const getLabelFromUrl = (url: string) => {
+  const clean = toBlobPath(url);
+  return clean.split("/").pop() ?? url;
+};
 
 const parseReleaseDate = (value?: string | null) => {
   if (!value) return { month: "", year: "" };
@@ -94,6 +101,7 @@ export const ProductForm = ({
   const defaultValues = useMemo<ProductFormValues>(
     () => ({
       name: initialValues?.name ?? "",
+      imageUrl: initialValues?.imageUrl ?? "",
       code: initialValues?.code ?? "",
       index: initialValues?.index,
       releaseDate: initialValues?.releaseDate ?? "",
@@ -117,6 +125,7 @@ export const ProductForm = ({
   } = useForm<ProductFormValues>({ defaultValues });
 
   const codeValue = watch("code") ?? "";
+  const imageUrlValue = watch("imageUrl") ?? "";
   const deckIdValue = watch("deckId") ?? "";
   const numberCardsValue = watch("numberCards") ?? 0;
   const releaseDateValue = watch("releaseDate");
@@ -192,12 +201,18 @@ export const ProductForm = ({
   ]);
 
   useEffect(() => {
-    if (!initialValues?.code) return;
+    if (!initialValues?.imageUrl && !initialValues?.code) return;
+    const initialPath = initialValues?.imageUrl
+      ? toBlobPath(initialValues.imageUrl)
+      : "";
     const match =
-      images.find((image) => stripExtension(image) === initialValues.code) ??
+      (initialPath ? images.find((image) => image === initialPath) : null) ??
+      images.find(
+        (image) => stripExtension(getLabelFromUrl(image)) === initialValues.code,
+      ) ??
       null;
     setSelectedImage(match);
-  }, [images, initialValues?.code]);
+  }, [images, initialValues?.code, initialValues?.imageUrl]);
 
   useEffect(() => {
     if (!isDeckModalOpen) return;
@@ -244,8 +259,10 @@ export const ProductForm = ({
 
   const handleConfirmImage = () => {
     if (!pendingImage) return;
-    const code = stripExtension(pendingImage);
+    const label = getLabelFromUrl(pendingImage);
+    const code = stripExtension(label).toUpperCase();
     setValue("code", code, { shouldValidate: true });
+    setValue("imageUrl", pendingImage, { shouldValidate: true });
     setSelectedImage(pendingImage);
     setIsImageModalOpen(false);
   };
@@ -265,6 +282,9 @@ export const ProductForm = ({
     if (!codeValue) {
       setValue("code", codeValue, { shouldValidate: true });
     }
+    if (!imageUrlValue) {
+      setValue("imageUrl", imageUrlValue, { shouldValidate: true });
+    }
     if (!deckIdValue) {
       setValue("deckId", deckIdValue, { shouldValidate: true });
     }
@@ -282,6 +302,10 @@ export const ProductForm = ({
       onSubmit={handleFormSubmit}
       className="space-y-5 rounded-xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
     >
+      <input
+        type="hidden"
+        {...register("imageUrl", { required: "La imagen es obligatoria" })}
+      />
       <input
         type="hidden"
         {...register("code", { required: "La imagen es obligatoria" })}
@@ -331,7 +355,7 @@ export const ProductForm = ({
         <FormField
           label="Imagen del producto"
           labelFor="product-code"
-          error={errors.code?.message}
+          error={errors.imageUrl?.message ?? errors.code?.message}
         >
           <div className="flex flex-wrap gap-2">
             <FormInput

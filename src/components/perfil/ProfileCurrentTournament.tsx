@@ -21,6 +21,11 @@ import { Modal } from "../ui/modal/modal";
 import { UserDeckLibrary } from "../mazos/deck-library/UserDeckLibrary";
 import { TournamentDeckConfirmModal } from "./TournamentDeckConfirmModal";
 import { orderMatchesByBye } from "@/utils/matches";
+import {
+  IoChevronDownOutline,
+  IoChevronUpOutline,
+  IoInformationCircleOutline,
+} from "react-icons/io5";
 
 const EMPTY_ROUNDS: [] = [];
 
@@ -29,7 +34,7 @@ type Props = {
   selectedTournament?: TournamentSnapshot | null;
   hasShownInProgressWarning?: boolean;
   onInProgressWarningShown?: () => void;
-  onRefreshTournament?: (tournamentId: string) => void;
+  onRefreshTournament?: () => void;
   enableDeckAssociation?: boolean;
   hasSession?: boolean;
 };
@@ -64,6 +69,7 @@ export const ProfileCurrentTournament = ({
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [isDeckConfirmModalOpen, setIsDeckConfirmModalOpen] = useState(false);
   const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
+  const [showRounds, setShowRounds] = useState(false);
   const currentRound =
     rounds.length > 0 ? rounds[rounds.length - 1] : undefined;
   const orderedCurrentMatches = useMemo(
@@ -323,7 +329,7 @@ export const ProfileCurrentTournament = ({
                       <button
                         type="button"
                         title="Actualizar torneo"
-                        onClick={() => onRefreshTournament(tournament.id)}
+                        onClick={() => onRefreshTournament()}
                         className="rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
                       >
                         <FiRefreshCw className="h-4 w-4" />
@@ -386,11 +392,41 @@ export const ProfileCurrentTournament = ({
       )}
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
-          Historial de rondas
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-200">
+            Historial de rondas
+          </h3>
+          <button
+            type="button"
+            onClick={() => setShowRounds((prev) => !prev)}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-purple-300 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-purple-300"
+          >
+            {showRounds ? "Ocultar rondas" : "Mostrar rondas"}
+            {showRounds ? (
+              <IoChevronUpOutline className="h-4 w-4" />
+            ) : (
+              <IoChevronDownOutline className="h-4 w-4" />
+            )}
+          </button>
+        </div>
 
-        {historyRounds.length === 0 ? (
+        {!showRounds ? (
+          <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-purple-600 dark:bg-tournament-dark-muted dark:text-purple-200">
+                <IoInformationCircleOutline className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-purple-100">
+                  Rondas ocultas
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">
+                  Pulsa “Mostrar rondas” para ver el historial completo.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : historyRounds.length === 0 ? (
           <div className="rounded-lg border border-dashed border-tournament-dark-accent bg-white p-6 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
             Aún no se han generado rondas.
           </div>
@@ -464,3 +500,4 @@ export const ProfileCurrentTournament = ({
     </div>
   );
 };
+

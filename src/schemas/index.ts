@@ -8,6 +8,8 @@ export * from "./tournament/tournament.schema";
 export * from "./user/search-users.schema";
 export * from "./auth/register.schema";
 export * from "./profile/tournament.schema";
+export * from "./profile/profile-banner.schema";
+export * from "./profile/avatar.schema";
 
 export * from "./decks/deck-filters.schema";
 export * from "./decks/deck-like.schema";
@@ -20,6 +22,7 @@ export * from "./cards/card-id.schema";
 export * from "./cards/card-slug.schema";
 export * from "./cards/boveda-product-cards.schema";
 export * from "./products/product-search.schema";
+export * from "./media/media.schema";
 export * from "./products/product.schema";
 export * from "./stores/stores-by-distance.schema";
 export * from "./stores/store-id.schema";

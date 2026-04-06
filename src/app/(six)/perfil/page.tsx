@@ -1,4 +1,10 @@
-import { getAvatars, getActiveTournament, getUserTournaments } from "@/actions";
+import {
+  getAvatars,
+  getProfileBanners,
+  getActiveTournament,
+  getUserTournaments,
+  getProfileDeckCountsAction,
+} from "@/actions";
 import { getUserById } from "@/actions/auth/find-user";
 import { Pefil } from "@/components/perfil/perfil";
 import { Metadata } from "next";
@@ -40,8 +46,10 @@ export const metadata: Metadata = {
 export default async function PerfilPage() {
   const user = await getUserById();
   const avatars = await getAvatars();
+  const banners = await getProfileBanners();
   const activeTournament = await getActiveTournament();
   const tournaments = await getUserTournaments();
+  const deckCounts = await getProfileDeckCountsAction();
   // const userDecks = await getDecksByUser();
 
   return (
@@ -50,8 +58,10 @@ export default async function PerfilPage() {
         <Pefil
           user={user}
           avatars={avatars}
+          banners={banners}
           activeTournament={activeTournament}
           tournaments={tournaments}
+          deckCounts={deckCounts}
         />
       )}
     </>

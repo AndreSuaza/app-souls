@@ -7,6 +7,7 @@ import { FiSearch, FiX } from "react-icons/fi";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { Modal } from "@/components/ui/modal/modal";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
+import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
 
 const PAGE_SIZE = 32;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
@@ -37,7 +38,8 @@ export const ProductImageModal = ({
 
     return images.filter((image) => {
       const normalized = image.toLowerCase();
-      const code = image.replace(/\.[^/.]+$/, "").toLowerCase();
+      const filename = toBlobPath(image).split("/").pop() ?? image;
+      const code = filename.replace(/\.[^/.]+$/, "").toLowerCase();
       return normalized.includes(query) || code.includes(query);
     });
   }, [images, searchValue]);
@@ -116,6 +118,8 @@ export const ProductImageModal = ({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pageImages.map((image) => {
                 const isSelected = image === selectedImage;
+                const filename = toBlobPath(image).split("/").pop() ?? image;
+                const resolvedSrc = toBlobUrl(image);
 
                 return (
                   <button
@@ -131,15 +135,15 @@ export const ProductImageModal = ({
                   >
                     <div className="flex flex-1 items-center justify-center">
                       <Image
-                        src={`/products/${image}`}
-                        alt={image}
+                        src={resolvedSrc}
+                        alt={filename}
                         width={520}
                         height={260}
                         className="h-auto w-full rounded-md object-contain"
                       />
                     </div>
                     <span className="mt-auto block truncate pt-2 text-xs text-slate-500 dark:text-slate-400">
-                      {image}
+                      {filename}
                     </span>
                   </button>
                 );
@@ -147,7 +151,7 @@ export const ProductImageModal = ({
 
               {pageImages.length === 0 && (
                 <div className="col-span-full flex items-center justify-center py-10 text-sm text-slate-500 dark:text-slate-400">
-                  No hay imágenes disponibles en /public/products.
+                  No hay imágenes disponibles en Blob para esta búsqueda.
                 </div>
               )}
             </div>

@@ -7,6 +7,7 @@ import { FiX } from "react-icons/fi";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { Modal } from "@/components/ui/modal/modal";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
+import { toBlobUrl } from "@/utils/blob-path";
 
 const PAGE_SIZE = 32;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
@@ -173,6 +174,7 @@ export const NewsImageModal = ({
               {pageImages.map((image) => {
                 const isSelected = image === selectedImage;
                 const label = getLabel(image);
+                const imageSrc = toBlobUrl(image);
 
                 return (
                   <button
@@ -188,7 +190,7 @@ export const NewsImageModal = ({
                   >
                     <div className="flex flex-1 items-center justify-center">
                       <Image
-                        src={image}
+                        src={imageSrc}
                         alt={label}
                         width={520}
                         height={260}

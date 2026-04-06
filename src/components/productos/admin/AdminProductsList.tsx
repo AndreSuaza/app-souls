@@ -10,6 +10,7 @@ import { PaginationLine } from "@/components/ui";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import type { AdminProductListItem } from "@/interfaces";
 import { AdminProductsSearch } from "./AdminProductsSearch";
+import { toBlobUrl } from "@/utils/blob-path";
 
 type Props = {
   products: AdminProductListItem[];
@@ -20,6 +21,17 @@ type OrderFilter = "recent" | "old";
 type VisibilityFilter = "all" | "visible" | "hidden";
 
 const PAGE_SIZE = 10;
+
+const resolveProductImage = (value?: string | null) => {
+  if (!value) return null;
+  if (value.startsWith("http") || value.startsWith("/")) return value;
+  const blobCandidate = value.includes("/")
+    ? value
+    : `souls/products/${value}.webp`;
+  const resolved = toBlobUrl(blobCandidate);
+  if (resolved.startsWith("http") || resolved.startsWith("/")) return resolved;
+  return `/products/${value}.webp`;
+};
 
 export const AdminProductsList = ({ products, onDeleted }: Props) => {
   const router = useRouter();
@@ -205,9 +217,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
                 </thead>
                 <tbody>
                   {paginated.map((product) => {
-                    const imageSrc = product.imageUrl
-                      ? `/products/${product.imageUrl}.webp`
-                      : null;
+                    const imageSrc = resolveProductImage(product.imageUrl);
 
                     return (
                       <tr
@@ -278,9 +288,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
 
           <div className="space-y-3 md:hidden">
             {paginated.map((product) => {
-              const imageSrc = product.imageUrl
-                ? `/products/${product.imageUrl}.webp`
-                : null;
+              const imageSrc = resolveProductImage(product.imageUrl);
 
               return (
                 <div

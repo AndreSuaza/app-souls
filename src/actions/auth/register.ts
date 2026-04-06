@@ -4,6 +4,8 @@ import { sendEmailVerification } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { palabrasProhibidas } from "@/models/inappropriateWords.model";
 import { RegisterSchema } from "@/schemas";
+import { getAvatarValue } from "@/utils/avatar-image";
+import { getProfileBannerValue } from "@/utils/profile-banner";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { AuthError } from "next-auth";
@@ -96,6 +98,8 @@ export async function userRegistration(formData: FormInputs) {
         email: formData.email,
         nickname: normalizedNickname,
         password: passwordHash,
+        image: getAvatarValue(),
+        bannerImage: getProfileBannerValue(),
       },
     });
 

@@ -12,6 +12,7 @@ import {
   IoLayers,
   IoNewspaperOutline,
   IoBagRemoveOutline,
+  IoImagesOutline,
 } from "react-icons/io5";
 import { IoMdTrophy } from "react-icons/io";
 import { signOut } from "next-auth/react";
@@ -28,6 +29,7 @@ export const TournamentSidebar = () => {
   const isNewsSection = pathname.startsWith("/admin/noticias");
   const isDeckSection = pathname.startsWith("/admin/mazos");
   const isProductSection = pathname.startsWith("/admin/productos");
+  const isMediaSection = pathname.startsWith("/admin/medios");
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
 
   const menuItems = [
@@ -55,6 +57,11 @@ export const TournamentSidebar = () => {
           label: "Productos",
           href: "/admin/productos",
           icon: IoBagRemoveOutline,
+        },
+        {
+          label: "Medios",
+          href: "/admin/medios",
+          icon: IoImagesOutline,
         },
         {
           label: "Mazos",
@@ -158,6 +165,23 @@ export const TournamentSidebar = () => {
         href: "/admin",
         icon: IoArrowBackOutline,
       });
+    }
+  }
+
+  if (isMediaSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Medios",
+          href: "/admin/medios",
+          icon: IoImagesOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
     }
   }
 

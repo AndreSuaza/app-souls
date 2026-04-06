@@ -1,3 +1,5 @@
+import { toBlobUrl } from "@/utils/blob-path";
+
 type NewsImageFolder = "banners" | "cards";
 
 export const resolveNewsImageUrl = (
@@ -10,6 +12,9 @@ export const resolveNewsImageUrl = (
   }
   if (value.startsWith("/")) {
     return value;
+  }
+  if (value.startsWith("souls/")) {
+    return toBlobUrl(value);
   }
   // Compatibilidad con registros antiguos: evita romper la UI si llega un nombre local.
   return `/news/${folder}/${value}`;

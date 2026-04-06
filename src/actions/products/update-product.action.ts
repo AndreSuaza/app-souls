@@ -79,7 +79,7 @@ export async function updateProductAction(input: UpdateProductInput) {
         ProductImage: {
           deleteMany: {},
           create: {
-            url: data.code,
+            url: data.imageUrl,
             alt: data.name,
           },
         },

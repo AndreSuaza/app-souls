@@ -6,6 +6,7 @@ import Image from "next/image";
 import { IoSearch } from "react-icons/io5";
 import { searchUsersAction } from "@/actions";
 import { UserSummaryInterface } from "@/interfaces";
+import { getAvatarUrl } from "@/utils/avatar-image";
 
 export type PlayerSearchInputProps = {
   existingPlayersIds: string[]; // IDs de jugadores ya inscritos
@@ -192,7 +193,7 @@ export const PlayerSearchInput = ({
               >
                 {/* Avatar */}
                 <Image
-                  src={`/profile/${user.image ?? "player"}.webp`}
+                  src={getAvatarUrl(user.image)}
                   alt={user.nickname}
                   title={user.nickname}
                   width={32}

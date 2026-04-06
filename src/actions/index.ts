@@ -73,9 +73,12 @@ export * from "./decks/toggle-deck-like.action";
 
 export * from "./profile/avatars";
 export * from "./profile/edit-user-session";
+export * from "./profile/update-user-banner.action";
+export * from "./profile/admin-profile-media.action";
 export * from "./profile/get-active-tournament.action";
 export * from "./profile/get-profile-tournament.action";
 export * from "./profile/get-user-tournaments.action";
+export * from "./profile/get-profile-deck-counts.action";
 
 export * from "./news/get-admin-news.action";
 export * from "./news/get-news-by-id.action";
@@ -87,3 +90,7 @@ export * from "./news/get-news-images.action";
 export * from "./news/get-public-news.action";
 export * from "./news/get-public-news-categories.action";
 export * from "./news/get-public-news-detail.action";
+
+export * from "./media/get-media-images.action";
+export * from "./media/upload-media-image.action";
+export * from "./media/delete-media-image.action";

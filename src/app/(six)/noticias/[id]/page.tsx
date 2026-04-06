@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicNewsDetailAction } from "@/actions";
+import { toBlobUrl } from "@/utils/blob-path";
 import { PublicNewsDetailView } from "@/components/news/public/PublicNewsDetail";
 
 type Props = {
@@ -21,9 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { news } = detail;
-  const imageUrl = news.featuredImage.startsWith("http")
-    ? news.featuredImage
-    : `https://soulsinxtinction.com${news.featuredImage}`;
+  const imageUrl = toBlobUrl(news.featuredImage);
 
   return {
     title: news.title,

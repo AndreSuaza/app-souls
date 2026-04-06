@@ -6,6 +6,7 @@ const BaseProductSchema = z.object({
     .trim()
     .min(3, "El nombre debe tener al menos 3 caracteres")
     .max(120, "El nombre no puede superar los 120 caracteres"),
+  imageUrl: z.string().min(1, "Selecciona una imagen del producto"),
   code: z.string().min(1, "Selecciona una imagen del producto"),
   releaseDate: z.string().min(1, "La fecha de lanzamiento es obligatoria"),
   price: z.number().min(0, "El precio debe ser un valor v?lido"),

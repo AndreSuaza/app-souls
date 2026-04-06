@@ -11,6 +11,7 @@ import {
   useToastStore,
 } from "@/store";
 import { RoundHistoryCardBase } from "./RoundHistoryCardBase";
+import { getAvatarUrl } from "@/utils/avatar-image";
 
 interface Props {
   round: RoundInterface;
@@ -200,7 +201,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
   const renderPlayerCell = (playerId: string | null) => {
     if (!playerId) {
       return {
-        avatar: "/profile/player.webp",
+        avatar: getAvatarUrl(),
         nickname: "BYE",
         fullName: "",
       };
@@ -209,17 +210,16 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
     const player = resolvePlayer(playerId);
     if (!player) {
       return {
-        avatar: "/profile/player.webp",
+        avatar: getAvatarUrl(),
         nickname: "Jugador",
         fullName: "",
       };
     }
 
-    const imageName = player.image ?? "player";
     const fullName = `${player.name ?? ""} ${player.lastname ?? ""}`.trim();
 
     return {
-      avatar: `/profile/${imageName}.webp`,
+      avatar: getAvatarUrl(player.image),
       nickname: player.playerNickname,
       fullName,
     };

@@ -3,15 +3,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "../../../interfaces/products.interface";
+import { toBlobUrl } from "@/utils/blob-path";
 
 interface Props {
   product: Product;
 }
 
+const resolveProductImage = (value?: string | null) => {
+  if (!value) return null;
+  if (value.startsWith("http") || value.startsWith("/")) return value;
+  const blobCandidate = value.includes("/")
+    ? value
+    : `souls/products/${value}.webp`;
+  const resolved = toBlobUrl(blobCandidate);
+  if (resolved.startsWith("http") || resolved.startsWith("/")) return resolved;
+  return `/products/${value}.webp`;
+};
+
 export const ProductItem = ({ product }: Props) => {
-  const imageUrl = product.ProductImage[0]?.url
-    ? `/products/${product.ProductImage[0].url}.webp`
-    : null;
+  const imageUrl = resolveProductImage(product.ProductImage[0]?.url ?? null);
   const priceText =
     typeof product.price === "number"
       ? `$${product.price.toLocaleString("es-CO")}`
