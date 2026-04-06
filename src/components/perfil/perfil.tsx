@@ -490,7 +490,7 @@ export const Pefil = ({
           close={() => setShowAvatars(false)}
           hideCloseButton
         >
-          <div className="w-full max-w-5xl overflow-auto rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
+          <div className="flex w-full max-w-5xl max-h-[90vh] flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
             <div className="relative flex items-center justify-center bg-slate-900 px-4 py-4 text-slate-100 dark:bg-tournament-dark-hero">
               <h1 className="text-center font-bold uppercase md:text-2xl">
                 Elige tu avatar favorito!
@@ -505,12 +505,13 @@ export const Pefil = ({
                 <IoCloseOutline className="h-4 w-4" />
               </button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mx-10 my-6">
+            <div className="flex-1 overflow-y-auto">
+              <div className="grid grid-cols-2 justify-items-center gap-4 px-4 py-6 md:grid-cols-6 md:px-10">
               {avatarItems.map((avatar) => (
                 <div
                   key={avatar.id}
                   onClick={() => handleSelect(avatar)}
-                  className={`cursor-pointer rounded border-4 transition-all ${
+                  className={`w-fit cursor-pointer rounded border-4 transition-all ${
                     selectedAvatar === getAvatarValue(avatar.imageUrl)
                       ? "border-purple-600 shadow-lg shadow-purple-600/40 scale-105"
                       : "border-transparent hover:border-purple-500"
@@ -522,10 +523,11 @@ export const Pefil = ({
                     title={`Seleccionar avatar ${avatar.name}`}
                     width={200}
                     height={200}
-                    className="object-cover"
+                    className="block object-cover"
                   />
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </Modal>
@@ -537,7 +539,7 @@ export const Pefil = ({
           close={() => setShowBanners(false)}
           hideCloseButton
         >
-          <div className="w-full max-w-6xl overflow-auto rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
+          <div className="flex w-full max-w-6xl max-h-[90vh] flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
             <div className="relative flex items-center justify-center bg-slate-900 px-4 py-4 text-slate-100 dark:bg-tournament-dark-hero">
               <h1 className="text-center font-bold uppercase md:text-2xl">
                 Elige tu banner favorito!
@@ -552,12 +554,13 @@ export const Pefil = ({
                 <IoCloseOutline className="h-4 w-4" />
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mx-6 my-6">
+            <div className="flex-1 overflow-y-auto">
+              <div className="grid grid-cols-1 justify-items-center gap-4 px-4 py-6 md:grid-cols-3 md:px-6">
               {bannerItems.map((banner) => (
                 <div
                   key={banner.id}
                   onClick={() => handleSelectBanner(banner)}
-                  className={`cursor-pointer rounded-xl border-2 transition-all overflow-hidden ${
+                  className={`w-full max-w-[440px] cursor-pointer rounded-xl border-2 transition-all overflow-hidden ${
                     selectedBanner === getProfileBannerValue(banner.imageUrl)
                       ? "border-purple-600 shadow-lg shadow-purple-600/40 scale-[1.01]"
                       : "border-transparent hover:border-purple-500"
@@ -573,6 +576,7 @@ export const Pefil = ({
                   />
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </Modal>
