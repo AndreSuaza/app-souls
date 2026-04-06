@@ -6,32 +6,32 @@ type AvatarMap = Record<string, string>;
 
 const AVATAR_MAP: AvatarMap = {
   bostaurus:
-    "souls/profile/avatars/bostaurus-43540c2f-da5d-4003-bcbb-cf72d57a9db4.webp",
+    "souls/profile/avatars/bostaurus-ecadd2b6-542e-46ab-b800-04903e4d9391.webp",
   dracula:
-    "souls/profile/avatars/dracula-14bb6f2f-b3f3-4853-aeb9-2b6da7a43f5a.webp",
+    "souls/profile/avatars/dracula-4f8850fe-295d-4af6-be4d-a4ac7d088064.webp",
   ekoar:
-    "souls/profile/avatars/ekoar-1522694d-23fb-49d8-b14b-e520bcf683fe.webp",
+    "souls/profile/avatars/ekoar-01d310c6-9034-4747-b295-a2f1b8a9d236.webp",
   eliathor:
-    "souls/profile/avatars/eliathor-75da344b-02f1-4be9-b9a6-097dde091da3.webp",
-  erik: "souls/profile/avatars/erik-308d62e2-b920-4b79-95a4-b2d710261976.webp",
+    "souls/profile/avatars/eliathor-8c5fd1a9-03a6-463e-83df-88adb938e795.webp",
+  erik: "souls/profile/avatars/erik-e9e3861b-6c2b-478d-b057-abf8f3ba01c5.webp",
   estraker:
-    "souls/profile/avatars/estraker-a8b8c7a6-07b2-4a42-9f3c-f20e56a8b609.webp",
+    "souls/profile/avatars/estraker-6bc1dd43-4040-4937-a20c-215a4832a1fe.webp",
   fungido:
-    "souls/profile/avatars/fungido-d7ed3adf-b924-4f78-a8da-318a74265620.webp",
+    "souls/profile/avatars/fungido-bdb66691-58df-49d9-b5ab-edf08a62d37b.webp",
   "guardia-raton":
-    "souls/profile/avatars/guardia-raton-1d024a4a-1f24-48e3-bf9c-5baa5c39b733.webp",
+    "souls/profile/avatars/guardia-raton-22a311df-94f9-4eb2-ac94-ee418c5f06a3.webp",
   kaerros:
-    "souls/profile/avatars/kaerros-6565e182-6897-4e2e-a9e9-1e05a56c6056.webp",
+    "souls/profile/avatars/kaerros-7560fa59-3508-487a-bf32-36afe00d6c71.webp",
   player:
-    "souls/profile/avatars/player-5ea416fa-7d77-4f42-bb2d-c7920bd3c8d4.webp",
+    "souls/profile/avatars/player-f2fea397-2187-4000-b3da-55ef33376457.webp",
   satiro:
-    "souls/profile/avatars/satiro-b1876299-14ad-4a0e-9075-dcecb63198b7.webp",
-  toro: "souls/profile/avatars/toro-f7568a89-4bf8-4a30-94b1-0b537fbf0ee3.webp",
+    "souls/profile/avatars/satiro-69fc7f39-d337-4503-adff-b54b945c6d3b.webp",
+  toro: "souls/profile/avatars/toro-797cceb4-0222-4c11-91a0-e5c4875c2cc3.webp",
   voluntad:
-    "souls/profile/avatars/voluntad-692530e6-3d0d-4f39-93b7-a1e65aa6ce98.webp",
+    "souls/profile/avatars/voluntad-42dd3f84-8cf3-4138-a8c1-c2c8103a9954.webp",
 };
 const DEFAULT_BANNER =
-  "souls/profile/banners/angel-ac15be76-16b4-4f45-a5c0-fb30655a89a0.webp";
+  "souls/profile/banners/angel-82ca9604-cf1a-41a4-8240-7f9092720280.webp";
 
 async function main() {
   // Actualiza usuarios y jugadores de torneo que aun tengan avatares legacy.
