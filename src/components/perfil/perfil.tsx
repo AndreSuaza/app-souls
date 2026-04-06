@@ -14,8 +14,11 @@ import { FiAward, FiTarget, FiTrendingUp } from "react-icons/fi";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
 import { getProfileTournament, updateUser } from "@/actions";
-import { useToastStore, useUIStore } from "@/store";
-import { type ActiveTournamentData, type TournamentSnapshot } from "@/interfaces";
+import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import {
+  type ActiveTournamentData,
+  type TournamentSnapshot,
+} from "@/interfaces";
 import { ProfileSectionsTabs, type ProfileTab } from "./ProfileSectionsTabs";
 import { ProfileTournamentSection } from "./ProfileTournamentSection";
 import { ProfileTournamentHistorySection } from "./ProfileTournamentHistorySection";
@@ -104,8 +107,6 @@ export const Pefil = ({
     getProfileBannerValue(user.bannerImage ?? DEFAULT_PROFILE_BANNER),
   );
   const [selectedBanner, setSelectedBanner] = useState(baseBanner);
-  const isAvatarChanged = selectedAvatar !== baseAvatar;
-  const isBannerChanged = selectedBanner !== baseBanner;
 
   useEffect(() => {
     const nextAvatar = getAvatarValue(user.image);
@@ -123,48 +124,70 @@ export const Pefil = ({
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
+  const openAlertConfirmation = useAlertConfirmationStore(
+    (state) => state.openAlertConfirmation,
+  );
   const { data: session, update } = useSession();
   const hasSession = Boolean(session?.user?.idd ?? user.email);
 
   const handleSelect = (avatar: Avatar) => {
-    setSelectedAvatar(getAvatarValue(avatar.imageUrl));
-    setShowAvatars(false);
+    const nextAvatar = getAvatarValue(avatar.imageUrl);
+    openAlertConfirmation({
+      text: "¿Deseas cambiar tu avatar?",
+      description: `Se aplicará el avatar ${avatar.name}.`,
+      action: async () => {
+        showLoading("Actualizando avatar...");
+        try {
+          await updateUser(nextAvatar);
+          // Sincroniza el avatar en la sesion para reflejarlo en el top menu.
+          await update({ user: { image: nextAvatar } });
+          setSelectedAvatar(nextAvatar);
+          setBaseAvatar(nextAvatar);
+          setShowAvatars(false);
+          showToast("Avatar actualizado correctamente", "success");
+          return true;
+        } catch (error) {
+          showToast(
+            error instanceof Error
+              ? error.message
+              : "No se pudo actualizar el avatar",
+            "error",
+          );
+          return false;
+        } finally {
+          hideLoading();
+        }
+      },
+    });
   };
 
   const handleSelectBanner = (banner: Avatar) => {
-    setSelectedBanner(getProfileBannerValue(banner.imageUrl));
-    setShowBanners(false);
-  };
-
-  const updateUserProfile = async () => {
-    try {
-      showLoading("Actualizando perfil...");
-      if (isAvatarChanged) {
-        await updateUser(selectedAvatar);
-        // Sincroniza el avatar en la sesion para reflejarlo en el top menu.
-        await update({ user: { image: selectedAvatar } });
-        setBaseAvatar(selectedAvatar);
-      }
-      if (isBannerChanged) {
-        await updateUserBanner(selectedBanner);
-        setBaseBanner(selectedBanner);
-      }
-      showToast("Perfil actualizado correctamente", "success");
-    } catch (error) {
-      showToast(
-        error instanceof Error
-          ? error.message
-          : "No se pudo actualizar el perfil",
-        "error",
-      );
-    } finally {
-      hideLoading();
-    }
-  };
-
-  const handleDiscardAvatar = () => {
-    setSelectedAvatar(baseAvatar);
-    setSelectedBanner(baseBanner);
+    const nextBanner = getProfileBannerValue(banner.imageUrl);
+    openAlertConfirmation({
+      text: "¿Deseas cambiar tu banner?",
+      description: `Se aplicará el banner ${banner.name}.`,
+      action: async () => {
+        showLoading("Actualizando banner...");
+        try {
+          await updateUserBanner(nextBanner);
+          setSelectedBanner(nextBanner);
+          setBaseBanner(nextBanner);
+          setShowBanners(false);
+          showToast("Banner actualizado correctamente", "success");
+          return true;
+        } catch (error) {
+          showToast(
+            error instanceof Error
+              ? error.message
+              : "No se pudo actualizar el banner",
+            "error",
+          );
+          return false;
+        } finally {
+          hideLoading();
+        }
+      },
+    });
   };
 
   const isPlayer = user.role === "player";
@@ -181,8 +204,6 @@ export const Pefil = ({
   const deckCountToShow = hasSession
     ? deckCounts.totalDecks
     : deckCounts.publicDecks;
-  const hasProfileChanges = isAvatarChanged || isBannerChanged;
-
   const hasTournamentTab =
     isPlayer &&
     Boolean(
@@ -244,9 +265,7 @@ export const Pefil = ({
       }
     } catch (error) {
       showToast(
-        error instanceof Error
-          ? error.message
-          : "No se pudo cargar el torneo",
+        error instanceof Error ? error.message : "No se pudo cargar el torneo",
         "error",
       );
     } finally {
@@ -280,13 +299,13 @@ export const Pefil = ({
             type="button"
             onClick={() => setShowBanners(true)}
             title="Cambiar banner"
-            className="absolute bottom-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
+            className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
           >
             <IoImageOutline className="h-5 w-5" />
           </button>
 
-          <div className="relative z-10 flex min-h-[320px] flex-col justify-end gap-6 px-6 pb-6 pt-24 sm:min-h-[360px] sm:pt-28 lg:min-h-[400px] lg:pt-32 md:flex-row md:items-end md:justify-between">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end">
+          <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-3 pb-6 pt-24 sm:min-h-[360px] sm:pt-28 lg:min-h-[400px] lg:pt-32">
+            <div className="flex flex-row items-end gap-4">
               <div className="relative">
                 <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)] sm:h-36 sm:w-36">
                   <Image
@@ -350,23 +369,6 @@ export const Pefil = ({
                 </div>
               </div>
             </div>
-
-            {hasProfileChanges && (
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  onClick={handleDiscardAvatar}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
-                >
-                  Descartar
-                </button>
-                <button
-                  onClick={updateUserProfile}
-                  className="rounded-lg bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-md shadow-purple-700/40 transition hover:bg-purple-500"
-                >
-                  Guardar cambios
-                </button>
-              </div>
-            )}
           </div>
         </section>
 
