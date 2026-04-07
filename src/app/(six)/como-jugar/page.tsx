@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { IoDocumentAttachOutline } from "react-icons/io5";
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "Aprende a jugar Souls In Xtinction TCG | Guía inicial",
   description:

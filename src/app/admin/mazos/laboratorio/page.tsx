@@ -80,7 +80,7 @@ export default async function Page({ searchParams }: Props) {
       notFound();
     }
     deckUser = getDeck;
-    decklistCards = deckUser.cards.replaceAll("%2C", ",");
+    decklistCards = deckUser.cards ?? decklist;
   }
 
   const { mainDeck } = await getDecksByIds(decklistCards);

@@ -10,7 +10,7 @@ import {
 import { DeckDetailView } from "@/components";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -100,7 +100,7 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 
-  const decklistCards = deck.cards?.replaceAll("%2C", ",") ?? "";
+  const decklistCards = deck.cards ?? "";
   const [deckLists, tournamentSummary, likeStatus] = await Promise.all([
     getDecksByIds(decklistCards),
     deck.tournamentId

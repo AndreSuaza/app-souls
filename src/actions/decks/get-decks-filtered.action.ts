@@ -10,7 +10,7 @@ export async function getDecksFilteredAction(
   input: DeckFiltersInput,
 ): Promise<DeckFilteredResult> {
   const filters = DeckFiltersSchema.parse(input);
-  const perPage = 32;
+  const perPage = 24;
   const adminDeckFilter: Prisma.DeckWhereInput = {
     OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }],
   };
@@ -67,11 +67,6 @@ export async function getDecksFilteredAction(
     skip,
     take: perPage,
     include: {
-      user: {
-        select: {
-          nickname: true,
-        },
-      },
       archetype: {
         select: {
           id: true,
@@ -79,6 +74,36 @@ export async function getDecksFilteredAction(
         },
       },
     },
+  });
+
+  const uniqueUserIds = Array.from(
+    new Set(decks.map((deck) => deck.userId).filter(Boolean)),
+  );
+
+  // Evita romper el listado cuando existan mazos con userId sin usuario asociado.
+  const users = uniqueUserIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: uniqueUserIds } },
+        select: {
+          id: true,
+          nickname: true,
+          name: true,
+          lastname: true,
+        },
+      })
+    : [];
+
+  const userMap = new Map(users.map((user) => [user.id, user]));
+  const decksWithUser = decks.map((deck) => {
+    const user = userMap.get(deck.userId);
+    return {
+      ...deck,
+      user: {
+        nickname: user?.nickname ?? null,
+        name: user?.name ?? null,
+        lastname: user?.lastname ?? null,
+      },
+    };
   });
 
   const session = await auth();
@@ -97,7 +122,7 @@ export async function getDecksFilteredAction(
     : [];
 
   return {
-    decks,
+    decks: decksWithUser,
     totalCount,
     totalPages,
     currentPage,

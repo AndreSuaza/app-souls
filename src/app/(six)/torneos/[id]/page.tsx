@@ -3,6 +3,8 @@ import { getPublicTournamentDetailAction } from "@/actions";
 import { PublicTournamentDetail } from "@/components";
 import type { Metadata } from "next";
 
+export const revalidate = 60;
+
 type PageProps = {
   params: Promise<{
     id: string;

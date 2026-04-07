@@ -177,17 +177,10 @@ const getCardsByIds = async (ids: string) => {
 export const getDecksByIds = async (ids?: string) => {
   if (!ids) return { mainDeck: [], sideDeck: [] };
 
-  // Normalizamos el decklist porque algunos flujos lo guardan URL-encoded.
-  let normalizedIds = ids;
-  if (normalizedIds.includes("%")) {
-    try {
-      normalizedIds = decodeURIComponent(normalizedIds);
-    } catch {
-      normalizedIds = normalizedIds
-        .replace(/%2C/gi, ",")
-        .replace(/%7C/gi, "|");
-    }
-  }
+  // Normalizamos solo el separador del sideboard para no romper codigos con comas.
+  const normalizedIds = ids.includes("%7C")
+    ? ids.replace(/%7C/gi, "|")
+    : ids;
 
   // Dividimos en [main, side]
   const [mainIds = "", sideIds = ""] = normalizedIds.split("|");

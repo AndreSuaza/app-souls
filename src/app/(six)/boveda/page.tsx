@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { cardImageBlurDataURL } from "@/models/images.models";
 
+export const revalidate = 300;
+
 interface Props {
   searchParams: Promise<{
     page?: string;
@@ -66,7 +68,7 @@ export default async function BovedaPage({ searchParams }: Props) {
     });
 
   const resolvedTotal = totalCount ?? cards.length;
-  const resolvedPerPage = perPage ?? 24;
+  const resolvedPerPage = perPage ?? 16;
   const resolvedPage = currentPage ?? page2;
   const start =
     resolvedTotal === 0 ? 0 : (resolvedPage - 1) * resolvedPerPage + 1;

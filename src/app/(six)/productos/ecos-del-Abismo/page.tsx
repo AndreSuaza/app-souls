@@ -1,5 +1,3 @@
-// export const revalidate = 604800; //7 dias
-
 import { getDecksByIds, getProductUrl } from "@/actions";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
@@ -7,6 +5,9 @@ import Image from "next/image";
 import { ProductDeckCollection } from "@/components/productos/complete-collection/ProductDeckCollection";
 import "../style.css";
 import { Metadata } from "next";
+
+export const revalidate = 3600;
+
 
 export const metadata: Metadata = {
   title: "Ecos del Abismos | Souls In Xtinction TCG",
@@ -76,3 +77,5 @@ export default async function getProductBySlug() {
     </>
   );
 }
+
+

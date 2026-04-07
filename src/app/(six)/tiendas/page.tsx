@@ -39,7 +39,7 @@ const FALLBACK_POSITION = {
   lng: -74.0721,
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function TiendasPage() {
   const initialData = await getStoresByDistanceAction({

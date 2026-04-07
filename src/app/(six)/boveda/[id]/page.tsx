@@ -13,7 +13,7 @@ interface Props {
   searchParams: Promise<{ page?: string }>;
 }
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const formatStatsRange = (page: number, perPage: number, total: number) => {
   if (total <= 0) return "0-0 de 0";

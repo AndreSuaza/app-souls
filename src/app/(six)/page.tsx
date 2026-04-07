@@ -6,6 +6,8 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Souls In Xtinction - El TCG Colombiano de Estrategia y Diversión",
   description:

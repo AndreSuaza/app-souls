@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const isHeroTournament = (
   tournament: Awaited<
@@ -97,10 +97,18 @@ export default async function EventosPage() {
         </div>
 
         <div className="px-3 sm:px-6 md:px-10 lg:px-16">
-          <PublicTournamentsHighlights
-            tierTournaments={tierListTournaments}
-            topPlayers={topPlayers}
-          />
+          <Suspense
+            fallback={
+              <div className="rounded-xl border border-dashed border-tournament-dark-accent bg-white p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-accent dark:bg-tournament-dark-surface dark:text-slate-300">
+                Cargando destacados...
+              </div>
+            }
+          >
+            <PublicTournamentsHighlights
+              tierTournaments={tierListTournaments}
+              topPlayers={topPlayers}
+            />
+          </Suspense>
         </div>
 
         <div className="px-3 sm:px-6 md:px-10 lg:px-16 md:mt-6">

@@ -6,6 +6,8 @@ import { getDecksByIds, getProductUrl } from "@/actions";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Pikingos - Souls In Xtinction TCG",
   description:

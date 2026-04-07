@@ -70,6 +70,7 @@ export async function updateProductAction(input: UpdateProductInput) {
         code: data.code,
         index: data.index,
         releaseDate: data.releaseDate,
+        price: data.price,
         description: data.description,
         url: data.url,
         show: data.show,
