@@ -7,6 +7,8 @@ export * from "./tournament/tournament.schema";
 
 export * from "./user/search-users.schema";
 export * from "./auth/register.schema";
+export * from "./auth/verify-current-password.schema";
+export * from "./auth/change-password.schema";
 export * from "./profile/tournament.schema";
 export * from "./profile/profile-banner.schema";
 export * from "./profile/avatar.schema";
