@@ -75,7 +75,7 @@ export const updateUser = async (img: string) => {
     const nextAvatar = candidates[0] ?? parsed.avatarImage;
 
     if (user.image === nextAvatar) {
-      throw new Error("No hay cambios en la imagen");
+      return;
     }
 
     await prisma.user.update({

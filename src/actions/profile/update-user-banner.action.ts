@@ -75,7 +75,7 @@ export const updateUserBanner = async (bannerImage: string) => {
     const nextBanner = candidates[0] ?? parsed.bannerImage;
 
     if (user.bannerImage === nextBanner) {
-      throw new Error("No hay cambios en el banner");
+      return;
     }
 
     await prisma.user.update({
