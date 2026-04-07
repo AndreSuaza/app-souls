@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { MdBarChart, MdEmojiEvents } from "react-icons/md";
@@ -154,9 +155,13 @@ export function PublicTournamentsHighlights({
                     className="h-10 w-10 rounded-full object-cover border border-slate-200 dark:border-tournament-dark-border"
                   />
                   <div className="leading-tight">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                    <Link
+                      href={`/perfil/${encodeURIComponent(player.nickname)}`}
+                      className="text-sm font-semibold text-slate-900 transition hover:text-purple-600 dark:text-white dark:hover:text-purple-200"
+                      title={`Ver perfil de ${player.nickname}`}
+                    >
                       {player.nickname}
-                    </p>
+                    </Link>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
                       {player.name || player.lastname
                         ? `${player.name} ${player.lastname}`.trim()

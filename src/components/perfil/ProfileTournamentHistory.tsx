@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type MouseEventHandler } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { PaginationLine } from "@/components/ui";
 import {
   PublicTournamentsMobileList,
@@ -55,6 +55,7 @@ export const ProfileTournamentHistory = ({
 }: Props) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -106,7 +107,7 @@ export const ProfileTournamentHistory = ({
       onSelectTournament(id);
       return;
     }
-    window.open(`/torneos/${id}`, "_blank", "noopener,noreferrer");
+    router.push(`/torneos/${id}`);
   };
 
   if (tournaments.length === 0) {

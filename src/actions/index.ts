@@ -70,6 +70,7 @@ export * from "./decks/get-admin-decks.action";
 export * from "./decks/search-decks.action";
 export * from "./decks/search-admin-decks.action";
 export * from "./decks/get-user-decks-filtered.action";
+export * from "./decks/get-public-decks-by-user.action";
 export * from "./decks/get-deck-filters.action";
 export * from "./decks/toggle-deck-like.action";
 
@@ -80,6 +81,9 @@ export * from "./profile/admin-profile-media.action";
 export * from "./profile/get-active-tournament.action";
 export * from "./profile/get-profile-tournament.action";
 export * from "./profile/get-user-tournaments.action";
+export * from "./profile/get-public-profile.action";
+export * from "./profile/get-public-user-tournaments.action";
+export * from "./profile/get-public-deck-counts.action";
 export * from "./profile/get-profile-deck-counts.action";
 
 export * from "./news/get-admin-news.action";

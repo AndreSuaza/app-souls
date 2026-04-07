@@ -17,6 +17,7 @@ import {
   type MouseEvent,
   useEffect,
   useTransition,
+  type KeyboardEvent,
 } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { toggleDeckLikeAction } from "@/actions";
@@ -56,6 +57,7 @@ export const DeckCard = ({
   const router = useRouter();
   const archetypeName = mazo.archetype?.name ?? "";
   const hasArchetype = archetypeName.trim().length > 0;
+  const nickname = mazo.user.nickname ?? "Sin jugador";
   const formattedDate = useMemo(() => {
     const date = new Date(mazo.createdAt);
     return date.toLocaleDateString("es-CO", {
@@ -115,6 +117,15 @@ export const DeckCard = ({
         });
       }
     });
+  };
+
+  const handleNicknameClick = (
+    event: MouseEvent<HTMLSpanElement> | KeyboardEvent<HTMLSpanElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!mazo.user.nickname) return;
+    router.push(`/perfil/${encodeURIComponent(mazo.user.nickname)}`);
   };
 
   return (
@@ -230,7 +241,24 @@ export const DeckCard = ({
           <div className="mt-auto flex items-end justify-between gap-3 pt-2">
             <div className="space-y-1">
               <p className="text-xs text-slate-600 dark:text-slate-300">
-                {mazo.user.nickname ?? "Sin jugador"}
+                {mazo.user.nickname ? (
+                  <span
+                    role="link"
+                    tabIndex={0}
+                    onClick={handleNicknameClick}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        handleNicknameClick(event);
+                      }
+                    }}
+                    className="cursor-pointer underline decoration-transparent transition hover:decoration-purple-400 hover:text-purple-600 dark:hover:text-purple-200"
+                    title={`Ver perfil de ${nickname}`}
+                  >
+                    {nickname}
+                  </span>
+                ) : (
+                  nickname
+                )}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-300">
                 {formattedDate}

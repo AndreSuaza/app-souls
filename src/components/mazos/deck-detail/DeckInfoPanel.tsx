@@ -128,7 +128,17 @@ export const DeckInfoPanel = ({
               {deck.name}
             </h1>
             <span className="h-5 w-px bg-slate-300 dark:bg-slate-600" />
-            <span className={infoTextClass}>{nickname}</span>
+            {deck.user.nickname ? (
+              <Link
+                href={`/perfil/${encodeURIComponent(deck.user.nickname)}`}
+                className={`${infoTextClass} transition hover:text-purple-600 dark:hover:text-purple-200`}
+                title={`Ver perfil de ${nickname}`}
+              >
+                {nickname}
+              </Link>
+            ) : (
+              <span className={infoTextClass}>{nickname}</span>
+            )}
           </div>
           <div className="flex items-center gap-3 text-base text-slate-700 dark:text-slate-100">
             <span className="flex h-8 items-center rounded-md border border-purple-300/70 bg-purple-100/70 px-2 text-xs font-semibold uppercase tracking-wide text-purple-700 dark:border-purple-300/60 dark:bg-purple-300/15 dark:text-purple-100">

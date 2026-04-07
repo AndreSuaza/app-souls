@@ -59,9 +59,13 @@ export const PlayerCell = ({
       />
 
       <div className="leading-tight max-w-full overflow-hidden">
-        <p className={`font-semibold ${highlightText}`}>
+        <Link
+          href={`/perfil/${encodeURIComponent(player.playerNickname)}`}
+          className={`font-semibold transition hover:text-purple-600 dark:hover:text-purple-200 ${highlightText}`}
+          title={`Ver perfil de ${player.playerNickname}`}
+        >
           {player.playerNickname}
-        </p>
+        </Link>
 
         {(player.name || player.lastname) && (
           <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 max-w-20 sm:max-w-32 md:max-w-full">
