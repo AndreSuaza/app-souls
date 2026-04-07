@@ -132,6 +132,11 @@ export const Pefil = ({
 
   const handleSelect = (avatar: Avatar) => {
     const nextAvatar = getAvatarValue(avatar.imageUrl);
+    if (nextAvatar === baseAvatar) {
+      showToast("Ese avatar ya esta seleccionado", "info");
+      setShowAvatars(false);
+      return;
+    }
     openAlertConfirmation({
       text: "¿Deseas cambiar tu avatar?",
       description: `Se aplicará el avatar ${avatar.name}.`,
@@ -163,6 +168,11 @@ export const Pefil = ({
 
   const handleSelectBanner = (banner: Avatar) => {
     const nextBanner = getProfileBannerValue(banner.imageUrl);
+    if (nextBanner === baseBanner) {
+      showToast("Ese banner ya esta seleccionado", "info");
+      setShowBanners(false);
+      return;
+    }
     openAlertConfirmation({
       text: "¿Deseas cambiar tu banner?",
       description: `Se aplicará el banner ${banner.name}.`,

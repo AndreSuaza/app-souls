@@ -2,20 +2,98 @@
 
 import { Card } from "@/interfaces";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export interface Decklist {
   count: number;
   card: Card;
 }
 
+const parseDeckEntries = (ids: string) => {
+  const parts = ids
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const entries: Array<{ key: string; count: number }> = [];
+
+  for (let index = 0; index < parts.length; index += 2) {
+    const key = parts[index];
+    const countRaw = parts[index + 1];
+    const count = Number.parseInt(countRaw ?? "", 10);
+
+    if (!key || Number.isNaN(count)) {
+      continue;
+    }
+
+    entries.push({ key, count });
+  }
+
+  return entries;
+};
+
 const getCardsByIds = async (ids: string) => {
   if (!ids) return [];
   let deck: Decklist[] = [];
-  const idds = ids.split(",");
+  const entries = parseDeckEntries(ids);
+  const keys = entries.map((entry) => entry.key);
+  const iddKeys = keys.filter((key) => /^\d+$/.test(key));
+  const codeKeys = keys.filter((key) => !/^\d+$/.test(key));
+
+  if (iddKeys.length === 0 && codeKeys.length === 0) {
+    return [];
+  }
 
   try {
-    const cards = await prisma.card.findMany({
-      distinct: "idd",
+    const orFilters: Prisma.CardWhereInput[] = [];
+    if (iddKeys.length > 0) {
+      orFilters.push({
+        idd: {
+          in: iddKeys,
+        },
+      });
+    }
+    if (codeKeys.length > 0) {
+      orFilters.push({
+        code: {
+          in: codeKeys,
+        },
+      });
+    }
+
+    const cards: Prisma.CardGetPayload<{
+      include: {
+        product: {
+          select: {
+            name: true;
+            code: true;
+            show: true;
+            url: true;
+          };
+        };
+        types: {
+          select: {
+            name: true;
+          };
+        };
+        keywords: {
+          select: {
+            name: true;
+          };
+        };
+        rarities: {
+          select: {
+            name: true;
+            id: true;
+          };
+        };
+        archetypes: {
+          select: {
+            name: true;
+          };
+        };
+      };
+    }>[] = await prisma.card.findMany({
       include: {
         product: {
           select: {
@@ -48,13 +126,23 @@ const getCardsByIds = async (ids: string) => {
         },
       },
       where: {
-        idd: {
-          in: idds,
-        },
+        OR: orFilters,
       },
     });
 
-    cards.map((card) => {
+    const cardByCode = new Map(cards.map((card) => [card.code, card]));
+    // Mantenemos el primer registro por idd para no duplicar cartas legacy.
+    const cardByIdd = new Map<string, (typeof cards)[number]>();
+    cards.forEach((card) => {
+      if (!cardByIdd.has(card.idd)) {
+        cardByIdd.set(card.idd, card);
+      }
+    });
+
+    entries.forEach((entry) => {
+      const card = cardByCode.get(entry.key) ?? cardByIdd.get(entry.key);
+      if (!card) return;
+
       deck = [
         ...deck,
         {
@@ -75,7 +163,7 @@ const getCardsByIds = async (ids: string) => {
             product: card.product,
             price: card.price ?? null,
           },
-          count: Number.parseInt(idds[idds.indexOf(card.idd) + 1]),
+          count: entry.count,
         },
       ];
     });
