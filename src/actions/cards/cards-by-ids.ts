@@ -2,81 +2,98 @@
 
 import { Card } from "@/interfaces";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export interface Decklist {
   count: number;
   card: Card;
 }
 
-type DeckPair = { token: string; count: number };
-
-const safeDecodeToken = (value: string) => {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-  if (!trimmed.includes("%")) return trimmed;
-  try {
-    return decodeURIComponent(trimmed);
-  } catch {
-    return trimmed;
-  }
-};
-
-const parseLegacyDecklist = (segment: string): DeckPair[] => {
-  if (!segment) return [];
-  const tokens = segment
-    .split(/%2C|,/gi)
-    .map((token) => safeDecodeToken(token))
+const parseDeckEntries = (ids: string) => {
+  const parts = ids
+    .split(",")
+    .map((item) => item.trim())
     .filter(Boolean);
 
-  const pairs: DeckPair[] = [];
-  for (let index = 0; index < tokens.length; index += 2) {
-    const token = tokens[index]?.trim();
-    if (!token) continue;
-    // Convierte el decklist legacy "token,cantidad" a pares estructurados.
-    const countValue = Number.parseInt(tokens[index + 1] ?? "0");
-    pairs.push({
-      token,
-      count: Number.isNaN(countValue) ? 0 : countValue,
-    });
+  const entries: Array<{ key: string; count: number }> = [];
+
+  for (let index = 0; index < parts.length; index += 2) {
+    const key = parts[index];
+    const countRaw = parts[index + 1];
+    const count = Number.parseInt(countRaw ?? "", 10);
+
+    if (!key || Number.isNaN(count)) {
+      continue;
+    }
+
+    entries.push({ key, count });
   }
 
-  return pairs;
-};
-
-const parseDecklist = (segment: string): DeckPair[] => {
-  if (!segment) return [];
-
-  // Nuevo formato: code:count;code:count; (compat con codigos que contienen comas).
-  if (segment.includes(";") || segment.includes(":")) {
-    const pairs: DeckPair[] = [];
-    segment
-      .split(";")
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .forEach((item) => {
-        const [rawCode = "", rawCount = ""] = item.split(":");
-        const token = safeDecodeToken(rawCode);
-        if (!token) return;
-        const countValue = Number.parseInt(rawCount ?? "0");
-        pairs.push({
-          token,
-          count: Number.isNaN(countValue) ? 0 : countValue,
-        });
-      });
-    return pairs;
-  }
-
-  return parseLegacyDecklist(segment);
+  return entries;
 };
 
 const getCardsByIds = async (ids: string) => {
   if (!ids) return [];
   let deck: Decklist[] = [];
-  const pairs = parseDecklist(ids);
-  const tokens = pairs.map((pair) => pair.token);
+  const entries = parseDeckEntries(ids);
+  const keys = entries.map((entry) => entry.key);
+  const iddKeys = keys.filter((key) => /^\d+$/.test(key));
+  const codeKeys = keys.filter((key) => !/^\d+$/.test(key));
+
+  if (iddKeys.length === 0 && codeKeys.length === 0) {
+    return [];
+  }
 
   try {
-    const cards = await prisma.card.findMany({
+    const orFilters: Prisma.CardWhereInput[] = [];
+    if (iddKeys.length > 0) {
+      orFilters.push({
+        idd: {
+          in: iddKeys,
+        },
+      });
+    }
+    if (codeKeys.length > 0) {
+      orFilters.push({
+        code: {
+          in: codeKeys,
+        },
+      });
+    }
+
+    const cards: Prisma.CardGetPayload<{
+      include: {
+        product: {
+          select: {
+            name: true;
+            code: true;
+            show: true;
+            url: true;
+          };
+        };
+        types: {
+          select: {
+            name: true;
+          };
+        };
+        keywords: {
+          select: {
+            name: true;
+          };
+        };
+        rarities: {
+          select: {
+            name: true;
+            id: true;
+          };
+        };
+        archetypes: {
+          select: {
+            name: true;
+          };
+        };
+      };
+    }>[] = await prisma.card.findMany({
       include: {
         product: {
           select: {
@@ -109,24 +126,23 @@ const getCardsByIds = async (ids: string) => {
         },
       },
       where: {
-        OR: [{ code: { in: tokens } }, { idd: { in: tokens } }],
+        OR: orFilters,
       },
     });
 
-    const iddMap = new Map<string, (typeof cards)[number]>();
-    const codeMap = new Map<string, (typeof cards)[number]>();
+    const cardByCode = new Map(cards.map((card) => [card.code, card]));
+    // Mantenemos el primer registro por idd para no duplicar cartas legacy.
+    const cardByIdd = new Map<string, (typeof cards)[number]>();
     cards.forEach((card) => {
-      if (!iddMap.has(card.idd)) {
-        iddMap.set(card.idd, card);
-      }
-      if (!codeMap.has(card.code)) {
-        codeMap.set(card.code, card);
+      if (!cardByIdd.has(card.idd)) {
+        cardByIdd.set(card.idd, card);
       }
     });
 
-    pairs.forEach((pair) => {
-      const card = codeMap.get(pair.token) ?? iddMap.get(pair.token);
+    entries.forEach((entry) => {
+      const card = cardByCode.get(entry.key) ?? cardByIdd.get(entry.key);
       if (!card) return;
+
       deck = [
         ...deck,
         {
@@ -147,7 +163,7 @@ const getCardsByIds = async (ids: string) => {
             product: card.product,
             price: card.price ?? null,
           },
-          count: pair.count,
+          count: entry.count,
         },
       ];
     });
