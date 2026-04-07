@@ -108,7 +108,7 @@ export const MarkdownDeckStackGrid = ({
 
         return (
           <li
-            key={item.card.id}
+            key={`${item.card.id}-${index}`}
             className={clsx(
               cardItemClass,
               stackPaddingClass,
