@@ -46,6 +46,10 @@ export const ProfilePublicDecksSection = ({
         hideFilters
         showDeleteButton={false}
         getDeckHref={(deck) => `/mazos/${deck.id}`}
+        onDeckSelect={(deck, event) => {
+          event.preventDefault();
+          window.open(`/mazos/${deck.id}`, "_blank", "noopener,noreferrer");
+        }}
         emptyStateText="Este jugador aun no tiene mazos publicos."
       />
     </section>

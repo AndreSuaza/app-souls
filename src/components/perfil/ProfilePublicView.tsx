@@ -62,6 +62,9 @@ export const ProfilePublicView = ({
   const winrateRaw = matchesPlayed > 0 ? (eloPoints / matchesPlayed) * 100 : 0;
   const winrate = Math.min(100, Math.max(0, Math.round(winrateRaw)));
   const tournamentsPlayed = tournaments.length;
+  const handleTournamentSelect = (tournamentId: string) => {
+    window.open(`/torneos/${tournamentId}`, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
@@ -83,7 +86,7 @@ export const ProfilePublicView = ({
           <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-3 pb-6 pt-24 sm:min-h-[360px] sm:pt-28 lg:min-h-[400px] lg:pt-32">
             <div className="flex flex-row items-end gap-4">
               <div className="relative">
-                <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)] sm:h-36 sm:w-36">
+                <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)] sm:h-36 sm:w-36 cursor-crosshair">
                   <Image
                     src={getAvatarUrl(user.image)}
                     alt={
@@ -98,7 +101,7 @@ export const ProfilePublicView = ({
                     }
                     width={200}
                     height={200}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover cursor-crosshair"
                   />
                 </div>
               </div>
@@ -192,7 +195,10 @@ export const ProfilePublicView = ({
               id: "public-tournaments",
               content: (
                 <div id="public-tournaments">
-                  <ProfileTournamentHistorySection tournaments={tournaments} />
+                  <ProfileTournamentHistorySection
+                    tournaments={tournaments}
+                    onSelectTournament={handleTournamentSelect}
+                  />
                 </div>
               ),
             },
