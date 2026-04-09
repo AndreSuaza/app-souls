@@ -84,6 +84,7 @@ export * from "./profile/get-user-tournaments.action";
 export * from "./profile/get-public-profile.action";
 export * from "./profile/get-public-user-tournaments.action";
 export * from "./profile/get-public-deck-counts.action";
+export * from "./admin/reset-elo-season.action";
 export * from "./profile/get-profile-deck-counts.action";
 
 export * from "./news/get-admin-news.action";

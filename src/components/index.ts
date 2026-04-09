@@ -80,7 +80,7 @@ export * from "./cartas/preguntas-frecuentes/preguntasFrecuentes";
 export * from "./tournaments/crear-torneo/CreateTournamentForm";
 export * from "./tournaments/crear-torneo/DateTimeFields";
 export * from "./tournaments/crear-torneo/TournamentTypeSelect";
-export * from "./tournaments/sidebar/TournamentSidebar";
+export * from "./admin/AdminSidebar";
 export * from "./tournaments/admin/AdminTournamentsList";
 export * from "./tournaments/tournament/TournamentTabs";
 export * from "./tournaments/tournament/current-round/TournamentCurrentRound";

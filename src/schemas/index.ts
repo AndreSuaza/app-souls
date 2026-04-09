@@ -14,6 +14,7 @@ export * from "./profile/profile-banner.schema";
 export * from "./profile/avatar.schema";
 export * from "./profile/public-profile.schema";
 export * from "./profile/public-user-id.schema";
+export * from "./admin/reset-elo-season.schema";
 
 export * from "./decks/deck-filters.schema";
 export * from "./decks/deck-like.schema";

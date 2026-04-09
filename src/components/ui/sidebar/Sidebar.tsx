@@ -1,11 +1,16 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { useUIStore } from "@/store";
+import {
+  useAlertConfirmationStore,
+  useToastStore,
+  useUIStore,
+} from "@/store";
 import { Routes } from "@/models/routes.models";
 import clsx from "clsx";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   IoBagRemoveOutline,
   IoBookOutline,
@@ -21,13 +26,22 @@ import {
   IoLogInOutline,
   IoLogOutOutline,
   IoTrophyOutline,
+  IoRefreshOutline,
 } from "react-icons/io5";
+import { resetEloSeasonAction } from "@/actions";
 
 export const Sidebar = () => {
   const isSideMenuOpen = useUIStore((state) => state.isSideMenuOpen);
   const closeMenu = useUIStore((state) => state.closeSideMenu);
+  const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
   const { data: session } = useSession();
+  const pathname = usePathname();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const openAlertConfirmation = useAlertConfirmationStore(
+    (state) => state.openAlertConfirmation,
+  );
+  const showToast = useToastStore((state) => state.showToast);
 
   const adminShortcut = (() => {
     const role = session?.user?.role;
@@ -42,6 +56,8 @@ export const Sidebar = () => {
     }
     return null;
   })();
+  const isAdmin = session?.user?.role === "admin";
+  const isAdminPanel = pathname.startsWith("/admin");
 
   const handleClick = async () => {
     await signOut();
@@ -61,6 +77,34 @@ export const Sidebar = () => {
   };
 
   const visibleRoutes = Routes.filter((route) => route.name !== "");
+
+  const handleResetElo = () => {
+    openAlertConfirmation({
+      text: "Reiniciar Elo de jugadores?",
+      description:
+        "Se guardara el Elo actual en el historico y todos los jugadores quedaran en 0.",
+      action: async () => {
+        try {
+          showLoading("Reiniciando Elo...");
+          const result = await resetEloSeasonAction({});
+          hideLoading();
+          if (!result.ok) return false;
+          showToast(
+            `Elo reiniciado. Temporada ${result.seasonNumber}.`,
+            "success",
+          );
+          return true;
+        } catch {
+          hideLoading();
+          return false;
+        }
+      },
+      onError: () => {
+        hideLoading();
+        showToast("No se pudo reiniciar el Elo.", "error");
+      },
+    });
+  };
 
   return (
     <div>
@@ -209,6 +253,18 @@ export const Sidebar = () => {
                 >
                   {adminShortcut.label}
                 </Link>
+              )}
+
+              {isAdmin && isAdminPanel && (
+                <button
+                  type="button"
+                  onClick={handleResetElo}
+                  title="Reiniciar Elo global"
+                  className="flex m-2 p-2 transition-all uppercase font-bold text-red-400 hover:text-red-300 hover:border-b-2 hover:border-red-300"
+                >
+                  <IoRefreshOutline className="w-6 h-6 mr-3" />
+                  Reiniciar Elo
+                </button>
               )}
 
               <button

@@ -4,7 +4,7 @@ import {
   AdminTopMenu,
   LoadingOverlay,
   ToastContainer,
-  TournamentSidebar,
+  AdminSidebar,
   ConfirmationModalHost,
   AdminFooter,
 } from "@/components";
@@ -33,7 +33,7 @@ export default function TournamentLayout({
       <div className="flex min-h-screen bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
         <LoadingOverlay />
         <ToastContainer />
-        <TournamentSidebar />
+        <AdminSidebar />
 
         <div className="flex-1 px-4 py-6 lg:px-8 overflow-visible mb-4">
           {children}

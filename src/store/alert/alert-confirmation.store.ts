@@ -4,6 +4,8 @@ interface State {
   isAlertConfirmation: boolean;
   text: string;
   description?: string;
+  confirmText?: string;
+  confirmPlaceholder?: string;
   action: (() => Promise<boolean>) | null;
   onSuccess?: () => void; // callback éxito
   onError?: () => void; // callback error
@@ -11,6 +13,8 @@ interface State {
   openAlertConfirmation: (params: {
     text: string;
     description?: string;
+    confirmText?: string;
+    confirmPlaceholder?: string;
     action: () => Promise<boolean>;
     onSuccess?: () => void;
     onError?: () => void;
@@ -24,15 +28,27 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
   isAlertConfirmation: false,
   text: "",
   description: undefined,
+  confirmText: undefined,
+  confirmPlaceholder: undefined,
   action: null,
   onSuccess: undefined,
   onError: undefined,
 
-  openAlertConfirmation: ({ text, description, action, onSuccess, onError }) =>
+  openAlertConfirmation: ({
+    text,
+    description,
+    confirmText,
+    confirmPlaceholder,
+    action,
+    onSuccess,
+    onError,
+  }) =>
     set({
       isAlertConfirmation: true,
       text,
       description,
+      confirmText,
+      confirmPlaceholder,
       action,
       onSuccess,
       onError,
@@ -44,6 +60,8 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
       action: null,
       text: "",
       description: undefined,
+      confirmText: undefined,
+      confirmPlaceholder: undefined,
       onSuccess: undefined,
       onError: undefined,
     }),
@@ -58,6 +76,8 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
       action: null,
       text: "",
       description: undefined,
+      confirmText: undefined,
+      confirmPlaceholder: undefined,
     });
 
     try {

@@ -67,14 +67,14 @@ export default async function EventosPage() {
     title: tournament.title,
     status: tournament.status,
     date: tournament.date.toISOString(),
-    storeName: tournament.store.name,
+    storeName: tournament.storeName ?? null,
   }));
   const tierListTournaments = tierTournaments.map((tournament) => ({
     id: tournament.id,
     title: tournament.title,
     status: tournament.status,
     date: tournament.date.toISOString(),
-    storeName: tournament.store.name,
+    storeName: tournament.storeName ?? null,
     tierName: tournament.tierName,
   }));
 
