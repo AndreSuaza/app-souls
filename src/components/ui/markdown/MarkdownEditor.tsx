@@ -8,15 +8,18 @@ import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import ImageExtension from "@tiptap/extension-image";
 import { Markdown } from "@tiptap/markdown";
+import type { JSONContent } from "@tiptap/core";
 import { mergeAttributes } from "@tiptap/core";
 import {
   FiBold,
   FiChevronDown,
+  FiAlignLeft,
   FiItalic,
   FiImage,
   FiLink,
   FiList,
   FiShoppingBag,
+  FiSquare,
   FiType,
   FiUnderline,
 } from "react-icons/fi";
@@ -35,6 +38,7 @@ import { MarkdownDeckModal } from "./MarkdownDeckModal";
 import { MarkdownProductModal } from "./MarkdownProductModal";
 import { MarkdownImageUrlModal } from "./MarkdownImageUrlModal";
 import { toBlobUrl } from "@/utils/blob-path";
+import { CardBlock, IndentBlock } from "./markdown-custom-blocks";
 
 type Props = {
   label?: string;
@@ -49,6 +53,7 @@ type Props = {
   enableDeckInsert?: boolean;
   enableProductInsert?: boolean;
   enableUrlImageInsert?: boolean;
+  enableCustomBlocks?: boolean;
   readOnly?: boolean;
 };
 
@@ -154,6 +159,7 @@ export const MarkdownEditor = ({
   enableDeckInsert = true,
   enableProductInsert = true,
   enableUrlImageInsert = true,
+  enableCustomBlocks = true,
   readOnly = false,
 }: Props) => {
   const headingMenuRef = useRef<HTMLDivElement | null>(null);
@@ -164,6 +170,16 @@ export const MarkdownEditor = ({
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isImageUrlModalOpen, setIsImageUrlModalOpen] = useState(false);
+  const [isIndentModalOpen, setIsIndentModalOpen] = useState(false);
+  const [isCardBlockModalOpen, setIsCardBlockModalOpen] = useState(false);
+  const [indentLeft, setIndentLeft] = useState<
+    "none" | "sm" | "md" | "lg" | "xl"
+  >("md");
+  const [indentRight, setIndentRight] = useState<
+    "none" | "sm" | "md" | "lg" | "xl"
+  >("none");
+  const [cardBlockTitle, setCardBlockTitle] = useState("");
+  const [selectionSnapshot, setSelectionSnapshot] = useState("");
   const [isHeadingMenuOpen, setIsHeadingMenuOpen] = useState(false);
   const [isListMenuOpen, setIsListMenuOpen] = useState(false);
   const [cardSearch, setCardSearch] = useState("");
@@ -202,6 +218,7 @@ export const MarkdownEditor = ({
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
+      ...(enableCustomBlocks ? [IndentBlock, CardBlock] : []),
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
       }),
@@ -227,7 +244,7 @@ export const MarkdownEditor = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[220px] outline-none text-sm leading-relaxed text-slate-700 dark:text-slate-200" +
+          "min-h-[220px] w-full max-w-full break-words break-all whitespace-pre-wrap outline-none text-sm leading-relaxed text-slate-700 dark:text-slate-200" +
           " space-y-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold" +
           " [&_h3]:text-lg [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:pl-5" +
           " [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_a]:font-semibold" +
@@ -242,6 +259,11 @@ export const MarkdownEditor = ({
       }
     },
   });
+
+  const previewValue = useMemo(
+    () => editor?.getMarkdown() ?? value,
+    [editor, value],
+  );
 
   const updateCardPreview = useCallback(
     (cardId: string, preview: string) => {
@@ -663,6 +685,120 @@ export const MarkdownEditor = ({
     setIsProductModalOpen(false);
   };
 
+  const resolveMarkdownContentNodes = (markdown: string): JSONContent[] => {
+    const trimmed = markdown.trim();
+    if (!editor || trimmed.length === 0) {
+      return [
+        {
+          type: "paragraph",
+        },
+      ];
+    }
+
+    const manager = editor.storage?.markdown?.manager;
+    if (!manager) {
+      return [
+        {
+          type: "paragraph",
+        },
+      ];
+    }
+
+    // Convertimos markdown a nodos para mantener el render WYSIWYG.
+    const parsed = manager.parse(markdown) as JSONContent | JSONContent[];
+    if (Array.isArray(parsed)) {
+      return parsed.length
+        ? parsed
+        : [{ type: "paragraph" }];
+    }
+
+    const content = parsed?.content ?? [];
+    return content.length
+      ? content
+      : [{ type: "paragraph" }];
+  };
+
+  const getSelectedText = () => {
+    if (!editor) return "";
+    const { from, to } = editor.state.selection;
+    if (from === to) return "";
+    return editor.state.doc.textBetween(from, to, "\n");
+  };
+
+  const openIndentModal = () => {
+    // Guardamos el texto seleccionado para envolverlo en el bloque.
+    setSelectionSnapshot(getSelectedText());
+    setIsIndentModalOpen(true);
+  };
+
+  const openCardBlockModal = () => {
+    // Guardamos el texto seleccionado para reutilizarlo como contenido.
+    setSelectionSnapshot(getSelectedText());
+    setIsCardBlockModalOpen(true);
+  };
+
+  const handleInsertIndent = () => {
+    if (!editor) return;
+    const hasSelection = selectionSnapshot.trim().length > 0;
+    const content = hasSelection ? selectionSnapshot : "";
+    const leftValue = indentLeft !== "none" ? indentLeft : null;
+    const rightValue = indentRight !== "none" ? indentRight : null;
+    const contentNodes = resolveMarkdownContentNodes(content);
+    const safeContentNodes =
+      contentNodes.length > 0 ? contentNodes : [{ type: "paragraph" }];
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "indentBlock",
+        attrs: {
+          left: leftValue,
+          right: rightValue,
+        },
+        content: safeContentNodes,
+      })
+      .run();
+
+    if (!hasSelection) {
+      // Movemos el cursor dentro de la sangria para escribir sin texto previo.
+      const { $from } = editor.state.selection;
+      const nodeBefore = $from.nodeBefore;
+      if (nodeBefore?.type?.name === "indentBlock") {
+        const blockStart = $from.pos - nodeBefore.nodeSize;
+        const targetPos = Math.min(blockStart + 2, editor.state.doc.content.size);
+        editor.commands.setTextSelection(targetPos);
+      }
+    }
+
+    setIsIndentModalOpen(false);
+    setSelectionSnapshot("");
+  };
+
+  const handleInsertCardBlock = () => {
+    if (!editor) return;
+    const content = selectionSnapshot.trim().length ? selectionSnapshot : "";
+    const safeTitle = cardBlockTitle.trim().replace(/"/g, "'");
+    const contentNodes = resolveMarkdownContentNodes(content);
+    const safeContentNodes =
+      contentNodes.length > 0 ? contentNodes : [{ type: "paragraph" }];
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "cardBlock",
+        attrs: {
+          title: safeTitle || null,
+        },
+        content: safeContentNodes,
+      })
+      .run();
+    setIsCardBlockModalOpen(false);
+    setSelectionSnapshot("");
+    setCardBlockTitle("");
+  };
+
   const currentHeadingLevel = [1, 2, 3].find((level) =>
     editor?.isActive("heading", { level }),
   );
@@ -888,6 +1024,26 @@ export const MarkdownEditor = ({
                 <FiImage className="h-4 w-4" />
               </button>
             )}
+            {enableCustomBlocks && (
+              <>
+                <button
+                  type="button"
+                  onClick={openIndentModal}
+                  className={toolbarButtonClass(false)}
+                  title="Insertar sangria"
+                >
+                  <FiAlignLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={openCardBlockModal}
+                  className={toolbarButtonClass(false)}
+                  title="Insertar tarjeta"
+                >
+                  <FiSquare className="h-4 w-4" />
+                </button>
+              </>
+            )}
             {enableCardInsert && (
               <button
                 type="button"
@@ -961,8 +1117,9 @@ export const MarkdownEditor = ({
                 </div>
               ) : (
                 <MarkdownContent
-                  content={value}
+                  content={previewValue}
                   enableInstagramEmbeds={isPublicPreview}
+                  enableCustomBlocks={enableCustomBlocks}
                 />
               )
             ) : (
@@ -1028,6 +1185,135 @@ export const MarkdownEditor = ({
           selectedCount={selectedCards.length}
           onInsert={handleInsertCards}
         />
+      )}
+
+      {isIndentModalOpen && (
+        <Modal
+          className="inset-0 flex items-center justify-center p-4"
+          close={() => setIsIndentModalOpen(false)}
+        >
+          <div className="w-full max-w-md rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Insertar sangria
+            </h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Selecciona el tamano de la sangria para cada lado.
+            </p>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  Izquierda
+                </label>
+                <select
+                  value={indentLeft}
+                  onChange={(event) =>
+                    setIndentLeft(
+                      event.target.value as "none" | "sm" | "md" | "lg" | "xl",
+                    )
+                  }
+                  className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-700 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+                >
+                  <option value="none">Sin sangria</option>
+                  <option value="sm">Pequeña</option>
+                  <option value="md">Media</option>
+                  <option value="lg">Grande</option>
+                  <option value="xl">Extra grande</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  Derecha
+                </label>
+                <select
+                  value={indentRight}
+                  onChange={(event) =>
+                    setIndentRight(
+                      event.target.value as "none" | "sm" | "md" | "lg" | "xl",
+                    )
+                  }
+                  className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-700 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+                >
+                  <option value="none">Sin sangria</option>
+                  <option value="sm">Pequeña</option>
+                  <option value="md">Media</option>
+                  <option value="lg">Grande</option>
+                  <option value="xl">Extra grande</option>
+                </select>
+              </div>
+            </div>
+
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+              Si tienes texto seleccionado, se usara dentro del bloque.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsIndentModalOpen(false)}
+                className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleInsertIndent}
+                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
+              >
+                Insertar sangria
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {isCardBlockModalOpen && (
+        <Modal
+          className="inset-0 flex items-center justify-center p-4"
+          close={() => setIsCardBlockModalOpen(false)}
+        >
+          <div className="w-full max-w-md rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              Insertar tarjeta
+            </h3>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              El titulo es opcional y se mostrara encima de la tarjeta.
+            </p>
+
+            <div className="mt-4 space-y-2">
+              <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                Titulo (opcional)
+              </label>
+              <input
+                value={cardBlockTitle}
+                onChange={(event) => setCardBlockTitle(event.target.value)}
+                placeholder="Ej: Aviso importante"
+                className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:placeholder:text-slate-500"
+              />
+            </div>
+
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+              Si tienes texto seleccionado, se usara como contenido.
+            </p>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsCardBlockModalOpen(false)}
+                className="rounded-lg border border-tournament-dark-accent bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:bg-tournament-dark-muted-hover"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleInsertCardBlock}
+                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
+              >
+                Insertar tarjeta
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
 
       {isLinkModalOpen && (

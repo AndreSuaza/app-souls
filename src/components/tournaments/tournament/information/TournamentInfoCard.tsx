@@ -118,6 +118,7 @@ export const TournamentInfoCard = ({
             enableDeckInsert={false}
             enableProductInsert={false}
             enableUrlImageInsert
+            enableCustomBlocks={false}
           />
         </div>
       </div>
