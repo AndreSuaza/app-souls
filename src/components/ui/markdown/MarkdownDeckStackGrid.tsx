@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
@@ -6,12 +6,14 @@ import clsx from "clsx";
 import type { Decklist } from "@/interfaces";
 import { useState } from "react";
 import { CardDetail } from "@/components/cartas/card-detail/CardDetail";
+import { TiltCard } from "@/components/ui/tilt/TiltCard";
 
 type Props = {
   decklist: Decklist[];
   columns?: number;
   className?: string;
   variant?: "default" | "product";
+  enableTilt?: boolean;
 };
 
 const getBaseGridClass = (value: number) => {
@@ -40,6 +42,7 @@ export const MarkdownDeckStackGrid = ({
   columns,
   className,
   variant = "default",
+  enableTilt = false,
 }: Props) => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -97,28 +100,23 @@ export const MarkdownDeckStackGrid = ({
     <>
       <ul className={clsx("justify-items-start pb-6", gridClassName, className)}>
         {decklist.map((item, index) => {
-        const stackLayers =
-          variant === "product"
-            ? Math.min(item.count, productStackOffsets.length)
-            : Math.min(item.count, defaultStackOffsets.length);
-        const stackPaddingClass =
-          variant === "product"
-            ? (productStackPadding[stackLayers - 1] ?? "pb-0")
-            : "";
+          const stackLayers =
+            variant === "product"
+              ? Math.min(item.count, productStackOffsets.length)
+              : Math.min(item.count, defaultStackOffsets.length);
+          const stackPaddingClass =
+            variant === "product"
+              ? (productStackPadding[stackLayers - 1] ?? "pb-0")
+              : "";
 
-        return (
-          <li
-            key={`${item.card.id}-${index}`}
-            className={clsx(
-              cardItemClass,
-              stackPaddingClass,
-              "overflow-visible",
-            )}
-          >
+          const content = (
             <button
               type="button"
               onClick={() => handleOpenDetail(index)}
-              className={clsx(cardContainerClass, "block text-left")}
+              className={clsx(
+                enableTilt ? "block w-full text-left" : cardContainerClass,
+                "block text-left",
+              )}
               title={`Ver carta ${item.card.name}`}
             >
               {(() => {
@@ -126,7 +124,7 @@ export const MarkdownDeckStackGrid = ({
                   variant === "product"
                     ? productStackOffsets
                     : defaultStackOffsets;
-                // Limitamos el número de capas para evitar stacks demasiado altos.
+                // Limitamos el numero de capas para evitar stacks demasiado altos.
                 const maxLayers = Math.min(item.count, offsets.length);
 
                 return Array.from({ length: maxLayers }).map((_, index) => {
@@ -151,8 +149,24 @@ export const MarkdownDeckStackGrid = ({
                 });
               })()}
             </button>
-          </li>
-        );
+          );
+
+          return (
+            <li
+              key={`${item.card.id}-${index}`}
+              className={clsx(
+                cardItemClass,
+                stackPaddingClass,
+                "overflow-visible",
+              )}
+            >
+              {enableTilt ? (
+                <TiltCard className={cardContainerClass}>{content}</TiltCard>
+              ) : (
+                content
+              )}
+            </li>
+          );
         })}
       </ul>
 

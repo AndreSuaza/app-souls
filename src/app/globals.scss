@@ -246,3 +246,24 @@ h2 {
 .h-cal-200 {
   height: calc(100% - 200px);
 }
+
+// Efecto tilt reutilizable para cartas con seguimiento del cursor.
+.tilt-card {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --tilt-scale: 1;
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+
+.tilt-card__inner {
+  transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x))
+    scale(var(--tilt-scale));
+  transform-origin: center;
+  transition: transform 180ms ease;
+  will-change: transform;
+}
+
+.tilt-card[data-tilt-active="true"] .tilt-card__inner {
+  transition-duration: 70ms;
+}

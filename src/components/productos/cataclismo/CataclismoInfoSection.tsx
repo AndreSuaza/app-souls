@@ -4,7 +4,7 @@ import Link from "next/link";
 export function CataclismoInfoSection() {
   return (
     <section className="w-full bg-[#120816]/85 text-white">
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 py-16 lg:grid-cols-[1fr_1.1fr] lg:px-10 lg:py-36">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 py-16 lg:grid-cols-[1fr_1.1fr] lg:px-10 lg:py-24">
         <div className="space-y-6 text-center lg:text-left">
           <h2 className="text-2xl font-black uppercase tracking-wide sm:text-4xl">
             Why face Cataclismo?
@@ -25,14 +25,14 @@ export function CataclismoInfoSection() {
           </Link>
         </div>
 
-        <div className="flex justify-center lg:justify-center lg:-ml-4">
+        <div className="flex justify-center lg:justify-center">
           <Image
             src="/products/cataclismo/caja.png"
             alt="Caja Cataclismo"
             title="Caja Cataclismo"
             width={360}
             height={300}
-            className="h-auto w-full max-w-[320px] object-contain cursor-crosshair"
+            className="h-auto w-full max-w-[320px] lg:max-w-[500px] object-contain cursor-crosshair"
           />
         </div>
       </div>

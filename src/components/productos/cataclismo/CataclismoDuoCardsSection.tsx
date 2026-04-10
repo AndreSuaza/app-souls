@@ -1,4 +1,5 @@
 ﻿import Image from "next/image";
+import { TiltCard } from "@/components/ui/tilt/TiltCard";
 
 export function CataclismoDuoCardsSection() {
   return (
@@ -17,24 +18,28 @@ export function CataclismoDuoCardsSection() {
 
         <div className="grid w-full max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
           <div className="flex justify-center">
-            <Image
-              src="/cards/CAT-091-4685.webp"
-              alt="Carta Cataclismo 091"
-              title="Carta Cataclismo 091"
-              width={360}
-              height={520}
-              className="h-auto w-full max-w-[300px] rounded-2xl object-cover shadow-2xl"
-            />
+            <TiltCard className="w-full max-w-[300px]">
+              <Image
+                src="/cards/CAT-091-4685.webp"
+                alt="Carta Cataclismo 091"
+                title="Carta Cataclismo 091"
+                width={360}
+                height={520}
+                className="h-auto w-full rounded-2xl object-cover shadow-2xl"
+              />
+            </TiltCard>
           </div>
           <div className="flex justify-center">
-            <Image
-              src="/cards/CAT-092-1158.webp"
-              alt="Carta Cataclismo 092"
-              title="Carta Cataclismo 092"
-              width={360}
-              height={520}
-              className="h-auto w-full max-w-[300px] rounded-2xl object-cover shadow-2xl"
-            />
+            <TiltCard className="w-full max-w-[300px]">
+              <Image
+                src="/cards/CAT-092-1158.webp"
+                alt="Carta Cataclismo 092"
+                title="Carta Cataclismo 092"
+                width={360}
+                height={520}
+                className="h-auto w-full rounded-2xl object-cover shadow-2xl"
+              />
+            </TiltCard>
           </div>
         </div>
       </div>

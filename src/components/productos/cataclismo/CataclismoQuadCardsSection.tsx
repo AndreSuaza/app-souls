@@ -1,4 +1,5 @@
 ﻿import Image from "next/image";
+import { TiltCard } from "@/components/ui/tilt/TiltCard";
 
 const cards = [
   {
@@ -41,14 +42,16 @@ export function CataclismoQuadCardsSection() {
         <div className="grid w-full max-w-5xl grid-cols-2 gap-6 sm:grid-cols-4">
           {cards.map((card) => (
             <div key={card.id} className="flex justify-center">
-              <Image
-                src={card.src}
-                alt={card.alt}
-                title={card.alt}
-                width={320}
-                height={480}
-                className="h-auto w-full max-w-[220px] rounded-2xl object-cover shadow-2xl"
-              />
+              <TiltCard className="w-full max-w-[220px]">
+                <Image
+                  src={card.src}
+                  alt={card.alt}
+                  title={card.alt}
+                  width={320}
+                  height={480}
+                  className="h-auto w-full rounded-2xl object-cover shadow-2xl"
+                />
+              </TiltCard>
             </div>
           ))}
         </div>
