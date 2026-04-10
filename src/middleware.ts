@@ -15,6 +15,10 @@ const authRoutes = [
 ];
 const apiAuthPrefix = "/api/auth";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+const maintenancePath = "/mantenimiento";
+const maintenanceEnabled =
+  process.env.MAINTENANCE_MODE === "true" ||
+  process.env.MAINTENANCE_MODE === "1";
 
 // Config especial para middleware: NADA de MongoDB, Prisma, bcrypt, etc.
 // Esto debido a que EDGE no soporta esas librerías (solo Node.js).
@@ -46,10 +50,22 @@ export default baseAuth((req) => {
   const { nextUrl } = req;
   const path = nextUrl.pathname;
   const isLoggedIn = !!req.auth;
+  const acceptsHtml = req.headers.get("accept")?.includes("text/html") ?? false;
 
   // Permitir todas las rutas de API de autenticación
   if (path.startsWith(apiAuthPrefix)) {
     return NextResponse.next();
+  }
+
+  if (maintenanceEnabled && acceptsHtml) {
+    const isMaintenanceRoute = path.startsWith(maintenancePath);
+    const isAuthRoute = path.startsWith("/auth");
+    const role = req.auth?.user.role;
+
+    // Redirigimos a mantenimiento salvo que sea admin o este en rutas permitidas.
+    if (!isMaintenanceRoute && !isAuthRoute && role !== "admin") {
+      return NextResponse.redirect(new URL(maintenancePath, nextUrl));
+    }
   }
 
   // Redirigir a /dashboard si el usuario está logueado y trata de acceder a rutas de autenticación
