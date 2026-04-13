@@ -10,12 +10,32 @@ export interface Decklist {
 }
 
 const parseDeckEntries = (ids: string) => {
+  const entries: Array<{ key: string; count: number }> = [];
+
+  if (ids.includes(":")) {
+    const pairs = ids
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    pairs.forEach((pair) => {
+      const [key, countRaw] = pair.split(":").map((item) => item.trim());
+      const count = Number.parseInt(countRaw ?? "", 10);
+
+      if (!key || Number.isNaN(count)) {
+        return;
+      }
+
+      entries.push({ key, count });
+    });
+
+    return entries;
+  }
+
   const parts = ids
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-
-  const entries: Array<{ key: string; count: number }> = [];
 
   for (let index = 0; index < parts.length; index += 2) {
     const key = parts[index];
@@ -177,10 +197,18 @@ const getCardsByIds = async (ids: string) => {
 export const getDecksByIds = async (ids?: string) => {
   if (!ids) return { mainDeck: [], sideDeck: [] };
 
-  // Normalizamos solo el separador del sideboard para no romper codigos con comas.
-  const normalizedIds = ids.includes("%7C")
-    ? ids.replace(/%7C/gi, "|")
-    : ids;
+  // Normalizamos decklists URL-encoded (admin y público) sin perder separadores.
+  let normalizedIds = ids;
+  if (normalizedIds.includes("%")) {
+    try {
+      normalizedIds = decodeURIComponent(normalizedIds);
+    } catch {
+      normalizedIds = normalizedIds
+        .replace(/%7C/gi, "|")
+        .replace(/%3B/gi, ";")
+        .replace(/%3A/gi, ":");
+    }
+  }
 
   // Dividimos en [main, side]
   const [mainIds = "", sideIds = ""] = normalizedIds.split("|");
