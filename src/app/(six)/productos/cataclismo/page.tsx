@@ -14,11 +14,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Cataclismo - Souls In Xtinction TCG",
   description:
-    "Cataclismo es una coleccion de Souls In Xtinction TCG marcada por el caos y el poder, con cartas que desatan una energia imparable.",
+    "Cataclismo es una colección de Souls In Xtinction TCG marcada por el caos y el poder, con cartas que desatan una energia imparable.",
   openGraph: {
     title: "Cataclismo - Souls In Xtinction TCG",
     description:
-      "Cataclismo es una coleccion de Souls In Xtinction TCG marcada por el caos y el poder, con cartas que desatan una energia imparable.",
+      "Cataclismo es una colección de Souls In Xtinction TCG marcada por el caos y el poder, con cartas que desatan una energia imparable.",
     url: "https://soulsinxtinction.com/productos/cataclismo",
     siteName: "Cataclismo",
     images: [

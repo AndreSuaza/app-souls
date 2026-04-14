@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function CataclismoInfoSection() {
   return (
-    <section className="w-full bg-[#120816]/85 text-white">
+    <section className="w-full bg-[#1f0a12]/70 text-white backdrop-blur-sm">
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 py-16 lg:grid-cols-[1fr_1.1fr] lg:px-10 lg:py-24">
         <div className="space-y-6 text-center lg:text-left">
           <h2 className="text-2xl font-black uppercase tracking-wide sm:text-4xl">

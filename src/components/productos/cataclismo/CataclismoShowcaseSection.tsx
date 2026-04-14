@@ -71,7 +71,7 @@ const showcaseItems = [
 
 export function CataclismoShowcaseSection() {
   return (
-    <section className="w-full bg-[#1f0a12]/70 py-16 backdrop-blur-sm md:py-20">
+    <section className="w-full bg-[#120816] py-16 md:py-20">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-10 px-6 text-center lg:px-10">
         <div className="space-y-4">
           <h2 className="text-2xl font-black uppercase tracking-wide text-white sm:text-4xl">

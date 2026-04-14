@@ -3,7 +3,7 @@ import { TiltCard } from "@/components/ui/tilt/TiltCard";
 
 export function CataclismoSplitSection() {
   return (
-    <section className="w-full bg-[#1f0a12]/70 py-16 backdrop-blur-sm md:py-20">
+    <section className="w-full bg-[#120816] py-16 md:py-20">
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 text-center lg:grid-cols-[1fr_2fr] lg:text-left lg:px-10">
         <div className="flex justify-center">
           <TiltCard className="w-full max-w-[260px]">

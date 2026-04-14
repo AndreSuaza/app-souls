@@ -9,10 +9,10 @@ interface Props {
 
 export function CataclismoCollectionSection({ decklist }: Props) {
   return (
-    <section className="w-full bg-[#1f0a12]/70 px-4 py-10 backdrop-blur-sm sm:p-12 md:py-20 md:px-14">
+    <section className="w-full bg-[#120816] px-4 py-10 sm:p-12 md:py-20 md:px-14">
       <div className="mx-auto w-full space-y-6">
         <h2 className="pl-4 text-2xl font-black uppercase tracking-wide text-white sm:text-4xl">
-          La coleccion completa
+          La colección completa
         </h2>
 
         <ProductDeckCollection
