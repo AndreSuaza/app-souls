@@ -477,11 +477,13 @@ model UserAvatar {
 }
 
 model EloSeasonHistory {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String   @db.ObjectId
-  eloPoints    Int      @default(0)
-  seasonNumber Int
-  createdAt    DateTime @default(now())
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  eloPoints     Int      @default(0)
+  matchesPlayed Int      @default(0)
+  winrate       Int      @default(0)
+  seasonNumber  Int
+  createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
 

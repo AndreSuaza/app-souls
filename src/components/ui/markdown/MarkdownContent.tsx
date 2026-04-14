@@ -360,14 +360,29 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       enableInstagramEmbeds &&
       meaningfulNodes.length === 1 &&
       isInstagramNode(meaningfulNodes[0]);
+    const isCustomElement = (child: React.ReactNode) =>
+      isValidElement(child) && typeof child.type !== "string";
+    const isInstagramLinkElement = (child: React.ReactNode) =>
+      isValidElement(child) &&
+      typeof (child.props as { href?: string } | undefined)?.href ===
+        "string" &&
+      isInstagramUrl(
+        (child.props as { href?: string } | undefined)?.href ?? "",
+      );
     const hasBlockElement = meaningfulNodes.some(
-      (child) => isImageNode(child) || isDecklistNode(child),
+      (child) =>
+        isImageNode(child) || isDecklistNode(child) || isInstagramNode(child),
+    );
+    const hasBlockChild = childrenArray.some(
+      (child) => isCustomElement(child) || isInstagramLinkElement(child),
     );
 
     const paragraphClass =
       "text-sm break-words break-all leading-relaxed text-slate-700 dark:text-slate-200 md:text-base";
     const hasInstagramElement = childrenArray.some(
-      (child) => isValidElement(child) && child.type === InstagramEmbed,
+      (child) =>
+        (isValidElement(child) && child.type === InstagramEmbed) ||
+        isInstagramLinkElement(child),
     );
 
     if (onlyImages) {
@@ -407,7 +422,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       return <InstagramEmbed url={url} />;
     }
 
-    if (hasBlockElement) {
+    if (hasBlockElement || hasBlockChild) {
       const chunks: React.ReactNode[] = [];
       let inlineBuffer: React.ReactNode[] = [];
 
@@ -427,10 +442,28 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       childrenArray.forEach((child, index) => {
         const nodeChild = nodeChildren[index];
         const isBlock =
-          isImageNode(nodeChild) || isDecklistNode(nodeChild) || false;
+          isImageNode(nodeChild) ||
+          isDecklistNode(nodeChild) ||
+          isInstagramNode(nodeChild) ||
+          isCustomElement(child) ||
+          isInstagramLinkElement(child);
         if (isBlock) {
           // Separamos los elementos en bloque para evitar <div>/<section> dentro de <p>.
           flushInline();
+          if (isInstagramNode(nodeChild)) {
+            const url =
+              nodeChild?.type === "element"
+                ? (nodeChild.properties?.href as string)
+                : (nodeChild?.url as string);
+            chunks.push(
+              <InstagramEmbed
+                key={`markdown-block-${chunks.length}`}
+                url={url}
+              />,
+            );
+            return;
+          }
+
           if (isValidElement(child)) {
             chunks.push(
               React.cloneElement(child, {

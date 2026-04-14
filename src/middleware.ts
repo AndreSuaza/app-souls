@@ -50,20 +50,20 @@ export default baseAuth((req) => {
   const { nextUrl } = req;
   const path = nextUrl.pathname;
   const isLoggedIn = !!req.auth;
-  const acceptsHtml = req.headers.get("accept")?.includes("text/html") ?? false;
 
   // Permitir todas las rutas de API de autenticación
   if (path.startsWith(apiAuthPrefix)) {
     return NextResponse.next();
   }
 
-  if (maintenanceEnabled && acceptsHtml) {
+  if (maintenanceEnabled) {
     const isMaintenanceRoute = path.startsWith(maintenancePath);
     const isAuthRoute = path.startsWith("/auth");
+    const isApiRoute = path.startsWith("/api");
     const role = req.auth?.user.role;
 
     // Redirigimos a mantenimiento salvo que sea admin o este en rutas permitidas.
-    if (!isMaintenanceRoute && !isAuthRoute && role !== "admin") {
+    if (!isMaintenanceRoute && !isAuthRoute && !isApiRoute && role !== "admin") {
       return NextResponse.redirect(new URL(maintenancePath, nextUrl));
     }
   }

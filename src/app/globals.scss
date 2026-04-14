@@ -267,3 +267,19 @@ h2 {
 .tilt-card[data-tilt-active="true"] .tilt-card__inner {
   transition-duration: 70ms;
 }
+
+@keyframes maintenance-orbit {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) translateX(12px);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-360deg) translateX(12px);
+  }
+}
+
+.maintenance-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  animation: maintenance-orbit 8s linear infinite;
+}
