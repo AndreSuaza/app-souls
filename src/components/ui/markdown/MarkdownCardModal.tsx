@@ -70,7 +70,7 @@ export const MarkdownCardModal = ({
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 Selecciona una o varias cartas. Puedes buscar por nombre, id,
-                idd o codigo.
+                idd o código.
               </p>
             </div>
             <button
@@ -88,7 +88,7 @@ export const MarkdownCardModal = ({
             <input
               value={searchValue}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Buscar por nombre, id, idd o codigo"
+              placeholder="Buscar por nombre, id, idd o código"
               className="w-full min-w-0 rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
             />
             <span className="whitespace-nowrap text-end text-xs text-slate-400 dark:text-slate-500">

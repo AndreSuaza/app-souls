@@ -6,8 +6,8 @@ import { CataclismoInfoSection } from "@/components/productos/cataclismo/Catacli
 import { CataclismoQuadCardsSection } from "@/components/productos/cataclismo/CataclismoQuadCardsSection";
 import { CataclismoShowcaseSection } from "@/components/productos/cataclismo/CataclismoShowcaseSection";
 import { CataclismoSplitSection } from "@/components/productos/cataclismo/CataclismoSplitSection";
-import { Metadata } from "next";
 import type { Decklist } from "@/interfaces";
+import type { Metadata } from "next";
 
 export const revalidate = 3600;
 
