@@ -8,6 +8,7 @@ import {
   IoImageOutline,
   IoLayersOutline,
   IoListOutline,
+  IoLockClosedOutline,
   IoTrophyOutline,
 } from "react-icons/io5";
 import { FiAward, FiTarget, FiTrendingUp } from "react-icons/fi";
@@ -24,6 +25,7 @@ import { ProfileTournamentSection } from "./ProfileTournamentSection";
 import { ProfileTournamentHistorySection } from "./ProfileTournamentHistorySection";
 import { ProfileDecksSection } from "./ProfileDecksSection";
 import { ProfileCurrentTournament } from "./ProfileCurrentTournament";
+import { ProfileChangePasswordModal } from "./ProfileChangePasswordModal";
 import { getAvatarUrl, getAvatarValue } from "@/utils/avatar-image";
 import {
   DEFAULT_PROFILE_BANNER,
@@ -101,6 +103,7 @@ export const Pefil = ({
 }: Props) => {
   const [showAvatars, setShowAvatars] = useState(false);
   const [showBanners, setShowBanners] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [baseAvatar, setBaseAvatar] = useState(getAvatarValue(user.image));
   const [selectedAvatar, setSelectedAvatar] = useState(baseAvatar);
   const [baseBanner, setBaseBanner] = useState(
@@ -129,6 +132,8 @@ export const Pefil = ({
   );
   const { data: session, update } = useSession();
   const hasSession = Boolean(session?.user?.idd ?? user.email);
+  const passwordButtonClass =
+    "inline-flex items-center gap-2 rounded-full border border-purple-300/60 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-purple-700 shadow-sm transition hover:bg-purple-50 dark:border-purple-500/60 dark:bg-tournament-dark-surface/80 dark:text-purple-100 dark:hover:bg-tournament-dark-muted";
 
   const handleSelect = (avatar: Avatar) => {
     const nextAvatar = getAvatarValue(avatar.imageUrl);
@@ -433,6 +438,21 @@ export const Pefil = ({
         <ProfileSectionsTabs
           active={activeTab}
           onChange={setActiveTab}
+          rightSlot={
+            hasSession ? (
+              <button
+                type="button"
+                onClick={() => setShowChangePasswordModal(true)}
+                title="Cambiar contraseña"
+                className={passwordButtonClass}
+              >
+                <IoLockClosedOutline className="h-4 w-4" />
+                <span className="text-xs font-semibold">
+                  Cambiar contraseña
+                </span>
+              </button>
+            ) : null
+          }
           tabs={[
             {
               id: "tournament",
@@ -591,6 +611,11 @@ export const Pefil = ({
           </div>
         </Modal>
       )}
+
+      <ProfileChangePasswordModal
+        open={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+      />
     </div>
   );
 };

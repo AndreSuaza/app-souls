@@ -39,12 +39,7 @@ export const getPublicTournaments = async () => {
           title: true,
           date: true,
           status: true,
-          store: {
-            select: {
-              name: true,
-              address: true,
-            },
-          },
+          storeId: true,
         },
         orderBy: {
           date: "desc",
@@ -66,12 +61,7 @@ export const getPublicTournaments = async () => {
           title: true,
           date: true,
           status: true,
-          store: {
-            select: {
-              name: true,
-              address: true,
-            },
-          },
+          storeId: true,
           typeTournament: {
             select: {
               name: true,
@@ -119,15 +109,41 @@ export const getPublicTournaments = async () => {
       });
     };
 
-    const normalized = orderByStatus(tournaments).map((tournament) => ({
-      ...tournament,
-      status: tournament.status as PublicTournamentStatus,
-    }));
+    const storeIds = Array.from(
+      new Set([
+        ...tournaments.map((tournament) => tournament.storeId),
+        ...tierTournaments.map((tournament) => tournament.storeId),
+      ]),
+    );
 
-    const normalizedTier = orderByStatus(tierTournaments).map((tournament) => ({
-      ...tournament,
-      status: tournament.status as PublicTournamentStatus,
-    }));
+    const stores = await prisma.store.findMany({
+      where: { id: { in: storeIds } },
+      select: { id: true, name: true, address: true },
+    });
+
+    const storesMap = new Map(
+      stores.map((store) => [store.id, store] as const),
+    );
+
+    const normalized = orderByStatus(tournaments).map((tournament) => {
+      const store = storesMap.get(tournament.storeId);
+      return {
+        ...tournament,
+        status: tournament.status as PublicTournamentStatus,
+        storeName: store?.name ?? null,
+        storeAddress: store?.address ?? null,
+      };
+    });
+
+    const normalizedTier = orderByStatus(tierTournaments).map((tournament) => {
+      const store = storesMap.get(tournament.storeId);
+      return {
+        ...tournament,
+        status: tournament.status as PublicTournamentStatus,
+        storeName: store?.name ?? null,
+        storeAddress: store?.address ?? null,
+      };
+    });
 
     const topPlayersNormalized = topPlayers.map((player) => {
       const matches = player.matchesPlayed ?? 0;

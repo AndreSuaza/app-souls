@@ -5,6 +5,7 @@ import { cardImageBlurDataURL } from "@/models/images.models";
 import { CardDetailStatCard } from "@/components/cartas/card-detail/CardDetailStatCard";
 import { CardDetailProductCard } from "@/components/cartas/card-detail/CardDetailProductCard";
 import { BovedaPriceCard } from "./BovedaPriceCard";
+import { TiltCard } from "@/components/ui/tilt/TiltCard";
 
 interface DetailCard {
   id: string;
@@ -49,6 +50,7 @@ export function BovedaCardDetail({ card }: Props) {
     .join(", ");
 
   const stats = [
+    { label: "Código", value: card.code },
     { label: "Tipo", value: typeText },
     { label: "Coste", value: `${card.cost}` },
     { label: "Fuerza", value: card.force },
@@ -67,18 +69,22 @@ export function BovedaCardDetail({ card }: Props) {
         {card.name}
       </h2>
 
-      <div className="flex justify-center lg:h-[560px]">
-        <div className="h-full w-full md:w-auto max-w-[380px] md:max-w-none overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-          <Image
-            src={`/cards/${card.code}-${card.idd}.webp`}
-            alt={card.name}
-            title={card.name}
-            placeholder="blur"
-            blurDataURL={cardImageBlurDataURL}
-            width={500}
-            height={718}
-            className="h-full w-full object-fill"
-          />
+      <div className="flex justify-center">
+        <div className="w-full max-w-[420px] sm:max-w-[480px] lg:max-w-[400px]">
+          <TiltCard className="w-full">
+            <div className="relative w-full aspect-[500/718] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+              <Image
+                src={`/cards/${card.code}-${card.idd}.webp`}
+                alt={card.name}
+                title={card.name}
+                placeholder="blur"
+                blurDataURL={cardImageBlurDataURL}
+                fill
+                sizes="(min-width: 1024px) 520px, (min-width: 640px) 480px, 90vw"
+                className="object-fill"
+              />
+            </div>
+          </TiltCard>
         </div>
       </div>
 

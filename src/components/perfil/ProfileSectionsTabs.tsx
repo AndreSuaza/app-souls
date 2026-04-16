@@ -17,9 +17,15 @@ type Props = {
   active: ProfileTab;
   onChange: (tab: ProfileTab) => void;
   tabs: ProfileTabItem[];
+  rightSlot?: ReactNode;
 };
 
-export const ProfileSectionsTabs = ({ active, onChange, tabs }: Props) => {
+export const ProfileSectionsTabs = ({
+  active,
+  onChange,
+  tabs,
+  rightSlot,
+}: Props) => {
   const visibleTabs = tabs.filter((tab) => !tab.hidden);
   const activeTab =
     visibleTabs.find((tab) => tab.id === active) ?? visibleTabs[0];
@@ -45,6 +51,11 @@ export const ProfileSectionsTabs = ({ active, onChange, tabs }: Props) => {
             <span>{tab.label}</span>
           </button>
         ))}
+        {rightSlot && (
+          <div className="order-first mb-2 flex w-full items-center justify-start sm:order-none sm:mb-0 sm:ml-auto sm:w-auto sm:justify-end">
+            {rightSlot}
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-tournament-dark-border dark:bg-tournament-dark-surface/60">

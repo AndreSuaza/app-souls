@@ -11,11 +11,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Pikingos - Souls In Xtinction TCG",
   description:
-    "Pikingos es una coleccion de Souls In Xtinction TCG inspirada en la mitologia nordica, con cartas agresivas y directas para imponer su ley.",
+    "Pikingos es una colección de Souls In Xtinction TCG inspirada en la mitología nordica, con cartas agresivas y directas para imponer su ley.",
   openGraph: {
     title: "Pikingos - Souls In Xtinction TCG",
     description:
-      "Pikingos es una coleccion de Souls In Xtinction TCG inspirada en la mitologia nordica, con cartas agresivas y directas para imponer su ley.",
+      "Pikingos es una colección de Souls In Xtinction TCG inspirada en la mitología nordica, con cartas agresivas y directas para imponer su ley.",
     url: "https://soulsinxtinction.com/productos/pikingos",
     siteName: "Pikingos",
     images: [

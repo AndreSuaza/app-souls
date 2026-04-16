@@ -116,7 +116,7 @@ export const CardFinderLabLocal = ({
   }
 
   const buildFilters = (
-    filters: PropertiesFiltersFinderLab
+    filters: PropertiesFiltersFinderLab,
   ): PaginationFilters => {
     const nextFilters: PaginationFilters = {};
 
@@ -171,7 +171,7 @@ export const CardFinderLabLocal = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mx-2 mt-2 md:mt-6 mb-1">
               <TextInput
                 name="text"
-                placeholder="Nombre, Codigo o Efecto de la carta"
+                placeholder="Nombre, Código o Efecto de la carta"
                 className="border-[1px] border-gray-300 rounded-md pl-2"
               />
 

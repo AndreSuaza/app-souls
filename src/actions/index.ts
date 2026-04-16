@@ -54,6 +54,8 @@ export * from "./auth/login";
 export * from "./auth/logout";
 export * from "./auth/find-user";
 export * from "./auth/register";
+export * from "./auth/verify-current-password";
+export * from "./auth/change-password";
 export * from "./auth/request-password-reset";
 export * from "./auth/reset-password";
 
@@ -68,6 +70,7 @@ export * from "./decks/get-admin-decks.action";
 export * from "./decks/search-decks.action";
 export * from "./decks/search-admin-decks.action";
 export * from "./decks/get-user-decks-filtered.action";
+export * from "./decks/get-public-decks-by-user.action";
 export * from "./decks/get-deck-filters.action";
 export * from "./decks/toggle-deck-like.action";
 
@@ -78,6 +81,10 @@ export * from "./profile/admin-profile-media.action";
 export * from "./profile/get-active-tournament.action";
 export * from "./profile/get-profile-tournament.action";
 export * from "./profile/get-user-tournaments.action";
+export * from "./profile/get-public-profile.action";
+export * from "./profile/get-public-user-tournaments.action";
+export * from "./profile/get-public-deck-counts.action";
+export * from "./admin/reset-elo-season.action";
 export * from "./profile/get-profile-deck-counts.action";
 
 export * from "./news/get-admin-news.action";

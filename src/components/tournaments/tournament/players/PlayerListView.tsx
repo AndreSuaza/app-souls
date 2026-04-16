@@ -51,7 +51,13 @@ export const PlayerListView = ({
 
               {/* Texto */}
               <div className="flex flex-col min-w-0">
-                <span>{p.playerNickname}</span>
+                <Link
+                  href={`/perfil/${encodeURIComponent(p.playerNickname)}`}
+                  className="transition hover:text-purple-600 dark:hover:text-purple-200"
+                  title={`Ver perfil de ${p.playerNickname}`}
+                >
+                  {p.playerNickname}
+                </Link>
 
                 {(p.name || p.lastname) && (
                   <span className="text-xs text-slate-500 dark:text-slate-400">

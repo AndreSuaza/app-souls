@@ -4,6 +4,7 @@ import type { Archetype, Card, Keyword, Rarity, Type } from "@/interfaces";
 import { getCardProductsByIddAction } from "@/actions";
 import { useCardDetailStore } from "@/store";
 import Image from "next/image";
+import Link from "next/link";
 import { cardImageBlurDataURL } from "@/models/images.models";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -11,9 +12,11 @@ import {
   IoChevronBack,
   IoChevronForward,
   IoCloseOutline,
+  IoArrowForwardOutline,
 } from "react-icons/io5";
 import { CardDetailStatCard } from "./CardDetailStatCard";
 import { CardDetailProductCard } from "./CardDetailProductCard";
+import { TiltCard } from "@/components/ui/tilt/TiltCard";
 
 interface Props {
   cards: Card[];
@@ -156,6 +159,7 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
 
   const stats = useMemo(() => {
     const items = [
+      { label: "Código", value: card.code },
       { label: "Tipo", value: typeText },
       { label: "Coste", value: card.cost },
       { label: "Fuerza", value: card.force },
@@ -177,6 +181,7 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
       })
       .filter((item) => item.value.length > 0);
   }, [typeText, archetypeText, rarityText, card]);
+  const bovedaHref = card?.slug ? `/boveda/${card.slug}` : "";
 
   if (!isDetailOpen || !isMounted) return null;
 
@@ -187,7 +192,7 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
         onClick={handleClose}
       />
 
-      <div className="relative z-10 h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[80vh] sm:w-full sm:max-w-6xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg lg:w-3/5 lg:max-w-none">
+      <div className="relative z-10 h-full w-full overflow-hidden border-0 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-2xl sm:h-auto sm:max-h-[94vh] sm:w-full sm:max-w-6xl sm:rounded-lg sm:mx-4 sm:my-6 dark:border-2 dark:border-tournament-dark-border dark:from-slate-950 dark:via-tournament-dark-surface dark:to-tournament-dark-bg lg:w-3/5 lg:max-w-none">
         <div className="flex items-center justify-between border-b border-purple-600 bg-slate-100/90 px-6 py-4 dark:border-tournament-dark-border dark:bg-slate-950/70">
           <h1 className="text-xl font-semibold text-slate-900 sm:text-2xl dark:text-slate-100">
             {card.name}
@@ -220,25 +225,39 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
           <IoChevronForward className="h-6 w-6" />
         </button>
 
-        <div className="grid h-[calc(100vh-72px)] grid-cols-1 overflow-y-auto px-4 pb-6 sm:h-auto sm:max-h-[calc(80vh-72px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+        <div className="grid h-[calc(100vh-72px)] grid-cols-1 overflow-y-auto px-4 pb-6 sm:h-auto sm:max-h-[calc(86vh-72px)] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
           <div className="relative flex flex-col items-center gap-5 border-b border-purple-600 py-6 lg:border-b-0 dark:border-tournament-dark-border">
-            <div className="relative w-full max-w-[380px]">
-              <div className="overflow-hidden rounded-lg bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
-                <Image
-                  src={`/cards/${card.code}-${card.idd}.webp`}
-                  alt={card.name}
-                  title={card.name}
-                  placeholder="blur"
-                  blurDataURL={cardImageBlurDataURL}
-                  className="block w-full object-cover"
-                  width={500}
-                  height={718}
-                />
-              </div>
+            <div className="relative w-full max-w-[320px] sm:max-w-[340px] lg:max-w-[360px]">
+              <TiltCard className="w-full">
+                <div className="overflow-hidden rounded-lg bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
+                  <Image
+                    src={`/cards/${card.code}-${card.idd}.webp`}
+                    alt={card.name}
+                    title={card.name}
+                    placeholder="blur"
+                    blurDataURL={cardImageBlurDataURL}
+                    className="block w-full object-contain"
+                    width={500}
+                    height={718}
+                  />
+                </div>
+              </TiltCard>
             </div>
           </div>
 
           <div className="flex flex-col gap-6 px-4 py-6 sm:px-5 lg:px-6 lg:py-6">
+            {bovedaHref && (
+              <div className="flex items-center justify-end">
+                <Link
+                  href={bovedaHref}
+                  title="Ver en bóveda"
+                  className="group inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-yellow-300 bg-yellow-400 px-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-900 shadow-sm transition duration-300 hover:bg-yellow-300 dark:border-yellow-300 dark:bg-yellow-400 dark:text-slate-900 dark:hover:bg-yellow-300"
+                >
+                  Ver en bóveda
+                  <IoArrowForwardOutline className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </div>
+            )}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {stats.map((item) => (
                 <CardDetailStatCard

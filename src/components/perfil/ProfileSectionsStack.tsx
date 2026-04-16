@@ -1,9 +1,9 @@
 "use client";
 
-import type { ProfileTabItem } from "./ProfileSectionsTabs";
+import type { ReactNode } from "react";
 
 type Props = {
-  sections: Array<Pick<ProfileTabItem, "id" | "content" | "hidden">>;
+  sections: Array<{ id: string; content: ReactNode; hidden?: boolean }>;
 };
 
 export const ProfileSectionsStack = ({ sections }: Props) => {

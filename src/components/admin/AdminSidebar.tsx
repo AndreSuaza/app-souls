@@ -13,12 +13,13 @@ import {
   IoNewspaperOutline,
   IoBagRemoveOutline,
   IoImagesOutline,
+  IoLogOutOutline,
 } from "react-icons/io5";
 import { IoMdTrophy } from "react-icons/io";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 
-export const TournamentSidebar = () => {
+export const AdminSidebar = () => {
   const isOpen = useUIStore((state) => state.isTournamentSidebarOpen);
   const close = useUIStore((state) => state.closeTournamentSidebar);
   const { data: session } = useSession();
@@ -196,7 +197,7 @@ export const TournamentSidebar = () => {
 
       <aside
         className={clsx(
-          "fixed top-0 right-0 z-40 h-full w-64 bg-white dark:bg-tournament-dark-surface text-slate-900 dark:text-white shadow-sm transition-transform duration-200 flex flex-col lg:static lg:z-auto lg:h-auto lg:w-64 lg:border-r lg:border-tournament-dark-accent dark:lg:border-tournament-dark-border lg:border-l-0 lg:translate-x-0",
+          "fixed top-0 right-0 z-40 h-full w-64 bg-white dark:bg-tournament-dark-surface text-slate-900 dark:text-white shadow-sm transition-transform duration-200 flex flex-col lg:static lg:z-auto lg:h-screen lg:w-64 lg:border-r lg:border-tournament-dark-accent dark:lg:border-tournament-dark-border lg:border-l-0 lg:translate-x-0 lg:sticky lg:top-0",
           {
             "translate-x-0": isOpen,
             "translate-x-full": !isOpen,
@@ -205,7 +206,7 @@ export const TournamentSidebar = () => {
       >
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-tournament-dark-border">
           <span className="font-bold text-slate-900 dark:text-white whitespace-nowrap">
-            Gestor de Torneos
+            Panel de administración
           </span>
 
           <button onClick={close} className="lg:hidden">
@@ -213,7 +214,7 @@ export const TournamentSidebar = () => {
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col px-2 lg:px-3 py-4 gap-1">
+        <nav className="flex flex-1 flex-col px-2 lg:px-3 py-4 gap-1 overflow-y-auto min-h-0">
           {menuItems.map(({ label, href, icon: Icon }) => {
             const isActive = pathname === href;
 
@@ -240,14 +241,15 @@ export const TournamentSidebar = () => {
           })}
         </nav>
 
-        <div className="px-2 pb-4 lg:hidden">
+        <div className="px-2 lg:px-3 pb-4 border-t border-slate-200 dark:border-tournament-dark-border lg:hidden">
           <button
             onClick={async () => {
               close();
               await signOut();
             }}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white"
+            className="mt-3 flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white"
           >
+            <IoLogOutOutline size={22} />
             Cerrar sesion
           </button>
         </div>

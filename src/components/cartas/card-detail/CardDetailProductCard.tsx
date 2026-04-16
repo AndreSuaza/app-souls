@@ -17,7 +17,9 @@ interface Props {
 }
 
 export function CardDetailProductCard({ product }: Props) {
-  const imageSrc = toBlobUrl(`souls/products/${product.code}.webp`);
+  // Normaliza el codigo del producto para usarlo en la ruta de Blob.
+  const productCode = product.code.trim().toLowerCase();
+  const imageSrc = toBlobUrl(`souls/products/${productCode}.webp`);
   const content = (
     <div className="group flex flex-col gap-3 rounded-lg border border-purple-600 bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:shadow-lg sm:flex-row sm:items-center sm:gap-4">
       <div className="w-full overflow-hidden rounded-lg border border-purple-600 bg-slate-100 dark:border-tournament-dark-border dark:bg-slate-950/60 sm:h-16 sm:w-16">
