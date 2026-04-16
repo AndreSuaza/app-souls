@@ -15,11 +15,7 @@ export function CataclismoCollectionSection({ decklist }: Props) {
           La colección completa
         </h2>
 
-        <ProductDeckCollection
-          decklist={decklist}
-          className="rounded-2xl"
-          enableTilt
-        />
+        <ProductDeckCollection decklist={decklist} className="rounded-2xl" />
       </div>
     </section>
   );

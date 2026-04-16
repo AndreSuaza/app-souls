@@ -254,6 +254,13 @@ h2 {
   --tilt-scale: 1;
   perspective: 900px;
   transform-style: preserve-3d;
+  user-select: none;
+}
+
+.tilt-card img {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .tilt-card__inner {
@@ -266,6 +273,17 @@ h2 {
 
 .tilt-card[data-tilt-active="true"] .tilt-card__inner {
   transition-duration: 70ms;
+}
+
+@media (max-width: 1023px) {
+  .tilt-card {
+    touch-action: none;
+  }
+
+  body[data-tilt-scroll-locked="true"] {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
 }
 
 @keyframes maintenance-orbit {
