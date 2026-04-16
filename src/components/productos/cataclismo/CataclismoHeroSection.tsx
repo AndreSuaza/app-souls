@@ -19,12 +19,10 @@ export function CataclismoHeroSection() {
               </div>
               <div className="-mt-4 space-y-3 sm:-mt-6">
                 <p className="text-base font-semibold uppercase tracking-widest text-slate-200 sm:text-lg">
-                  No luchan por recursos. Luchan por dominio, por respeto... por
-                  imponer su ley.
+                  Cataclismos: el poder que redefine el mundo
                 </p>
                 <p className="mx-auto max-w-xl text-sm text-slate-300 sm:text-base">
-                  Un mazo agresivo, directo, donde cada ataque es un juramento
-                  que no se rompe.
+                  La nueva expansión de Souls In Xtinction desata fuerzas colosales, despierta razas renovadas y eleva la rareza a un nuevo nivel. 
                 </p>
                 <p className="text-xl font-black uppercase text-white sm:text-3xl">
                   Ya disponible

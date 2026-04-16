@@ -7,12 +7,10 @@ export function CataclismoDuoCardsSection() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-10 px-6 text-center lg:px-10">
         <div className="space-y-4">
           <h2 className="text-2xl font-black uppercase tracking-wide text-white sm:text-4xl">
-            Cards forged by the cataclysm
+            Arte que trasciende el juego
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus
-            vitae consequat sapien. Integer tempus, nunc et feugiat dignissim,
-            tellus nisl pretium justo, sed viverra velit nisl a erat.
+            Por primera vez, llegan cartas secretas firmadas por el ilustrador Doroh. Estas piezas no solo destacan por su poder en el juego, sino por su valor artístico y exclusividad. Cada firma convierte la carta en una reliquia dentro del universo de Souls In Xtinction.
           </p>
         </div>
 

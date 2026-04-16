@@ -2,9 +2,9 @@
 
 const showcaseItems = [
   {
-    title: "Crimson engines awake",
+    title: "Poder descomunal",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Integer quis metus nec justo pulvinar luctus.",
+      "Cada Kaiju representa una amenaza real. Sus habilidades están diseñadas para impactar directamente el estado de la partida, obligando a tu oponente a adaptarse o sucumbir.",
     cards: [
       {
         id: "cat-026",
@@ -24,9 +24,9 @@ const showcaseItems = [
     ],
   },
   {
-    title: "Ashes, steel, destiny",
+    title: "Versatilidad estratégica",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum sit amet lacus sed augue commodo mattis.",
+      "Más allá de su fuerza bruta, los Kaijus ofrecen múltiples formas de juego gracias a su interacción con los entes, permitiendo construir estrategias únicas y dinámicas.",
     cards: [
       {
         id: "cat-029",
@@ -46,9 +46,9 @@ const showcaseItems = [
     ],
   },
   {
-    title: "The storm never fades",
+    title: "Arte monumental",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis egestas auctor sem, ut tincidunt libero luctus a.",
+      "Cada Kaiju está acompañado de ilustraciones épicas y detalladas que transmiten su escala y presencia, convirtiéndolos en piezas centrales tanto en juego como en colección.",
     cards: [
       {
         id: "cat-038",
@@ -75,12 +75,10 @@ export function CataclismoShowcaseSection() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-10 px-6 text-center lg:px-10">
         <div className="space-y-4">
           <h2 className="text-2xl font-black uppercase tracking-wide text-white sm:text-4xl">
-            Heroes carved from crimson
+            Kaijus: colosos que dominan el campo
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus
-            faucibus, ipsum in fringilla fermentum, elit elit efficitur elit,
-            vitae feugiat elit sem a urna.
+            Las criaturas más imponentes jamás vistas llegan al juego. Los Kaijus son entidades colosales que interactúan con los entes, desatando efectos devastadores y cambiando el ritmo de la partida desde el momento en que entran en juego.
           </p>
         </div>
 

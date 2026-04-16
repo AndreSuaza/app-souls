@@ -30,12 +30,10 @@ export function CataclismoQuadCardsSection() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-10 px-6 text-center lg:px-10">
         <div className="space-y-4">
           <h2 className="text-2xl font-black uppercase tracking-wide text-white sm:text-4xl">
-            Relics of the rupture
+            Pikingos: la furia alza vuelo
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur
-            euismod, urna sed suscipit interdum, nibh ligula tincidunt neque,
-            quis facilisis odio mauris id est.
+            La raza de palomas vikingas regresa con un refuerzo explosivo. Más agresivos, más rápidos y con nuevas herramientas, los Pikingos ahora dominan el campo con presión constante y generación de recursos que potencia su estilo ofensivo.
           </p>
         </div>
 

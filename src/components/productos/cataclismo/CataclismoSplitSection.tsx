@@ -19,12 +19,10 @@ export function CataclismoSplitSection() {
         </div>
         <div className="space-y-4">
           <h2 className="text-2xl font-black uppercase tracking-wide text-white sm:text-4xl">
-            A single omen
+            Rareza Ascendida: más allá de lo imaginable
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed tempus
-            dolor non lorem congue, a scelerisque neque blandit. Etiam viverra
-            efficitur augue, at interdum justo.
+            Descubre la nueva rareza Ascendida, una carta diseñada para destacar en todos los sentidos. Con acabados en alto relieve y un nivel de detalle excepcional, representa la cima del diseño dentro de Cataclismos, fusionando poder, estética y exclusividad.
           </p>
         </div>
       </div>
