@@ -600,6 +600,13 @@ export const DeckCreator = ({
     deckListMain.reduce((acc, deck) => acc + deck.count, 0) +
     deckListLimbo.reduce((acc, deck) => acc + deck.count, 0) +
     deckListSide.reduce((acc, deck) => acc + deck.count, 0);
+  // El guardado para dueños depende de la ventana de edición de torneo,
+  // pero para no dueños debe permitirse clonar/guardar siempre que el mazo sea público.
+  const canSaveAsOwnDeck = isOwnerDeck
+    ? canEditDeck
+    : deckData
+      ? Boolean(deckData.visible)
+      : true;
 
   const cardCounts = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -734,7 +741,7 @@ export const DeckCreator = ({
               archetypes={archetypes}
               deckId={deckId}
               showUserDecksButton={showUserDecksButton}
-              showSaveButton={canEditDeck && totalCardsInDecks > 0}
+              showSaveButton={canSaveAsOwnDeck && totalCardsInDecks > 0}
               showEditButton={isOwnerDeck && canEditDeck}
               showCloneButton={isOwnerDeck}
               showDeleteButton={canDeleteDeck}
