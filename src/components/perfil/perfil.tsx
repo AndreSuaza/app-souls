@@ -314,7 +314,7 @@ export const Pefil = ({
             type="button"
             onClick={() => setShowBanners(true)}
             title="Cambiar banner"
-            className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
+            className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-0 flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
           >
             <IoImageOutline className="h-5 w-5" />
           </button>

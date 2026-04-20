@@ -32,10 +32,10 @@ export const Modal = ({
     <>
       <div
         onClick={close}
-        className="fade-in fixed inset-0 z-10 bg-black/40 backdrop-blur-sm"
+        className="fade-in fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm"
       />
 
-      <div className={`fixed z-20 ${className}`}>
+      <div className={`fixed z-[100] ${className}`}>
         {!hideCloseButton && (
           <button
             type="button"
