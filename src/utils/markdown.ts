@@ -1,7 +1,9 @@
+import { isEncodedDecklist } from "./decklist";
+
 const isDecklistHref = (href: string) =>
   href.length > 0 &&
   !href.startsWith("http") &&
-  (href.includes("%2C") || (href.includes(";") && href.includes(":")));
+  isEncodedDecklist(href);
 const isDeckIdHref = (href: string) =>
   href.length > 0 && /^[0-9a-fA-F]{24}$/.test(href.trim());
 

@@ -15,6 +15,7 @@ import type {
   Deck,
 } from "@/interfaces";
 import { useUIStore } from "@/store";
+import { splitMainAndLimboDeck } from "@/utils/deck-sections";
 
 interface Propertie {
   id: string;
@@ -304,11 +305,11 @@ export const DeckCreator = ({
     }
 
     if (mainDeck) {
-      const main = mainDeck.filter(
-        (c) => !c.card.types.some((type) => type.name === "Limbo"),
-      );
-      const limbo = mainDeck.filter((c) =>
-        c.card.types.some((type) => type.name === "Limbo"),
+      const { mainDeck: main, limboDeck: limbo } = splitMainAndLimboDeck(
+        mainDeck,
+        {
+          expectedMainCount: deckData?.cardsNumber,
+        },
       );
 
       const mainCount = main.reduce((acc, deck) => acc + deck.count, 0);
@@ -329,6 +330,7 @@ export const DeckCreator = ({
     // Oculta el overlay cuando el mazo seleccionado ya fue importado.
     hideLoading();
   }, [
+    deckData?.cardsNumber,
     mainDeck,
     sideDeck,
     hideLoading,
@@ -420,6 +422,17 @@ export const DeckCreator = ({
   );
 
   const addCard = (cardSeleted: Card) => {
+    const isLimboByType = cardSeleted.types.some((type) => type.name === "Limbo");
+    const existsInMain = deckListMain.some(
+      (cardDeck) => cardDeck.card.name === cardSeleted.name,
+    );
+    const existsInLimbo = deckListLimbo.some(
+      (cardDeck) => cardDeck.card.name === cardSeleted.name,
+    );
+    // Cuando una carta llega sin tipos (fallback), respetamos la sección donde ya existe.
+    const shouldUseLimboDeck =
+      isLimboByType || (!isLimboByType && !existsInMain && existsInLimbo);
+
     if (disableDeckRules) {
       // En mazos estructurados no hay limites ni restricciones por tipo.
       if (singleDeck) {
@@ -430,8 +443,7 @@ export const DeckCreator = ({
         return;
       }
 
-      const isLimbo = cardSeleted.types.some((type) => type.name === "Limbo");
-      if (!isLimbo) {
+      if (!shouldUseLimboDeck) {
         const result = addCardDecklistUnlimited(deckListMain, cardSeleted);
         if (result) {
           setDeckListMain(result);
@@ -449,12 +461,13 @@ export const DeckCreator = ({
     const totalCount = counts.main + counts.limbo + counts.side;
     // Las legendarias solo permiten 1 copia y no pueden estar en otro mazo.
     if (cardSeleted.limit === "1") {
-      const isLimbo = cardSeleted.types.some((type) => type.name === "Limbo");
-      const hasOtherDeck = isLimbo
+      const hasOtherDeck = shouldUseLimboDeck
         ? counts.main > 0 || counts.side > 0
         : counts.limbo > 0 || counts.side > 0;
       if (hasOtherDeck) return;
-      const hasSameInDeck = isLimbo ? counts.limbo > 0 : counts.main > 0;
+      const hasSameInDeck = shouldUseLimboDeck
+        ? counts.limbo > 0
+        : counts.main > 0;
       if (hasSameInDeck) return;
     }
     if (totalCount >= 2) return;
@@ -466,9 +479,7 @@ export const DeckCreator = ({
       return;
     }
 
-    if (
-      cardSeleted.types.filter((type) => type.name === "Limbo").length === 0
-    ) {
+    if (!shouldUseLimboDeck) {
       if (deckListMain.reduce((acc, deck) => acc + deck.count, 0) > 39) return;
       const result = addCardDecklist(deckListMain, cardSeleted);
       if (result) {
@@ -485,6 +496,16 @@ export const DeckCreator = ({
   };
 
   const dropCard = (cardSeleted: Card) => {
+    const isLimboByType = cardSeleted.types.some((type) => type.name === "Limbo");
+    const existsInMain = deckListMain.some(
+      (cardDeck) => cardDeck.card.name === cardSeleted.name,
+    );
+    const existsInLimbo = deckListLimbo.some(
+      (cardDeck) => cardDeck.card.name === cardSeleted.name,
+    );
+    const shouldUseLimboDeck =
+      isLimboByType || (!isLimboByType && !existsInMain && existsInLimbo);
+
     if (disableDeckRules) {
       // En mazos estructurados se descuenta una carta a la vez sin limites.
       if (singleDeck) {
@@ -495,8 +516,7 @@ export const DeckCreator = ({
         return;
       }
 
-      const isLimbo = cardSeleted.types.some((type) => type.name === "Limbo");
-      if (!isLimbo) {
+      if (!shouldUseLimboDeck) {
         const result = dropCardDecklistUnlimited(deckListMain, cardSeleted);
         if (result) {
           setDeckListMain(result);
@@ -518,9 +538,7 @@ export const DeckCreator = ({
       return;
     }
 
-    if (
-      cardSeleted.types.filter((type) => type.name === "Limbo").length === 0
-    ) {
+    if (!shouldUseLimboDeck) {
       const result = dropCardDecklist(deckListMain, cardSeleted);
       if (result) {
         setDeckListMain(result);

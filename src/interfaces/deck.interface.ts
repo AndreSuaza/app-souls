@@ -28,6 +28,7 @@ export interface Deck {
   description?: string | null;
   imagen: string;
   cards: string;
+  cardsNumber?: number;
   likesCount: number;
   createdAt: Date | string;
   visible?: boolean;

@@ -3,84 +3,92 @@
 import { Card } from "@/interfaces";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import fs from "node:fs";
+import path from "node:path";
+import {
+  ENCODED_SECTION_SEPARATOR,
+  hasRawDecklistSeparators,
+  normalizeEncodedDecklist,
+  parseEncodedDeckSegment,
+} from "@/utils/decklist";
 
 export interface Decklist {
   count: number;
   card: Card;
 }
 
-const parseDeckEntries = (ids: string) => {
-  const entries: Array<{ key: string; count: number }> = [];
+let cardImageCodeToIddCache: Map<string, string> | null = null;
 
-  if (ids.includes(":")) {
-    const pairs = ids
-      .split(";")
-      .map((item) => item.trim())
-      .filter(Boolean);
+const getCardImageCodeToIddMap = () => {
+  if (cardImageCodeToIddCache) return cardImageCodeToIddCache;
 
-    pairs.forEach((pair) => {
-      const [key, countRaw] = pair.split(":").map((item) => item.trim());
-      const count = Number.parseInt(countRaw ?? "", 10);
+  const map = new Map<string, string>();
+  try {
+    const cardsDir = path.join(process.cwd(), "public", "cards");
+    const files = fs.readdirSync(cardsDir);
 
-      if (!key || Number.isNaN(count)) {
-        return;
-      }
+    files.forEach((fileName) => {
+      const match = /^(.*)-(\d+)\.webp$/i.exec(fileName);
+      if (!match) return;
 
-      entries.push({ key, count });
+      const code = match[1]?.trim().toUpperCase();
+      const idd = match[2]?.trim();
+      if (!code || !idd || map.has(code)) return;
+      map.set(code, idd);
     });
-
-    return entries;
+  } catch {
+    // Si no se puede leer el directorio de imagenes, se mantiene el flujo normal.
   }
 
-  const parts = ids
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  for (let index = 0; index < parts.length; index += 2) {
-    const key = parts[index];
-    const countRaw = parts[index + 1];
-    const count = Number.parseInt(countRaw ?? "", 10);
-
-    if (!key || Number.isNaN(count)) {
-      continue;
-    }
-
-    entries.push({ key, count });
-  }
-
-  return entries;
+  cardImageCodeToIddCache = map;
+  return map;
 };
+
+const buildFallbackCard = (entryKey: string): Card | null => {
+  const normalizedKey = entryKey.trim().toUpperCase();
+  if (!normalizedKey) return null;
+
+  const idd = getCardImageCodeToIddMap().get(normalizedKey);
+  if (!idd) return null;
+
+  return {
+    id: `fallback-${normalizedKey}`,
+    idd,
+    code: normalizedKey,
+    types: [],
+    limit: "",
+    rarities: [],
+    cost: 0,
+    force: "",
+    defense: "",
+    archetypes: [],
+    keywords: [],
+    name: normalizedKey,
+    effect: "",
+    product: {
+      code: "",
+      name: "No disponible",
+      show: false,
+      url: "",
+    },
+    price: null,
+  };
+};
+
+const parseDeckEntries = (ids: string) => parseEncodedDeckSegment(ids);
 
 const getCardsByIds = async (ids: string) => {
   if (!ids) return [];
   let deck: Decklist[] = [];
   const entries = parseDeckEntries(ids);
   const keys = entries.map((entry) => entry.key);
-  const iddKeys = keys.filter((key) => /^\d+$/.test(key));
-  const codeKeys = keys.filter((key) => !/^\d+$/.test(key));
+  const uniqueKeys = Array.from(new Set(keys));
 
-  if (iddKeys.length === 0 && codeKeys.length === 0) {
+  if (uniqueKeys.length === 0) {
     return [];
   }
 
   try {
-    const orFilters: Prisma.CardWhereInput[] = [];
-    if (iddKeys.length > 0) {
-      orFilters.push({
-        idd: {
-          in: iddKeys,
-        },
-      });
-    }
-    if (codeKeys.length > 0) {
-      orFilters.push({
-        code: {
-          in: codeKeys,
-        },
-      });
-    }
-
     const cards: Prisma.CardGetPayload<{
       include: {
         product: {
@@ -146,7 +154,18 @@ const getCardsByIds = async (ids: string) => {
         },
       },
       where: {
-        OR: orFilters,
+        OR: [
+          {
+            idd: {
+              in: uniqueKeys,
+            },
+          },
+          {
+            code: {
+              in: uniqueKeys,
+            },
+          },
+        ],
       },
     });
 
@@ -161,28 +180,31 @@ const getCardsByIds = async (ids: string) => {
 
     entries.forEach((entry) => {
       const card = cardByCode.get(entry.key) ?? cardByIdd.get(entry.key);
-      if (!card) return;
+      const fallbackCard = !card ? buildFallbackCard(entry.key) : null;
+      if (!card && !fallbackCard) return;
 
       deck = [
         ...deck,
         {
-          card: {
-            id: card.id,
-            idd: card.idd,
-            code: card.code,
-            types: card.types,
-            limit: card.limit,
-            rarities: card.rarities,
-            cost: card.cost,
-            force: card.force,
-            defense: card.defense,
-            archetypes: card.archetypes,
-            keywords: card.keywords,
-            name: card.name,
-            effect: card.effect,
-            product: card.product,
-            price: card.price ?? null,
-          },
+          card: card
+            ? {
+                id: card.id,
+                idd: card.idd,
+                code: card.code,
+                types: card.types,
+                limit: card.limit,
+                rarities: card.rarities,
+                cost: card.cost,
+                force: card.force,
+                defense: card.defense,
+                archetypes: card.archetypes,
+                keywords: card.keywords,
+                name: card.name,
+                effect: card.effect,
+                product: card.product,
+                price: card.price ?? null,
+              }
+            : (fallbackCard as Card),
           count: entry.count,
         },
       ];
@@ -197,21 +219,16 @@ const getCardsByIds = async (ids: string) => {
 export const getDecksByIds = async (ids?: string) => {
   if (!ids) return { mainDeck: [], sideDeck: [] };
 
-  // Normalizamos decklists URL-encoded (admin y público) sin perder separadores.
-  let normalizedIds = ids;
-  if (normalizedIds.includes("%")) {
-    try {
-      normalizedIds = decodeURIComponent(normalizedIds);
-    } catch {
-      normalizedIds = normalizedIds
-        .replace(/%7C/gi, "|")
-        .replace(/%3B/gi, ";")
-        .replace(/%3A/gi, ":");
-    }
+  const normalizedIds = normalizeEncodedDecklist(ids);
+  if (!normalizedIds || hasRawDecklistSeparators(normalizedIds)) {
+    // Aceptamos exclusivamente separadores ASCII codificados (%3A/%3B/%7C).
+    return { mainDeck: [], sideDeck: [] };
   }
 
-  // Dividimos en [main, side]
-  const [mainIds = "", sideIds = ""] = normalizedIds.split("|");
+  // Dividimos en [main, side] con el separador codificado.
+  const [mainIds = "", sideIds = ""] = normalizedIds.split(
+    ENCODED_SECTION_SEPARATOR,
+  );
 
   // Ejecutamos en paralelo
   const [mainDeck, sideDeck] = await Promise.all([

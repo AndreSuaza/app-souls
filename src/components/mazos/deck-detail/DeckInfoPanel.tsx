@@ -21,6 +21,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import clsx from "clsx";
 import { toggleDeckLikeAction } from "@/actions";
 import type { Deck } from "@/interfaces";
+import { encodeDecklistForQueryParam } from "@/utils/decklist";
 
 interface Props {
   deck: Deck;
@@ -56,7 +57,9 @@ export const DeckInfoPanel = ({
   const description = deck.description?.trim() || "Sin descripción disponible.";
   const deckShareUrl = useMemo(() => {
     if (!deck.cards) return "https://soulsinxtinction.com/laboratorio";
-    return `https://soulsinxtinction.com/laboratorio?decklist=${deck.cards}`;
+    // El deck ya está serializado con `%3A/%3B/%7C`; aquí se vuelve a codificar para URL.
+    const encodedDecklist = encodeDecklistForQueryParam(deck.cards);
+    return `https://soulsinxtinction.com/laboratorio?decklist=${encodedDecklist}`;
   }, [deck.cards]);
   const whatsappShareLink = `https://wa.me/?text=${encodeURIComponent(
     deckShareUrl,

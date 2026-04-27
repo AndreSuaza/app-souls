@@ -11,6 +11,7 @@ import type { Components } from "react-markdown";
 import { MarkdownDeckPreview } from "./MarkdownDeckPreview";
 import { MarkdownCardPreview } from "./MarkdownCardPreview";
 import { MarkdownProductPreview } from "./MarkdownProductPreview";
+import { isEncodedDecklist } from "@/utils/decklist";
 
 type Props = {
   content: string;
@@ -323,7 +324,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       typeof href === "string" &&
       href.length > 0 &&
       !href.startsWith("http") &&
-      (href.includes("%2C") || (href.includes(";") && href.includes(":")));
+      isEncodedDecklist(href);
     const isDeckIdHref = (href?: string) =>
       typeof href === "string" && /^[0-9a-fA-F]{24}$/.test(href.trim());
     const isBlankTextNode = (child?: HastNode) =>
@@ -493,7 +494,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
       typeof href === "string" &&
       href.length > 0 &&
       !href.startsWith("http") &&
-      (href.includes("%2C") || (href.includes(";") && href.includes(":")));
+      isEncodedDecklist(href);
     const isDeckId =
       typeof href === "string" && /^[0-9a-fA-F]{24}$/.test(href.trim());
 

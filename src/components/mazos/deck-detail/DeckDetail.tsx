@@ -3,24 +3,26 @@
 import { ShowDeck } from "@/components/cartas/deck-creator/ShowDeck";
 import { Decklist } from "@/interfaces";
 import { useEffect, useState, useCallback } from "react";
+import { splitMainAndLimboDeck } from "@/utils/deck-sections";
 
 interface Props {
   mainDeck?: Decklist[];
   sideDeck?: Decklist[];
+  expectedMainCount?: number;
 }
 
-export const DeckDetail = ({ mainDeck, sideDeck }: Props) => {
+export const DeckDetail = ({ mainDeck, sideDeck, expectedMainCount }: Props) => {
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
   const [deckListSide, setDeckListSide] = useState<Decklist[]>([]);
 
   const importDeck = useCallback(() => {
     if (mainDeck) {
-      const main = mainDeck.filter(
-        (c) => !c.card.types.some((type) => type.name === "Limbo")
-      );
-      const limbo = mainDeck.filter((c) =>
-        c.card.types.some((type) => type.name === "Limbo")
+      const { mainDeck: main, limboDeck: limbo } = splitMainAndLimboDeck(
+        mainDeck,
+        {
+          expectedMainCount,
+        },
       );
 
       const mainCount = main.reduce((acc, deck) => acc + deck.count, 0);
@@ -36,7 +38,7 @@ export const DeckDetail = ({ mainDeck, sideDeck }: Props) => {
 
       if (sideCount <= 40) setDeckListSide(side);
     }
-  }, [mainDeck, sideDeck]);
+  }, [expectedMainCount, mainDeck, sideDeck]);
 
   useEffect(() => {
     importDeck();

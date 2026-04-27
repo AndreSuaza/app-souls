@@ -6,6 +6,7 @@ import { OptionsDeckCreator } from "@/components/cartas/deck-creator/OptionsDeck
 import { ShowDeck } from "@/components/cartas/deck-creator/ShowDeck";
 import type { Deck, Decklist, Card, ArchetypeOption } from "@/interfaces";
 import { DeckInfoPanel } from "./DeckInfoPanel";
+import { splitMainAndLimboDeck } from "@/utils/deck-sections";
 
 interface Props {
   deck: Deck;
@@ -66,11 +67,14 @@ export const DeckDetailView = ({
   tournamentName,
   isLiked,
 }: Props) => {
-  const [deckListMain, setDeckListMain] = useState<Decklist[]>(() =>
-    mainDeck.filter((c) => !c.card.types.some((type) => type.name === "Limbo")),
+  const initialDeckSections = splitMainAndLimboDeck(mainDeck, {
+    expectedMainCount: deck.cardsNumber,
+  });
+  const [deckListMain, setDeckListMain] = useState<Decklist[]>(
+    () => initialDeckSections.mainDeck,
   );
-  const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>(() =>
-    mainDeck.filter((c) => c.card.types.some((type) => type.name === "Limbo")),
+  const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>(
+    () => initialDeckSections.limboDeck,
   );
   const [deckListSide, setDeckListSide] = useState<Decklist[]>(() => [
     ...sideDeck,
@@ -80,9 +84,17 @@ export const DeckDetailView = ({
   const searchParams = useSearchParams();
 
   const addCard = (cardSeleted: Card) => {
-    if (
-      cardSeleted.types.filter((type) => type.name === "Limbo").length === 0
-    ) {
+    const isLimboByType = cardSeleted.types.some((type) => type.name === "Limbo");
+    const existsInMain = deckListMain.some(
+      (cardDeck) => cardDeck.card.name === cardSeleted.name,
+    );
+    const existsInLimbo = deckListLimbo.some(
+      (cardDeck) => cardDeck.card.name === cardSeleted.name,
+    );
+    const shouldUseLimboDeck =
+      isLimboByType || (!isLimboByType && !existsInMain && existsInLimbo);
+
+    if (!shouldUseLimboDeck) {
       const cardfound = deckListMain.find(
         (cardDeck) => cardDeck.card.name === cardSeleted.name,
       );
@@ -102,9 +114,17 @@ export const DeckDetailView = ({
   };
 
   const dropCard = (cardSeleted: Card) => {
-    if (
-      cardSeleted.types.filter((type) => type.name === "Limbo").length === 0
-    ) {
+    const isLimboByType = cardSeleted.types.some((type) => type.name === "Limbo");
+    const existsInMain = deckListMain.some(
+      (cardDeck) => cardDeck.card.name === cardSeleted.name,
+    );
+    const existsInLimbo = deckListLimbo.some(
+      (cardDeck) => cardDeck.card.name === cardSeleted.name,
+    );
+    const shouldUseLimboDeck =
+      isLimboByType || (!isLimboByType && !existsInMain && existsInLimbo);
+
+    if (!shouldUseLimboDeck) {
       const cardfound = deckListMain.find(
         (cardDeck) => cardDeck.card.name === cardSeleted.name,
       );

@@ -13,6 +13,7 @@ import { DeckInfoPanel } from "@/components/mazos/deck-detail/DeckInfoPanel";
 import { DeckSection } from "@/components/cartas/deck-creator/DeckSection";
 import clsx from "clsx";
 import { MarkdownDeckStackGrid } from "./MarkdownDeckStackGrid";
+import { splitMainAndLimboDeck } from "@/utils/deck-sections";
 
 type Props = {
   decklist?: string;
@@ -168,15 +169,10 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
   }, [deckId, decklist, userKey]);
 
   const { mainDeck, limboDeck } = useMemo(() => {
-    const main = mainDeckRaw.filter(
-      (deckItem) => !deckItem.card.types.some((type) => type.name === "Limbo"),
-    );
-    const limbo = mainDeckRaw.filter((deckItem) =>
-      deckItem.card.types.some((type) => type.name === "Limbo"),
-    );
-
-    return { mainDeck: main, limboDeck: limbo };
-  }, [mainDeckRaw]);
+    return splitMainAndLimboDeck(mainDeckRaw, {
+      expectedMainCount: deck?.cardsNumber,
+    });
+  }, [deck?.cardsNumber, mainDeckRaw]);
 
   useEffect(() => {
     const element = gridWrapperRef.current;

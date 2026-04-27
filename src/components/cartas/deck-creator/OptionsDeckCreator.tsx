@@ -28,6 +28,10 @@ import {
   getUserDecksFilteredAction,
   saveDeck,
 } from "@/actions";
+import {
+  encodeDecklistForQueryParam,
+  serializeEncodedDecklist,
+} from "@/utils/decklist";
 
 interface Decklist {
   count: number;
@@ -209,27 +213,24 @@ export const OptionsDeckCreator = ({
   // };
 
   const deckListText = () => {
-    // Funcion auxiliar para convertir una lista en string
-    const formatDeckList = (deckList: typeof deckListMain) =>
-      // Usamos el code para diferenciar variantes de una misma carta.
-      deckList
-        .map(
-          (deck) =>
-            `${encodeURIComponent(deck.card.code)}:${deck.count};`,
-        )
-        .join("");
+    // Usamos separadores ASCII codificados para evitar errores de parseo en iOS.
+    const mainEntries = [...deckListMain, ...deckListLimbo].map((deck) => ({
+      code: deck.card.code,
+      count: deck.count,
+    }));
+    const sideEntries = deckListSide.map((deck) => ({
+      code: deck.card.code,
+      count: deck.count,
+    }));
 
-    // Construir cada seccion
-    const exportText =
-      formatDeckList(deckListMain) + formatDeckList(deckListLimbo);
-    const exportSide = formatDeckList(deckListSide);
-
-    return `${exportText}|${exportSide}`;
+    return serializeEncodedDecklist(mainEntries, sideEntries);
   };
 
   const deckShareUrl = () => {
     const deckCode = deckListText();
-    return `https://soulsinxtinction.com/laboratorio?decklist=${deckCode}`;
+    // El query param se codifica otra vez para que searchParams entregue `%3A/%3B/%7C`.
+    const encodedDeckCode = encodeDecklistForQueryParam(deckCode);
+    return `https://soulsinxtinction.com/laboratorio?decklist=${encodedDeckCode}`;
   };
 
   const deckImage = () => {

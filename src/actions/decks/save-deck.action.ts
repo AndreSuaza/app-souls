@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AuthError } from "next-auth";
 import { SaveDeckSchema, type SaveDeckInput } from "@/schemas";
+import { isEncodedDecklist, normalizeEncodedDecklist } from "@/utils/decklist";
 
 const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
 
@@ -13,6 +14,7 @@ export async function saveDeck(input: SaveDeckInput) {
   try {
     const data = SaveDeckSchema.parse(input);
     const isAdminDeck = data.isAdminDeck === true;
+    const normalizedDeckList = normalizeEncodedDecklist(data.deckList);
 
     if (!session) {
       return {
@@ -42,6 +44,14 @@ export async function saveDeck(input: SaveDeckInput) {
       return {
         success: false,
         message: "No tienes permisos para crear este tipo de mazo.",
+      };
+    }
+
+    if (!isEncodedDecklist(normalizedDeckList)) {
+      return {
+        success: false,
+        message:
+          "El formato del codigo del mazo no es valido. Reabre el laboratorio y vuelve a intentarlo.",
       };
     }
 
@@ -148,7 +158,7 @@ export async function saveDeck(input: SaveDeckInput) {
             description: data.description,
             archetypeId: data.archetypesId,
             imagen: data.imgDeck,
-            cards: data.deckList,
+            cards: normalizedDeckList,
             visible: resolvedVisible,
             cardsNumber: data.cardsNumber,
             isAdminDeck: nextIsAdminDeck,
@@ -180,7 +190,7 @@ export async function saveDeck(input: SaveDeckInput) {
         description: data.description,
         archetypeId: data.archetypesId,
         imagen: data.imgDeck,
-        cards: data.deckList,
+        cards: normalizedDeckList,
         visible: isAdminDeck ? false : data.visible,
         cardsNumber: data.cardsNumber,
         isAdminDeck,
