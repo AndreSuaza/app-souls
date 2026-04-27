@@ -38,27 +38,28 @@ const normalizeDecklistForMigration = (value: string) => {
     .replace(/%3A/gi, ":");
 };
 
-const parseColonSegment = (segment: string) => {
+const parseColonSegment = (segment: string): DeckPair[] => {
   if (!segment) return [];
 
   return segment
     .split(";")
-    .map((entry) => entry.trim())
+    .map((entry: string) => entry.trim())
     .filter(Boolean)
-    .flatMap<DeckPair>((entry) => {
+    .reduce<DeckPair[]>((acc, entry: string) => {
       const separatorIndex = entry.indexOf(":");
-      if (separatorIndex <= 0) return [];
+      if (separatorIndex <= 0) return acc;
 
       const rawToken = entry.slice(0, separatorIndex).trim();
       const countRaw = entry.slice(separatorIndex + 1).trim();
-      if (!rawToken || !/^\d+$/.test(countRaw)) return [];
+      if (!rawToken || !/^\d+$/.test(countRaw)) return acc;
 
       const token = safeDecode(rawToken);
       const count = Number.parseInt(countRaw, 10);
-      if (!token || Number.isNaN(count) || count <= 0) return [];
+      if (!token || Number.isNaN(count) || count <= 0) return acc;
 
-      return [{ token, count }];
-    });
+      acc.push({ token, count });
+      return acc;
+    }, []);
 };
 
 const splitLegacyTokens = (segment: string) => {
