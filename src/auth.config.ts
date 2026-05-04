@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { sendEmailVerification } from "./lib/mail";
+import { normalizeEmail } from "./utils/email";
 
 export const runtime = "nodejs";
 
@@ -26,10 +27,15 @@ export default {
           throw new Error("Correo o contraseña incorrectos.");
         }
 
+        const normalizedEmail = normalizeEmail(credentials.email);
+
         // verificar si existe el usuario en la base de datos
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
           where: {
-            email: credentials.email,
+            email: {
+              equals: normalizedEmail,
+              mode: "insensitive",
+            },
           },
         });
 

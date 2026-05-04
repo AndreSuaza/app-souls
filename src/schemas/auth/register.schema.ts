@@ -19,7 +19,7 @@ export const RegisterSchema = z
     lastname: z.string().min(3).max(15),
     nickname: z.string().min(3).max(15),
     image: z.string().optional(),
-    email: z.string().email(),
+    email: z.string().trim().toLowerCase().email(),
     password: passwordSchema,
     confirmPassword: z.string().min(8),
   })

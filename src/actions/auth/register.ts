@@ -46,11 +46,15 @@ export async function userRegistration(formData: FormInputs) {
         message: parsed.error.errors[0]?.message ?? "Datos invalidos.",
       };
     }
+    const normalizedData = parsed.data;
 
     // verificar si existe el usuario en la base de datos
-    const existsEmail = await prisma.user.findUnique({
+    const existsEmail = await prisma.user.findFirst({
       where: {
-        email: formData.email,
+        email: {
+          equals: normalizedData.email,
+          mode: "insensitive",
+        },
       },
     });
 
@@ -62,12 +66,12 @@ export async function userRegistration(formData: FormInputs) {
     }
 
     // Validar contraseñas
-    if (formData.password !== formData.confirmPassword) {
+    if (normalizedData.password !== normalizedData.confirmPassword) {
       return { success: false, message: "Las contraseñas no coinciden." };
     }
 
     // Normalizar nickname
-    const normalizedNickname = formData.nickname.trim().toLowerCase();
+    const normalizedNickname = normalizedData.nickname.trim().toLowerCase();
 
     // Validar nickname (formato)
     const nicknameError = validarNickname(normalizedNickname);
@@ -88,14 +92,14 @@ export async function userRegistration(formData: FormInputs) {
     }
 
     // hash de la contraseña
-    const passwordHash = await bcrypt.hash(formData.password, 10);
+    const passwordHash = await bcrypt.hash(normalizedData.password, 10);
 
     // crear el usuario
     const userdb = await prisma.user.create({
       data: {
-        name: formData.name,
-        lastname: formData.lastname,
-        email: formData.email,
+        name: normalizedData.name,
+        lastname: normalizedData.lastname,
+        email: normalizedData.email,
         nickname: normalizedNickname,
         password: passwordHash,
         image: getAvatarValue(),
