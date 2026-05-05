@@ -145,7 +145,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
   // Render simple VS para rondas no finalizadas en vista publica/perfil
   const renderVS = () => (
-    <div className="flex items-center justify-center w-full">
+    <div className="hidden w-full items-center justify-center md:flex">
       <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">
         VS
       </span>

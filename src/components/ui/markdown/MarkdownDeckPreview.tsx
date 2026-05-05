@@ -14,6 +14,7 @@ import { DeckSection } from "@/components/cartas/deck-creator/DeckSection";
 import clsx from "clsx";
 import { MarkdownDeckStackGrid } from "./MarkdownDeckStackGrid";
 import { splitMainAndLimboDeck } from "@/utils/deck-sections";
+import { sortDecklistByTypeOrder } from "@/utils/deck-type-order";
 
 type Props = {
   decklist?: string;
@@ -169,10 +170,20 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
   }, [deckId, decklist, userKey]);
 
   const { mainDeck, limboDeck } = useMemo(() => {
-    return splitMainAndLimboDeck(mainDeckRaw, {
+    const sections = splitMainAndLimboDeck(mainDeckRaw, {
       expectedMainCount: deck?.cardsNumber,
     });
+
+    return {
+      mainDeck: sortDecklistByTypeOrder(sections.mainDeck),
+      limboDeck: sortDecklistByTypeOrder(sections.limboDeck),
+    };
   }, [deck?.cardsNumber, mainDeckRaw]);
+
+  const sortedSideDeck = useMemo(
+    () => sortDecklistByTypeOrder(sideDeck),
+    [sideDeck],
+  );
 
   useEffect(() => {
     const element = gridWrapperRef.current;
@@ -233,7 +244,7 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
 
   const mainCount = mainDeck.reduce((acc, deck) => acc + deck.count, 0);
   const limboCount = limboDeck.reduce((acc, deck) => acc + deck.count, 0);
-  const sideCount = sideDeck.reduce((acc, deck) => acc + deck.count, 0);
+  const sideCount = sortedSideDeck.reduce((acc, deck) => acc + deck.count, 0);
 
   const sectionBaseContainerClass =
     "rounded-lg border border-l-4 bg-slate-100/80 text-slate-800 dark:bg-tournament-dark-surface/90 dark:text-slate-100";
@@ -386,7 +397,7 @@ export const MarkdownDeckPreview = ({ decklist, deckId }: Props) => {
         >
           {sectionsOpen.side && (
             <MarkdownDeckStackGrid
-              decklist={sideDeck}
+              decklist={sortedSideDeck}
               columns={autoColumns ?? undefined}
             />
           )}

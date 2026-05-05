@@ -1,8 +1,10 @@
 ﻿"use client";
 
 import clsx from "clsx";
+import { useMemo } from "react";
 import type { Decklist } from "@/interfaces";
 import { MarkdownDeckStackGrid } from "@/components/ui/markdown/MarkdownDeckStackGrid";
+import { sortDecklistByTypeOrder } from "@/utils/deck-type-order";
 
 type Props = {
   decklist: Decklist[];
@@ -17,7 +19,12 @@ export const ProductDeckCollection = ({
   placeholder = "Este producto aún no tiene mazo asociado.",
   enableTilt = false,
 }: Props) => {
-  if (!decklist || decklist.length === 0) {
+  const sortedDecklist = useMemo(
+    () => sortDecklistByTypeOrder(decklist ?? []),
+    [decklist],
+  );
+
+  if (sortedDecklist.length === 0) {
     return (
       <div
         className={clsx(
@@ -32,7 +39,7 @@ export const ProductDeckCollection = ({
 
   return (
     <MarkdownDeckStackGrid
-      decklist={decklist}
+      decklist={sortedDecklist}
       className={className}
       variant="product"
       enableTilt={enableTilt}

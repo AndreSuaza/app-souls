@@ -1,10 +1,11 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { CardGrid } from "../card-grid/CardGrid";
 import { Card, Decklist } from "@/interfaces";
 import { DeckSection } from "./DeckSection";
+import { sortDecklistByTypeOrder } from "@/utils/deck-type-order";
 
 interface Props {
   deckListMain: Decklist[];
@@ -114,9 +115,18 @@ export const ShowDeck = ({
     };
   }, []);
 
-  const limboDeck = deckListLimbo.slice().reverse();
-  const mainDeck = deckListMain.slice().reverse();
-  const sideDeck = deckListSide.slice().reverse();
+  const limboDeck = useMemo(
+    () => sortDecklistByTypeOrder(deckListLimbo),
+    [deckListLimbo],
+  );
+  const mainDeck = useMemo(
+    () => sortDecklistByTypeOrder(deckListMain),
+    [deckListMain],
+  );
+  const sideDeck = useMemo(
+    () => sortDecklistByTypeOrder(deckListSide),
+    [deckListSide],
+  );
   const limboCards = limboDeck.map((deck) => deck.card);
   const mainCards = mainDeck.map((deck) => deck.card);
   const sideCards = sideDeck.map((deck) => deck.card);
