@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { news } = detail;
-  const imageUrl = toBlobUrl(news.featuredImage);
+  const imageUrl = toBlobUrl(news.cardImage);
 
   return {
     title: news.title,
