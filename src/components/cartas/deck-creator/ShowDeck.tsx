@@ -6,6 +6,7 @@ import { CardGrid } from "../card-grid/CardGrid";
 import { Card, Decklist } from "@/interfaces";
 import { DeckSection } from "./DeckSection";
 import { sortDecklistByTypeOrder } from "@/utils/deck-type-order";
+import { IoSwapVerticalOutline } from "react-icons/io5";
 
 interface Props {
   deckListMain: Decklist[];
@@ -22,6 +23,11 @@ interface Props {
   highlightLegendaryCount?: boolean;
   singleDeck?: boolean;
   singleDeckTitle?: string;
+  autoSortByType?: boolean;
+  showSortButtons?: boolean;
+  onSortMainDeck?: () => void;
+  onSortLimboDeck?: () => void;
+  onSortSideDeck?: () => void;
 }
 
 const GRID_CARD_MIN_WIDTH = 150;
@@ -42,6 +48,11 @@ export const ShowDeck = ({
   highlightLegendaryCount = false,
   singleDeck = false,
   singleDeckTitle = "Mazo",
+  autoSortByType = true,
+  showSortButtons = false,
+  onSortMainDeck,
+  onSortLimboDeck,
+  onSortSideDeck,
 }: Props) => {
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState<number | null>(null);
@@ -116,16 +127,21 @@ export const ShowDeck = ({
   }, []);
 
   const limboDeck = useMemo(
-    () => sortDecklistByTypeOrder(deckListLimbo),
-    [deckListLimbo],
+    () =>
+      autoSortByType
+        ? sortDecklistByTypeOrder(deckListLimbo)
+        : [...deckListLimbo],
+    [autoSortByType, deckListLimbo],
   );
   const mainDeck = useMemo(
-    () => sortDecklistByTypeOrder(deckListMain),
-    [deckListMain],
+    () =>
+      autoSortByType ? sortDecklistByTypeOrder(deckListMain) : [...deckListMain],
+    [autoSortByType, deckListMain],
   );
   const sideDeck = useMemo(
-    () => sortDecklistByTypeOrder(deckListSide),
-    [deckListSide],
+    () =>
+      autoSortByType ? sortDecklistByTypeOrder(deckListSide) : [...deckListSide],
+    [autoSortByType, deckListSide],
   );
   const limboCards = limboDeck.map((deck) => deck.card);
   const mainCards = mainDeck.map((deck) => deck.card);
@@ -176,6 +192,29 @@ export const ShowDeck = ({
   };
   // const statsWrapperClass = "flex flex-wrap items-center gap-2 min-w-0";
   const sectionBodyClass = "px-3 pb-3 pt-3 sm:px-4 sm:pb-4";
+  const sortButtonClass =
+    "inline-flex h-5 w-5 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-300/70 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-slate-100 disabled:cursor-not-allowed disabled:opacity-40";
+
+  const renderSortAction = (
+    title: string,
+    onSort?: () => void,
+    disabled?: boolean,
+  ) => {
+    if (!showSortButtons) return undefined;
+
+    return (
+      <button
+        type="button"
+        title={title}
+        aria-label={title}
+        className={sortButtonClass}
+        onClick={onSort}
+        disabled={disabled || !onSort}
+      >
+        <IoSwapVerticalOutline className="h-4 w-4" />
+      </button>
+    );
+  };
 
   if (singleDeck) {
     return (
@@ -200,6 +239,11 @@ export const ShowDeck = ({
             "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
             sectionStyles.main.title,
             "border-purple-300/70 dark:border-tournament-dark-border",
+          )}
+          headerActions={renderSortAction(
+            "Ordenar mazo por tipo",
+            onSortMainDeck,
+            mainDeck.length === 0,
           )}
           titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
           bodyClassName={sectionBodyClass}
@@ -247,6 +291,11 @@ export const ShowDeck = ({
           sectionStyles.limbo.title,
           "border-amber-300/70 dark:border-tournament-dark-border",
         )}
+        headerActions={renderSortAction(
+          "Ordenar mazo limbo por tipo",
+          onSortLimboDeck,
+          limboDeck.length === 0,
+        )}
         titleWrapperClassName="flex flex-1 flex-wrap items-center gap-1 min-w-0 sm:gap-2"
         bodyClassName={sectionBodyClass}
       >
@@ -288,6 +337,11 @@ export const ShowDeck = ({
           sectionStyles.main.title,
           "border-purple-300/70 dark:border-tournament-dark-border",
         )}
+        headerActions={renderSortAction(
+          "Ordenar mazo principal por tipo",
+          onSortMainDeck,
+          mainDeck.length === 0,
+        )}
         titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
         bodyClassName={sectionBodyClass}
       >
@@ -328,6 +382,11 @@ export const ShowDeck = ({
           "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
           sectionStyles.side.title,
           "border-sky-300/70 dark:border-tournament-dark-border",
+        )}
+        headerActions={renderSortAction(
+          "Ordenar mazo apoyo por tipo",
+          onSortSideDeck,
+          sideDeck.length === 0,
         )}
         titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
         bodyClassName={sectionBodyClass}

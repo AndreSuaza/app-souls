@@ -16,6 +16,7 @@ import type {
 } from "@/interfaces";
 import { useUIStore } from "@/store";
 import { splitMainAndLimboDeck } from "@/utils/deck-sections";
+import { sortDecklistByTypeOrder } from "@/utils/deck-type-order";
 
 interface Propertie {
   id: string;
@@ -288,7 +289,7 @@ export const DeckCreator = ({
             combinedMap.set(key, { card: item.card, count: item.count });
           }
         });
-        setDeckListMain(Array.from(combinedMap.values()));
+        setDeckListMain(sortDecklistByTypeOrder(Array.from(combinedMap.values())));
         setDeckListLimbo([]);
         setDeckListSide([]);
         hasImportedRef.current = true;
@@ -296,9 +297,9 @@ export const DeckCreator = ({
         return;
       }
 
-      setDeckListMain(mainDeck ?? []);
+      setDeckListMain(sortDecklistByTypeOrder(mainDeck ?? []));
       setDeckListLimbo([]);
-      setDeckListSide(sideDeck ?? []);
+      setDeckListSide(sortDecklistByTypeOrder(sideDeck ?? []));
       hasImportedRef.current = true;
       hideLoading();
       return;
@@ -311,19 +312,21 @@ export const DeckCreator = ({
           expectedMainCount: deckData?.cardsNumber,
         },
       );
+      const sortedMain = sortDecklistByTypeOrder(main);
+      const sortedLimbo = sortDecklistByTypeOrder(limbo);
 
-      const mainCount = main.reduce((acc, deck) => acc + deck.count, 0);
-      const limboCount = limbo.reduce((acc, deck) => acc + deck.count, 0);
+      const mainCount = sortedMain.reduce((acc, deck) => acc + deck.count, 0);
+      const limboCount = sortedLimbo.reduce((acc, deck) => acc + deck.count, 0);
 
-      if (mainCount <= 40) setDeckListMain(main);
-      if (limboCount <= 6) setDeckListLimbo(limbo);
+      if (mainCount <= 40) setDeckListMain(sortedMain);
+      if (limboCount <= 6) setDeckListLimbo(sortedLimbo);
     }
 
     if (sideDeck) {
-      const side = [...sideDeck];
-      const sideCount = side.reduce((acc, deck) => acc + deck.count, 0);
+      const sortedSide = sortDecklistByTypeOrder([...sideDeck]);
+      const sideCount = sortedSide.reduce((acc, deck) => acc + deck.count, 0);
 
-      if (sideCount <= 40) setDeckListSide(side);
+      if (sideCount <= 40) setDeckListSide(sortedSide);
     }
 
     hasImportedRef.current = true;
@@ -604,6 +607,18 @@ export const DeckCreator = ({
     setDeckListSide([]);
   };
 
+  const sortMainDeck = useCallback(() => {
+    setDeckListMain((prev) => sortDecklistByTypeOrder(prev));
+  }, []);
+
+  const sortLimboDeck = useCallback(() => {
+    setDeckListLimbo((prev) => sortDecklistByTypeOrder(prev));
+  }, []);
+
+  const sortSideDeck = useCallback(() => {
+    setDeckListSide((prev) => sortDecklistByTypeOrder(prev));
+  }, []);
+
   const openDetail = useCallback((cardsList: Card[], index: number) => {
     setDetailCards(cardsList);
     setDetailIndex(index);
@@ -789,6 +804,11 @@ export const DeckCreator = ({
             highlightLegendaryCount
             singleDeck={singleDeck}
             singleDeckTitle={singleDeckTitle}
+            autoSortByType={false}
+            showSortButtons
+            onSortMainDeck={sortMainDeck}
+            onSortLimboDeck={sortLimboDeck}
+            onSortSideDeck={sortSideDeck}
           />
           <div className="h-6" aria-hidden />
         </div>

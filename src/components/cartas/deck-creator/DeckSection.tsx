@@ -15,6 +15,8 @@ interface Props {
   countClassName: string;
   titleWrapperClassName: string;
   bodyClassName: string;
+  headerActions?: ReactNode;
+  headerActionsClassName?: string;
   children: ReactNode;
 }
 
@@ -31,10 +33,12 @@ export function DeckSection({
   countClassName,
   titleWrapperClassName,
   bodyClassName,
+  headerActions,
+  headerActionsClassName,
   children,
 }: Props) {
   return (
-    <section className={containerClassName}>
+    <section className={clsx("relative", containerClassName)}>
       <button
         type="button"
         onClick={onToggle}
@@ -55,6 +59,17 @@ export function DeckSection({
           />
         )}
       </button>
+
+      {headerActions && (
+        <div
+          className={clsx(
+            "absolute right-8 top-2 z-10",
+            headerActionsClassName,
+          )}
+        >
+          {headerActions}
+        </div>
+      )}
 
       <div className={bodyClassName}>{children}</div>
     </section>
