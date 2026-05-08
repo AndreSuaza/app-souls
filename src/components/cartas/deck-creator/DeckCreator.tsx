@@ -76,7 +76,7 @@ const addCardLogic = (
       return updatedCards;
     }
   } else {
-    return [...deckListSelected, { card: cardSeleted, count: 1 }];
+    return [{ card: cardSeleted, count: 1 }, ...deckListSelected];
   }
 };
 
@@ -93,7 +93,7 @@ const addCardLogicUnlimited = (
     );
     return updatedCards;
   }
-  return [...deckListSelected, { card: cardSeleted, count: 1 }];
+  return [{ card: cardSeleted, count: 1 }, ...deckListSelected];
 };
 
 const dropCardLogic = (
