@@ -16,6 +16,7 @@ export const TopMenu = () => {
   const [openProfile, setOpenProfile] = useState<boolean>(false);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const dropdownRefProfile = useRef<HTMLDivElement | null>(null);
+  const closeMenuTimeoutRef = useRef<number | null>(null);
 
   const { data: session } = useSession();
   const adminShortcut = (() => {
@@ -36,6 +37,21 @@ export const TopMenu = () => {
     await signOut();
   };
 
+  const clearCloseMenuTimeout = () => {
+    if (closeMenuTimeoutRef.current !== null) {
+      window.clearTimeout(closeMenuTimeoutRef.current);
+      closeMenuTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleCloseMenu = () => {
+    clearCloseMenuTimeout();
+    closeMenuTimeoutRef.current = window.setTimeout(() => {
+      setOpen(null);
+      closeMenuTimeoutRef.current = null;
+    }, 160);
+  };
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!open) return;
@@ -43,11 +59,18 @@ export const TopMenu = () => {
       if (currentRef && currentRef.contains(event.target as Node)) {
         return;
       }
+      clearCloseMenuTimeout();
       setOpen(null);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
+
+  useEffect(() => {
+    return () => {
+      clearCloseMenuTimeout();
+    };
+  }, []);
 
   useEffect(() => {
     function handleClickOutsideProfile(event: MouseEvent) {
@@ -97,12 +120,15 @@ export const TopMenu = () => {
                   ref={(node) => {
                     dropdownRefs.current[route.name] = node;
                   }}
-                  onMouseLeave={() => setOpen(null)}
+                  onMouseEnter={() => {
+                    clearCloseMenuTimeout();
+                    setOpen(route.name);
+                  }}
+                  onMouseLeave={scheduleCloseMenu}
                 >
                   {/* Botón */}
                   <button
                     type="button"
-                    onMouseEnter={() => setOpen(route.name)}
                     className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                     title={`Abrir menú ${route.name}`}
                     aria-haspopup="menu"
@@ -114,7 +140,9 @@ export const TopMenu = () => {
                   {/* Menú */}
                   {open === route.name && (
                     <ul
-                      className="absolute mt-6 w-56 bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50"
+                      onMouseEnter={clearCloseMenuTimeout}
+                      onMouseLeave={scheduleCloseMenu}
+                      className="absolute left-0 top-full mt-1 w-56 bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50"
                     >
                       {route.menu.map((menu) =>
                         menu.path ? (
@@ -122,6 +150,7 @@ export const TopMenu = () => {
                             <Link
                               href={menu.path}
                               title={`Ir a ${menu.name}`}
+                              onClick={() => setOpen(null)}
                               className="m-2 inline-flex items-center whitespace-nowrap xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600"
                             >
                               {menu.name}
@@ -136,7 +165,10 @@ export const TopMenu = () => {
                 <Link
                   href={route.path}
                   title={`Ir a ${route.name}`}
-                  onMouseEnter={() => setOpen(null)}
+                  onMouseEnter={() => {
+                    clearCloseMenuTimeout();
+                    setOpen(null);
+                  }}
                   className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                 >
                   {route.name}
