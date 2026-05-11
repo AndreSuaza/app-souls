@@ -1,7 +1,7 @@
 import { toBlobUrl } from "@/utils/blob-path";
 
 const DEFAULT_AVATAR_PATH =
-  "souls/profile/avatars/player-5ea416fa-7d77-4f42-bb2d-c7920bd3c8d4.webp";
+  "souls/profile/avatars/player-f2fea397-2187-4000-b3da-55ef33376457.webp";
 
 const isHttpUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");

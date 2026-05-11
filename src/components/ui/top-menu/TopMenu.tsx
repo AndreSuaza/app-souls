@@ -97,6 +97,7 @@ export const TopMenu = () => {
                   ref={(node) => {
                     dropdownRefs.current[route.name] = node;
                   }}
+                  onMouseLeave={() => setOpen(null)}
                 >
                   {/* Botón */}
                   <button
@@ -113,7 +114,6 @@ export const TopMenu = () => {
                   {/* Menú */}
                   {open === route.name && (
                     <ul
-                      onMouseLeave={() => setOpen(null)}
                       className="absolute mt-6 w-56 bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50"
                     >
                       {route.menu.map((menu) =>
@@ -136,6 +136,7 @@ export const TopMenu = () => {
                 <Link
                   href={route.path}
                   title={`Ir a ${route.name}`}
+                  onMouseEnter={() => setOpen(null)}
                   className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
                 >
                   {route.name}

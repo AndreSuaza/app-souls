@@ -53,16 +53,11 @@ export const Routes: Route[] = [
     name: "Torneos",
   },
   {
+    path: "/productos",
     name: "Productos",
-    menu: [
-      {
-        path: "/productos",
-        name: "Productos",
-      },
-      {
-        path: "/tiendas",
-        name: "Tiendas",
-      },
-    ],
+  },
+  {
+    path: "/tiendas",
+    name: "Tiendas",
   },
 ];
