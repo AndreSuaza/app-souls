@@ -19,6 +19,7 @@
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
     "@next/mdx": "^15.2.0",
+    "@next/third-parties": "^16.2.6",
     "@prisma/client": "^6.5.0",
     "@tiptap/extension-heading": "^3.19.0",
     "@tiptap/extension-image": "^3.19.0",
