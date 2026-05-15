@@ -21,6 +21,7 @@ export * from "./cartas/decklist-image/DecklistImage";
 export * from "./cartas/decklist-image/DeckImage";
 export * from "./cartas/deck-creator/ShowDeck";
 export * from "./cartas/card-finder/CardFinder";
+export * from "./cartas/admin/AdminCardsExcelImport";
 
 export * from "./eventos/event-grid/TournamentGrid";
 export * from "./eventos/event-grid/TournamentItem";

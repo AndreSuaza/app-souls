@@ -129,7 +129,7 @@ export const TopMenu = () => {
                   {/* Botón */}
                   <button
                     type="button"
-                    className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                    className="m-2 inline-flex items-center border-b-2 border-transparent xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-yellow-600"
                     title={`Abrir menú ${route.name}`}
                     aria-haspopup="menu"
                     aria-expanded={open === route.name}
@@ -169,7 +169,7 @@ export const TopMenu = () => {
                     clearCloseMenuTimeout();
                     setOpen(null);
                   }}
-                  className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
+                  className="m-2 inline-flex items-center border-b-2 border-transparent xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-yellow-600"
                 >
                   {route.name}
                 </Link>

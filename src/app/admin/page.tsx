@@ -54,6 +54,12 @@ export default function Page() {
               >
                 Mazos
               </Link>
+              <Link
+                href="/admin/cartas/importar-excel"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
+              >
+                Cartas (Excel)
+              </Link>
             </div>
           </div>
         </div>

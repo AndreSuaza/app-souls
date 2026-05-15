@@ -9,13 +9,14 @@ import {
   IoArrowBackOutline,
   IoCloseOutline,
   IoHomeOutline,
-  IoLayers,
+  IoLayersOutline,
   IoNewspaperOutline,
   IoBagRemoveOutline,
   IoImagesOutline,
   IoLogOutOutline,
 } from "react-icons/io5";
-import { IoMdTrophy } from "react-icons/io";
+import { TbCards } from "react-icons/tb";
+import { IoTrophyOutline } from "react-icons/io5";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 
@@ -29,6 +30,7 @@ export const AdminSidebar = () => {
   const isTournamentSection = pathname.startsWith("/admin/torneos");
   const isNewsSection = pathname.startsWith("/admin/noticias");
   const isDeckSection = pathname.startsWith("/admin/mazos");
+  const isCardsSection = pathname.startsWith("/admin/cartas");
   const isProductSection = pathname.startsWith("/admin/productos");
   const isMediaSection = pathname.startsWith("/admin/medios");
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
@@ -47,7 +49,7 @@ export const AdminSidebar = () => {
         {
           label: "Torneos",
           href: "/admin/torneos",
-          icon: IoMdTrophy,
+          icon: IoTrophyOutline,
         },
         {
           label: "Noticias",
@@ -67,7 +69,12 @@ export const AdminSidebar = () => {
         {
           label: "Mazos",
           href: "/admin/mazos",
-          icon: IoLayers,
+          icon: IoLayersOutline,
+        },
+        {
+          label: "Cartas",
+          href: "/admin/cartas/importar-excel",
+          icon: TbCards,
         },
       );
     }
@@ -84,7 +91,7 @@ export const AdminSidebar = () => {
         {
           label: "Torneos",
           href: "/admin/torneos",
-          icon: IoMdTrophy,
+          icon: IoTrophyOutline,
         },
       );
     }
@@ -157,7 +164,7 @@ export const AdminSidebar = () => {
         {
           label: "Mazos",
           href: "/admin/mazos",
-          icon: IoLayers,
+          icon: IoLayersOutline,
         },
       );
 
@@ -166,6 +173,23 @@ export const AdminSidebar = () => {
         href: "/admin",
         icon: IoArrowBackOutline,
       });
+    }
+  }
+
+  if (isCardsSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Importar excel",
+          href: "/admin/cartas/importar-excel",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
     }
   }
 
