@@ -3,8 +3,8 @@ import { prisma } from "../lib/prisma";
 // Cantidad de numeros consecutivos requeridos (entre 1000 y 9999).
 // comando para ejecutar este script:
 // npx ts-node src/seed/seed-idd-range.ts
-const REQUIRED_COUNT = 50;
-const MIN_IDD = 1000;
+const REQUIRED_COUNT = 100;
+const MIN_IDD = 1;
 const MAX_IDD = 9999;
 
 const extractNumericIdd = (value: string | null): number | null => {
