@@ -21,7 +21,7 @@ const resolveUserId = async () => {
   return user.id;
 };
 
-const getProfileMedia = async (type: "AVATAR" | "BANNER") => {
+const getProfileMedia = async (type: "AVATAR" | "BANNER" | "FRAME") => {
   const userId = await resolveUserId();
 
   return prisma.avatar.findMany({
@@ -58,5 +58,13 @@ export const getProfileBanners = async () => {
     return await getProfileMedia("BANNER");
   } catch (error) {
     throw new Error(`No se pudo cargar los banners ${error}`);
+  }
+};
+
+export const getProfileFrames = async () => {
+  try {
+    return await getProfileMedia("FRAME");
+  } catch (error) {
+    throw new Error(`No se pudo cargar los marcos ${error}`);
   }
 };

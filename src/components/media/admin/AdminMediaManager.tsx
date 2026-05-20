@@ -63,7 +63,9 @@ export const AdminMediaManager = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const isProfileSection =
-    activeSection === "profile-avatars" || activeSection === "profile-banners";
+    activeSection === "profile-avatars" ||
+    activeSection === "profile-banners" ||
+    activeSection === "profile-frames";
   const currentGroup = useMemo(
     () => MEDIA_GROUPS.find((group) => group.id === activeGroup),
     [activeGroup],
@@ -358,8 +360,19 @@ export const AdminMediaManager = () => {
           )}
           {isProfileSection ? (
             <ProfileMediaManager
-              section={activeSection as "profile-avatars" | "profile-banners"}
-              type={activeSection === "profile-avatars" ? "AVATAR" : "BANNER"}
+              section={
+                activeSection as
+                  | "profile-avatars"
+                  | "profile-banners"
+                  | "profile-frames"
+              }
+              type={
+                activeSection === "profile-avatars"
+                  ? "AVATAR"
+                  : activeSection === "profile-banners"
+                    ? "BANNER"
+                    : "FRAME"
+              }
             />
           ) : (
             <>

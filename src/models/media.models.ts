@@ -3,6 +3,7 @@ export type MediaSectionKey =
   | "news-cards"
   | "profile-avatars"
   | "profile-banners"
+  | "profile-frames"
   | "products"
   | "cards";
 
@@ -44,6 +45,13 @@ export const MEDIA_SECTION_CONFIG: Record<MediaSectionKey, MediaSectionConfig> =
       allowUpload: true,
       allowDelete: true,
     },
+    "profile-frames": {
+      label: "Marcos de perfil",
+      folder: "souls/profile/frames",
+      maxSizeMb: 2,
+      allowUpload: true,
+      allowDelete: true,
+    },
     products: {
       label: "Productos",
       folder: "souls/products",
@@ -73,7 +81,7 @@ export const MEDIA_GROUPS: Array<{
   {
     id: "profile",
     label: "Perfil",
-    sections: ["profile-avatars", "profile-banners"],
+    sections: ["profile-avatars", "profile-banners", "profile-frames"],
   },
   {
     id: "products",

@@ -12,6 +12,7 @@ import { ProfileTournamentHistorySection } from "./ProfileTournamentHistorySecti
 import { ProfilePublicDecksSection } from "./ProfilePublicDecksSection";
 import { getAvatarUrl } from "@/utils/avatar-image";
 import { getProfileBannerUrl } from "@/utils/profile-banner";
+import { getProfileFrameUrl, getProfileFrameValue } from "@/utils/profile-frame";
 import type { Deck, DeckPagination } from "@/interfaces";
 
 type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
@@ -31,6 +32,7 @@ type PublicUser = {
   lastname?: string | null;
   image?: string | null;
   bannerImage?: string | null;
+  frameImage?: string | null;
   matchesPlayed?: number | null;
   eloPoints?: number | null;
   tournamentsPlayed?: number | null;
@@ -86,23 +88,35 @@ export const ProfilePublicView = ({
           <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-3 pb-6 pt-24 sm:min-h-[360px] sm:pt-28 lg:min-h-[400px] lg:pt-32">
             <div className="flex flex-row items-end gap-4">
               <div className="relative">
-                <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)] sm:h-36 sm:w-36 cursor-crosshair">
-                  <Image
-                    src={getAvatarUrl(user.image)}
-                    alt={
-                      user.nickname
-                        ? `Avatar de ${user.nickname}`
-                        : "Avatar de usuario"
-                    }
-                    title={
-                      user.nickname
-                        ? `Avatar de ${user.nickname}`
-                        : "Avatar de usuario"
-                    }
-                    width={200}
-                    height={200}
-                    className="h-full w-full object-cover cursor-crosshair"
-                  />
+                <div className="relative h-32 w-32 cursor-crosshair sm:h-36 sm:w-36">
+                  <div className="h-full w-full overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)]">
+                    <Image
+                      src={getAvatarUrl(user.image)}
+                      alt={
+                        user.nickname
+                          ? `Avatar de ${user.nickname}`
+                          : "Avatar de usuario"
+                      }
+                      title={
+                        user.nickname
+                          ? `Avatar de ${user.nickname}`
+                          : "Avatar de usuario"
+                      }
+                      width={200}
+                      height={200}
+                      className="h-full w-full object-cover cursor-crosshair"
+                    />
+                  </div>
+                  {getProfileFrameValue(user.frameImage) && (
+                    <Image
+                      src={getProfileFrameUrl(user.frameImage)}
+                      alt="Marco de avatar"
+                      title="Marco de avatar"
+                      fill
+                      unoptimized
+                      className="pointer-events-none absolute -inset-3 h-[calc(100%+1.5rem)] w-[calc(100%+1.5rem)] max-w-none object-contain"
+                    />
+                  )}
                 </div>
               </div>
               <div className="space-y-2 text-left">

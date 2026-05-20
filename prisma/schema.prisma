@@ -264,28 +264,30 @@ enum UserStatus {
 }
 
 model User {
-  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
   name              String?
   lastname          String?
-  email             String?      @unique
-  nickname          String       @unique
+  email             String?          @unique
+  nickname          String           @unique
   country           String?
   city              String?
-  tournamentsPlayed Int          @default(0)
-  victoryPoints     Int          @default(0)
-  eloPoints         Int          @default(0)
-  matchesPlayed     Int          @default(0)
+  tournamentsPlayed Int              @default(0)
+  victoryPoints     Int              @default(0)
+  eloPoints         Int              @default(0)
+  matchesPlayed     Int              @default(0)
   password          String?
   emailVerified     DateTime?
-  image             String       @default("player")
+  image             String           @default("player")
   bannerImage       String?
-  role              Role         @default(player)
-  status            UserStatus   @default(active)
+  frameImage        String?
+  role              Role             @default(player)
+  status            UserStatus       @default(active)
   accounts          Account[]
   sessions          Session[]
   likes             Like[]
   decks             Deck[]
   userAvatar        UserAvatar[]
+  avatarPurchases   AvatarPurchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -422,14 +424,15 @@ model Deck {
 enum AvatarRarity {
   COMMON
   RARE
-  EPIC
-  LEGENDARY
-  EVENT
+  ULTRA
+  SECRET
+  ASCENDED
 }
 
 enum AvatarType {
   AVATAR
   BANNER
+  FRAME
 }
 
 enum AvatarAvailability {
@@ -450,14 +453,21 @@ enum UserAvatarSource {
 }
 
 model Avatar {
-  id           String              @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  imageUrl     String
-  rarity       AvatarRarity        @default(COMMON)
-  availability AvatarAvailability? @default(PUBLIC)
-  price        Int?                @default(0)
-  type         AvatarType          @default(AVATAR)
-  userAvatars  UserAvatar[]
+  id            String              @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  imageUrl      String
+  rarity        AvatarRarity        @default(COMMON)
+  availability  AvatarAvailability? @default(PUBLIC)
+  price         Int?                @default(0)
+  type          AvatarType          @default(AVATAR)
+  storeVisible  Boolean?            @default(true)
+  isSeasonal    Boolean?            @default(false)
+  seasonNumber  Int?
+  seasonEndsAt  DateTime?
+  featured      Boolean?            @default(false)
+  featuredOrder Int?                @default(0)
+  userAvatars   UserAvatar[]
+  purchases     AvatarPurchase[]
 
   createdAt DateTime @default(now())
 }
@@ -475,6 +485,24 @@ model UserAvatar {
   avatar   Avatar @relation(fields: [avatarId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+model AvatarPurchase {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  pricePaid    Int
+  seasonNumber Int?
+  metadata     String?
+  createdAt    DateTime @default(now())
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  avatarId String @db.ObjectId
+  avatar   Avatar @relation(fields: [avatarId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([avatarId, createdAt])
+  @@index([seasonNumber])
 }
 
 model EloSeasonHistory {

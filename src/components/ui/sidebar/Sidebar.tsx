@@ -28,6 +28,7 @@ import {
   IoTrophyOutline,
   IoRefreshOutline,
   IoStorefrontOutline,
+  IoColorWandOutline,
 } from "react-icons/io5";
 import { resetEloSeasonAction } from "@/actions";
 
@@ -71,6 +72,7 @@ export const Sidebar = () => {
     Mazos: IoLayers,
     Torneos: IoTrophyOutline,
     Productos: IoBagRemoveOutline,
+    Tienda: IoColorWandOutline,
     Tiendas: IoStorefrontOutline,
   };
 

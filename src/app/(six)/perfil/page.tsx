@@ -1,6 +1,7 @@
 import {
   getAvatars,
   getProfileBanners,
+  getProfileFrames,
   getActiveTournament,
   getUserTournaments,
   getProfileDeckCountsAction,
@@ -47,6 +48,7 @@ export default async function PerfilPage() {
   const user = await getUserById();
   const avatars = await getAvatars();
   const banners = await getProfileBanners();
+  const frames = await getProfileFrames();
   const activeTournament = await getActiveTournament();
   const tournaments = await getUserTournaments();
   const deckCounts = await getProfileDeckCountsAction();
@@ -59,6 +61,7 @@ export default async function PerfilPage() {
           user={user}
           avatars={avatars}
           banners={banners}
+          frames={frames}
           activeTournament={activeTournament}
           tournaments={tournaments}
           deckCounts={deckCounts}

@@ -9,6 +9,7 @@ import {
   IoLayersOutline,
   IoListOutline,
   IoLockClosedOutline,
+  IoPersonCircleOutline,
   IoTrophyOutline,
 } from "react-icons/io5";
 import { FiAward, FiTarget, FiTrendingUp } from "react-icons/fi";
@@ -32,7 +33,8 @@ import {
   getProfileBannerUrl,
   getProfileBannerValue,
 } from "@/utils/profile-banner";
-import { updateUserBanner } from "@/actions";
+import { getProfileFrameUrl, getProfileFrameValue } from "@/utils/profile-frame";
+import { updateUserBanner, updateUserFrame } from "@/actions";
 
 interface User {
   name?: string | null;
@@ -41,6 +43,7 @@ interface User {
   nickname?: string | null;
   image?: string | null;
   bannerImage?: string | null;
+  frameImage?: string | null;
   role?: string | null;
   victoryPoints?: number | null;
   eloPoints?: number | null;
@@ -88,6 +91,7 @@ interface Props {
   user: User;
   avatars: Avatar[];
   banners: Avatar[];
+  frames: Avatar[];
   activeTournament: ActiveTournamentData | null;
   tournaments: TournamentHistoryItem[];
   deckCounts: DeckCounts;
@@ -97,12 +101,15 @@ export const Pefil = ({
   user,
   avatars,
   banners,
+  frames,
   activeTournament,
   tournaments,
   deckCounts,
 }: Props) => {
-  const [showAvatars, setShowAvatars] = useState(false);
-  const [showBanners, setShowBanners] = useState(false);
+  const [showProfileCosmetics, setShowProfileCosmetics] = useState(false);
+  const [activeCosmeticTab, setActiveCosmeticTab] = useState<
+    "AVATAR" | "BANNER" | "FRAME"
+  >("BANNER");
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [baseAvatar, setBaseAvatar] = useState(getAvatarValue(user.image));
   const [selectedAvatar, setSelectedAvatar] = useState(baseAvatar);
@@ -110,6 +117,8 @@ export const Pefil = ({
     getProfileBannerValue(user.bannerImage ?? DEFAULT_PROFILE_BANNER),
   );
   const [selectedBanner, setSelectedBanner] = useState(baseBanner);
+  const [baseFrame, setBaseFrame] = useState(getProfileFrameValue(user.frameImage));
+  const [selectedFrame, setSelectedFrame] = useState(baseFrame);
 
   useEffect(() => {
     const nextAvatar = getAvatarValue(user.image);
@@ -124,6 +133,12 @@ export const Pefil = ({
     setBaseBanner(nextBanner);
     setSelectedBanner(nextBanner);
   }, [user.bannerImage]);
+
+  useEffect(() => {
+    const nextFrame = getProfileFrameValue(user.frameImage);
+    setBaseFrame(nextFrame);
+    setSelectedFrame(nextFrame);
+  }, [user.frameImage]);
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
@@ -139,7 +154,7 @@ export const Pefil = ({
     const nextAvatar = getAvatarValue(avatar.imageUrl);
     if (nextAvatar === baseAvatar) {
       showToast("Ese avatar ya esta seleccionado", "info");
-      setShowAvatars(false);
+      setShowProfileCosmetics(false);
       return;
     }
     openAlertConfirmation({
@@ -153,7 +168,7 @@ export const Pefil = ({
           await update({ user: { image: nextAvatar } });
           setSelectedAvatar(nextAvatar);
           setBaseAvatar(nextAvatar);
-          setShowAvatars(false);
+          setShowProfileCosmetics(false);
           showToast("Avatar actualizado correctamente", "success");
           return true;
         } catch (error) {
@@ -175,7 +190,7 @@ export const Pefil = ({
     const nextBanner = getProfileBannerValue(banner.imageUrl);
     if (nextBanner === baseBanner) {
       showToast("Ese banner ya esta seleccionado", "info");
-      setShowBanners(false);
+      setShowProfileCosmetics(false);
       return;
     }
     openAlertConfirmation({
@@ -187,7 +202,7 @@ export const Pefil = ({
           await updateUserBanner(nextBanner);
           setSelectedBanner(nextBanner);
           setBaseBanner(nextBanner);
-          setShowBanners(false);
+          setShowProfileCosmetics(false);
           showToast("Banner actualizado correctamente", "success");
           return true;
         } catch (error) {
@@ -205,10 +220,52 @@ export const Pefil = ({
     });
   };
 
+  const handleSelectFrame = (frame: Avatar | null) => {
+    const nextFrame = frame ? getProfileFrameValue(frame.imageUrl) : "";
+    if (nextFrame === baseFrame) {
+      showToast("Ese marco ya esta seleccionado", "info");
+      setShowProfileCosmetics(false);
+      return;
+    }
+    openAlertConfirmation({
+      text: "¿Deseas cambiar tu marco?",
+      description: frame
+        ? `Se aplicará el marco ${frame.name}.`
+        : "Se quitará el marco del avatar.",
+      action: async () => {
+        showLoading("Actualizando marco...");
+        try {
+          await updateUserFrame(nextFrame || null);
+          setSelectedFrame(nextFrame);
+          setBaseFrame(nextFrame);
+          setShowProfileCosmetics(false);
+          showToast("Marco actualizado correctamente", "success");
+          return true;
+        } catch (error) {
+          showToast(
+            error instanceof Error
+              ? error.message
+              : "No se pudo actualizar el marco",
+            "error",
+          );
+          return false;
+        } finally {
+          hideLoading();
+        }
+      },
+    });
+  };
+
+  const openProfileCosmetics = (tab: "AVATAR" | "BANNER" | "FRAME") => {
+    setActiveCosmeticTab(tab);
+    setShowProfileCosmetics(true);
+  };
+
   const isPlayer = user.role === "player";
   const avatarItems = useMemo(() => avatars, [avatars]);
 
   const bannerItems = useMemo(() => banners, [banners]);
+  const frameItems = useMemo(() => frames, [frames]);
 
   const matchesPlayed = user.matchesPlayed ?? 0;
   const eloPoints = user.eloPoints ?? 0;
@@ -306,14 +363,14 @@ export const Pefil = ({
           </div>
           <button
             type="button"
-            onClick={() => setShowBanners(true)}
+            onClick={() => openProfileCosmetics("BANNER")}
             aria-label="Cambiar banner"
             className="absolute inset-0 z-[1] cursor-pointer"
           />
           <button
             type="button"
-            onClick={() => setShowBanners(true)}
-            title="Cambiar banner"
+            onClick={() => openProfileCosmetics("BANNER")}
+            title="Personalizar avatar, banner y marco"
             // Se fuerza un z-index superior al contenido del header para asegurar el click del gatillo del modal.
             className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
           >
@@ -323,32 +380,36 @@ export const Pefil = ({
           <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-3 pb-6 pt-24 sm:min-h-[360px] sm:pt-28 lg:min-h-[400px] lg:pt-32">
             <div className="flex flex-row items-end gap-4">
               <div className="relative">
-                <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)] sm:h-36 sm:w-36">
-                  <Image
-                    src={getAvatarUrl(selectedAvatar || user.image)}
-                    alt={
-                      user.nickname
-                        ? `Avatar de ${user.nickname}`
-                        : "Avatar de usuario"
-                    }
-                    title={
-                      user.nickname
-                        ? `Avatar de ${user.nickname}`
-                        : "Avatar de usuario"
-                    }
-                    width={200}
-                    height={200}
-                    className="h-full w-full object-cover"
-                  />
+                <div className="relative h-32 w-32 sm:h-36 sm:w-36">
+                  <div className="h-full w-full overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)]">
+                    <Image
+                      src={getAvatarUrl(selectedAvatar || user.image)}
+                      alt={
+                        user.nickname
+                          ? `Avatar de ${user.nickname}`
+                          : "Avatar de usuario"
+                      }
+                      title={
+                        user.nickname
+                          ? `Avatar de ${user.nickname}`
+                          : "Avatar de usuario"
+                      }
+                      width={200}
+                      height={200}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  {selectedFrame && (
+                    <Image
+                      src={getProfileFrameUrl(selectedFrame)}
+                      alt="Marco de avatar"
+                      title="Marco de avatar"
+                      fill
+                      unoptimized
+                      className="pointer-events-none absolute -inset-3 h-[calc(100%+1.5rem)] w-[calc(100%+1.5rem)] max-w-none object-contain"
+                    />
+                  )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAvatars(true)}
-                  title="Cambiar avatar"
-                  className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
-                >
-                  <IoImageOutline className="h-5 w-5" />
-                </button>
               </div>
               <div className="space-y-2 text-left">
                 <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
@@ -515,69 +576,20 @@ export const Pefil = ({
         </div>
       </div>
 
-      {showAvatars && (
+      {showProfileCosmetics && (
         <Modal
           className="inset-0 flex items-center justify-center p-4"
-          close={() => setShowAvatars(false)}
-          hideCloseButton
-        >
-          <div className="flex w-full max-w-5xl max-h-[90vh] flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
-            <div className="relative flex items-center justify-center bg-slate-900 px-4 py-4 text-slate-100 dark:bg-tournament-dark-hero">
-              <h1 className="text-center font-bold uppercase md:text-2xl">
-                Elige tu avatar favorito!
-              </h1>
-              <button
-                type="button"
-                onClick={() => setShowAvatars(false)}
-                className="absolute right-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-200 transition hover:bg-white/10 dark:border-tournament-dark-border"
-                aria-label="Cerrar"
-                title="Cerrar"
-              >
-                <IoCloseOutline className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-2 justify-items-center gap-4 px-4 py-6 md:grid-cols-6 md:px-10">
-              {avatarItems.map((avatar) => (
-                <div
-                  key={avatar.id}
-                  onClick={() => handleSelect(avatar)}
-                  className={`w-fit cursor-pointer rounded border-4 transition-all ${
-                    selectedAvatar === getAvatarValue(avatar.imageUrl)
-                      ? "border-purple-600 shadow-lg shadow-purple-600/40 scale-105"
-                      : "border-transparent hover:border-purple-500"
-                  }`}
-                >
-                  <Image
-                    src={getAvatarUrl(avatar.imageUrl)}
-                    alt={avatar.name}
-                    title={`Seleccionar avatar ${avatar.name}`}
-                    width={200}
-                    height={200}
-                    className="block object-cover"
-                  />
-                </div>
-              ))}
-              </div>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {showBanners && (
-        <Modal
-          className="inset-0 flex items-center justify-center p-4"
-          close={() => setShowBanners(false)}
+          close={() => setShowProfileCosmetics(false)}
           hideCloseButton
         >
           <div className="flex w-full max-w-6xl max-h-[90vh] flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
             <div className="relative flex items-center justify-center bg-slate-900 px-4 py-4 text-slate-100 dark:bg-tournament-dark-hero">
               <h1 className="text-center font-bold uppercase md:text-2xl">
-                Elige tu banner favorito!
+                Personaliza tu perfil
               </h1>
               <button
                 type="button"
-                onClick={() => setShowBanners(false)}
+                onClick={() => setShowProfileCosmetics(false)}
                 className="absolute right-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-200 transition hover:bg-white/10 dark:border-tournament-dark-border"
                 aria-label="Cerrar"
                 title="Cerrar"
@@ -585,28 +597,140 @@ export const Pefil = ({
                 <IoCloseOutline className="h-4 w-4" />
               </button>
             </div>
+
+            <div className="flex flex-wrap gap-2 border-b border-slate-200 bg-white px-4 py-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+              <button
+                type="button"
+                onClick={() => setActiveCosmeticTab("AVATAR")}
+                className={`rounded-lg border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                  activeCosmeticTab === "AVATAR"
+                    ? "border-purple-500 bg-purple-100 text-purple-700 dark:bg-purple-600/20 dark:text-purple-200"
+                    : "border-tournament-dark-accent bg-white text-slate-600 hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200"
+                }`}
+                title="Editar avatar"
+              >
+                Avatares
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveCosmeticTab("BANNER")}
+                className={`rounded-lg border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                  activeCosmeticTab === "BANNER"
+                    ? "border-purple-500 bg-purple-100 text-purple-700 dark:bg-purple-600/20 dark:text-purple-200"
+                    : "border-tournament-dark-accent bg-white text-slate-600 hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200"
+                }`}
+                title="Editar banner"
+              >
+                Banners
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveCosmeticTab("FRAME")}
+                className={`rounded-lg border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                  activeCosmeticTab === "FRAME"
+                    ? "border-purple-500 bg-purple-100 text-purple-700 dark:bg-purple-600/20 dark:text-purple-200"
+                    : "border-tournament-dark-accent bg-white text-slate-600 hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200"
+                }`}
+                title="Editar marco"
+              >
+                Marcos
+              </button>
+            </div>
+
             <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-1 justify-items-center gap-4 px-4 py-6 md:grid-cols-3 md:px-6">
-              {bannerItems.map((banner) => (
-                <div
-                  key={banner.id}
-                  onClick={() => handleSelectBanner(banner)}
-                  className={`w-full max-w-[440px] cursor-pointer rounded-xl border-2 transition-all overflow-hidden ${
-                    selectedBanner === getProfileBannerValue(banner.imageUrl)
-                      ? "border-purple-600 shadow-lg shadow-purple-600/40 scale-[1.01]"
-                      : "border-transparent hover:border-purple-500"
-                  }`}
-                >
-                  <Image
-                    src={getProfileBannerUrl(banner.imageUrl)}
-                    alt="Banner de perfil"
-                    title="Seleccionar banner de perfil"
-                    width={1200}
-                    height={500}
-                    className="h-40 w-full object-cover"
-                  />
-                </div>
-              ))}
+              <div className="px-4 py-6 md:px-8">
+                {activeCosmeticTab === "AVATAR" && (
+                  <div className="grid grid-cols-2 justify-items-center gap-4 md:grid-cols-6">
+                    {avatarItems.map((avatar) => (
+                      <div
+                        key={avatar.id}
+                        onClick={() => handleSelect(avatar)}
+                        className={`w-fit cursor-pointer rounded border-4 transition-all ${
+                          selectedAvatar === getAvatarValue(avatar.imageUrl)
+                            ? "scale-105 border-purple-600 shadow-lg shadow-purple-600/40"
+                            : "border-transparent hover:border-purple-500"
+                        }`}
+                      >
+                        <Image
+                          src={getAvatarUrl(avatar.imageUrl)}
+                          alt={avatar.name}
+                          title={`Seleccionar avatar ${avatar.name}`}
+                          width={200}
+                          height={200}
+                          className="block object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeCosmeticTab === "BANNER" && (
+                  <div className="grid grid-cols-1 justify-items-center gap-4 md:grid-cols-3">
+                    {bannerItems.map((banner) => (
+                      <div
+                        key={banner.id}
+                        onClick={() => handleSelectBanner(banner)}
+                        className={`w-full max-w-[440px] cursor-pointer overflow-hidden rounded-xl border-2 transition-all ${
+                          selectedBanner === getProfileBannerValue(banner.imageUrl)
+                            ? "scale-[1.01] border-purple-600 shadow-lg shadow-purple-600/40"
+                            : "border-transparent hover:border-purple-500"
+                        }`}
+                      >
+                        <Image
+                          src={getProfileBannerUrl(banner.imageUrl)}
+                          alt="Banner de perfil"
+                          title="Seleccionar banner de perfil"
+                          width={1200}
+                          height={500}
+                          className="h-40 w-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeCosmeticTab === "FRAME" && (
+                  <div className="grid grid-cols-2 justify-items-center gap-4 md:grid-cols-6">
+                    <button
+                      type="button"
+                      onClick={() => handleSelectFrame(null)}
+                      className={`relative flex h-[200px] w-[200px] cursor-pointer items-center justify-center rounded-lg border-4 bg-slate-200/70 transition-all dark:bg-tournament-dark-muted ${
+                        !selectedFrame
+                          ? "scale-105 border-purple-600 shadow-lg shadow-purple-600/40"
+                          : "border-transparent hover:border-purple-500"
+                      }`}
+                      title="Quitar marco"
+                    >
+                      <IoPersonCircleOutline className="h-20 w-20 text-slate-500 dark:text-slate-300" />
+                      <span className="absolute bottom-2 rounded-full bg-black/60 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                        Sin marco
+                      </span>
+                    </button>
+
+                    {frameItems.map((frame) => (
+                      <button
+                        key={frame.id}
+                        type="button"
+                        onClick={() => handleSelectFrame(frame)}
+                        className={`relative h-[200px] w-[200px] cursor-pointer rounded-lg border-4 bg-slate-200/70 transition-all dark:bg-tournament-dark-muted ${
+                          selectedFrame === getProfileFrameValue(frame.imageUrl)
+                            ? "scale-105 border-purple-600 shadow-lg shadow-purple-600/40"
+                            : "border-transparent hover:border-purple-500"
+                        }`}
+                        title={`Seleccionar marco ${frame.name}`}
+                      >
+                        <Image
+                          src={getProfileFrameUrl(frame.imageUrl)}
+                          alt={frame.name}
+                          width={200}
+                          height={200}
+                          unoptimized
+                          className="h-full w-full object-contain"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

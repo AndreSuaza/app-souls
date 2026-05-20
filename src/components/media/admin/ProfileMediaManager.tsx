@@ -19,7 +19,12 @@ import {
   updateProfileMediaAction,
 } from "@/actions";
 import { Modal } from "@/components/ui/modal/modal";
-import { AVATAR_AVAILABILITIES, AVATAR_RARITIES } from "@/models/avatar.models";
+import {
+  AVATAR_AVAILABILITIES,
+  AVATAR_RARITIES,
+  normalizeAvatarRarity,
+  resolveAvatarRarityLabel,
+} from "@/models/avatar.models";
 import {
   MEDIA_SECTION_CONFIG,
   type MediaSectionKey,
@@ -28,7 +33,7 @@ import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 
-type ProfileMediaType = "AVATAR" | "BANNER";
+type ProfileMediaType = "AVATAR" | "BANNER" | "FRAME";
 
 const PAGE_SIZE = 16;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
@@ -41,6 +46,12 @@ type ProfileMediaItem = {
   availability: string | null;
   price: number | null;
   type: ProfileMediaType;
+  storeVisible: boolean;
+  isSeasonal: boolean;
+  seasonNumber: number | null;
+  seasonEndsAt: Date | string | null;
+  featured: boolean;
+  featuredOrder: number;
 };
 
 type FormState = {
@@ -48,10 +59,16 @@ type FormState = {
   rarity: string;
   availability: string;
   price: number;
+  storeVisible: boolean;
+  isSeasonal: boolean;
+  seasonNumber: string;
+  seasonEndsAt: string;
+  featured: boolean;
+  featuredOrder: number;
 };
 
 type Props = {
-  section: "profile-avatars" | "profile-banners";
+  section: "profile-avatars" | "profile-banners" | "profile-frames";
   type: ProfileMediaType;
 };
 
@@ -65,10 +82,15 @@ const DEFAULT_FORM_STATE: FormState = {
   rarity: AVATAR_RARITIES[0]?.value ?? "COMMON",
   availability: AVATAR_AVAILABILITIES[0]?.value ?? "PUBLIC",
   price: 0,
+  storeVisible: true,
+  isSeasonal: false,
+  seasonNumber: "",
+  seasonEndsAt: "",
+  featured: false,
+  featuredOrder: 0,
 };
 
-const resolveRarityLabel = (rarity: string) =>
-  AVATAR_RARITIES.find((item) => item.value === rarity)?.label ?? rarity;
+const resolveRarityLabel = (rarity: string) => resolveAvatarRarityLabel(rarity);
 
 const resolveAvailabilityLabel = (availability: string | null) =>
   AVATAR_AVAILABILITIES.find((item) => item.value === availability)?.label ??
@@ -174,19 +196,32 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
 
   const openCreateModal = () => {
     setEditingItem(null);
-    setFormState(DEFAULT_FORM_STATE);
+    setFormState({
+      ...DEFAULT_FORM_STATE,
+      availability: type === "FRAME" ? "STORE" : DEFAULT_FORM_STATE.availability,
+    });
     setFormFile(null);
     setIsFormOpen(true);
   };
 
   const openEditModal = (item: ProfileMediaItem) => {
+    const seasonEndsAt = item.seasonEndsAt
+      ? new Date(item.seasonEndsAt).toISOString().slice(0, 10)
+      : "";
+
     setEditingItem(item);
     setFormState({
       name: item.name,
-      rarity: item.rarity,
+      rarity: normalizeAvatarRarity(item.rarity),
       availability: item.availability ?? "PUBLIC",
       price:
         (item.availability ?? "PUBLIC") === "STORE" ? (item.price ?? 0) : 0,
+      storeVisible: item.storeVisible ?? true,
+      isSeasonal: item.isSeasonal ?? false,
+      seasonNumber: item.seasonNumber ? String(item.seasonNumber) : "",
+      seasonEndsAt,
+      featured: item.featured ?? false,
+      featuredOrder: item.featuredOrder ?? 0,
     });
     setFormFile(null);
     setIsFormOpen(true);
@@ -198,6 +233,25 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
       return;
     }
 
+    if (formState.isSeasonal) {
+      const seasonNumber = Number(formState.seasonNumber || 0);
+      if (!Number.isInteger(seasonNumber) || seasonNumber < 1) {
+        showToast("La temporada debe ser mayor o igual a 1.", "error");
+        return;
+      }
+    }
+
+    if (
+      (formState.storeVisible || formState.featured || formState.isSeasonal) &&
+      formState.availability !== "STORE"
+    ) {
+      showToast(
+        "Para aparecer en la tienda, la disponibilidad debe ser 'Tienda'.",
+        "error",
+      );
+      return;
+    }
+
     try {
       showLoading(
         editingItem ? "Actualizando imagen..." : "Subiendo imagen...",
@@ -205,6 +259,12 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
 
       const nextPrice =
         formState.availability === "STORE" ? formState.price : 0;
+      const nextSeasonNumber = formState.isSeasonal
+        ? Number(formState.seasonNumber || 0)
+        : null;
+      const nextSeasonEndsAt = formState.isSeasonal
+        ? formState.seasonEndsAt || null
+        : null;
 
       if (editingItem) {
         const updated = await updateProfileMediaAction({
@@ -213,6 +273,12 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
           rarity: formState.rarity,
           availability: formState.availability,
           price: nextPrice,
+          storeVisible: formState.storeVisible,
+          isSeasonal: formState.isSeasonal,
+          seasonNumber: nextSeasonNumber,
+          seasonEndsAt: nextSeasonEndsAt,
+          featured: formState.featured,
+          featuredOrder: formState.featuredOrder,
         });
         setItems((prev) =>
           prev.map((item) =>
@@ -228,6 +294,12 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
         payload.append("availability", formState.availability);
         payload.append("price", String(nextPrice ?? 0));
         payload.append("type", type);
+        payload.append("storeVisible", String(formState.storeVisible));
+        payload.append("isSeasonal", String(formState.isSeasonal));
+        payload.append("seasonNumber", String(nextSeasonNumber ?? ""));
+        payload.append("seasonEndsAt", String(nextSeasonEndsAt ?? ""));
+        payload.append("featured", String(formState.featured));
+        payload.append("featuredOrder", String(formState.featuredOrder ?? 0));
 
         const created = await createProfileMediaAction(payload);
         setItems((prev) => [created as ProfileMediaItem, ...prev]);
@@ -461,6 +533,25 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                         {item.price} VP
                       </span>
                     )}
+                    <span
+                      className={`rounded-full px-2 py-1 ${
+                        item.storeVisible
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200"
+                          : "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
+                      }`}
+                    >
+                      {item.storeVisible ? "Visible" : "Oculta"}
+                    </span>
+                    {item.featured && (
+                      <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200">
+                        Destacado #{item.featuredOrder ?? 0}
+                      </span>
+                    )}
+                    {item.isSeasonal && (
+                      <span className="rounded-full bg-red-100 px-2 py-1 text-red-700 dark:bg-red-500/20 dark:text-red-200">
+                        Temp. {item.seasonNumber ?? "-"}
+                      </span>
+                    )}
                   </div>
                   <span className="truncate text-xs text-slate-400 dark:text-slate-500">
                     {getFileLabel(item.imageUrl)}
@@ -496,11 +587,11 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
 
       {isFormOpen && (
         <Modal
-          className="inset-0 flex items-center justify-center p-4"
+          className="inset-0 flex items-start justify-center overflow-y-auto p-4 sm:items-center"
           close={() => setIsFormOpen(false)}
           hideCloseButton
         >
-          <div className="w-full max-w-2xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+          <div className="my-4 w-full max-w-2xl overflow-y-auto rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl max-h-[calc(100dvh-2rem)] dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -620,14 +711,18 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                       Precio (VP)
                     </span>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       min={0}
                       step={1}
-                      value={formState.price}
+                      value={formState.price === 0 ? "" : String(formState.price)}
                       onChange={(event) =>
                         setFormState((prev) => ({
                           ...prev,
-                          price: Number(event.target.value || 0),
+                          price: Number(
+                            event.target.value.replace(/[^0-9]/g, "") || 0,
+                          ),
                         }))
                       }
                       className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
@@ -636,6 +731,107 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                   </div>
                 )}
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="flex items-center justify-between rounded-lg border border-tournament-dark-accent bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200">
+                  Visible en tienda
+                  <input
+                    type="checkbox"
+                    checked={formState.storeVisible}
+                    onChange={(event) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        storeVisible: event.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 accent-purple-600"
+                  />
+                </label>
+                <label className="flex items-center justify-between rounded-lg border border-tournament-dark-accent bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200">
+                  Destacado
+                  <input
+                    type="checkbox"
+                    checked={formState.featured}
+                    onChange={(event) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        featured: event.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 accent-purple-600"
+                  />
+                </label>
+              </div>
+
+              {formState.featured && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Orden destacado
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    min={0}
+                    step={1}
+                    value={
+                      formState.featuredOrder === 0
+                        ? ""
+                        : String(formState.featuredOrder)
+                    }
+                    onChange={(event) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        featuredOrder: Number(
+                          event.target.value.replace(/[^0-9]/g, "") || 0,
+                        ),
+                      }))
+                    }
+                    className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+                  />
+                </div>
+              )}
+
+              <label className="flex items-center justify-between rounded-lg border border-tournament-dark-accent bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200">
+                Item de temporada
+                <input
+                  type="checkbox"
+                  checked={formState.isSeasonal}
+                  onChange={(event) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      isSeasonal: event.target.checked,
+                      seasonNumber: event.target.checked ? prev.seasonNumber : "",
+                      seasonEndsAt: event.target.checked ? prev.seasonEndsAt : "",
+                    }))
+                  }
+                  className="h-4 w-4 accent-purple-600"
+                />
+              </label>
+
+              {formState.isSeasonal && (
+                <div className="grid gap-4 sm:grid-cols-1">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Temporada
+                    </span>
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={formState.seasonNumber}
+                      onChange={(event) =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          seasonNumber: event.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+                      placeholder="Ej: 2"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <button

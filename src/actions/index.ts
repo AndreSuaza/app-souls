@@ -78,6 +78,7 @@ export * from "./decks/toggle-deck-like.action";
 export * from "./profile/avatars";
 export * from "./profile/edit-user-session";
 export * from "./profile/update-user-banner.action";
+export * from "./profile/update-user-frame.action";
 export * from "./profile/admin-profile-media.action";
 export * from "./profile/get-active-tournament.action";
 export * from "./profile/get-profile-tournament.action";
@@ -85,6 +86,8 @@ export * from "./profile/get-user-tournaments.action";
 export * from "./profile/get-public-profile.action";
 export * from "./profile/get-public-user-tournaments.action";
 export * from "./profile/get-public-deck-counts.action";
+export * from "./profile/get-cosmetic-store-data.action";
+export * from "./profile/purchase-cosmetic.action";
 export * from "./admin/reset-elo-season.action";
 export * from "./profile/get-profile-deck-counts.action";
 
