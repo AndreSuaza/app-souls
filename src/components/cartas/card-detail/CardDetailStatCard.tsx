@@ -1,8 +1,10 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 interface Props {
   label: string;
-  value: string;
+  value: ReactNode;
 }
 
 export function CardDetailStatCard({ label, value }: Props) {

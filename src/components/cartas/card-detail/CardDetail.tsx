@@ -13,6 +13,7 @@ import {
   IoChevronForward,
   IoCloseOutline,
   IoArrowForwardOutline,
+  IoEllipse,
 } from "react-icons/io5";
 import { CardDetailStatCard } from "./CardDetailStatCard";
 import { CardDetailProductCard } from "./CardDetailProductCard";
@@ -161,7 +162,18 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
     const items = [
       { label: "Código", value: card.code },
       { label: "Tipo", value: typeText },
-      { label: "Coste", value: card.cost },
+      {
+        label: "Coste",
+        value:
+          card.cost === -1 ? (
+            <IoEllipse
+              className="h-4 w-4 text-slate-900 dark:text-slate-100"
+              title="Coste especial"
+            />
+          ) : (
+            card.cost
+          ),
+      },
       { label: "Fuerza", value: card.force },
       { label: "Defensa", value: card.defense },
       { label: "Arquetipo", value: archetypeText },
@@ -174,12 +186,17 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
         if (item.value === null || item.value === undefined) {
           return { label: item.label, value: "" };
         }
+        if (typeof item.value === "object") {
+          return item;
+        }
         if (typeof item.value === "number") {
           return { label: item.label, value: `${item.value}` };
         }
         return { label: item.label, value: item.value.toString().trim() };
       })
-      .filter((item) => item.value.length > 0);
+      .filter(
+        (item) => typeof item.value !== "string" || item.value.length > 0,
+      );
   }, [typeText, archetypeText, rarityText, card]);
   const bovedaHref = card?.slug ? `/boveda/${card.slug}` : "";
 

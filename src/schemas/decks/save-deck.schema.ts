@@ -4,7 +4,7 @@ export const SaveDeckSchema = z.object({
   name: z
     .string()
     .min(1, "El nombre del mazo es requerido")
-    .max(20, "El nombre no puede superar 20 caracteres"),
+    .max(30, "El nombre no puede superar 30 caracteres"),
   description: z
     .string()
     .max(500, "La descripción no puede superar 500 caracteres")

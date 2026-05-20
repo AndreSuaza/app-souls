@@ -388,8 +388,8 @@ export const OptionsDeckCreator = ({
         });
         hideLoading();
 
-        if (resp && resp.message) {
-          showToast(resp.message, "warning");
+        if (!resp.success) {
+          showToast(resp.message ?? "No se pudo guardar el mazo.", "warning");
           return false;
         }
 

@@ -141,9 +141,10 @@ export const SaveDeckForm = ({
           isAdminDeck,
         });
 
-        if (resp && resp?.message) {
-          setError(resp.message);
-          showToast(resp.message, "warning");
+        if (!resp.success) {
+          const errorMessage = resp.message ?? "No se pudo guardar el mazo.";
+          setError(errorMessage);
+          showToast(errorMessage, "warning");
           onClose?.();
           hideLoading();
           return false;
@@ -194,15 +195,15 @@ export const SaveDeckForm = ({
           )}
           type="text"
           placeholder="Ej. Mazo control"
-          maxLength={20}
+          maxLength={30}
           {...register("name", {
             required: {
               value: true,
               message: "El campo 'Nombre' es requerido",
             },
             maxLength: {
-              value: 20,
-              message: "El nombre no puede superar 20 caracteres",
+              value: 30,
+              message: "El nombre no puede superar 30 caracteres",
             },
           })}
         />

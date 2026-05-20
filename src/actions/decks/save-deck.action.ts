@@ -5,13 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { AuthError } from "next-auth";
 import { SaveDeckSchema, type SaveDeckInput } from "@/schemas";
 import { isEncodedDecklist, normalizeEncodedDecklist } from "@/utils/decklist";
+import { ZodError } from "zod";
 
 const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
 
 export async function saveDeck(input: SaveDeckInput) {
-  const session = await auth();
-
   try {
+    const session = await auth();
     const data = SaveDeckSchema.parse(input);
     const isAdminDeck = data.isAdminDeck === true;
     const normalizedDeckList = normalizeEncodedDecklist(data.deckList);
@@ -173,8 +173,15 @@ export async function saveDeck(input: SaveDeckInput) {
       const decksNumber = await prisma.deck.count({
         where: {
           userId: session.user.idd,
-          // Solo se consideran los mazos que no esten asociados a un torneo.
-          OR: [{ tournamentId: null }, { tournamentId: { isSet: false } }],
+          // Solo cuentan mazos propios normales: sin torneo y no generados como mazos admin.
+          AND: [
+            {
+              OR: [{ tournamentId: null }, { tournamentId: { isSet: false } }],
+            },
+            {
+              OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }],
+            },
+          ],
         },
       });
 
@@ -199,8 +206,28 @@ export async function saveDeck(input: SaveDeckInput) {
     return { success: true, deckId: createdDeck.id };
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: error.cause?.err?.message };
+      return {
+        success: false,
+        message:
+          error.cause?.err?.message ??
+          "No se pudo validar la sesion activa. Vuelve a iniciar sesion.",
+      };
     }
-    return { error: "error 500" };
+
+    if (error instanceof ZodError) {
+      return {
+        success: false,
+        message:
+          error.issues[0]?.message ??
+          "Los datos del mazo no cumplen con la validacion requerida.",
+      };
+    }
+
+    console.error("[saveDeck]", error);
+
+    return {
+      success: false,
+      message: "No se pudo guardar el mazo. Intentalo nuevamente.",
+    };
   }
 }
