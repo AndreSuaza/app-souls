@@ -119,6 +119,9 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
   const [editingItem, setEditingItem] = useState<ProfileMediaItem | null>(null);
   const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
   const [formFile, setFormFile] = useState<File | null>(null);
+  const [formFilePreviewUrl, setFormFilePreviewUrl] = useState<string | null>(
+    null,
+  );
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
 
@@ -167,6 +170,20 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch, selectedRarity, selectedAvailability]);
+
+  useEffect(() => {
+    if (!formFile) {
+      setFormFilePreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(formFile);
+    setFormFilePreviewUrl(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [formFile]);
 
   const filteredItems = useMemo(() => {
     const term = debouncedSearch.trim().toLowerCase();
@@ -225,6 +242,11 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
     });
     setFormFile(null);
     setIsFormOpen(true);
+  };
+
+  const closeFormModal = () => {
+    setIsFormOpen(false);
+    setFormFile(null);
   };
 
   const handleSave = async () => {
@@ -306,7 +328,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
         showToast("Imagen creada", "success");
       }
 
-      setIsFormOpen(false);
+      closeFormModal();
     } catch (err) {
       showToast(
         err instanceof Error ? err.message : "No se pudo guardar la imagen",
@@ -588,7 +610,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
       {isFormOpen && (
         <Modal
           className="inset-0 flex items-start justify-center overflow-y-auto p-4 sm:items-center"
-          close={() => setIsFormOpen(false)}
+          close={closeFormModal}
           hideCloseButton
         >
           <div className="my-4 w-full max-w-2xl overflow-y-auto rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-xl max-h-[calc(100dvh-2rem)] dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
@@ -604,7 +626,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsFormOpen(false)}
+                  onClick={closeFormModal}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-tournament-dark-accent text-slate-500 transition hover:bg-slate-100 hover:text-purple-600 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-purple-300"
                   aria-label="Cerrar"
                   title="Cerrar"
@@ -630,6 +652,28 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                   <p className="text-xs text-slate-400">
                     Maximo {sectionConfig.maxSizeMb}MB. Se convierte a WebP.
                   </p>
+                  {formFile && formFilePreviewUrl && (
+                    <div className="mt-2 overflow-hidden rounded-xl border border-tournament-dark-accent bg-slate-50 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-tournament-dark-accent px-3 py-2 text-xs dark:border-tournament-dark-border">
+                        <span className="font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+                          Vista previa
+                        </span>
+                        <span className="max-w-[70%] truncate text-slate-400">
+                          {formFile.name}
+                        </span>
+                      </div>
+                      <div className="flex min-h-44 items-center justify-center p-3">
+                        <Image
+                          src={formFilePreviewUrl}
+                          alt={`Vista previa de ${formFile.name}`}
+                          width={640}
+                          height={360}
+                          unoptimized
+                          className="max-h-64 w-auto max-w-full rounded-lg object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

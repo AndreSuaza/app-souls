@@ -10,9 +10,13 @@ import {
 import { ProfileSectionsStack } from "./ProfileSectionsStack";
 import { ProfileTournamentHistorySection } from "./ProfileTournamentHistorySection";
 import { ProfilePublicDecksSection } from "./ProfilePublicDecksSection";
+import { ProfileAvatarFrame } from "./ProfileAvatarFrame";
 import { getAvatarUrl } from "@/utils/avatar-image";
 import { getProfileBannerUrl } from "@/utils/profile-banner";
-import { getProfileFrameUrl, getProfileFrameValue } from "@/utils/profile-frame";
+import {
+  getProfileFrameUrl,
+  getProfileFrameValue,
+} from "@/utils/profile-frame";
 import type { Deck, DeckPagination } from "@/interfaces";
 
 type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
@@ -64,15 +68,16 @@ export const ProfilePublicView = ({
   const winrateRaw = matchesPlayed > 0 ? (eloPoints / matchesPlayed) * 100 : 0;
   const winrate = Math.min(100, Math.max(0, Math.round(winrateRaw)));
   const tournamentsPlayed = tournaments.length;
+  const frameValue = getProfileFrameValue(user.frameImage);
   const handleTournamentSelect = (tournamentId: string) => {
     window.open(`/torneos/${tournamentId}`, "_blank", "noopener,noreferrer");
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-10 pt-6">
-        <section className="relative min-h-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white/80 shadow-xl sm:min-h-[360px] lg:min-h-[400px] dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70">
-          <div className="absolute inset-0">
+      <div className="mx-auto flex w-full max-w-[1300px] flex-col gap-8 px-4 pb-10 pt-6">
+        <section className="relative min-h-[320px] overflow-visible rounded-2xl border border-slate-200 bg-white/80 shadow-xl sm:min-h-[360px] lg:min-h-[400px] dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70">
+          <div className="absolute inset-0 overflow-hidden rounded-2xl">
             <Image
               src={getProfileBannerUrl(user.bannerImage)}
               alt="Banner de perfil"
@@ -85,40 +90,26 @@ export const ProfilePublicView = ({
             <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-50/95 via-slate-50/60 to-transparent dark:from-tournament-dark-bg/95 dark:via-tournament-dark-bg/60" />
           </div>
 
-          <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-3 pb-6 pt-24 sm:min-h-[360px] sm:pt-28 lg:min-h-[400px] lg:pt-32">
-            <div className="flex flex-row items-end gap-4">
-              <div className="relative">
-                <div className="relative h-32 w-32 cursor-crosshair sm:h-36 sm:w-36">
-                  <div className="h-full w-full overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)]">
-                    <Image
-                      src={getAvatarUrl(user.image)}
-                      alt={
-                        user.nickname
-                          ? `Avatar de ${user.nickname}`
-                          : "Avatar de usuario"
-                      }
-                      title={
-                        user.nickname
-                          ? `Avatar de ${user.nickname}`
-                          : "Avatar de usuario"
-                      }
-                      width={200}
-                      height={200}
-                      className="h-full w-full object-cover cursor-crosshair"
-                    />
-                  </div>
-                  {getProfileFrameValue(user.frameImage) && (
-                    <Image
-                      src={getProfileFrameUrl(user.frameImage)}
-                      alt="Marco de avatar"
-                      title="Marco de avatar"
-                      fill
-                      unoptimized
-                      className="pointer-events-none absolute -inset-3 h-[calc(100%+1.5rem)] w-[calc(100%+1.5rem)] max-w-none object-contain"
-                    />
-                  )}
-                </div>
-              </div>
+          <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-6 pb-6 pt-24 sm:min-h-[360px] sm:px-10 sm:pt-28 lg:min-h-[400px] lg:px-14 lg:pt-32">
+            <div className="flex flex-row items-end gap-7 sm:gap-8">
+              <ProfileAvatarFrame
+                avatarSrc={getAvatarUrl(user.image)}
+                avatarAlt={
+                  user.nickname
+                    ? `Avatar de ${user.nickname}`
+                    : "Avatar de usuario"
+                }
+                avatarTitle={
+                  user.nickname
+                    ? `Avatar de ${user.nickname}`
+                    : "Avatar de usuario"
+                }
+                avatarClassName="cursor-crosshair"
+                className="cursor-crosshair"
+                frameSrc={
+                  frameValue ? getProfileFrameUrl(frameValue) : undefined
+                }
+              />
               <div className="space-y-2 text-left">
                 <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
                   {user.nickname}

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import { AvatarSchema, AvatarTypeSchema, AvatarUpdateSchema } from "@/schemas";
 import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { Prisma } from "@prisma/client";
 import sharp from "sharp";
 
 const AvatarMetadataSchema = AvatarSchema.omit({ imageUrl: true });
@@ -242,8 +243,32 @@ export const deleteProfileMediaAction = async (avatarId: string) => {
     throw new Error("La imagen esta en uso y no se puede eliminar");
   }
 
+  const usedByPurchase = await prisma.avatarPurchase.findFirst({
+    where: { avatarId: avatar.id },
+    select: { id: true },
+  });
+
+  if (usedByPurchase) {
+    throw new Error(
+      "La imagen esta asociada a compras de usuarios y no se puede eliminar",
+    );
+  }
+
+  try {
+    await prisma.avatar.delete({ where: { id: avatar.id } });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === "P2014" || error.code === "P2003")
+    ) {
+      throw new Error("La imagen esta en uso y no se puede eliminar");
+    }
+
+    console.error("[deleteProfileMediaAction]", error);
+    throw new Error("No se pudo eliminar la imagen");
+  }
+
   await deleteBlob(avatar.imageUrl);
-  await prisma.avatar.delete({ where: { id: avatar.id } });
 
   return { ok: true };
 };

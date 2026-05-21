@@ -5,18 +5,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import {
   IoCloseOutline,
-  IoImageOutline,
   IoLayersOutline,
   IoListOutline,
   IoLockClosedOutline,
   IoPersonCircleOutline,
   IoTrophyOutline,
 } from "react-icons/io5";
+import { TbPhotoEdit } from "react-icons/tb";
 import { FiAward, FiTarget, FiTrendingUp } from "react-icons/fi";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 import { Modal } from "../ui/modal/modal";
 import { getProfileTournament, updateUser } from "@/actions";
-import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { useToastStore, useUIStore } from "@/store";
 import {
   type ActiveTournamentData,
   type TournamentSnapshot,
@@ -27,13 +27,17 @@ import { ProfileTournamentHistorySection } from "./ProfileTournamentHistorySecti
 import { ProfileDecksSection } from "./ProfileDecksSection";
 import { ProfileCurrentTournament } from "./ProfileCurrentTournament";
 import { ProfileChangePasswordModal } from "./ProfileChangePasswordModal";
+import { ProfileAvatarFrame } from "./ProfileAvatarFrame";
 import { getAvatarUrl, getAvatarValue } from "@/utils/avatar-image";
 import {
   DEFAULT_PROFILE_BANNER,
   getProfileBannerUrl,
   getProfileBannerValue,
 } from "@/utils/profile-banner";
-import { getProfileFrameUrl, getProfileFrameValue } from "@/utils/profile-frame";
+import {
+  getProfileFrameUrl,
+  getProfileFrameValue,
+} from "@/utils/profile-frame";
 import { updateUserBanner, updateUserFrame } from "@/actions";
 
 interface User {
@@ -109,7 +113,7 @@ export const Pefil = ({
   const [showProfileCosmetics, setShowProfileCosmetics] = useState(false);
   const [activeCosmeticTab, setActiveCosmeticTab] = useState<
     "AVATAR" | "BANNER" | "FRAME"
-  >("BANNER");
+  >("AVATAR");
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [baseAvatar, setBaseAvatar] = useState(getAvatarValue(user.image));
   const [selectedAvatar, setSelectedAvatar] = useState(baseAvatar);
@@ -117,7 +121,9 @@ export const Pefil = ({
     getProfileBannerValue(user.bannerImage ?? DEFAULT_PROFILE_BANNER),
   );
   const [selectedBanner, setSelectedBanner] = useState(baseBanner);
-  const [baseFrame, setBaseFrame] = useState(getProfileFrameValue(user.frameImage));
+  const [baseFrame, setBaseFrame] = useState(
+    getProfileFrameValue(user.frameImage),
+  );
   const [selectedFrame, setSelectedFrame] = useState(baseFrame);
 
   useEffect(() => {
@@ -142,121 +148,86 @@ export const Pefil = ({
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
-  const openAlertConfirmation = useAlertConfirmationStore(
-    (state) => state.openAlertConfirmation,
-  );
   const { data: session, update } = useSession();
   const hasSession = Boolean(session?.user?.idd ?? user.email);
   const passwordButtonClass =
     "inline-flex items-center gap-2 rounded-full border border-purple-300/60 bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-purple-700 shadow-sm transition hover:bg-purple-50 dark:border-purple-500/60 dark:bg-tournament-dark-surface/80 dark:text-purple-100 dark:hover:bg-tournament-dark-muted";
 
-  const handleSelect = (avatar: Avatar) => {
-    const nextAvatar = getAvatarValue(avatar.imageUrl);
-    if (nextAvatar === baseAvatar) {
-      showToast("Ese avatar ya esta seleccionado", "info");
-      setShowProfileCosmetics(false);
-      return;
-    }
-    openAlertConfirmation({
-      text: "¿Deseas cambiar tu avatar?",
-      description: `Se aplicará el avatar ${avatar.name}.`,
-      action: async () => {
-        showLoading("Actualizando avatar...");
-        try {
-          await updateUser(nextAvatar);
-          // Sincroniza el avatar en la sesion para reflejarlo en el top menu.
-          await update({ user: { image: nextAvatar } });
-          setSelectedAvatar(nextAvatar);
-          setBaseAvatar(nextAvatar);
-          setShowProfileCosmetics(false);
-          showToast("Avatar actualizado correctamente", "success");
-          return true;
-        } catch (error) {
-          showToast(
-            error instanceof Error
-              ? error.message
-              : "No se pudo actualizar el avatar",
-            "error",
-          );
-          return false;
-        } finally {
-          hideLoading();
-        }
-      },
-    });
+  const closeProfileCosmetics = () => {
+    setSelectedAvatar(baseAvatar);
+    setSelectedBanner(baseBanner);
+    setSelectedFrame(baseFrame);
+    setShowProfileCosmetics(false);
+  };
+
+  const handleSelectAvatar = (avatar: Avatar) => {
+    setSelectedAvatar(getAvatarValue(avatar.imageUrl));
   };
 
   const handleSelectBanner = (banner: Avatar) => {
-    const nextBanner = getProfileBannerValue(banner.imageUrl);
-    if (nextBanner === baseBanner) {
-      showToast("Ese banner ya esta seleccionado", "info");
-      setShowProfileCosmetics(false);
-      return;
-    }
-    openAlertConfirmation({
-      text: "¿Deseas cambiar tu banner?",
-      description: `Se aplicará el banner ${banner.name}.`,
-      action: async () => {
-        showLoading("Actualizando banner...");
-        try {
-          await updateUserBanner(nextBanner);
-          setSelectedBanner(nextBanner);
-          setBaseBanner(nextBanner);
-          setShowProfileCosmetics(false);
-          showToast("Banner actualizado correctamente", "success");
-          return true;
-        } catch (error) {
-          showToast(
-            error instanceof Error
-              ? error.message
-              : "No se pudo actualizar el banner",
-            "error",
-          );
-          return false;
-        } finally {
-          hideLoading();
-        }
-      },
-    });
+    setSelectedBanner(getProfileBannerValue(banner.imageUrl));
   };
 
   const handleSelectFrame = (frame: Avatar | null) => {
-    const nextFrame = frame ? getProfileFrameValue(frame.imageUrl) : "";
-    if (nextFrame === baseFrame) {
-      showToast("Ese marco ya esta seleccionado", "info");
-      setShowProfileCosmetics(false);
+    setSelectedFrame(frame ? getProfileFrameValue(frame.imageUrl) : "");
+  };
+
+  const hasCosmeticChanges =
+    selectedAvatar !== baseAvatar ||
+    selectedBanner !== baseBanner ||
+    selectedFrame !== baseFrame;
+
+  const handleSaveProfileCosmetics = async () => {
+    if (!hasCosmeticChanges) {
+      showToast("No hay cambios por guardar", "info");
       return;
     }
-    openAlertConfirmation({
-      text: "¿Deseas cambiar tu marco?",
-      description: frame
-        ? `Se aplicará el marco ${frame.name}.`
-        : "Se quitará el marco del avatar.",
-      action: async () => {
-        showLoading("Actualizando marco...");
-        try {
-          await updateUserFrame(nextFrame || null);
-          setSelectedFrame(nextFrame);
-          setBaseFrame(nextFrame);
-          setShowProfileCosmetics(false);
-          showToast("Marco actualizado correctamente", "success");
-          return true;
-        } catch (error) {
-          showToast(
-            error instanceof Error
-              ? error.message
-              : "No se pudo actualizar el marco",
-            "error",
-          );
-          return false;
-        } finally {
-          hideLoading();
-        }
-      },
-    });
+
+    showLoading("Guardando personalizacion...");
+
+    try {
+      const avatarChanged = selectedAvatar !== baseAvatar;
+      const bannerChanged = selectedBanner !== baseBanner;
+      const frameChanged = selectedFrame !== baseFrame;
+
+      if (avatarChanged) {
+        await updateUser(selectedAvatar);
+      }
+
+      if (bannerChanged) {
+        await updateUserBanner(selectedBanner);
+      }
+
+      if (frameChanged) {
+        await updateUserFrame(selectedFrame || null);
+      }
+
+      if (avatarChanged) {
+        // Sincroniza el avatar en la sesion para reflejarlo en el top menu.
+        await update({ user: { image: selectedAvatar } });
+      }
+
+      setBaseAvatar(selectedAvatar);
+      setBaseBanner(selectedBanner);
+      setBaseFrame(selectedFrame);
+      setShowProfileCosmetics(false);
+      showToast("Perfil personalizado correctamente", "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudo guardar la personalizacion",
+        "error",
+      );
+    } finally {
+      hideLoading();
+    }
   };
 
   const openProfileCosmetics = (tab: "AVATAR" | "BANNER" | "FRAME") => {
+    setSelectedAvatar(baseAvatar);
+    setSelectedBanner(baseBanner);
+    setSelectedFrame(baseFrame);
     setActiveCosmeticTab(tab);
     setShowProfileCosmetics(true);
   };
@@ -347,9 +318,9 @@ export const Pefil = ({
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-10 pt-6">
-        <section className="relative min-h-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white/80 shadow-xl sm:min-h-[360px] lg:min-h-[400px] dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70">
-          <div className="absolute inset-0">
+      <div className="mx-auto flex w-full max-w-[1300px] flex-col gap-8 px-4 pb-10 pt-6">
+        <section className="relative min-h-[320px] overflow-visible rounded-2xl border border-slate-200 bg-white/80 shadow-xl sm:min-h-[360px] lg:min-h-[400px] dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70">
+          <div className="absolute inset-0 overflow-hidden rounded-2xl">
             <Image
               src={getProfileBannerUrl(selectedBanner)}
               alt="Banner de perfil"
@@ -363,54 +334,38 @@ export const Pefil = ({
           </div>
           <button
             type="button"
-            onClick={() => openProfileCosmetics("BANNER")}
+            onClick={() => openProfileCosmetics("AVATAR")}
             aria-label="Cambiar banner"
             className="absolute inset-0 z-[1] cursor-pointer"
           />
           <button
             type="button"
-            onClick={() => openProfileCosmetics("BANNER")}
+            onClick={() => openProfileCosmetics("AVATAR")}
             title="Personalizar avatar, banner y marco"
             // Se fuerza un z-index superior al contenido del header para asegurar el click del gatillo del modal.
-            className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500"
+            className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500 sm:bottom-4 sm:right-4 sm:top-auto"
           >
-            <IoImageOutline className="h-5 w-5" />
+            <TbPhotoEdit className="h-5 w-5" />
           </button>
 
-          <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-3 pb-6 pt-24 sm:min-h-[360px] sm:pt-28 lg:min-h-[400px] lg:pt-32">
-            <div className="flex flex-row items-end gap-4">
-              <div className="relative">
-                <div className="relative h-32 w-32 sm:h-36 sm:w-36">
-                  <div className="h-full w-full overflow-hidden rounded-full border-4 border-purple-500 shadow-[0_0_25px_rgba(147,51,234,0.45)]">
-                    <Image
-                      src={getAvatarUrl(selectedAvatar || user.image)}
-                      alt={
-                        user.nickname
-                          ? `Avatar de ${user.nickname}`
-                          : "Avatar de usuario"
-                      }
-                      title={
-                        user.nickname
-                          ? `Avatar de ${user.nickname}`
-                          : "Avatar de usuario"
-                      }
-                      width={200}
-                      height={200}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  {selectedFrame && (
-                    <Image
-                      src={getProfileFrameUrl(selectedFrame)}
-                      alt="Marco de avatar"
-                      title="Marco de avatar"
-                      fill
-                      unoptimized
-                      className="pointer-events-none absolute -inset-3 h-[calc(100%+1.5rem)] w-[calc(100%+1.5rem)] max-w-none object-contain"
-                    />
-                  )}
-                </div>
-              </div>
+          <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-6 pb-6 pt-24 sm:min-h-[360px] sm:px-10 sm:pt-28 lg:min-h-[400px] lg:px-14 lg:pt-32">
+            <div className="flex flex-row items-end gap-7 sm:gap-8">
+              <ProfileAvatarFrame
+                avatarSrc={getAvatarUrl(selectedAvatar || user.image)}
+                avatarAlt={
+                  user.nickname
+                    ? `Avatar de ${user.nickname}`
+                    : "Avatar de usuario"
+                }
+                avatarTitle={
+                  user.nickname
+                    ? `Avatar de ${user.nickname}`
+                    : "Avatar de usuario"
+                }
+                frameSrc={
+                  selectedFrame ? getProfileFrameUrl(selectedFrame) : undefined
+                }
+              />
               <div className="space-y-2 text-left">
                 <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
                   {user.nickname}
@@ -579,18 +534,18 @@ export const Pefil = ({
       {showProfileCosmetics && (
         <Modal
           className="inset-0 flex items-center justify-center p-4"
-          close={() => setShowProfileCosmetics(false)}
+          close={closeProfileCosmetics}
           hideCloseButton
         >
           <div className="flex w-full max-w-6xl max-h-[90vh] flex-col overflow-hidden rounded-lg border border-slate-200 bg-slate-50 text-center shadow-xl dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
-            <div className="relative flex items-center justify-center bg-slate-900 px-4 py-4 text-slate-100 dark:bg-tournament-dark-hero">
+            <div className="relative flex items-center justify-center bg-slate-50 px-4 py-4 text-slate-900 dark:bg-tournament-dark-bg dark:text-slate-100">
               <h1 className="text-center font-bold uppercase md:text-2xl">
                 Personaliza tu perfil
               </h1>
               <button
                 type="button"
-                onClick={() => setShowProfileCosmetics(false)}
-                className="absolute right-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-200 transition hover:bg-white/10 dark:border-tournament-dark-border"
+                onClick={closeProfileCosmetics}
+                className="absolute right-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 text-slate-600 transition hover:border-purple-400 hover:text-purple-700 dark:border-tournament-dark-border dark:text-slate-200 dark:hover:bg-white/10"
                 aria-label="Cerrar"
                 title="Cerrar"
               >
@@ -598,7 +553,7 @@ export const Pefil = ({
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-2 border-b border-slate-200 bg-white px-4 py-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+            <div className="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 dark:border-tournament-dark-border dark:bg-tournament-dark-bg">
               <button
                 type="button"
                 onClick={() => setActiveCosmeticTab("AVATAR")}
@@ -609,7 +564,7 @@ export const Pefil = ({
                 }`}
                 title="Editar avatar"
               >
-                Avatares
+                Avatar
               </button>
               <button
                 type="button"
@@ -621,7 +576,7 @@ export const Pefil = ({
                 }`}
                 title="Editar banner"
               >
-                Banners
+                Banner
               </button>
               <button
                 type="button"
@@ -633,18 +588,18 @@ export const Pefil = ({
                 }`}
                 title="Editar marco"
               >
-                Marcos
+                Marco
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto">
               <div className="px-4 py-6 md:px-8">
                 {activeCosmeticTab === "AVATAR" && (
-                  <div className="grid grid-cols-2 justify-items-center gap-4 md:grid-cols-6">
+                  <div className="grid grid-cols-1 justify-items-center gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                     {avatarItems.map((avatar) => (
                       <div
                         key={avatar.id}
-                        onClick={() => handleSelect(avatar)}
+                        onClick={() => handleSelectAvatar(avatar)}
                         className={`w-fit cursor-pointer rounded border-4 transition-all ${
                           selectedAvatar === getAvatarValue(avatar.imageUrl)
                             ? "scale-105 border-purple-600 shadow-lg shadow-purple-600/40"
@@ -671,7 +626,8 @@ export const Pefil = ({
                         key={banner.id}
                         onClick={() => handleSelectBanner(banner)}
                         className={`w-full max-w-[440px] cursor-pointer overflow-hidden rounded-xl border-2 transition-all ${
-                          selectedBanner === getProfileBannerValue(banner.imageUrl)
+                          selectedBanner ===
+                          getProfileBannerValue(banner.imageUrl)
                             ? "scale-[1.01] border-purple-600 shadow-lg shadow-purple-600/40"
                             : "border-transparent hover:border-purple-500"
                         }`}
@@ -690,13 +646,13 @@ export const Pefil = ({
                 )}
 
                 {activeCosmeticTab === "FRAME" && (
-                  <div className="grid grid-cols-2 justify-items-center gap-4 md:grid-cols-6">
+                  <div className="grid grid-cols-1 justify-items-center gap-10 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                     <button
                       type="button"
                       onClick={() => handleSelectFrame(null)}
-                      className={`relative flex h-[200px] w-[200px] cursor-pointer items-center justify-center rounded-lg border-4 bg-slate-200/70 transition-all dark:bg-tournament-dark-muted ${
+                      className={`relative box-border flex h-[220px] w-[220px] cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 bg-slate-200/70 transition-all dark:bg-tournament-dark-muted ${
                         !selectedFrame
-                          ? "scale-105 border-purple-600 shadow-lg shadow-purple-600/40"
+                          ? "border-purple-500 shadow-lg shadow-purple-600/40 "
                           : "border-transparent hover:border-purple-500"
                       }`}
                       title="Quitar marco"
@@ -712,9 +668,9 @@ export const Pefil = ({
                         key={frame.id}
                         type="button"
                         onClick={() => handleSelectFrame(frame)}
-                        className={`relative h-[200px] w-[200px] cursor-pointer rounded-lg border-4 bg-slate-200/70 transition-all dark:bg-tournament-dark-muted ${
+                        className={`relative box-border h-[220px] w-[220px] cursor-pointer overflow-hidden rounded-lg border-2 bg-slate-200/70 p-3 transition-all dark:bg-tournament-dark-muted ${
                           selectedFrame === getProfileFrameValue(frame.imageUrl)
-                            ? "scale-105 border-purple-600 shadow-lg shadow-purple-600/40"
+                            ? "border-purple-500 shadow-lg shadow-purple-600/40"
                             : "border-transparent hover:border-purple-500"
                         }`}
                         title={`Seleccionar marco ${frame.name}`}
@@ -732,6 +688,24 @@ export const Pefil = ({
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="flex justify-start gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-bg md:px-8">
+              <button
+                type="button"
+                onClick={closeProfileCosmetics}
+                className="rounded-lg border border-slate-300 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-slate-600 transition hover:border-purple-400 hover:text-purple-700 dark:border-tournament-dark-border dark:text-slate-200 dark:hover:border-purple-500"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveProfileCosmetics}
+                disabled={!hasCosmeticChanges}
+                className="rounded-lg bg-purple-600 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-purple-900/40 disabled:text-slate-400"
+              >
+                Guardar
+              </button>
             </div>
           </div>
         </Modal>

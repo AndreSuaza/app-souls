@@ -79,18 +79,8 @@ export const MEDIA_GROUPS: Array<{
     sections: ["news-banners", "news-cards"],
   },
   {
-    id: "profile",
-    label: "Perfil",
-    sections: ["profile-avatars", "profile-banners", "profile-frames"],
-  },
-  {
     id: "products",
     label: "Productos",
     sections: ["products"],
-  },
-  {
-    id: "cards",
-    label: "Cartas",
-    sections: ["cards"],
   },
 ];

@@ -14,6 +14,9 @@ import {
   IoBagRemoveOutline,
   IoImagesOutline,
   IoLogOutOutline,
+  IoReceiptOutline,
+  IoSettingsOutline,
+  IoStorefrontOutline,
 } from "react-icons/io5";
 import { TbCards } from "react-icons/tb";
 import { IoTrophyOutline } from "react-icons/io5";
@@ -33,6 +36,7 @@ export const AdminSidebar = () => {
   const isCardsSection = pathname.startsWith("/admin/cartas");
   const isProductSection = pathname.startsWith("/admin/productos");
   const isMediaSection = pathname.startsWith("/admin/medios");
+  const isStoreSection = pathname.startsWith("/admin/tienda");
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
 
   const menuItems = [
@@ -65,6 +69,11 @@ export const AdminSidebar = () => {
           label: "Medios",
           href: "/admin/medios",
           icon: IoImagesOutline,
+        },
+        {
+          label: "Tienda",
+          href: "/admin/tienda",
+          icon: IoStorefrontOutline,
         },
         {
           label: "Mazos",
@@ -200,6 +209,33 @@ export const AdminSidebar = () => {
           label: "Medios",
           href: "/admin/medios",
           icon: IoImagesOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
+    }
+  }
+
+  if (isStoreSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Cosmeticos",
+          href: "/admin/tienda",
+          icon: IoStorefrontOutline,
+        },
+        {
+          label: "Ventas",
+          href: "/admin/tienda/ventas",
+          icon: IoReceiptOutline,
+        },
+        {
+          label: "Configuracion",
+          href: "/admin/tienda/configuracion",
+          icon: IoSettingsOutline,
         },
         {
           label: "Volver",
