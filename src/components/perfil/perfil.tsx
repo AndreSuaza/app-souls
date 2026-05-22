@@ -1,88 +1,80 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import {
-  IoImagesOutline,
-  IoLayersOutline,
-  IoListOutline,
-  IoPersonCircleOutline,
-  IoStorefrontOutline,
-  IoTrophyOutline,
-} from "react-icons/io5";
-import { TbPhotoEdit } from "react-icons/tb";
-import { FiAward, FiTarget, FiTrendingUp } from "react-icons/fi";
-import { getProfileTournament, updateUser } from "@/actions";
+  getProfileTournament,
+  type CosmeticStoreData,
+  type CosmeticStoreItem,
+  updateUser,
+} from "@/actions";
 import { useToastStore, useUIStore } from "@/store";
 import {
   type ActiveTournamentData,
   type TournamentSnapshot,
 } from "@/interfaces";
-import { ProfileSectionsTabs, type ProfileTab } from "./ProfileSectionsTabs";
-import { ProfileTournamentSection } from "./ProfileTournamentSection";
-import { ProfileTournamentHistorySection } from "./ProfileTournamentHistorySection";
+import { type ProfileTab } from "./ProfileSectionsTabs";
 import { ProfileDecksSection } from "./ProfileDecksSection";
-import { ProfileCurrentTournament } from "./ProfileCurrentTournament";
-import { ProfileChangePasswordForm } from "./ProfileChangePasswordForm";
-import { ProfileCosmeticShelf } from "./ProfileCosmeticShelf";
-import { ProfileAvatarFrame } from "./ProfileAvatarFrame";
 import {
   ProfileDashboardSidebar,
   type ProfileDashboardSection,
 } from "./ProfileDashboardSidebar";
-import { getAvatarUrl, getAvatarValue } from "@/utils/avatar-image";
+import { getAvatarValue } from "@/utils/avatar-image";
 import {
   DEFAULT_PROFILE_BANNER,
-  getProfileBannerUrl,
   getProfileBannerValue,
 } from "@/utils/profile-banner";
-import {
-  getProfileFrameUrl,
-  getProfileFrameValue,
-} from "@/utils/profile-frame";
+import { getProfileFrameValue } from "@/utils/profile-frame";
 import { updateUserBanner, updateUserFrame } from "@/actions";
-
-interface User {
-  name?: string | null;
-  lastname?: string | null;
-  email?: string | null;
-  nickname?: string | null;
-  image?: string | null;
-  bannerImage?: string | null;
-  frameImage?: string | null;
-  role?: string | null;
-  victoryPoints?: number | null;
-  eloPoints?: number | null;
-  matchesPlayed?: number | null;
-  tournamentsPlayed?: number | null;
-}
+import { ProfileGeneralSection } from "./ProfileGeneralSection";
+import { ProfileAvatarSection } from "./ProfileAvatarSection";
+import { ProfileBannerSection } from "./ProfileBannerSection";
+import { ProfileSectionHeader } from "./ProfileSectionHeader";
+import { ProfileStoreSection } from "./ProfileStoreSection";
+import { ProfileSecuritySection } from "./ProfileSecuritySection";
+import { ProfileTournamentsSection } from "./ProfileTournamentsSection";
+import type {
+  DeckCounts,
+  ProfileCosmeticItem,
+  ProfileUser,
+  TournamentHistoryItem,
+} from "./ProfileSection.types";
 
 // interface Archetype {
 //   name: string| null;
 // }
 
-type Avatar = {
-  id: string;
-  name: string;
-  imageUrl: string;
+const addProfileCosmetic = (
+  items: ProfileCosmeticItem[],
+  cosmetic: CosmeticStoreItem,
+) => {
+  if (items.some((item) => item.id === cosmetic.id)) return items;
+
+  return [
+    ...items,
+    {
+      id: cosmetic.id,
+      name: cosmetic.name,
+      imageUrl: cosmetic.imageUrl,
+    },
+  ].sort((a, b) => a.name.localeCompare(b.name));
 };
 
-type DeckCounts = {
-  totalDecks: number;
-  publicDecks: number;
-};
+const markStoreCosmeticOwned = (
+  items: CosmeticStoreItem[],
+  cosmeticId: string,
+) =>
+  items.map((item) =>
+    item.id === cosmeticId
+      ? {
+          ...item,
+          owned: true,
+        }
+      : item,
+  );
 
-type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
-
-type TournamentHistoryItem = {
-  id: string;
-  title: string;
-  date: string;
-  status: TournamentStatus;
-  playersCount: number;
-};
+const formatProfilePv = (value: number) =>
+  new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 }).format(value);
 
 // interface Deck {
 //   id: string;
@@ -96,13 +88,14 @@ type TournamentHistoryItem = {
 // }
 
 interface Props {
-  user: User;
-  avatars: Avatar[];
-  banners: Avatar[];
-  frames: Avatar[];
+  user: ProfileUser;
+  avatars: ProfileCosmeticItem[];
+  banners: ProfileCosmeticItem[];
+  frames: ProfileCosmeticItem[];
   activeTournament: ActiveTournamentData | null;
   tournaments: TournamentHistoryItem[];
   deckCounts: DeckCounts;
+  cosmeticStoreData: CosmeticStoreData;
 }
 
 const sectionTitles: Record<ProfileDashboardSection, string> = {
@@ -132,6 +125,7 @@ export const Pefil = ({
   activeTournament,
   tournaments,
   deckCounts,
+  cosmeticStoreData,
 }: Props) => {
   const [activeSection, setActiveSection] =
     useState<ProfileDashboardSection>("general");
@@ -145,6 +139,13 @@ export const Pefil = ({
     getProfileFrameValue(user.frameImage),
   );
   const [selectedFrame, setSelectedFrame] = useState(baseFrame);
+  const [avatarItems, setAvatarItems] = useState(avatars);
+  const [bannerItems, setBannerItems] = useState(banners);
+  const [frameItems, setFrameItems] = useState(frames);
+  const [storeData, setStoreData] = useState(cosmeticStoreData);
+  const [victoryPoints, setVictoryPoints] = useState(
+    user.victoryPoints ?? cosmeticStoreData.victoryPoints,
+  );
 
   useEffect(() => {
     const nextAvatar = getAvatarValue(user.image);
@@ -165,21 +166,42 @@ export const Pefil = ({
     setBaseFrame(nextFrame);
     setSelectedFrame(nextFrame);
   }, [user.frameImage]);
+
+  useEffect(() => {
+    setAvatarItems(avatars);
+  }, [avatars]);
+
+  useEffect(() => {
+    setBannerItems(banners);
+  }, [banners]);
+
+  useEffect(() => {
+    setFrameItems(frames);
+  }, [frames]);
+
+  useEffect(() => {
+    setStoreData(cosmeticStoreData);
+  }, [cosmeticStoreData]);
+
+  useEffect(() => {
+    setVictoryPoints(user.victoryPoints ?? cosmeticStoreData.victoryPoints);
+  }, [cosmeticStoreData.victoryPoints, user.victoryPoints]);
+
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const { data: session, update } = useSession();
   const hasSession = Boolean(session?.user?.idd ?? user.email);
 
-  const handleSelectAvatar = (avatar: Avatar) => {
+  const handleSelectAvatar = (avatar: ProfileCosmeticItem) => {
     setSelectedAvatar(getAvatarValue(avatar.imageUrl));
   };
 
-  const handleSelectBanner = (banner: Avatar) => {
+  const handleSelectBanner = (banner: ProfileCosmeticItem) => {
     setSelectedBanner(getProfileBannerValue(banner.imageUrl));
   };
 
-  const handleSelectFrame = (frame: Avatar | null) => {
+  const handleSelectFrame = (frame: ProfileCosmeticItem | null) => {
     setSelectedFrame(frame ? getProfileFrameValue(frame.imageUrl) : "");
   };
 
@@ -257,10 +279,31 @@ export const Pefil = ({
   };
 
   const isPlayer = user.role === "player";
-  const avatarItems = useMemo(() => avatars, [avatars]);
 
-  const bannerItems = useMemo(() => banners, [banners]);
-  const frameItems = useMemo(() => frames, [frames]);
+  const handleCosmeticPurchase = (
+    cosmetic: CosmeticStoreItem,
+    nextVictoryPoints: number,
+  ) => {
+    setVictoryPoints(nextVictoryPoints);
+    setStoreData((current) => ({
+      ...current,
+      victoryPoints: nextVictoryPoints,
+      featured: markStoreCosmeticOwned(current.featured, cosmetic.id),
+      items: markStoreCosmeticOwned(current.items, cosmetic.id),
+    }));
+
+    if (cosmetic.type === "AVATAR") {
+      setAvatarItems((current) => addProfileCosmetic(current, cosmetic));
+      return;
+    }
+
+    if (cosmetic.type === "BANNER") {
+      setBannerItems((current) => addProfileCosmetic(current, cosmetic));
+      return;
+    }
+
+    setFrameItems((current) => addProfileCosmetic(current, cosmetic));
+  };
 
   const matchesPlayed = user.matchesPlayed ?? 0;
   const eloPoints = user.eloPoints ?? 0;
@@ -359,422 +402,81 @@ export const Pefil = ({
         />
 
         <main id="perfil-content" className="min-w-0 space-y-6">
-          <div className="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-lg backdrop-blur dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-600 dark:text-purple-300">
-              Perfil
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-              {sectionTitles[activeSection]}
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {sectionDescriptions[activeSection]}
-            </p>
-          </div>
+          <ProfileSectionHeader
+            title={sectionTitles[activeSection]}
+            description={sectionDescriptions[activeSection]}
+            rightSlot={
+              activeSection === "store" ? (
+                <div className="grid gap-3 sm:grid-cols-2 xl:w-[360px]">
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 shadow-sm dark:border-amber-400/30 dark:bg-amber-500/10">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-700 dark:text-amber-200/80">
+                      PV disponibles
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-amber-700 dark:text-amber-100">
+                      {formatProfilePv(victoryPoints)} PV
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                      Temporada actual
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-purple-700 dark:text-purple-100">
+                      {storeData.currentSeasonNumber}
+                    </p>
+                  </div>
+                </div>
+              ) : undefined
+            }
+          />
 
           {activeSection === "general" && (
-            <div className="space-y-8">
-              <section className="relative min-h-[320px] overflow-visible rounded-2xl border border-slate-200 bg-white/80 shadow-xl sm:min-h-[360px] lg:min-h-[400px] dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70">
-                <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                  <Image
-                    src={getProfileBannerUrl(selectedBanner)}
-                    alt="Banner de perfil"
-                    title="Banner de perfil"
-                    fill
-                    priority
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-50/95 via-slate-50/60 to-transparent dark:from-tournament-dark-bg/95 dark:via-tournament-dark-bg/60" />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleSectionChange("banner")}
-                  aria-label="Cambiar fondo del perfil"
-                  className="absolute inset-0 z-[1] cursor-pointer"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleSectionChange("avatar")}
-                  title="Personalizar avatar y marco"
-                  className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500 sm:bottom-4 sm:right-4 sm:top-auto"
-                >
-                  <TbPhotoEdit className="h-5 w-5" />
-                </button>
-
-                <div className="relative z-10 flex min-h-[320px] flex-row items-end justify-between gap-6 px-6 pb-6 pt-24 sm:min-h-[360px] sm:px-10 sm:pt-28 lg:min-h-[400px] lg:px-14 lg:pt-32">
-                  <div className="flex flex-row items-end gap-7 sm:gap-8">
-                    <ProfileAvatarFrame
-                      avatarSrc={getAvatarUrl(selectedAvatar || user.image)}
-                      avatarAlt={
-                        user.nickname
-                          ? `Avatar de ${user.nickname}`
-                          : "Avatar de usuario"
-                      }
-                      avatarTitle={
-                        user.nickname
-                          ? `Avatar de ${user.nickname}`
-                          : "Avatar de usuario"
-                      }
-                      frameSrc={
-                        selectedFrame
-                          ? getProfileFrameUrl(selectedFrame)
-                          : undefined
-                      }
-                    />
-                    <div className="space-y-2 text-left">
-                      <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
-                        {user.nickname}
-                      </h1>
-                      <p className="text-sm text-slate-600 sm:text-base dark:text-purple-200">
-                        {fullName}
-                      </p>
-                      <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                        <button
-                          type="button"
-                          onClick={() => handleTabShortcut("history")}
-                          title="Ver torneos jugados"
-                          className="inline-flex items-center gap-2 rounded-full border border-amber-300/60 bg-amber-100/70 px-3 py-1 text-amber-700 transition hover:bg-amber-200/70 dark:border-amber-400/40 dark:bg-amber-500/15 dark:text-amber-100 dark:hover:bg-amber-500/25"
-                        >
-                          <IoTrophyOutline className="h-4 w-4 text-amber-600 dark:text-amber-300" />
-                          <span className="text-xs font-semibold">
-                            {tournamentsPlayed}
-                          </span>
-                          <span className="sr-only">Torneos jugados</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleTabShortcut("decks")}
-                          title="Ver mazos"
-                          className="inline-flex items-center gap-2 rounded-full border border-purple-300/60 bg-purple-100/70 px-3 py-1 text-purple-700 transition hover:bg-purple-200/70 dark:border-purple-400/40 dark:bg-purple-500/15 dark:text-purple-100 dark:hover:bg-purple-500/25"
-                        >
-                          <IoLayersOutline className="h-4 w-4 text-purple-600 dark:text-purple-300" />
-                          <span className="text-xs font-semibold">
-                            {deckCountToShow}
-                          </span>
-                          <span className="sr-only">Mazos</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section className="grid gap-4 md:grid-cols-3">
-                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/80">
-                  <div className="absolute left-1/2 top-0 h-1 w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-amber-400/90 to-transparent" />
-                  <div className="flex items-center gap-2">
-                    <FiTrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-300" />
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-purple-300">
-                      Win rate
-                    </p>
-                  </div>
-                  <p className="mt-2 text-3xl font-semibold text-amber-600 dark:text-amber-200">
-                    {winrate}%
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Basado en {matchesPlayed} partidas
-                  </p>
-                </div>
-                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/80">
-                  <div className="absolute left-1/2 top-0 h-1 w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-fuchsia-500/90 to-transparent" />
-                  <div className="flex items-center gap-2">
-                    <FiAward className="h-4 w-4 text-fuchsia-600 dark:text-fuchsia-300" />
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-purple-300">
-                      Puntos de victoria
-                    </p>
-                  </div>
-                  <p className="mt-2 text-3xl font-semibold text-fuchsia-600 dark:text-fuchsia-200">
-                    {user.victoryPoints ?? 0}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Acumulados
-                  </p>
-                </div>
-                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/80">
-                  <div className="absolute left-1/2 top-0 h-1 w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-indigo-400/90 to-transparent" />
-                  <div className="flex items-center gap-2">
-                    <FiTarget className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
-                    <p className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-purple-300">
-                      Elo
-                    </p>
-                  </div>
-                  <p className="mt-2 text-3xl font-semibold text-indigo-600 dark:text-indigo-200">
-                    {user.eloPoints ?? 0}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Ranking actual
-                  </p>
-                </div>
-              </section>
-            </div>
+            <ProfileGeneralSection
+              user={user}
+              fullName={fullName}
+              selectedAvatar={selectedAvatar}
+              selectedBanner={selectedBanner}
+              selectedFrame={selectedFrame}
+              matchesPlayed={matchesPlayed}
+              winrate={winrate}
+              tournamentsPlayed={tournamentsPlayed}
+              deckCountToShow={deckCountToShow}
+              victoryPoints={victoryPoints}
+              onSectionChange={handleSectionChange}
+              onTabShortcut={handleTabShortcut}
+            />
           )}
 
           {activeSection === "avatar" && (
-            <section className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70 sm:p-6">
-              <div className="grid gap-5 rounded-3xl border border-purple-200 bg-gradient-to-br from-purple-50 to-white p-5 dark:border-purple-500/30 dark:from-purple-950/30 dark:to-tournament-dark-bg lg:grid-cols-[260px_minmax(0,1fr)] lg:items-center">
-                <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white/80 p-5 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/60">
-                  <ProfileAvatarFrame
-                    avatarSrc={getAvatarUrl(selectedAvatar || user.image)}
-                    avatarAlt="Avatar actual"
-                    avatarTitle="Avatar actual"
-                    frameSrc={
-                      selectedFrame
-                        ? getProfileFrameUrl(selectedFrame)
-                        : undefined
-                    }
-                  />
-                  <p className="mt-5 text-sm font-semibold text-slate-800 dark:text-white">
-                    Avatar actual
-                  </p>
-                  <p className="mt-1 text-center text-xs text-slate-500 dark:text-slate-400">
-                    Vista previa del avatar y marco seleccionado.
-                  </p>
-                </div>
-
-                <div className="flex flex-col justify-center">
-                  <IoPersonCircleOutline className="h-10 w-10 text-purple-600 dark:text-purple-300" />
-                  <h3 className="mt-4 text-2xl font-semibold text-slate-900 dark:text-white">
-                    Avatar y marco
-                  </h3>
-                  <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-                    Selecciona la imagen principal del perfil y el marco que la
-                    rodea.
-                  </p>
-                </div>
-              </div>
-
-              <ProfileCosmeticShelf
-                title="Tus avatares"
-                description="La primera fila queda visible para cambiar rapido de avatar."
-                compactHeight={228}
-              >
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                  {avatarItems.map((avatar) => {
-                    const avatarValue = getAvatarValue(avatar.imageUrl);
-                    const isSelected = selectedAvatar === avatarValue;
-
-                    return (
-                      <button
-                        key={avatar.id}
-                        type="button"
-                        onClick={() => handleSelectAvatar(avatar)}
-                        title={`Seleccionar avatar ${avatar.name}`}
-                        className={`box-border flex h-[218px] min-w-0 flex-col rounded-2xl border-2 p-3 text-left transition ${
-                          isSelected
-                            ? "border-purple-500 bg-purple-100 shadow-[0_0_24px_rgba(147,51,234,0.28)] dark:bg-purple-500/15"
-                            : "border-transparent bg-white hover:border-purple-400 dark:bg-tournament-dark-surface dark:hover:border-purple-500"
-                        }`}
-                      >
-                        <Image
-                          src={getAvatarUrl(avatar.imageUrl)}
-                          alt={avatar.name}
-                          width={220}
-                          height={220}
-                          className="h-40 w-full rounded-xl object-cover"
-                        />
-                        <span className="mt-3 truncate text-sm font-semibold text-slate-800 dark:text-white">
-                          {avatar.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </ProfileCosmeticShelf>
-
-              <ProfileCosmeticShelf
-                title="Tus marcos"
-                description="Selecciona un marco o conserva el avatar sin marco."
-                compactHeight={228}
-              >
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                  <button
-                    type="button"
-                    onClick={() => handleSelectFrame(null)}
-                    title="Quitar marco"
-                    className={`box-border flex h-[212px] min-w-0 flex-col items-center justify-between rounded-2xl border-2 p-3 transition ${
-                      !selectedFrame
-                        ? "border-purple-500 bg-purple-100 shadow-[0_0_24px_rgba(147,51,234,0.28)] dark:bg-purple-500/15"
-                        : "border-transparent bg-white hover:border-purple-400 dark:bg-tournament-dark-surface dark:hover:border-purple-500"
-                    }`}
-                  >
-                    <span className="flex h-40 w-full items-center justify-center rounded-xl bg-slate-100 dark:bg-tournament-dark-muted">
-                      <IoPersonCircleOutline className="h-24 w-24 text-slate-500 dark:text-slate-300" />
-                    </span>
-                    <span className="mt-3 truncate text-sm font-semibold text-slate-800 dark:text-white">
-                      Sin marco
-                    </span>
-                  </button>
-
-                  {frameItems.map((frame) => {
-                    const frameValue = getProfileFrameValue(frame.imageUrl);
-                    const isSelected = selectedFrame === frameValue;
-
-                    return (
-                      <button
-                        key={frame.id}
-                        type="button"
-                        onClick={() => handleSelectFrame(frame)}
-                        title={`Seleccionar marco ${frame.name}`}
-                        className={`box-border flex h-[212px] min-w-0 flex-col rounded-2xl border-2 p-3 text-left transition ${
-                          isSelected
-                            ? "border-purple-500 bg-purple-100 shadow-[0_0_24px_rgba(147,51,234,0.28)] dark:bg-purple-500/15"
-                            : "border-transparent bg-white hover:border-purple-400 dark:bg-tournament-dark-surface dark:hover:border-purple-500"
-                        }`}
-                      >
-                        <span className="flex h-40 w-full items-center justify-center rounded-xl bg-slate-100 dark:bg-tournament-dark-muted">
-                          <Image
-                            src={getProfileFrameUrl(frame.imageUrl)}
-                            alt={frame.name}
-                            width={220}
-                            height={220}
-                            unoptimized
-                            className="h-full w-full object-contain"
-                          />
-                        </span>
-                        <span className="mt-3 truncate text-sm font-semibold text-slate-800 dark:text-white">
-                          {frame.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </ProfileCosmeticShelf>
-
-              <div className="flex flex-wrap justify-start gap-3 border-t border-slate-200 pt-5 dark:border-tournament-dark-border">
-                <button
-                  type="button"
-                  onClick={cancelAvatarChanges}
-                  disabled={!hasAvatarChanges}
-                  className="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-slate-600 transition hover:border-purple-400 hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-tournament-dark-border dark:text-slate-200 dark:hover:border-purple-500"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveAvatarCosmetics}
-                  disabled={!hasAvatarChanges}
-                  className="rounded-xl bg-purple-600 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-purple-900/40 disabled:text-slate-400"
-                >
-                  Guardar
-                </button>
-              </div>
-            </section>
+            <ProfileAvatarSection
+              userImage={user.image}
+              selectedAvatar={selectedAvatar}
+              selectedFrame={selectedFrame}
+              avatarItems={avatarItems}
+              frameItems={frameItems}
+              hasChanges={hasAvatarChanges}
+              onSelectAvatar={handleSelectAvatar}
+              onSelectFrame={handleSelectFrame}
+              onCancel={cancelAvatarChanges}
+              onSave={handleSaveAvatarCosmetics}
+            />
           )}
 
           {activeSection === "banner" && (
-            <section className="space-y-5 rounded-3xl border border-slate-200 bg-white p-4 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70 sm:p-6">
-              <div className="relative min-h-[260px] overflow-hidden rounded-3xl border border-slate-200 dark:border-tournament-dark-border">
-                <Image
-                  src={getProfileBannerUrl(selectedBanner)}
-                  alt="Fondo actual del perfil"
-                  title="Fondo actual del perfil"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
-                <div className="relative z-10 flex min-h-[260px] max-w-xl flex-col justify-end p-6 text-white">
-                  <IoImagesOutline className="h-10 w-10 text-purple-200" />
-                  <h3 className="mt-4 text-2xl font-semibold">
-                    Fondo del perfil
-                  </h3>
-                  <p className="mt-2 text-sm text-purple-100">
-                    Controla la imagen principal que acompana el encabezado
-                    público del perfil.
-                  </p>
-                </div>
-              </div>
-
-              <ProfileCosmeticShelf
-                title="Tus fondos"
-                description="Selecciona el banner que aparece en el encabezado del perfil."
-                compactHeight={216}
-              >
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {bannerItems.map((banner) => {
-                    const bannerValue = getProfileBannerValue(banner.imageUrl);
-                    const isSelected = selectedBanner === bannerValue;
-
-                    return (
-                      <button
-                        key={banner.id}
-                        type="button"
-                        onClick={() => handleSelectBanner(banner)}
-                        title={`Seleccionar fondo ${banner.name}`}
-                        className={`box-border flex h-[200px] min-w-0 flex-col rounded-2xl border-2 p-3 text-left transition ${
-                          isSelected
-                            ? "border-purple-500 bg-purple-100 shadow-[0_0_24px_rgba(147,51,234,0.28)] dark:bg-purple-500/15"
-                            : "border-transparent bg-white hover:border-purple-400 dark:bg-tournament-dark-surface dark:hover:border-purple-500"
-                        }`}
-                      >
-                        <Image
-                          src={getProfileBannerUrl(banner.imageUrl)}
-                          alt={banner.name}
-                          width={1200}
-                          height={500}
-                          className="h-36 w-full rounded-xl object-cover"
-                        />
-                        <span className="mt-3 truncate text-sm font-semibold text-slate-800 dark:text-white">
-                          {banner.name}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </ProfileCosmeticShelf>
-
-              <div className="flex flex-wrap justify-start gap-3 border-t border-slate-200 pt-5 dark:border-tournament-dark-border">
-                <button
-                  type="button"
-                  onClick={cancelBannerChanges}
-                  disabled={!hasBannerChanges}
-                  className="rounded-xl border border-slate-300 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-slate-600 transition hover:border-purple-400 hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-tournament-dark-border dark:text-slate-200 dark:hover:border-purple-500"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveBanner}
-                  disabled={!hasBannerChanges}
-                  className="rounded-xl bg-purple-600 px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-purple-900/40 disabled:text-slate-400"
-                >
-                  Guardar
-                </button>
-              </div>
-            </section>
+            <ProfileBannerSection
+              selectedBanner={selectedBanner}
+              bannerItems={bannerItems}
+              hasChanges={hasBannerChanges}
+              onSelectBanner={handleSelectBanner}
+              onCancel={cancelBannerChanges}
+              onSave={handleSaveBanner}
+            />
           )}
 
           {activeSection === "store" && (
-            <section className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
-              <div className="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-lg dark:border-amber-400/30 dark:bg-amber-500/10">
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-700 dark:text-amber-200">
-                  Saldo disponible
-                </p>
-                <p className="mt-3 text-5xl font-bold text-amber-700 dark:text-amber-100">
-                  {user.victoryPoints ?? 0} PV
-                </p>
-                <p className="mt-3 text-sm text-amber-800/80 dark:text-amber-100/70">
-                  Usa tus puntos de victoria para canjear cosmeticos de la
-                  tienda.
-                </p>
-              </div>
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70">
-                <IoStorefrontOutline className="h-10 w-10 text-purple-600 dark:text-purple-300" />
-                <h3 className="mt-4 text-2xl font-semibold text-slate-900 dark:text-white">
-                  Tienda de cosmeticos
-                </h3>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                  Explora avatares, banners y marcos disponibles para
-                  personalizar tu perfil.
-                </p>
-                <Link
-                  href="/tienda"
-                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-500"
-                >
-                  <IoStorefrontOutline className="h-4 w-4" />
-                  Ir a la tienda
-                </Link>
-              </div>
-            </section>
+            <ProfileStoreSection
+              storeData={storeData}
+              onPurchase={handleCosmeticPurchase}
+            />
           )}
 
           {activeSection === "decks" && (
@@ -782,67 +484,24 @@ export const Pefil = ({
           )}
 
           {activeSection === "tournaments" && (
-            <div className="space-y-4">
-              <ProfileSectionsTabs
-                active={activeTab}
-                onChange={setActiveTab}
-                tabs={[
-                  {
-                    id: "tournament",
-                    label: tournamentTabLabel,
-                    icon: <IoTrophyOutline className="h-4 w-4" />,
-                    content: (
-                      <ProfileTournamentSection
-                        activeTournament={activeTournament}
-                        hasSession={hasSession}
-                        isPlayer={isPlayer}
-                      />
-                    ),
-                    hidden: !hasTournamentTab,
-                  },
-                  {
-                    id: "history",
-                    label: "Torneos jugados",
-                    icon: <IoListOutline className="h-4 w-4" />,
-                    content: (
-                      <ProfileTournamentHistorySection
-                        tournaments={tournaments}
-                        onSelectTournament={handleOpenTournamentFromHistory}
-                      />
-                    ),
-                    hidden: !showHistoryTab,
-                  },
-                  {
-                    id: "selected",
-                    label: "Torneo",
-                    icon: <IoTrophyOutline className="h-4 w-4" />,
-                    content: selectedTournament ? (
-                      <section className="w-full space-y-4">
-                        <h2 className="text-2xl font-semibold text-slate-800 dark:text-purple-200">
-                          Torneo seleccionado
-                        </h2>
-                        <ProfileCurrentTournament
-                          data={activeTournament ?? profileTournamentData}
-                          selectedTournament={selectedTournament}
-                          enableDeckAssociation={isPlayer}
-                          hasSession={hasSession}
-                        />
-                      </section>
-                    ) : null,
-                    hidden: !selectedTournament,
-                  },
-                ]}
-              />
-              {!hasTournamentTab && !showHistoryTab && !selectedTournament && (
-                <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70 dark:text-slate-300">
-                  No hay torneos disponibles para mostrar.
-                </div>
-              )}
-            </div>
+            <ProfileTournamentsSection
+              activeTab={activeTab}
+              onChangeTab={setActiveTab}
+              tournamentTabLabel={tournamentTabLabel}
+              activeTournament={activeTournament}
+              fallbackTournamentData={profileTournamentData}
+              hasSession={hasSession}
+              isPlayer={isPlayer}
+              hasTournamentTab={hasTournamentTab}
+              showHistoryTab={showHistoryTab}
+              tournaments={tournaments}
+              selectedTournament={selectedTournament}
+              onSelectTournament={handleOpenTournamentFromHistory}
+            />
           )}
 
           {activeSection === "security" && (
-            <ProfileChangePasswordForm disabled={!hasSession} />
+            <ProfileSecuritySection hasSession={hasSession} />
           )}
         </main>
       </div>

@@ -3,6 +3,7 @@ import {
   getProfileBanners,
   getProfileFrames,
   getActiveTournament,
+  getCosmeticStoreDataAction,
   getUserTournaments,
   getProfileDeckCountsAction,
 } from "@/actions";
@@ -52,6 +53,7 @@ export default async function PerfilPage() {
   const activeTournament = await getActiveTournament();
   const tournaments = await getUserTournaments();
   const deckCounts = await getProfileDeckCountsAction();
+  const cosmeticStoreData = await getCosmeticStoreDataAction();
   // const userDecks = await getDecksByUser();
 
   return (
@@ -65,6 +67,7 @@ export default async function PerfilPage() {
           activeTournament={activeTournament}
           tournaments={tournaments}
           deckCounts={deckCounts}
+          cosmeticStoreData={cosmeticStoreData}
         />
       )}
     </>

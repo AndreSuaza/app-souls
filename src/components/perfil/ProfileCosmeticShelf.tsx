@@ -17,6 +17,7 @@ export const ProfileCosmeticShelf = ({
   children,
 }: Props) => {
   const contentRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [canExpand, setCanExpand] = useState(false);
 
@@ -39,6 +40,17 @@ export const ProfileCosmeticShelf = ({
     };
   }, [compactHeight, children]);
 
+  const handleToggleExpanded = () => {
+    setExpanded((value) => {
+      if (value) {
+        const viewport = viewportRef.current;
+        if (viewport) viewport.scrollTop = 0;
+      }
+
+      return !value;
+    });
+  };
+
   return (
     <section className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-bg/60 sm:p-6">
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -54,7 +66,7 @@ export const ProfileCosmeticShelf = ({
         {canExpand && (
           <button
             type="button"
-            onClick={() => setExpanded((value) => !value)}
+            onClick={handleToggleExpanded}
             className="inline-flex w-fit rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-purple-400 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-purple-100 dark:hover:border-purple-500"
           >
             {expanded ? "Ver menos" : "Ver todos"}
@@ -63,6 +75,7 @@ export const ProfileCosmeticShelf = ({
       </div>
 
       <div
+        ref={viewportRef}
         className={clsx(
           "pr-1 transition-[max-height]",
           expanded ? "max-h-[34rem] overflow-y-auto" : "overflow-hidden",

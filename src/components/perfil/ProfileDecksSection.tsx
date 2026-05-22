@@ -23,8 +23,10 @@ export const ProfileDecksSection = ({ hasSession }: Props) => {
   );
 
   return (
-    <section className="w-full">
-      <h2 className="mb-4 text-2xl font-semibold text-purple-200">Mis mazos</h2>
+    <section className="w-full rounded-3xl border border-slate-200 bg-white p-4 shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface/70 sm:p-6">
+      <h2 className="mb-4 text-2xl font-semibold text-purple-700 dark:text-purple-200">
+        Mis mazos
+      </h2>
       <UserDeckLibrary
         archetypes={[]}
         hasSession={hasSession}

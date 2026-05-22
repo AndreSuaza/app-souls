@@ -553,7 +553,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                     </span>
                     {(item.price ?? 0) > 0 && (
                       <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-700 dark:bg-purple-500/20 dark:text-purple-200">
-                        {item.price} VP
+                        {item.price} PV
                       </span>
                     )}
                     <span
@@ -753,7 +753,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                 {formState.availability === "STORE" && (
                   <div className="flex flex-col gap-2">
                     <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                      Precio (VP)
+                      Precio (PV)
                     </span>
                     <input
                       type="text"

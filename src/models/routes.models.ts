@@ -57,10 +57,6 @@ export const Routes: Route[] = [
     name: "Productos",
   },
   {
-    path: "/tienda",
-    name: "Tienda",
-  },
-  {
     path: "/tiendas",
     name: "Tiendas",
   },
