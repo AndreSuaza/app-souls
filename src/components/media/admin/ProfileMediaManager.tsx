@@ -94,7 +94,7 @@ const resolveRarityLabel = (rarity: string) => resolveAvatarRarityLabel(rarity);
 
 const resolveAvailabilityLabel = (availability: string | null) =>
   AVATAR_AVAILABILITIES.find((item) => item.value === availability)?.label ??
-  "Publico";
+  "Público";
 
 export const ProfileMediaManager = ({ section, type }: Props) => {
   const showToast = useToastStore((state) => state.showToast);
@@ -215,7 +215,8 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
     setEditingItem(null);
     setFormState({
       ...DEFAULT_FORM_STATE,
-      availability: type === "FRAME" ? "STORE" : DEFAULT_FORM_STATE.availability,
+      availability:
+        type === "FRAME" ? "STORE" : DEFAULT_FORM_STATE.availability,
     });
     setFormFile(null);
     setIsFormOpen(true);
@@ -760,7 +761,9 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                       pattern="[0-9]*"
                       min={0}
                       step={1}
-                      value={formState.price === 0 ? "" : String(formState.price)}
+                      value={
+                        formState.price === 0 ? "" : String(formState.price)
+                      }
                       onChange={(event) =>
                         setFormState((prev) => ({
                           ...prev,
@@ -845,8 +848,12 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                     setFormState((prev) => ({
                       ...prev,
                       isSeasonal: event.target.checked,
-                      seasonNumber: event.target.checked ? prev.seasonNumber : "",
-                      seasonEndsAt: event.target.checked ? prev.seasonEndsAt : "",
+                      seasonNumber: event.target.checked
+                        ? prev.seasonNumber
+                        : "",
+                      seasonEndsAt: event.target.checked
+                        ? prev.seasonEndsAt
+                        : "",
                     }))
                   }
                   className="h-4 w-4 accent-purple-600"

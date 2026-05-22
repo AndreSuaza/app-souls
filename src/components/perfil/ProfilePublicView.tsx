@@ -131,14 +131,14 @@ export const ProfilePublicView = ({
                   </a>
                   <a
                     href="#public-decks"
-                    title="Ver mazos publicos"
+                    title="Ver mazos públicos"
                     className="inline-flex items-center gap-2 rounded-full border border-purple-300/60 bg-purple-100/70 px-3 py-1 text-purple-700 transition hover:bg-purple-200/70 dark:border-purple-400/40 dark:bg-purple-500/15 dark:text-purple-100 dark:hover:bg-purple-500/25"
                   >
                     <IoLayersOutline className="h-4 w-4 text-purple-600 dark:text-purple-300" />
                     <span className="text-xs font-semibold">
                       {publicDecksCount}
                     </span>
-                    <span className="sr-only">Mazos publicos</span>
+                    <span className="sr-only">Mazos públicos</span>
                   </a>
                 </div>
               </div>
