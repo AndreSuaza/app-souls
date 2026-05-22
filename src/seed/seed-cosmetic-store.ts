@@ -48,7 +48,7 @@ async function main() {
   const featuredDefaults = await runNullDefault("featured", false);
   const featuredOrderDefaults = await runNullDefault("featuredOrder", 0);
 
-  console.log("Migracion de cosmeticos completada:");
+  console.log("Migracion de cosméticos completada:");
   console.table({
     epicToUltra,
     legendaryToSecret,
@@ -64,7 +64,7 @@ async function main() {
   try {
     await main();
   } catch (error) {
-    console.error("Error migrando cosmeticos:", error);
+    console.error("Error migrando cosméticos:", error);
     process.exit(1);
   }
   await prisma.$disconnect();

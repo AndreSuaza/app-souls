@@ -27,7 +27,7 @@ export const purchaseCosmeticAction = async (
   const session = await auth();
 
   if (!session?.user?.email) {
-    throw new Error("Debes iniciar sesion para comprar cosmeticos.");
+    throw new Error("Debes iniciar sesión para comprar cosméticos.");
   }
 
   const currentSeasonNumber = await getCurrentSeasonNumber();
@@ -76,7 +76,7 @@ export const purchaseCosmeticAction = async (
 
   if (cosmetic.rarity === "ASCENDED") {
     throw new Error(
-      "Los cosmeticos ascendidos no se pueden comprar en tienda.",
+      "Los cosméticos ascendidos no se pueden comprar en tienda.",
     );
   }
 

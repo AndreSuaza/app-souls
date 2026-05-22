@@ -111,7 +111,7 @@ const sectionDescriptions: Record<ProfileDashboardSection, string> = {
   general: "Resumen público y estadísticas principales del jugador.",
   avatar: "Gestiona el avatar y el marco visible en tu perfil.",
   banner: "Selecciona el fondo principal que acompana tu perfil.",
-  store: "Consulta tu saldo y accede a cosmeticos canjeables.",
+  store: "Consulta tu saldo y accede a cosméticos canjeables.",
   decks: "Administra tus mazos guardados y competitivos.",
   tournaments: "Revisa torneos actuales, recientes e historial competitivo.",
   security: "Actualiza credenciales y opciones de acceso.",
@@ -393,7 +393,7 @@ export const Pefil = ({
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
-      <div className="mx-auto grid w-full max-w-[1500px] gap-6 px-4 pb-10 pt-6 lg:grid-cols-[300px_minmax(0,1fr)] xl:px-6">
+      <div className="mx-auto grid w-full max-w-[1500px] gap-6 px-2 sm:px-4 pb-10 pt-6 lg:grid-cols-[300px_minmax(0,1fr)] xl:px-6">
         <ProfileDashboardSidebar
           activeSection={activeSection}
           onChange={handleSectionChange}

@@ -259,7 +259,7 @@ export const AdminStoreManager = ({ section = "cosmetics" }: Props) => {
           Administracion de tienda
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Centraliza cosmeticos, historial de ventas y configuracion operativa
+          Centraliza cosméticos, historial de ventas y configuracion operativa
           de la tienda.
         </p>
       </header>

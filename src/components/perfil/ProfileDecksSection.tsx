@@ -45,7 +45,7 @@ export const ProfileDecksSection = ({ hasSession }: Props) => {
                         <button
                           type="button"
                           disabled
-                          className="inline-flex h-10 items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-600 px-1 text-xs font-semibold leading-none text-white shadow-sm opacity-60 sm:gap-2 sm:px-3 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
+                          className="inline-flex h-10 items-center justify-center gap-0.5 rounded-lg border border-emerald-200 bg-emerald-600 px-1 text-xs font-semibold leading-none text-white shadow-sm opacity-60 sm:gap-2 sm:px-3 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
                         >
                           <IoAddOutline className="h-4 w-4" />
                           Crear mazo
@@ -59,7 +59,7 @@ export const ProfileDecksSection = ({ hasSession }: Props) => {
                       <Link
                         href="/laboratorio"
                         title="Crear un mazo en el laboratorio"
-                        className="inline-flex h-10 items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-600 px-1 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 sm:gap-2 sm:px-3 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
+                        className="inline-flex h-10 items-center justify-center gap-0.5 rounded-lg border border-emerald-200 bg-emerald-600 px-1 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-emerald-500 sm:gap-2 sm:px-3 dark:border-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-200"
                       >
                         <IoAddOutline className="h-4 w-4" />
                         Crear mazo
@@ -70,7 +70,7 @@ export const ProfileDecksSection = ({ hasSession }: Props) => {
                 })()}
               </div>
             ) : null}
-            <div className="ml-auto flex flex-wrap gap-2">
+            <div className="ml-auto flex flex-wrap gap-1 sm:gap-2">
               {(
                 [
                   { value: "without", label: "Mazos" },
@@ -97,7 +97,7 @@ export const ProfileDecksSection = ({ hasSession }: Props) => {
                       });
                     }}
                     className={clsx(
-                      "inline-flex items-center rounded-lg border px-5 py-2 text-xs font-semibold uppercase tracking-wide transition",
+                      "inline-flex items-center rounded-lg border px-3 sm:px-5 py-2 text-xs font-semibold uppercase tracking-wide transition",
                       isActive
                         ? "border-purple-600 bg-purple-600 text-white shadow-sm"
                         : "border-transparent bg-white text-slate-500 hover:text-purple-600 dark:bg-tournament-dark-muted dark:text-slate-300",

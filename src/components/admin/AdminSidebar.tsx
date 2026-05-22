@@ -223,7 +223,7 @@ export const AdminSidebar = () => {
     if (role === "admin") {
       menuItems.push(
         {
-          label: "Cosmeticos",
+          label: "Cosméticos",
           href: "/admin/tienda",
           icon: IoStorefrontOutline,
         },
@@ -310,7 +310,7 @@ export const AdminSidebar = () => {
             className="mt-3 flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white"
           >
             <IoLogOutOutline size={22} />
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
       </aside>

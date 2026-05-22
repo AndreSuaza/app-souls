@@ -3,10 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import {
-  IoFlashOutline,
-  IoMedalOutline,
-} from "react-icons/io5";
+import { IoFlashOutline, IoMedalOutline } from "react-icons/io5";
 import {
   purchaseCosmeticAction,
   type CosmeticStoreData,
@@ -129,7 +126,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
 
   const handlePurchase = (item: CosmeticStoreItem) => {
     if (!initialData.isAuthenticated) {
-      showToast("Debes iniciar sesion para comprar cosmeticos.", "info");
+      showToast("Debes iniciar sesion para comprar cosméticos.", "info");
       return;
     }
 
@@ -147,7 +144,10 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
     }
 
     if (victoryPoints < item.price) {
-      showToast("No tienes suficientes PV para comprar este cosmetico.", "error");
+      showToast(
+        "No tienes suficientes PV para comprar este cosmetico.",
+        "error",
+      );
       return;
     }
 
@@ -254,7 +254,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
-            No hay cosmeticos destacados disponibles.
+            No hay cosméticos destacados disponibles.
           </div>
         )}
       </section>
@@ -404,7 +404,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
-            No hay cosmeticos para los filtros seleccionados.
+            No hay cosméticos para los filtros seleccionados.
           </div>
         )}
       </section>
