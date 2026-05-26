@@ -69,8 +69,8 @@ export async function removeTournamentDeckAction(
     throw new Error("Solo disponible para torneos Tier 1 y Tier 2.");
   }
 
-  if (tournamentPlayer.tournament.status !== "in_progress") {
-    throw new Error("Solo puedes remover mazos durante el torneo.");
+  if (tournamentPlayer.tournament.status !== "pending") {
+    throw new Error("Solo puedes remover mazos antes de iniciar el torneo.");
   }
 
   if (!tournamentPlayer.deckId) {
