@@ -17,6 +17,7 @@ export * from "./profile/cosmetic-store.schema";
 export * from "./profile/public-profile.schema";
 export * from "./profile/public-user-id.schema";
 export * from "./admin/reset-elo-season.schema";
+export * from "./admin/user-management.schema";
 
 export * from "./decks/deck-filters.schema";
 export * from "./decks/deck-like.schema";

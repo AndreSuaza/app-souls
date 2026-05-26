@@ -272,3 +272,50 @@ When generating or modifying code:
 Final principle:
 - Consistency, scalability, and maintainability are mandatory.
 - Prefer long-term clarity over short-term shortcuts.
+
+---
+
+# Project Token Budget Rules
+
+Use the global Codex skills:
+
+- `token-budget` for PDFs, images, Office files, logs, transcripts, and other large files.
+- `code-token-budget` for implementation, debugging, review, refactoring, test, and code explanation tasks.
+
+## Coding Defaults
+
+- Search before reading large files.
+- Use `rg`/file lists/diffs to locate relevant code first.
+- Read only targeted files or line ranges when possible.
+- Avoid generated, vendored, build, cache, coverage, and dependency folders unless directly relevant.
+- Broaden to repository-wide analysis only when the task requires it, and state why.
+- For long tasks, keep a compact `.codex-token-worklog.md` to avoid rereading the same context.
+
+## Large File Defaults
+
+- Do not read a large binary/document directly when a preflight artifact can answer the task.
+- Prefer `C:\Users\sebsi\Documents\Codex\token-budget\preflight.ps1` before sending full content to the model.
+- Use `summary.md` and `index.md` first; open `content.md`/`content.txt` only for relevant sections.
+- Read the original PDF/image/Office file only when reduced artifacts are insufficient.
+
+## Shared Paths
+
+- Inbox: `C:\Users\sebsi\Documents\Codex\file-inbox`
+- Cache: `C:\Users\sebsi\Documents\Codex\file-cache`
+- Tools: `C:\Users\sebsi\Documents\Codex\token-budget`
+
+## Subagent Policy
+
+- Do not create subagents by default.
+- Use direct local inspection first.
+- Only use subagents when the user explicitly asks for parallel review or when a complex task clearly benefits from independent analysis.
+- If subagents are needed, state why before creating them.
+
+## Current Focus: Vercel Storage
+
+- The project is deployed on Vercel and storage/cost usage is growing quickly.
+- Before changing code, identify which Vercel quota is growing: Blob Storage, Blob Transfer, Image Optimization/cache, Data Cache, Build Cache, or deployment/static asset size.
+- Initial local signal: `public/cards` is about 42 MB with hundreds of card images; dynamic uploads use Vercel Blob through `src/lib/blob.ts` and image upload actions.
+- Likely investigation areas: orphaned blobs, oversized dynamic images, repeated uploads, missing cleanup, high WebP quality, generated image variants, and whether some assets should move to cheaper external object storage/CDN.
+- Use lightweight searches and metadata first; do not read the whole repo for this audit.
+

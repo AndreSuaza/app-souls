@@ -14,6 +14,7 @@ import {
   IoBagRemoveOutline,
   IoImagesOutline,
   IoLogOutOutline,
+  IoPeopleOutline,
   IoReceiptOutline,
   IoSettingsOutline,
   IoStorefrontOutline,
@@ -37,6 +38,7 @@ export const AdminSidebar = () => {
   const isProductSection = pathname.startsWith("/admin/productos");
   const isMediaSection = pathname.startsWith("/admin/medios");
   const isStoreSection = pathname.startsWith("/admin/tienda");
+  const isUsersSection = pathname.startsWith("/admin/usuarios");
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
 
   const menuItems = [
@@ -74,6 +76,11 @@ export const AdminSidebar = () => {
           label: "Tienda",
           href: "/admin/tienda",
           icon: IoStorefrontOutline,
+        },
+        {
+          label: "Usuarios",
+          href: "/admin/usuarios",
+          icon: IoPeopleOutline,
         },
         {
           label: "Mazos",
@@ -236,6 +243,23 @@ export const AdminSidebar = () => {
           label: "Configuracion",
           href: "/admin/tienda/configuracion",
           icon: IoSettingsOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
+    }
+  }
+
+  if (isUsersSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Usuarios",
+          href: "/admin/usuarios",
+          icon: IoPeopleOutline,
         },
         {
           label: "Volver",

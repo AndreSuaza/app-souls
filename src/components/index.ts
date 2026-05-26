@@ -99,6 +99,7 @@ export * from "./tournaments/public/PublicTournamentsHighlights";
 export * from "./tournaments/public/PublicTournamentsList";
 export * from "./tournaments/public/PublicTournamentsMobileList";
 export * from "./tournaments/public/PublicTournamentsTable";
+export * from "./users/admin/AdminUsersManager";
 
 export * from "./news/admin/AdminNewsList";
 export * from "./news/form/NewsForm";

@@ -17,7 +17,6 @@ enum Role {
   player
   admin
   store
-  seller
   news
 }
 
@@ -296,6 +295,8 @@ model User {
   store            Store?             @relation(fields: [storeId], references: [id])
   news             New[]
   EloSeasonHistory EloSeasonHistory[]
+  victoryPointAdjustments      VictoryPointAdjustment[] @relation("VictoryPointAdjustmentUser")
+  victoryPointAdjustmentsMade  VictoryPointAdjustment[] @relation("VictoryPointAdjustmentAdmin")
 }
 
 enum NewStatus {
@@ -503,6 +504,24 @@ model AvatarPurchase {
   @@index([userId, createdAt])
   @@index([avatarId, createdAt])
   @@index([seasonNumber])
+}
+
+model VictoryPointAdjustment {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount          Int
+  previousBalance Int
+  nextBalance     Int
+  reason          String
+  createdAt       DateTime @default(now())
+
+  userId String @db.ObjectId
+  user   User   @relation("VictoryPointAdjustmentUser", fields: [userId], references: [id])
+
+  adminId String @db.ObjectId
+  admin   User   @relation("VictoryPointAdjustmentAdmin", fields: [adminId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([adminId, createdAt])
 }
 
 model EloSeasonHistory {
