@@ -1,13 +1,11 @@
-import {
-  Sidebar,
-  TopMenu,
-  AdminTopMenu,
-  LoadingOverlay,
-  ToastContainer,
-  AdminSidebar,
-  ConfirmationModalHost,
-  AdminFooter,
-} from "@/components";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminFooter } from "@/components/ui/footer/AdminFooter";
+import { LoadingOverlay } from "@/components/ui/loading/LoadingOverlay";
+import { ConfirmationModalHost } from "@/components/ui/modal/ConfirmationModalHost";
+import { Sidebar } from "@/components/ui/sidebar/Sidebar";
+import { ToastContainer } from "@/components/ui/toast/ToastContainer";
+import { AdminTopMenu } from "@/components/ui/top-menu/AdminTopMenu";
+import { TopMenu } from "@/components/ui/top-menu/TopMenu";
 import moment from "moment";
 import { Metadata } from "next";
 

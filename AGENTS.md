@@ -241,15 +241,57 @@ Routing context:
 - Admin modules are under `/admin/**`.
 - Tournament admin reference path is `/admin/torneos`.
 
-## 16) Forbidden Patterns
+## 16) Vercel Cost and Performance Rules
+Vercel cost and storage awareness is mandatory for all changes that touch routes, layouts, shared UI, middleware, image/media handling, caching, or data loading.
+
+Bundle and imports:
+- Prefer direct imports from the concrete component/module path.
+- Do not import from the global `@/components` barrel in pages, layouts, shared route components, or other top-level UI.
+- Do not import from broad UI barrels such as `@/components/ui` when a direct path is available.
+- Do not add heavy modules to barrel files (`src/components/index.ts`, `src/components/ui/index.ts`, or similar) unless explicitly approved.
+- Heavy modules include admin screens, editors, markdown tooling, maps, media managers, deck builders, tournament managers, upload tools, and any component that imports large client-only libraries.
+- If a barrel import is kept for legacy compatibility, it must not be introduced into new high-traffic or top-level route code.
+
+Build output and JavaScript transfer:
+- After touching public routes, layouts, shared components, auth pages, or admin shells, run `npm run build` when feasible.
+- Review the Next.js route table and compare `First Load JS` for affected routes.
+- Treat unexpected route jumps toward the 600-700 kB range as a blocker unless there is a clear product reason.
+- Public content routes should stay as small as practical; investigate any public route that loads unrelated admin/editor/map/deck-builder code.
+
+Middleware:
+- Keep `src/middleware.ts` matchers narrow and intentional.
+- Do not use broad matchers that run middleware on all public pages unless the feature explicitly requires it and the cost tradeoff is documented.
+- Middleware must remain edge-safe and cheap: no Prisma, no heavy imports, no broad data fetching.
+- If global maintenance mode requires broad middleware coverage, document the expected Edge Middleware invocation impact and prefer the lightest possible implementation.
+
+Server work, caching, and dynamic rendering:
+- Avoid resolving `auth()` or session-dependent data on public pages unless the rendered output truly depends on it.
+- For optional personalized data such as likes, ownership, or user-specific flags, prefer opt-in parameters or client-side session resolution after hydration.
+- Do not add `force-dynamic` unless required by correctness.
+- Prefer explicit `revalidate` or cacheable public reads where data freshness allows it.
+- Watch for excessive ISR writes, function invocations, and function duration when changing data loading.
+
+Images, uploads, and Vercel Blob:
+- Vercel Blob is valid, but uploads must avoid duplicate/orphaned files where practical.
+- Image upload flows should resize/compress intentionally before storage when quality requirements allow it.
+- Deleting or replacing user/admin media should clean up unused Blob objects when the ownership model makes that safe.
+- Do not assume Blob Storage is the cost problem without checking usage; compare Blob Storage, Blob Transfer, Fast Origin Transfer, Image Optimization/cache, Data Cache, ISR writes, and Function usage.
+
+Reporting:
+- If a change may affect Vercel cost, mention the expected impact in the final response.
+- If a performance optimization changes behavior, such as global maintenance-mode coverage, call out the tradeoff explicitly.
+
+## 17) Forbidden Patterns
 - Prisma usage in client components, stores, hooks, or logic.
 - Unvalidated external input at server boundaries.
 - Introducing automatic post-mutation refetches without explicit requirement.
 - Building a parallel generic REST CRUD layer.
 - God files with mixed responsibilities.
 - Introducing new default exports for UI components.
+- New high-traffic route imports from the global `@/components` barrel.
+- Broad middleware matchers without an explicit cost/correctness reason.
 
-## 17) AI Agent Behavior Rules
+## 18) AI Agent Behavior Rules
 When generating or modifying code:
 - Respect the current architecture and feature boundaries.
 - Avoid unrelated refactors.
@@ -259,7 +301,7 @@ When generating or modifying code:
 - Ask before making high-impact architectural changes.
 - Keep production-level quality and maintainability.
 
-## 18) Delivery Checklist (Before Finishing a Change)
+## 19) Delivery Checklist (Before Finishing a Change)
 1. Input validation present at server boundary?
 2. Auth and role checks explicit where needed?
 3. Mutation flow avoids unnecessary read-after-write refetch?
@@ -268,6 +310,11 @@ When generating or modifying code:
 6. Store/UI updates consistent with optimistic strategy?
 7. Non-obvious logic documented with concise Spanish comments?
 8. Lint/type checks run when feasible?
+9. No new broad `@/components` or `@/components/ui` imports in route-level or shared high-traffic code?
+10. Middleware matcher remains narrow and intentional?
+11. `npm run build` route sizes reviewed when routes/layouts/shared UI were changed?
+12. Public pages avoid unnecessary session/auth work and dynamic rendering?
+13. Image/blob changes include cleanup, compression, or storage-impact reasoning where relevant?
 
 Final principle:
 - Consistency, scalability, and maintainability are mandatory.
@@ -311,11 +358,13 @@ Use the global Codex skills:
 - Only use subagents when the user explicitly asks for parallel review or when a complex task clearly benefits from independent analysis.
 - If subagents are needed, state why before creating them.
 
-## Current Focus: Vercel Storage
+## Current Focus: Vercel Cost Control
 
-- The project is deployed on Vercel and storage/cost usage is growing quickly.
-- Before changing code, identify which Vercel quota is growing: Blob Storage, Blob Transfer, Image Optimization/cache, Data Cache, Build Cache, or deployment/static asset size.
-- Initial local signal: `public/cards` is about 42 MB with hundreds of card images; dynamic uploads use Vercel Blob through `src/lib/blob.ts` and image upload actions.
-- Likely investigation areas: orphaned blobs, oversized dynamic images, repeated uploads, missing cleanup, high WebP quality, generated image variants, and whether some assets should move to cheaper external object storage/CDN.
-- Use lightweight searches and metadata first; do not read the whole repo for this audit.
+- The project is deployed on Vercel and cost/usage must be treated as an architectural constraint.
+- Recent investigation showed the main observed driver was `Fast Origin Transfer`, not Blob Storage.
+- Blob usage was low at the time of investigation, but Blob upload/cleanup rules still apply.
+- Large route bundles caused by broad component barrels can materially increase transfer cost.
+- Middleware scope can materially increase Edge Middleware invocations.
+- Before assuming the cause of a Vercel bill increase, identify which quota is growing: Fast Origin Transfer, Blob Storage, Blob Transfer, Image Optimization/cache, Data Cache, ISR writes, Function Invocations, Function Duration, Build Cache, or deployment/static asset size.
+- Use lightweight searches, build output, Vercel usage data, and metadata first; do not read the whole repo for this audit.
 

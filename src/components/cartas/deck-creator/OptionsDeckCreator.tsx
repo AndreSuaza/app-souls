@@ -15,7 +15,9 @@ import {
 import { GiCardExchange } from "react-icons/gi";
 import { RiFullscreenExitLine, RiFullscreenLine } from "react-icons/ri";
 import { RiEraserLine } from "react-icons/ri";
-import { Modal, Decklistimage, SaveDeckForm } from "@/components";
+import { Decklistimage } from "@/components/cartas/decklist-image/DecklistImage";
+import { SaveDeckForm } from "@/components/mazos/deck-save/SaveDeckForm";
+import { Modal } from "@/components/ui/modal/modal";
 import { UserDeckLibrary } from "@/components/mazos/deck-library/UserDeckLibrary";
 import Link from "next/link";
 import Image from "next/image";

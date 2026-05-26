@@ -1,5 +1,6 @@
 import { getPaginatedPricesCards, getPropertiesCards } from "@/actions";
-import { CardFinderPrices, Pagination } from "@/components";
+import { CardFinderPrices } from "@/components/finders/CardFinderPrices";
+import { Pagination } from "@/components/ui/pagination/pagination";
 import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 import { Metadata } from "next";
 import Image from "next/image";

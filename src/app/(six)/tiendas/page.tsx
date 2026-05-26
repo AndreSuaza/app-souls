@@ -1,5 +1,5 @@
 import { getStoresByDistanceAction } from "@/actions";
-import { StoresExplorer } from "@/components";
+import { StoresExplorer } from "@/components/stores/StoresExplorer";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

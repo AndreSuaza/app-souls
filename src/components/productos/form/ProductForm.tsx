@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import clsx from "clsx";
-import { MarkdownEditor } from "@/components";
+import { MarkdownEditor } from "@/components/ui/markdown/MarkdownEditor";
 import { searchAdminDecksAction } from "@/actions";
 import { FormField, FormInput, FormSelect } from "@/components/ui/form";
 import type { AdminProductDetail } from "@/interfaces";

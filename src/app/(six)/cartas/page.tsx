@@ -1,5 +1,5 @@
 import { getPaginatedCards, getPropertiesCards } from "@/actions";
-import { CardFinder } from "@/components";
+import { CardFinder } from "@/components/cartas/card-finder/CardFinder";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

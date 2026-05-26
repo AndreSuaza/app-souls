@@ -7,7 +7,7 @@ import {
   getNewsCategoriesAction,
   getNewsImagesAction,
 } from "@/actions";
-import { NewsForm, type NewsSubmitValues } from "@/components";
+import { NewsForm, type NewsSubmitValues } from "@/components/news/form/NewsForm";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import type { NewsCategoryOption, NewsImageOptions } from "@/interfaces";
 

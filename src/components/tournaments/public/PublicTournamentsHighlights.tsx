@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { MdBarChart, MdEmojiEvents } from "react-icons/md";
-import { PaginationLine } from "@/components/ui";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { PublicTournamentsTable } from "./PublicTournamentsTable";
 import { PublicTournamentsMobileList } from "./PublicTournamentsMobileList";
 import { RankBadge } from "../tournament/players/RankBadge";

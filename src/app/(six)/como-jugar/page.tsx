@@ -1,5 +1,6 @@
 import { getStorePagination } from "@/actions";
-import { StoreItemSimple, Title } from "@/components";
+import { StoreItemSimple } from "@/components/stores/store-grid/StoreItemSimple";
+import { Title } from "@/components/ui/title/Title";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";

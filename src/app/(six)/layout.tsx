@@ -1,11 +1,9 @@
-import {
-  ConfirmationModalHost,
-  Footer,
-  LoadingOverlay,
-  Sidebar,
-  TopMenu,
-  ToastContainer,
-} from "@/components";
+import { ConfirmationModalHost } from "@/components/ui/modal/ConfirmationModalHost";
+import { Footer } from "@/components/ui/footer/footer";
+import { LoadingOverlay } from "@/components/ui/loading/LoadingOverlay";
+import { Sidebar } from "@/components/ui/sidebar/Sidebar";
+import { TopMenu } from "@/components/ui/top-menu/TopMenu";
+import { ToastContainer } from "@/components/ui/toast/ToastContainer";
 import moment from "moment";
 import "moment/locale/es";
 

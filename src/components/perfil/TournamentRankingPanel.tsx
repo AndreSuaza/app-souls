@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type MouseEventHandler } from "react";
 import clsx from "clsx";
 import { usePathname, useSearchParams } from "next/navigation";
-import { PaginationLine } from "@/components/ui";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { RoundInterface, TournamentPlayerInterface } from "@/interfaces";
 import { sortPlayersByRanking } from "@/utils/ranking";
 import {

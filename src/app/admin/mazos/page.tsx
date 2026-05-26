@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUIStore } from "@/store";
-import { AdminDecksList } from "@/components";
+import { AdminDecksList } from "@/components/mazos/admin/AdminDecksList";
 import { getAdminDecksAction } from "@/actions";
 import type { AdminDeckListItem } from "@/interfaces";
 

@@ -1,6 +1,8 @@
 import "./globals.scss";
 import { titleFont, geistMono } from "@/config/fonts";
-import { Provider, LoadingOverlay, ToastContainer } from "@/components";
+import { Provider } from "@/components/ui/providers/Provider";
+import { LoadingOverlay } from "@/components/ui/loading/LoadingOverlay";
+import { ToastContainer } from "@/components/ui/toast/ToastContainer";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
 export default function RootLayout({

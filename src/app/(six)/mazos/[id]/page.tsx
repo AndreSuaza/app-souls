@@ -7,7 +7,7 @@ import {
   getTournamentSummaryAction,
   getDeckLikeStatusAction,
 } from "@/actions";
-import { DeckDetailView } from "@/components";
+import { DeckDetailView } from "@/components/mazos/deck-detail/DeckDetailView";
 import type { Metadata } from "next";
 
 export const revalidate = 300;

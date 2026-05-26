@@ -102,7 +102,7 @@ export async function getDecksFilteredAction(
     };
   });
 
-  const session = await auth();
+  const session = filters.includeLikedDeckIds ? await auth() : null;
   const userId = session?.user?.idd;
 
   const likedDeckIds = userId

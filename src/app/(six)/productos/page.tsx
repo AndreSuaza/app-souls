@@ -1,5 +1,5 @@
 import { getProductsPagination } from "@/actions";
-import { ProductGrid } from "@/components";
+import { ProductGrid } from "@/components/productos/product-grid/ProductGrid";
 import { Metadata } from "next";
 
 export const revalidate = 300;

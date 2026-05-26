@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import type { PublicNewsCard, PublicNewsDetail } from "@/interfaces";
-import { MarkdownContent } from "@/components";
+import { MarkdownContent } from "@/components/ui/markdown/MarkdownContent";
 import { NewsCarousel } from "./NewsCarousel";
 
 type Props = {

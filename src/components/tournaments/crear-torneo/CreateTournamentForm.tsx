@@ -6,7 +6,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createTournamentAction } from "@/actions";
-import { MarkdownEditor } from "@/components";
+import { MarkdownEditor } from "@/components/ui/markdown/MarkdownEditor";
 import { FormField, FormInput } from "@/components/ui/form";
 import { getPlainTextFromMarkdown } from "@/utils/markdown";
 import {
