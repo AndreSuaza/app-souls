@@ -355,8 +355,11 @@ Use the global Codex skills:
 
 - Do not create subagents by default.
 - Use direct local inspection first.
-- Only use subagents when the user explicitly asks for parallel review or when a complex task clearly benefits from independent analysis.
-- If subagents are needed, state why before creating them.
+- Use subagents when the user explicitly asks for parallel review or when a complex task clearly benefits from independent analysis.
+- Prefer subagents for broad audits, security/performance reviews, cross-feature regression searches, Vercel cost investigations, large refactors, or cases where independent findings reduce risk.
+- Do not use subagents for small, localized edits where direct inspection is faster and clearer.
+- If subagents are needed, state why before creating them and summarize their findings before acting on them.
+- The primary agent remains responsible for validating conclusions, applying changes, and running the final checks.
 
 ## Current Focus: Vercel Cost Control
 

@@ -57,6 +57,31 @@ export const AdjustUserVictoryPointsSchema = z.object({
     .max(240, "El motivo no puede superar 240 caracteres."),
 });
 
+export const BulkAdjustUserVictoryPointsSchema = z.object({
+  selection: z.discriminatedUnion("mode", [
+    z.object({
+      mode: z.literal("all"),
+    }),
+    z.object({
+      mode: z.literal("selected"),
+      userIds: z
+        .array(AdminUserIdSchema)
+        .min(1, "Selecciona al menos un usuario.")
+        .max(500, "No puedes ajustar mas de 500 usuarios seleccionados a la vez.")
+        .transform((ids) => Array.from(new Set(ids))),
+    }),
+  ]),
+  amount: z
+    .number()
+    .int("El ajuste debe ser un numero entero.")
+    .min(1, "La cantidad de PV debe ser mayor a 0."),
+  reason: z
+    .string()
+    .trim()
+    .min(5, "El motivo debe tener al menos 5 caracteres.")
+    .max(240, "El motivo no puede superar 240 caracteres."),
+});
+
 export const UserPvAdjustmentsSchema = z.object({
   userId: AdminUserIdSchema,
   limit: z.number().int().min(1).max(20).optional().default(10),

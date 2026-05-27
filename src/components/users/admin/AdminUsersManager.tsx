@@ -6,14 +6,19 @@ import { usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import {
   adjustUserVictoryPointsAction,
+  bulkAdjustUserVictoryPointsAction,
   getAdminUsersAction,
   getUserPvAdjustmentsAction,
   updateAdminUserRoleStatusAction,
   type AdminUserListItem,
   type UserPvAdjustmentLog,
 } from "@/actions";
-import { PaginationLine } from "@/components/ui";
-import { useToastStore, useUIStore } from "@/store";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
+import {
+  useAlertConfirmationStore,
+  useToastStore,
+  useUIStore,
+} from "@/store";
 import {
   IoAddCircleOutline,
   IoCloseOutline,
@@ -95,7 +100,8 @@ const formatDate = (value: string) =>
 const getSafeErrorMessage = (error: unknown, fallback: string) => {
   if (!(error instanceof Error)) return fallback;
   const message = error.message.trim();
-  if (!message || message.startsWith("[") || message.length > 180) return fallback;
+  if (!message || message.startsWith("[") || message.length > 180)
+    return fallback;
   return message;
 };
 
@@ -282,7 +288,8 @@ const UserDetailModal = ({
                       {item.reason}
                     </p>
                     <p className="mt-2 text-xs text-slate-400">
-                      Admin: {item.admin.nickname ?? item.admin.email ?? item.admin.id}
+                      Admin:{" "}
+                      {item.admin.nickname ?? item.admin.email ?? item.admin.id}
                     </p>
                   </div>
                 ))}
@@ -312,7 +319,10 @@ const PvAdjustmentModal = ({
   const [reason, setReason] = useState("");
   const numericAmount = Number(amount);
   const signedAmount = mode === "add" ? numericAmount : -numericAmount;
-  const canSubmit = Number.isInteger(numericAmount) && numericAmount > 0 && reason.trim().length >= 5;
+  const canSubmit =
+    Number.isInteger(numericAmount) &&
+    numericAmount > 0 &&
+    reason.trim().length >= 5;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
@@ -417,6 +427,155 @@ const PvAdjustmentModal = ({
   );
 };
 
+type BulkPvAdjustmentModalProps = {
+  selectionMode: "selected" | "all";
+  selectedCount: number;
+  totalUsers: number;
+  amount: string;
+  reason: string;
+  saving: boolean;
+  canSubmit: boolean;
+  onClose: () => void;
+  onSelectionModeChange: (mode: "selected" | "all") => void;
+  onAmountChange: (value: string) => void;
+  onReasonChange: (value: string) => void;
+  onSubmit: () => void;
+};
+
+const BulkPvAdjustmentModal = ({
+  selectionMode,
+  selectedCount,
+  totalUsers,
+  amount,
+  reason,
+  saving,
+  canSubmit,
+  onClose,
+  onSelectionModeChange,
+  onAmountChange,
+  onReasonChange,
+  onSubmit,
+}: BulkPvAdjustmentModalProps) => (
+  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <form
+      className="w-full max-w-2xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-2xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!canSubmit) return;
+        onSubmit();
+      }}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
+            Asignacion masiva de PV
+          </p>
+          <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">
+            Sumar puntos de victoria
+          </h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Selecciona el alcance, define la cantidad y deja un motivo de
+            auditoria.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:text-slate-900 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-white"
+          aria-label="Cerrar asignacion masiva de PV"
+        >
+          <IoCloseOutline className="h-6 w-6" />
+        </button>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => onSelectionModeChange("selected")}
+          className={clsx(
+            "rounded-xl border px-4 py-4 text-left transition",
+            selectionMode === "selected"
+              ? "border-purple-500 bg-purple-600 text-white"
+              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
+          )}
+        >
+          <span className="block text-sm font-bold">
+            Usuarios seleccionados
+          </span>
+          <span className="mt-1 block text-xs opacity-80">
+            {selectedCount} usuarios marcados en la lista.
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onSelectionModeChange("all")}
+          className={clsx(
+            "rounded-xl border px-4 py-4 text-left transition",
+            selectionMode === "all"
+              ? "border-purple-500 bg-purple-600 text-white"
+              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
+          )}
+        >
+          <span className="block text-sm font-bold">Todos los usuarios</span>
+          <span className="mt-1 block text-xs opacity-80">
+            {totalUsers} usuarios existentes en la app.
+          </span>
+        </button>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-[160px_1fr]">
+        <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          PV a sumar
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={amount}
+            onChange={(event) => onAmountChange(event.target.value)}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
+            placeholder="Ej: 10"
+          />
+        </label>
+
+        <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          Motivo
+          <input
+            value={reason}
+            onChange={(event) => onReasonChange(event.target.value)}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
+            placeholder="Ej: Recompensa por evento regional"
+          />
+        </label>
+      </div>
+
+      <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-100">
+        Objetivo actual:{" "}
+        <strong>
+          {selectionMode === "all" ? totalUsers : selectedCount} usuarios
+        </strong>
+        . Esta accion quedara registrada en el historial de PV de cada usuario.
+      </div>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          disabled={!canSubmit || saving}
+          className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Asignar PV
+        </button>
+      </div>
+    </form>
+  </div>
+);
+
 const MetricCard = ({ label, value }: { label: string; value: number }) => (
   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
@@ -475,11 +634,15 @@ const UserActions = ({ user, onView, onAdjustPv }: UserActionsProps) => (
 export const AdminUsersManager = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const openConfirmation = useAlertConfirmationStore(
+    (state) => state.openAlertConfirmation,
+  );
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const showToast = useToastStore((state) => state.showToast);
   const [users, setUsers] = useState<AdminUserListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [queryInput, setQueryInput] = useState("");
@@ -489,11 +652,21 @@ export const AdminUsersManager = () => {
   const [order, setOrder] = useState<OrderValue>("recent");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<AdminUserListItem | null>(null);
+  const [selectedUser, setSelectedUser] = useState<AdminUserListItem | null>(
+    null,
+  );
   const [pvUser, setPvUser] = useState<AdminUserListItem | null>(null);
   const [history, setHistory] = useState<UserPvAdjustmentLog[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [bulkSelectionMode, setBulkSelectionMode] = useState<
+    "selected" | "all"
+  >("selected");
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [bulkAmount, setBulkAmount] = useState("");
+  const [bulkReason, setBulkReason] = useState("");
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -519,6 +692,7 @@ export const AdminUsersManager = () => {
 
       setUsers(result.items);
       setTotalCount(result.totalCount);
+      setTotalUsers(result.totalUsers);
       setTotalPages(result.totalPages);
       if (result.currentPage !== page) {
         setPage(result.currentPage);
@@ -541,14 +715,26 @@ export const AdminUsersManager = () => {
     };
   }, [loadUsers, hideLoading]);
 
-  const updateUserInList = (userId: string, patch: Partial<AdminUserListItem>) => {
+  useEffect(() => {
+    setBulkSelectionMode("selected");
+    setSelectedUserIds([]);
+  }, [order, query, roleFilter, statusFilter]);
+
+  const updateUserInList = (
+    userId: string,
+    patch: Partial<AdminUserListItem>,
+  ) => {
     setUsers((current) =>
-      current.map((user) => (user.id === userId ? { ...user, ...patch } : user)),
+      current.map((user) =>
+        user.id === userId ? { ...user, ...patch } : user,
+      ),
     );
     setSelectedUser((current) =>
       current?.id === userId ? { ...current, ...patch } : current,
     );
-    setPvUser((current) => (current?.id === userId ? { ...current, ...patch } : current));
+    setPvUser((current) =>
+      current?.id === userId ? { ...current, ...patch } : current,
+    );
   };
 
   const loadHistory = async (userId: string) => {
@@ -569,35 +755,41 @@ export const AdminUsersManager = () => {
     void loadHistory(user.id);
   };
 
-  const handleRoleStatusSave = async (role: string, status: string) => {
+  const handleRoleStatusSave = (role: string, status: string) => {
     if (!selectedUser) return;
 
-    const confirmed = window.confirm(
-      "¿Confirmas el cambio de rol/estado para este usuario?",
-    );
-    if (!confirmed) return;
-
-    try {
+    const user = selectedUser;
+    openConfirmation({
+      text: "¿Confirmas el cambio de rol/estado?",
+      description: `${user.nickname} quedara con rol "${roleLabels[role] ?? role}" y estado "${statusLabels[status] ?? status}".`,
+      action: async () => {
+        try {
       setSaving(true);
-      const result = await updateAdminUserRoleStatusAction({
-        userId: selectedUser.id,
-        role,
-        status,
-      });
-      updateUserInList(selectedUser.id, {
+          const result = await updateAdminUserRoleStatusAction({
+            userId: user.id,
+            role,
+            status,
+          });
+          updateUserInList(user.id, {
         role: result.user.role,
         status: result.user.status,
         updatedAt: result.user.updatedAt,
       });
-      showToast("Usuario actualizado correctamente.", "success");
-    } catch (error) {
-      showToast(
-        getSafeErrorMessage(error, "No se pudo actualizar el usuario."),
-        "error",
-      );
-    } finally {
-      setSaving(false);
-    }
+          return true;
+        } catch (error) {
+          showToast(
+            getSafeErrorMessage(error, "No se pudo actualizar el usuario."),
+            "error",
+          );
+          return false;
+        } finally {
+          setSaving(false);
+        }
+      },
+      onSuccess: () => {
+        showToast("Usuario actualizado correctamente.", "success");
+      },
+    });
   };
 
   const handlePvSubmit = async (amount: number, reason: string) => {
@@ -627,6 +819,93 @@ export const AdminUsersManager = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const currentPageUserIds = useMemo(
+    () => users.map((user) => user.id),
+    [users],
+  );
+  const selectedUsersCount =
+    bulkSelectionMode === "all" ? totalUsers : selectedUserIds.length;
+  const allCurrentPageSelected =
+    currentPageUserIds.length > 0 &&
+    currentPageUserIds.every((userId) => selectedUserIds.includes(userId));
+  const bulkNumericAmount = Number(bulkAmount);
+  const canSubmitBulk =
+    selectedUsersCount > 0 &&
+    Number.isInteger(bulkNumericAmount) &&
+    bulkNumericAmount > 0 &&
+    bulkReason.trim().length >= 5;
+
+  const toggleUserSelection = (userId: string) => {
+    setBulkSelectionMode("selected");
+    setSelectedUserIds((current) =>
+      current.includes(userId)
+        ? current.filter((id) => id !== userId)
+        : [...current, userId],
+    );
+  };
+
+  const toggleCurrentPageSelection = () => {
+    setBulkSelectionMode("selected");
+    setSelectedUserIds((current) => {
+      if (allCurrentPageSelected) {
+        return current.filter((id) => !currentPageUserIds.includes(id));
+      }
+
+      return Array.from(new Set([...current, ...currentPageUserIds]));
+    });
+  };
+
+  const handleBulkPvSubmit = () => {
+    if (!canSubmitBulk) return;
+
+    const selectionMode = bulkSelectionMode;
+    const userIds = [...selectedUserIds];
+    const amount = bulkNumericAmount;
+    const reason = bulkReason.trim();
+    const selectionDescription =
+      selectionMode === "all"
+        ? `todos los ${totalUsers} usuarios de la app`
+        : `${userIds.length} usuarios seleccionados`;
+
+    openConfirmation({
+      text: "¿Confirmas la asignacion masiva de PV?",
+      description: `Vas a sumar ${amount} PV a ${selectionDescription}. Esta accion quedara registrada en el historial de cada usuario.`,
+      action: async () => {
+        try {
+          setBulkSaving(true);
+          const result = await bulkAdjustUserVictoryPointsAction({
+            selection:
+              selectionMode === "all"
+                ? { mode: "all" }
+                : { mode: "selected", userIds },
+            amount,
+            reason,
+          });
+
+          showToast(
+            `Se sumaron ${result.amount} PV a ${result.affectedCount} usuarios.`,
+            "success",
+          );
+          setBulkSelectionMode("selected");
+          setSelectedUserIds([]);
+          setBulkAmount("");
+          setBulkReason("");
+          setBulkModalOpen(false);
+          await loadUsers();
+          return true;
+        } catch (error) {
+          showToast(
+            getSafeErrorMessage(error, "No se pudieron asignar los PV masivos."),
+            "error",
+          );
+          return false;
+        } finally {
+          setBulkSaving(false);
+        }
+      },
+    });
   };
 
   const filteredLabel = useMemo(
@@ -694,10 +973,29 @@ export const AdminUsersManager = () => {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-3">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {filteredLabel}
           </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled={bulkSelectionMode === "all" || users.length === 0}
+              onClick={toggleCurrentPageSelection}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
+            >
+              {allCurrentPageSelected
+                ? "Quitar seleccion de esta pagina"
+                : "Seleccionar usuarios de esta pagina"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setBulkModalOpen(true)}
+              className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-400"
+            >
+              Asignar PV masivo
+            </button>
+          </div>
         </div>
 
         {!loading && error && (
@@ -718,6 +1016,18 @@ export const AdminUsersManager = () => {
               <table className="min-w-full divide-y divide-slate-200 dark:divide-tournament-dark-border">
                 <thead className="bg-slate-50 dark:bg-tournament-dark-muted">
                   <tr>
+                    <TableHead>
+                      <input
+                        type="checkbox"
+                        checked={
+                          bulkSelectionMode === "all" || allCurrentPageSelected
+                        }
+                        disabled={bulkSelectionMode === "all"}
+                        onChange={toggleCurrentPageSelection}
+                        className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                        aria-label="Seleccionar usuarios de esta pagina"
+                      />
+                    </TableHead>
                     <TableHead>Usuario</TableHead>
                     <TableHead>Rol</TableHead>
                     <TableHead>Estado</TableHead>
@@ -733,6 +1043,19 @@ export const AdminUsersManager = () => {
                       key={user.id}
                       className="bg-white transition hover:bg-slate-50 dark:bg-tournament-dark-surface dark:hover:bg-tournament-dark-muted/60"
                     >
+                      <td className="px-4 py-4">
+                        <input
+                          type="checkbox"
+                          checked={
+                            bulkSelectionMode === "all" ||
+                            selectedUserIds.includes(user.id)
+                          }
+                          disabled={bulkSelectionMode === "all"}
+                          onChange={() => toggleUserSelection(user.id)}
+                          className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                          aria-label={`Seleccionar a ${user.nickname}`}
+                        />
+                      </td>
                       <td className="px-4 py-4">
                         <p className="font-semibold text-slate-900 dark:text-white">
                           {user.nickname}
@@ -783,13 +1106,26 @@ export const AdminUsersManager = () => {
                   className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        {user.nickname}
-                      </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        {getDisplayName(user)}
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={
+                          bulkSelectionMode === "all" ||
+                          selectedUserIds.includes(user.id)
+                        }
+                        disabled={bulkSelectionMode === "all"}
+                        onChange={() => toggleUserSelection(user.id)}
+                        className="mt-1 h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                        aria-label={`Seleccionar a ${user.nickname}`}
+                      />
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          {user.nickname}
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          {getDisplayName(user)}
+                        </p>
+                      </div>
                     </div>
                     <StatusBadge status={user.status} />
                   </div>
@@ -841,6 +1177,28 @@ export const AdminUsersManager = () => {
           onSubmit={handlePvSubmit}
         />
       )}
+
+      {bulkModalOpen && (
+        <BulkPvAdjustmentModal
+          selectionMode={bulkSelectionMode}
+          selectedCount={selectedUserIds.length}
+          totalUsers={totalUsers}
+          amount={bulkAmount}
+          reason={bulkReason}
+          saving={bulkSaving}
+          canSubmit={canSubmitBulk}
+          onClose={() => setBulkModalOpen(false)}
+          onSelectionModeChange={(mode) => {
+            setBulkSelectionMode(mode);
+            if (mode === "all") {
+              setSelectedUserIds([]);
+            }
+          }}
+          onAmountChange={setBulkAmount}
+          onReasonChange={setBulkReason}
+          onSubmit={handleBulkPvSubmit}
+        />
+      )}
     </section>
   );
 };
@@ -852,7 +1210,12 @@ type FilterSelectProps = {
   onChange: (value: string) => void;
 };
 
-const FilterSelect = ({ label, value, options, onChange }: FilterSelectProps) => (
+const FilterSelect = ({
+  label,
+  value,
+  options,
+  onChange,
+}: FilterSelectProps) => (
   <label className="flex flex-col gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
     {label}
     <select

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import {
   AdjustUserVictoryPointsSchema,
   AdminUsersFiltersSchema,
+  BulkAdjustUserVictoryPointsSchema,
   UpdateAdminUserRoleStatusSchema,
   UserPvAdjustmentsSchema,
 } from "@/schemas";
@@ -32,6 +33,7 @@ export type AdminUserListItem = {
 export type AdminUsersResult = {
   items: AdminUserListItem[];
   totalCount: number;
+  totalUsers: number;
   totalPages: number;
   currentPage: number;
   perPage: number;
@@ -121,7 +123,10 @@ export const getAdminUsersAction = async (
   const where: Prisma.UserWhereInput =
     filters.length > 0 ? { AND: filters } : {};
 
-  const totalCount = await prisma.user.count({ where });
+  const [totalCount, totalUsers] = await Promise.all([
+    prisma.user.count({ where }),
+    prisma.user.count(),
+  ]);
   const totalPages = Math.max(1, Math.ceil(totalCount / parsed.perPage));
   const currentPage = Math.min(parsed.page, totalPages);
 
@@ -161,6 +166,7 @@ export const getAdminUsersAction = async (
       isCurrentAdmin: user.id === adminId,
     })),
     totalCount,
+    totalUsers,
     totalPages,
     currentPage,
     perPage: parsed.perPage,
@@ -275,6 +281,72 @@ export const adjustUserVictoryPointsAction = async (input: unknown) => {
       ...result.adjustment,
       createdAt: result.adjustment.createdAt.toISOString(),
     },
+  };
+};
+
+export const bulkAdjustUserVictoryPointsAction = async (input: unknown) => {
+  const { adminId } = await requireAdminSession();
+  const parsed = BulkAdjustUserVictoryPointsSchema.parse(input);
+
+  const where: Prisma.UserWhereInput =
+    parsed.selection.mode === "all"
+      ? {}
+      : { id: { in: parsed.selection.userIds } };
+
+  const result = await prisma.$transaction(async (tx) => {
+    const users = await tx.user.findMany({
+      where,
+      select: {
+        id: true,
+        victoryPoints: true,
+      },
+    });
+
+    if (users.length === 0) {
+      throw new Error("No hay usuarios para ajustar.");
+    }
+
+    const updates = await Promise.all(
+      users.map(async (user) => {
+        const previousBalance = user.victoryPoints ?? 0;
+        const nextBalance = previousBalance + parsed.amount;
+
+        const updatedUser = await tx.user.update({
+          where: { id: user.id },
+          data: {
+            victoryPoints: nextBalance,
+          },
+          select: {
+            id: true,
+            victoryPoints: true,
+            updatedAt: true,
+          },
+        });
+
+        await tx.victoryPointAdjustment.create({
+          data: {
+            userId: user.id,
+            adminId,
+            amount: parsed.amount,
+            previousBalance,
+            nextBalance,
+            reason: parsed.reason,
+          },
+          select: { id: true },
+        });
+
+        return updatedUser;
+      }),
+    );
+
+    return updates;
+  });
+
+  return {
+    ok: true,
+    affectedCount: result.length,
+    amount: parsed.amount,
+    selectionMode: parsed.selection.mode,
   };
 };
 
