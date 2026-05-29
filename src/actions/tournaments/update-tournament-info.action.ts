@@ -5,12 +5,14 @@ import {
   UpdateTournamentInfoSchema,
   UpdateTournamentInfoInput,
 } from "@/schemas";
+import { assertCanManageTournament } from "./tournament-action-auth";
 
 export async function updateTournamentInfoAction(
   input: UpdateTournamentInfoInput
 ) {
   try {
     const data = UpdateTournamentInfoSchema.parse(input);
+    await assertCanManageTournament(data.tournamentId);
 
     if (data.status === "finished") {
       throw new Error("No se puede editar un torneo finalizado");

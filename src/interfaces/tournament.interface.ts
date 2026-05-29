@@ -48,6 +48,8 @@ export interface TournamentInterface {
   image: string;
   currentRoundNumber: number;
   maxRounds: number;
+  topCutGeneratedAt?: Date | null;
+  topCutPvBonus?: number | null;
   createDate: Date;
   storeId: string;
   typeTournamentId: string;
@@ -68,7 +70,14 @@ export interface TournamentPlayerInterface {
   buchholz: number;
   rivals: string[];
   deckId?: string;
+  topCutSeed?: number | null;
 }
+
+export type RoundStage =
+  | "SWISS"
+  | "TOP8_QUARTERFINAL"
+  | "TOP8_SEMIFINAL"
+  | "TOP8_FINAL";
 
 export interface MatchInterface {
   id: string;
@@ -77,11 +86,13 @@ export interface MatchInterface {
   player2Id: string | null;
   player2Nickname: string | null;
   result: "P1" | "P2" | "DRAW" | null;
+  bracketPosition?: number | null;
 }
 
 export interface RoundInterface {
   id: string;
   roundNumber: number;
+  stage?: RoundStage | null;
   startedAt: string | null;
   finishedAt?: string | null;
   matches: MatchInterface[];
@@ -94,7 +105,10 @@ export interface TournamentSnapshot {
     status: "pending" | "in_progress" | "finished" | "cancelled";
     finishedAt?: string | null;
     currentRoundNumber: number;
+    maxRounds?: number;
     typeTournamentName?: string | null;
+    topCutGeneratedAt?: string | null;
+    topCutPvBonus?: number | null;
   };
   players: TournamentPlayerInterface[];
   rounds: RoundInterface[];
@@ -110,6 +124,8 @@ export interface PublicTournamentDetail {
     finishedAt?: string | null;
     currentRoundNumber: number;
     maxRounds: number;
+    topCutGeneratedAt?: string | null;
+    topCutPvBonus?: number | null;
     format?: string | null;
     typeTournamentName?: string | null;
   };

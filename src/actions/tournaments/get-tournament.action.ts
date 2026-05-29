@@ -30,7 +30,12 @@ export async function getTournamentAction(tournamentId: string) {
         },
         tournamentRounds: {
           include: {
-            matches: true,
+            matches: {
+              orderBy: [{ bracketPosition: "asc" }, { createdAt: "asc" }],
+            },
+          },
+          orderBy: {
+            roundNumber: "asc",
           },
         },
       },

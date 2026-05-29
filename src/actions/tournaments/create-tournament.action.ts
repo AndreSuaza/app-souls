@@ -3,10 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { CreateTournamentSchema, CreateTournamentInput } from "@/schemas";
 import { TournamentFormat } from "@prisma/client";
+import { assertCanCreateTournamentForStore } from "./tournament-action-auth";
 
 export async function createTournamentAction(input: CreateTournamentInput) {
   try {
     const data = CreateTournamentSchema.parse(input);
+    await assertCanCreateTournamentForStore(data.storeId);
 
     // Crear torneo
     const tournament = await prisma.tournament.create({

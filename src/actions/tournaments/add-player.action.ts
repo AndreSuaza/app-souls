@@ -3,10 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { TournamentPlayerSchema, TournamentPlayerInput } from "@/schemas";
 import { Role } from "@prisma/client";
+import { assertCanManageTournament } from "./tournament-action-auth";
 
 export async function addPlayerAction(input: TournamentPlayerInput) {
   try {
     const data = TournamentPlayerSchema.parse(input);
+    await assertCanManageTournament(data.tournamentId);
 
     const user = await prisma.user.findUnique({
       where: { id: data.userId },

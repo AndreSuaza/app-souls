@@ -260,10 +260,7 @@ export const MarkdownEditor = ({
     },
   });
 
-  const previewValue = useMemo(
-    () => editor?.getMarkdown() ?? value,
-    [editor, value],
-  );
+  const previewValue = value;
 
   const updateCardPreview = useCallback(
     (cardId: string, preview: string) => {

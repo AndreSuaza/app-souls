@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { assertCanManageTournament } from "./tournament-action-auth";
 
 type StartRoundInput = {
   roundId: string;
@@ -19,6 +20,17 @@ export async function startRoundAction({
     if (!startedAt) {
       throw new Error("Fecha de inicio requerida");
     }
+
+    const round = await prisma.round.findUnique({
+      where: { id: roundId },
+      select: { tournamentId: true },
+    });
+
+    if (!round) {
+      throw new Error("Ronda no encontrada");
+    }
+
+    await assertCanManageTournament(round.tournamentId);
 
     await prisma.round.update({
       where: { id: roundId },

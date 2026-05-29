@@ -160,6 +160,8 @@ model Tournament {
   finishedAt         DateTime?
   currentRoundNumber Int              @default(0)
   maxRounds          Int              @default(1)
+  topCutGeneratedAt  DateTime?
+  topCutPvBonus      Int?
   createDate         DateTime         @default(now())
 
   storeId String @db.ObjectId
@@ -200,6 +202,13 @@ enum MatchResult {
   DRAW
 }
 
+enum RoundStage {
+  SWISS
+  TOP8_QUARTERFINAL
+  TOP8_SEMIFINAL
+  TOP8_FINAL
+}
+
 model TournamentPlayer {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   tournamentId   String   @db.ObjectId
@@ -213,6 +222,7 @@ model TournamentPlayer {
   hadBye         Boolean  @default(false)
   buchholz       Int      @default(0)
   rivals         String[] @default([]) @db.ObjectId
+  topCutSeed     Int?
   createDate     DateTime @default(now())
 
   deckId String? @db.ObjectId
@@ -229,6 +239,7 @@ model TournamentPlayer {
 model Round {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   roundNumber  Int
+  stage        RoundStage? @default(SWISS)
   tournamentId String   @db.ObjectId
   matches      Match[]
   createDate   DateTime @default(now())
@@ -249,6 +260,7 @@ model Match {
   player2Id       String?      @db.ObjectId
   player2Nickname String?
   result          MatchResult?
+  bracketPosition Int?
   createdAt       DateTime     @default(now())
 
   round Round @relation(fields: [roundId], references: [id])

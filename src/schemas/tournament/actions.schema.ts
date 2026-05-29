@@ -2,7 +2,12 @@ import { z } from "zod";
 import { CreateTournamentSchema } from "./tournament.schema";
 import { UpdateTournamentInfoSchema } from "./tournament.schema";
 import { TournamentPlayerSchema } from "./player.schema";
-import { GenerateRoundSchema, FinalizeRoundSchema } from "./round.schema";
+import {
+  FinalizeRoundSchema,
+  FinalizeTopCutRoundSchema,
+  GenerateRoundSchema,
+  GenerateTopCutBracketSchema,
+} from "./round.schema";
 import { SaveMatchSchema } from "./match.schema";
 
 // Schema genérico para IDs usados en acciones de torneo
@@ -13,7 +18,9 @@ export const Schemas = {
   updateTournament: UpdateTournamentInfoSchema,
   addPlayer: TournamentPlayerSchema,
   generateRound: GenerateRoundSchema,
+  generateTopCutBracket: GenerateTopCutBracketSchema,
   finalizeRound: FinalizeRoundSchema,
+  finalizeTopCutRound: FinalizeTopCutRoundSchema,
   saveMatchResult: SaveMatchSchema,
 };
 

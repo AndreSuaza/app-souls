@@ -34,6 +34,7 @@ type Props = {
   status: RoundStatus;
   matches: MatchInterface[];
   readOnly?: boolean;
+  allowDraw?: boolean;
   onChangeResult?: (matchId: string, result: "P1" | "P2" | "DRAW") => void;
   renderResult?: (match: MatchInterface) => ReactNode;
   matchCardClassNames?: {
@@ -58,6 +59,7 @@ export const RoundHistoryCardBase = ({
   status,
   matches,
   readOnly = true,
+  allowDraw = true,
   onChangeResult,
   renderResult,
   matchCardClassNames,
@@ -189,6 +191,7 @@ export const RoundHistoryCardBase = ({
                   players={players}
                   readOnly={readOnly}
                   decorated={false}
+                  allowDraw={allowDraw}
                   onChangeResult={onChangeResult}
                   renderResult={renderResult}
                   classNames={matchCardClassNames}

@@ -12,6 +12,7 @@ import { RoundProgressBar } from "./RoundProgressBar";
 import { TournamentTimer } from "./TournamentTimer";
 import { RoundActionButton } from "./RoundActionButton";
 import { CurrentRoundTimerModal } from "./CurrentRoundTimerModal";
+import { getRoundStageLabel, isTopCutStage } from "@/logic";
 
 export const CurrentRoundHeader = () => {
   const { tournament, rounds, recalculateCurrentRound } = useTournamentStore();
@@ -96,7 +97,15 @@ export const CurrentRoundHeader = () => {
   };
 
   const shouldShowRecalculate =
-    !!currentRound && isCurrentRound && canShowRecalculate;
+    !!currentRound &&
+    isCurrentRound &&
+    canShowRecalculate &&
+    !isTopCutStage(currentRound.stage);
+  const currentRoundTitle = currentRound
+    ? isTopCutStage(currentRound.stage)
+      ? getRoundStageLabel(currentRound.stage)
+      : `Ronda ${currentRound.roundNumber}`
+    : `Ronda ${tournament.currentRoundNumber}`;
 
   return (
     <div className="w-full rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -122,9 +131,11 @@ export const CurrentRoundHeader = () => {
 
           {/* Número de ronda */}
           <h2 className="order-1 md:order-2 text-xl font-bold text-slate-900 dark:text-white">
-            Ronda {currentRound?.roundNumber ?? tournament.currentRoundNumber}
+            {currentRoundTitle}
             {/* Mostrar "de X" solo si se ha generado al menos la priemra ronda*/}
-            {tournament.maxRounds > 1 && ` de ${tournament.maxRounds}`}
+            {!isTopCutStage(currentRound?.stage) &&
+              tournament.maxRounds > 1 &&
+              ` de ${tournament.maxRounds}`}
           </h2>
         </div>
 
