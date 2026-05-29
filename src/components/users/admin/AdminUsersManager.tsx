@@ -14,11 +14,8 @@ import {
   type UserPvAdjustmentLog,
 } from "@/actions";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
-import {
-  useAlertConfirmationStore,
-  useToastStore,
-  useUIStore,
-} from "@/store";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import {
   IoAddCircleOutline,
   IoCloseOutline,
@@ -28,8 +25,11 @@ import {
   IoSearchOutline,
 } from "react-icons/io5";
 
+const BULK_PV_MAX_USERS = 100;
+
 type RoleValue = "all" | "player" | "admin" | "store" | "news";
 type StatusValue = "all" | "active" | "inactive" | "banned";
+type PerPageValue = 10 | 20 | 50 | 100;
 type OrderValue =
   | "recent"
   | "oldest"
@@ -64,6 +64,13 @@ const ORDER_OPTIONS: Array<{ value: OrderValue; label: string }> = [
   { value: "pv-asc", label: "Menos PV" },
   { value: "elo-desc", label: "Mas ELO" },
   { value: "elo-asc", label: "Menos ELO" },
+];
+
+const PER_PAGE_OPTIONS: Array<{ value: PerPageValue; label: string }> = [
+  { value: 10, label: "10 por pagina" },
+  { value: 20, label: "20 por pagina" },
+  { value: 50, label: "50 por pagina" },
+  { value: 100, label: "100 por pagina" },
 ];
 
 const roleLabels: Record<string, string> = {
@@ -428,153 +435,149 @@ const PvAdjustmentModal = ({
 };
 
 type BulkPvAdjustmentModalProps = {
-  selectionMode: "selected" | "all";
-  selectedCount: number;
-  totalUsers: number;
+  selectedUsers: AdminUserListItem[];
   amount: string;
   reason: string;
   saving: boolean;
   canSubmit: boolean;
   onClose: () => void;
-  onSelectionModeChange: (mode: "selected" | "all") => void;
   onAmountChange: (value: string) => void;
   onReasonChange: (value: string) => void;
   onSubmit: () => void;
 };
 
 const BulkPvAdjustmentModal = ({
-  selectionMode,
-  selectedCount,
-  totalUsers,
+  selectedUsers,
   amount,
   reason,
   saving,
   canSubmit,
   onClose,
-  onSelectionModeChange,
   onAmountChange,
   onReasonChange,
   onSubmit,
-}: BulkPvAdjustmentModalProps) => (
-  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-    <form
-      className="w-full max-w-2xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-2xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (!canSubmit) return;
-        onSubmit();
-      }}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
-            Asignacion masiva de PV
-          </p>
-          <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">
-            Sumar puntos de victoria
-          </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Selecciona el alcance, define la cantidad y deja un motivo de
-            auditoria.
-          </p>
+}: BulkPvAdjustmentModalProps) => {
+  const targetCount = selectedUsers.length;
+  const exceedsMaxUsers = targetCount > BULK_PV_MAX_USERS;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <form
+        className="w-full max-w-2xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-2xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!canSubmit) return;
+          onSubmit();
+        }}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
+              Asignacion masiva de PV
+            </p>
+            <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">
+              Sumar puntos de victoria
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Define la cantidad y deja un motivo de auditoria.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:text-slate-900 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-white"
+            aria-label="Cerrar asignacion masiva de PV"
+          >
+            <IoCloseOutline className="h-6 w-6" />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:text-slate-900 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-white"
-          aria-label="Cerrar asignacion masiva de PV"
-        >
-          <IoCloseOutline className="h-6 w-6" />
-        </button>
-      </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => onSelectionModeChange("selected")}
-          className={clsx(
-            "rounded-xl border px-4 py-4 text-left transition",
-            selectionMode === "selected"
-              ? "border-purple-500 bg-purple-600 text-white"
-              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
-          )}
-        >
-          <span className="block text-sm font-bold">
-            Usuarios seleccionados
-          </span>
-          <span className="mt-1 block text-xs opacity-80">
-            {selectedCount} usuarios marcados en la lista.
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectionModeChange("all")}
-          className={clsx(
-            "rounded-xl border px-4 py-4 text-left transition",
-            selectionMode === "all"
-              ? "border-purple-500 bg-purple-600 text-white"
-              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200",
-          )}
-        >
-          <span className="block text-sm font-bold">Todos los usuarios</span>
-          <span className="mt-1 block text-xs opacity-80">
-            {totalUsers} usuarios existentes en la app.
-          </span>
-        </button>
-      </div>
+        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-bold text-slate-900 dark:text-white">
+              Usuarios seleccionados
+            </p>
+            <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+              {targetCount}/{BULK_PV_MAX_USERS}
+            </span>
+          </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-[160px_1fr]">
-        <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          PV a sumar
-          <input
-            type="number"
-            min={1}
-            step={1}
-            value={amount}
-            onChange={(event) => onAmountChange(event.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
-            placeholder="Ej: 10"
-          />
-        </label>
+          <div className="mt-3 max-h-44 space-y-2 overflow-y-auto pr-1">
+            {selectedUsers.length > 0 ? (
+              selectedUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
+                >
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {user.nickname}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {getDisplayName(user)}
+                    {user.email ? ` - ${user.email}` : ""}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-sm text-slate-500 dark:border-tournament-dark-border dark:text-slate-400">
+                No hay usuarios seleccionados.
+              </p>
+            )}
+          </div>
+        </div>
 
-        <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Motivo
-          <input
-            value={reason}
-            onChange={(event) => onReasonChange(event.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
-            placeholder="Ej: Recompensa por evento regional"
-          />
-        </label>
-      </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-[160px_1fr]">
+          <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            PV a sumar
+            <input
+              type="number"
+              min={1}
+              step={1}
+              value={amount}
+              onChange={(event) => onAmountChange(event.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
+              placeholder="Ej: 10"
+            />
+          </label>
 
-      <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-100">
-        Objetivo actual:{" "}
-        <strong>
-          {selectionMode === "all" ? totalUsers : selectedCount} usuarios
-        </strong>
-        . Esta accion quedara registrada en el historial de PV de cada usuario.
-      </div>
+          <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Motivo
+            <input
+              value={reason}
+              onChange={(event) => onReasonChange(event.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
+              placeholder="Ej: Recompensa por evento regional"
+            />
+          </label>
+        </div>
 
-      <div className="mt-6 flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          disabled={!canSubmit || saving}
-          className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Asignar PV
-        </button>
-      </div>
-    </form>
-  </div>
-);
+        {exceedsMaxUsers && (
+          <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-500/30 dark:bg-red-900/20 dark:text-red-200">
+            Solo puedes asignar PV masivamente a un maximo de{" "}
+            {BULK_PV_MAX_USERS} usuarios.
+          </p>
+        )}
+
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={!canSubmit || saving}
+            className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Asignar PV
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
 
 const MetricCard = ({ label, value }: { label: string; value: number }) => (
   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
@@ -642,7 +645,6 @@ export const AdminUsersManager = () => {
   const showToast = useToastStore((state) => state.showToast);
   const [users, setUsers] = useState<AdminUserListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [totalUsers, setTotalUsers] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [queryInput, setQueryInput] = useState("");
@@ -650,6 +652,7 @@ export const AdminUsersManager = () => {
   const [roleFilter, setRoleFilter] = useState<RoleValue>("all");
   const [statusFilter, setStatusFilter] = useState<StatusValue>("all");
   const [order, setOrder] = useState<OrderValue>("recent");
+  const [perPage, setPerPage] = useState<PerPageValue>(10);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<AdminUserListItem | null>(
@@ -659,14 +662,15 @@ export const AdminUsersManager = () => {
   const [history, setHistory] = useState<UserPvAdjustmentLog[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [bulkSelectionMode, setBulkSelectionMode] = useState<
-    "selected" | "all"
-  >("selected");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedUsersById, setSelectedUsersById] = useState<
+    Record<string, AdminUserListItem>
+  >({});
   const [bulkAmount, setBulkAmount] = useState("");
   const [bulkReason, setBulkReason] = useState("");
   const [bulkSaving, setBulkSaving] = useState(false);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  useBodyScrollLock(Boolean(selectedUser || pvUser || bulkModalOpen));
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -683,7 +687,7 @@ export const AdminUsersManager = () => {
       showLoading("Cargando usuarios...");
       const result = await getAdminUsersAction({
         page,
-        perPage: 10,
+        perPage,
         query,
         role: roleFilter,
         status: statusFilter,
@@ -692,7 +696,6 @@ export const AdminUsersManager = () => {
 
       setUsers(result.items);
       setTotalCount(result.totalCount);
-      setTotalUsers(result.totalUsers);
       setTotalPages(result.totalPages);
       if (result.currentPage !== page) {
         setPage(result.currentPage);
@@ -705,7 +708,16 @@ export const AdminUsersManager = () => {
       setLoading(false);
       hideLoading();
     }
-  }, [hideLoading, order, page, query, roleFilter, showLoading, statusFilter]);
+  }, [
+    hideLoading,
+    order,
+    page,
+    perPage,
+    query,
+    roleFilter,
+    showLoading,
+    statusFilter,
+  ]);
 
   useEffect(() => {
     loadUsers();
@@ -716,9 +728,9 @@ export const AdminUsersManager = () => {
   }, [loadUsers, hideLoading]);
 
   useEffect(() => {
-    setBulkSelectionMode("selected");
     setSelectedUserIds([]);
-  }, [order, query, roleFilter, statusFilter]);
+    setSelectedUsersById({});
+  }, [order, perPage, query, roleFilter, statusFilter]);
 
   const updateUserInList = (
     userId: string,
@@ -735,6 +747,15 @@ export const AdminUsersManager = () => {
     setPvUser((current) =>
       current?.id === userId ? { ...current, ...patch } : current,
     );
+    setSelectedUsersById((current) => {
+      const selectedUser = current[userId];
+      if (!selectedUser) return current;
+
+      return {
+        ...current,
+        [userId]: { ...selectedUser, ...patch },
+      };
+    });
   };
 
   const loadHistory = async (userId: string) => {
@@ -764,17 +785,17 @@ export const AdminUsersManager = () => {
       description: `${user.nickname} quedara con rol "${roleLabels[role] ?? role}" y estado "${statusLabels[status] ?? status}".`,
       action: async () => {
         try {
-      setSaving(true);
+          setSaving(true);
           const result = await updateAdminUserRoleStatusAction({
             userId: user.id,
             role,
             status,
           });
           updateUserInList(user.id, {
-        role: result.user.role,
-        status: result.user.status,
-        updatedAt: result.user.updatedAt,
-      });
+            role: result.user.role,
+            status: result.user.status,
+            updatedAt: result.user.updatedAt,
+          });
           return true;
         } catch (error) {
           showToast(
@@ -825,29 +846,72 @@ export const AdminUsersManager = () => {
     () => users.map((user) => user.id),
     [users],
   );
-  const selectedUsersCount =
-    bulkSelectionMode === "all" ? totalUsers : selectedUserIds.length;
+  const selectedUsersCount = selectedUserIds.length;
+  const selectedUsersForBulkModal = useMemo(
+    () =>
+      selectedUserIds
+        .map((userId) => selectedUsersById[userId])
+        .filter((user): user is AdminUserListItem => Boolean(user)),
+    [selectedUserIds, selectedUsersById],
+  );
   const allCurrentPageSelected =
     currentPageUserIds.length > 0 &&
     currentPageUserIds.every((userId) => selectedUserIds.includes(userId));
   const bulkNumericAmount = Number(bulkAmount);
   const canSubmitBulk =
     selectedUsersCount > 0 &&
+    selectedUsersCount <= BULK_PV_MAX_USERS &&
     Number.isInteger(bulkNumericAmount) &&
     bulkNumericAmount > 0 &&
     bulkReason.trim().length >= 5;
 
-  const toggleUserSelection = (userId: string) => {
-    setBulkSelectionMode("selected");
+  const toggleUserSelection = (user: AdminUserListItem) => {
+    if (
+      !selectedUserIds.includes(user.id) &&
+      selectedUserIds.length >= BULK_PV_MAX_USERS
+    ) {
+      showToast(
+        `Solo puedes seleccionar hasta ${BULK_PV_MAX_USERS} usuarios.`,
+        "error",
+      );
+      return;
+    }
+
     setSelectedUserIds((current) =>
-      current.includes(userId)
-        ? current.filter((id) => id !== userId)
-        : [...current, userId],
+      current.includes(user.id)
+        ? current.filter((id) => id !== user.id)
+        : [...current, user.id],
     );
+    setSelectedUsersById((current) => {
+      if (current[user.id]) {
+        const next = { ...current };
+        delete next[user.id];
+        return next;
+      }
+
+      return {
+        ...current,
+        [user.id]: user,
+      };
+    });
   };
 
   const toggleCurrentPageSelection = () => {
-    setBulkSelectionMode("selected");
+    const pageUserIdsToAdd = currentPageUserIds.filter(
+      (userId) => !selectedUserIds.includes(userId),
+    );
+
+    if (
+      !allCurrentPageSelected &&
+      selectedUserIds.length + pageUserIdsToAdd.length > BULK_PV_MAX_USERS
+    ) {
+      showToast(
+        `Solo puedes seleccionar hasta ${BULK_PV_MAX_USERS} usuarios.`,
+        "error",
+      );
+      return;
+    }
+
     setSelectedUserIds((current) => {
       if (allCurrentPageSelected) {
         return current.filter((id) => !currentPageUserIds.includes(id));
@@ -855,31 +919,47 @@ export const AdminUsersManager = () => {
 
       return Array.from(new Set([...current, ...currentPageUserIds]));
     });
+    setSelectedUsersById((current) => {
+      if (allCurrentPageSelected) {
+        const next = { ...current };
+        currentPageUserIds.forEach((userId) => {
+          delete next[userId];
+        });
+        return next;
+      }
+
+      return users.reduce<Record<string, AdminUserListItem>>(
+        (next, user) => ({
+          ...next,
+          [user.id]: user,
+        }),
+        current,
+      );
+    });
   };
 
   const handleBulkPvSubmit = () => {
     if (!canSubmitBulk) return;
 
-    const selectionMode = bulkSelectionMode;
     const userIds = [...selectedUserIds];
     const amount = bulkNumericAmount;
     const reason = bulkReason.trim();
-    const selectionDescription =
-      selectionMode === "all"
-        ? `todos los ${totalUsers} usuarios de la app`
-        : `${userIds.length} usuarios seleccionados`;
+    if (userIds.length > BULK_PV_MAX_USERS) {
+      showToast(
+        `Solo puedes asignar PV masivamente a ${BULK_PV_MAX_USERS} usuarios.`,
+        "error",
+      );
+      return;
+    }
 
     openConfirmation({
       text: "¿Confirmas la asignacion masiva de PV?",
-      description: `Vas a sumar ${amount} PV a ${selectionDescription}. Esta accion quedara registrada en el historial de cada usuario.`,
+      description: `Vas a sumar ${amount} PV a ${userIds.length} usuarios seleccionados. Esta accion quedara registrada en el historial de cada usuario.`,
       action: async () => {
         try {
           setBulkSaving(true);
           const result = await bulkAdjustUserVictoryPointsAction({
-            selection:
-              selectionMode === "all"
-                ? { mode: "all" }
-                : { mode: "selected", userIds },
+            selection: { mode: "selected", userIds },
             amount,
             reason,
           });
@@ -888,8 +968,8 @@ export const AdminUsersManager = () => {
             `Se sumaron ${result.amount} PV a ${result.affectedCount} usuarios.`,
             "success",
           );
-          setBulkSelectionMode("selected");
           setSelectedUserIds([]);
+          setSelectedUsersById({});
           setBulkAmount("");
           setBulkReason("");
           setBulkModalOpen(false);
@@ -897,7 +977,10 @@ export const AdminUsersManager = () => {
           return true;
         } catch (error) {
           showToast(
-            getSafeErrorMessage(error, "No se pudieron asignar los PV masivos."),
+            getSafeErrorMessage(
+              error,
+              "No se pudieron asignar los PV masivos.",
+            ),
             "error",
           );
           return false;
@@ -942,7 +1025,7 @@ export const AdminUsersManager = () => {
             </div>
           </label>
 
-          <div className="grid gap-3 sm:grid-cols-3 lg:w-[680px]">
+          <div className="grid gap-3 sm:grid-cols-2 lg:w-[900px] lg:grid-cols-4">
             <FilterSelect
               label="Rol"
               value={roleFilter}
@@ -970,6 +1053,15 @@ export const AdminUsersManager = () => {
                 setPage(1);
               }}
             />
+            <FilterSelect
+              label="Por pagina"
+              value={perPage}
+              options={PER_PAGE_OPTIONS}
+              onChange={(value) => {
+                setPerPage(Number(value) as PerPageValue);
+                setPage(1);
+              }}
+            />
           </div>
         </div>
 
@@ -980,9 +1072,9 @@ export const AdminUsersManager = () => {
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              disabled={bulkSelectionMode === "all" || users.length === 0}
+              disabled={users.length === 0}
               onClick={toggleCurrentPageSelection}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-purple-300 hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-purple-300 disabled:cursor-not-allowed disabled:opacity-50 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
             >
               {allCurrentPageSelected
                 ? "Quitar seleccion de esta pagina"
@@ -1019,10 +1111,7 @@ export const AdminUsersManager = () => {
                     <TableHead>
                       <input
                         type="checkbox"
-                        checked={
-                          bulkSelectionMode === "all" || allCurrentPageSelected
-                        }
-                        disabled={bulkSelectionMode === "all"}
+                        checked={allCurrentPageSelected}
                         onChange={toggleCurrentPageSelection}
                         className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                         aria-label="Seleccionar usuarios de esta pagina"
@@ -1046,12 +1135,8 @@ export const AdminUsersManager = () => {
                       <td className="px-4 py-4">
                         <input
                           type="checkbox"
-                          checked={
-                            bulkSelectionMode === "all" ||
-                            selectedUserIds.includes(user.id)
-                          }
-                          disabled={bulkSelectionMode === "all"}
-                          onChange={() => toggleUserSelection(user.id)}
+                          checked={selectedUserIds.includes(user.id)}
+                          onChange={() => toggleUserSelection(user)}
                           className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                           aria-label={`Seleccionar a ${user.nickname}`}
                         />
@@ -1109,12 +1194,8 @@ export const AdminUsersManager = () => {
                     <div className="flex items-start gap-3">
                       <input
                         type="checkbox"
-                        checked={
-                          bulkSelectionMode === "all" ||
-                          selectedUserIds.includes(user.id)
-                        }
-                        disabled={bulkSelectionMode === "all"}
-                        onChange={() => toggleUserSelection(user.id)}
+                        checked={selectedUserIds.includes(user.id)}
+                        onChange={() => toggleUserSelection(user)}
                         className="mt-1 h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                         aria-label={`Seleccionar a ${user.nickname}`}
                       />
@@ -1180,20 +1261,12 @@ export const AdminUsersManager = () => {
 
       {bulkModalOpen && (
         <BulkPvAdjustmentModal
-          selectionMode={bulkSelectionMode}
-          selectedCount={selectedUserIds.length}
-          totalUsers={totalUsers}
+          selectedUsers={selectedUsersForBulkModal}
           amount={bulkAmount}
           reason={bulkReason}
           saving={bulkSaving}
           canSubmit={canSubmitBulk}
           onClose={() => setBulkModalOpen(false)}
-          onSelectionModeChange={(mode) => {
-            setBulkSelectionMode(mode);
-            if (mode === "all") {
-              setSelectedUserIds([]);
-            }
-          }}
           onAmountChange={setBulkAmount}
           onReasonChange={setBulkReason}
           onSubmit={handleBulkPvSubmit}
@@ -1205,8 +1278,8 @@ export const AdminUsersManager = () => {
 
 type FilterSelectProps = {
   label: string;
-  value: string;
-  options: Array<{ value: string; label: string }>;
+  value: string | number;
+  options: Array<{ value: string | number; label: string }>;
   onChange: (value: string) => void;
 };
 

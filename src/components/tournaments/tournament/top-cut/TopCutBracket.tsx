@@ -216,7 +216,7 @@ export const TopCutBracket = ({
           )}
           {champion && (
             <span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
-              Campeon: {champion.playerNickname}
+              Campeón: {champion.playerNickname}
             </span>
           )}
         </div>

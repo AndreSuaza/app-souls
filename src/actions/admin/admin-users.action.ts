@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import {
   AdjustUserVictoryPointsSchema,
   AdminUsersFiltersSchema,
+  BULK_ADJUST_USER_PV_MAX_USERS,
   BulkAdjustUserVictoryPointsSchema,
   UpdateAdminUserRoleStatusSchema,
   UserPvAdjustmentsSchema,
@@ -288,14 +289,9 @@ export const bulkAdjustUserVictoryPointsAction = async (input: unknown) => {
   const { adminId } = await requireAdminSession();
   const parsed = BulkAdjustUserVictoryPointsSchema.parse(input);
 
-  const where: Prisma.UserWhereInput =
-    parsed.selection.mode === "all"
-      ? {}
-      : { id: { in: parsed.selection.userIds } };
-
   const result = await prisma.$transaction(async (tx) => {
     const users = await tx.user.findMany({
-      where,
+      where: { id: { in: parsed.selection.userIds } },
       select: {
         id: true,
         victoryPoints: true,
@@ -306,47 +302,49 @@ export const bulkAdjustUserVictoryPointsAction = async (input: unknown) => {
       throw new Error("No hay usuarios para ajustar.");
     }
 
-    const updates = await Promise.all(
-      users.map(async (user) => {
-        const previousBalance = user.victoryPoints ?? 0;
-        const nextBalance = previousBalance + parsed.amount;
+    if (users.length > BULK_ADJUST_USER_PV_MAX_USERS) {
+      throw new Error(
+        `No puedes ajustar mas de ${BULK_ADJUST_USER_PV_MAX_USERS} usuarios a la vez.`,
+      );
+    }
 
-        const updatedUser = await tx.user.update({
-          where: { id: user.id },
-          data: {
-            victoryPoints: nextBalance,
-          },
-          select: {
-            id: true,
-            victoryPoints: true,
-            updatedAt: true,
-          },
-        });
+    const userIds = users.map((user) => user.id);
+    const adjustmentRows = users.map((user) => {
+      const previousBalance = user.victoryPoints ?? 0;
 
-        await tx.victoryPointAdjustment.create({
-          data: {
-            userId: user.id,
-            adminId,
-            amount: parsed.amount,
-            previousBalance,
-            nextBalance,
-            reason: parsed.reason,
-          },
-          select: { id: true },
-        });
+      return {
+        userId: user.id,
+        adminId,
+        amount: parsed.amount,
+        previousBalance,
+        nextBalance: previousBalance + parsed.amount,
+        reason: parsed.reason,
+      };
+    });
 
-        return updatedUser;
-      }),
-    );
+    // Evita 2 consultas por usuario dentro de la transaccion; con 100 usuarios
+    // el flujo anterior expiraba el timeout interactivo de Prisma.
+    const updateResult = await tx.user.updateMany({
+      where: { id: { in: userIds } },
+      data: {
+        victoryPoints: { increment: parsed.amount },
+      },
+    });
 
-    return updates;
+    await tx.victoryPointAdjustment.createMany({
+      data: adjustmentRows,
+    });
+
+    return {
+      affectedCount: updateResult.count,
+    };
   });
 
   return {
     ok: true,
-    affectedCount: result.length,
+    affectedCount: result.affectedCount,
     amount: parsed.amount,
-    selectionMode: parsed.selection.mode,
+    selectionMode: "selected" as const,
   };
 };
 

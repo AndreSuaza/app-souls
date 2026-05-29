@@ -15,7 +15,7 @@ export const TOP_CUT_QUARTERFINAL_PAIRINGS = [
 ] as const;
 
 export const isTopCutTournamentType = (typeTournamentName?: string | null) =>
-  typeTournamentName === "Tier 1" || typeTournamentName === "Tier 2";
+  typeTournamentName === "Tier 1";
 
 export const isTopCutStage = (stage?: RoundStage | null) =>
   stage === "TOP8_QUARTERFINAL" ||

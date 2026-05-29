@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 type Props = {
   open: boolean;
@@ -11,6 +12,7 @@ type Props = {
 
 export const TopCutGenerateModal = ({ open, onClose, onConfirm }: Props) => {
   const [topCutPvBonus, setTopCutPvBonus] = useState("0");
+  useBodyScrollLock(open);
 
   useEffect(() => {
     if (open) setTopCutPvBonus("0");

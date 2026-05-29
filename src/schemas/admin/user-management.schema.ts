@@ -16,7 +16,7 @@ export const AdminUserIdSchema = z
 
 export const AdminUsersFiltersSchema = z.object({
   page: z.number().int().min(1).optional().default(1),
-  perPage: z.number().int().min(1).max(50).optional().default(10),
+  perPage: z.number().int().min(1).max(100).optional().default(10),
   query: z.string().trim().max(100).optional().default(""),
   role: z.union([z.literal("all"), AdminUserRoleSchema]).optional().default("all"),
   status: z
@@ -57,20 +57,20 @@ export const AdjustUserVictoryPointsSchema = z.object({
     .max(240, "El motivo no puede superar 240 caracteres."),
 });
 
+export const BULK_ADJUST_USER_PV_MAX_USERS = 100;
+
 export const BulkAdjustUserVictoryPointsSchema = z.object({
-  selection: z.discriminatedUnion("mode", [
-    z.object({
-      mode: z.literal("all"),
-    }),
-    z.object({
-      mode: z.literal("selected"),
-      userIds: z
-        .array(AdminUserIdSchema)
-        .min(1, "Selecciona al menos un usuario.")
-        .max(500, "No puedes ajustar mas de 500 usuarios seleccionados a la vez.")
-        .transform((ids) => Array.from(new Set(ids))),
-    }),
-  ]),
+  selection: z.object({
+    mode: z.literal("selected"),
+    userIds: z
+      .array(AdminUserIdSchema)
+      .min(1, "Selecciona al menos un usuario.")
+      .max(
+        BULK_ADJUST_USER_PV_MAX_USERS,
+        `No puedes ajustar mas de ${BULK_ADJUST_USER_PV_MAX_USERS} usuarios seleccionados a la vez.`,
+      )
+      .transform((ids) => Array.from(new Set(ids))),
+  }),
   amount: z
     .number()
     .int("El ajuste debe ser un numero entero.")

@@ -87,7 +87,7 @@ export async function generateTopCutBracketAction(input: Input) {
       }
 
       if (!isTopCutTournamentType(tournament.typeTournament?.name)) {
-        throw new Error("El bracket Top 8 solo aplica para torneos Tier 1 y Tier 2.");
+        throw new Error("El bracket Top 8 solo aplica para torneos Tier 1.");
       }
 
       if (tournament.status === "finished" || tournament.status === "cancelled") {

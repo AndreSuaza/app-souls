@@ -205,6 +205,10 @@ UI component rules:
 - Avoid introducing new default exports in components.
 - Prefer one component per file for new code.
 - Prefer PascalCase filenames for new components.
+- Any modal, drawer, dialog, confirmation flow, or full-screen overlay must lock background page scroll while it is open.
+- Prefer `useBodyScrollLock` over ad hoc `document.body.style.overflow` handling, especially when overlays can be nested.
+- Actions launched from the shared confirmation modal must show the global loading overlay until the confirmed async work finishes.
+- Components that trigger `openAlertConfirmation` should not rely on browser-native confirmations and should avoid duplicating loading logic unless a specific message or staged loading state is needed.
 
 Legacy compatibility:
 - Existing legacy names/exports can remain unless the task explicitly includes cleanup.

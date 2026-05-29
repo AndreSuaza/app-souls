@@ -1,8 +1,9 @@
 "use client";
 
-import { JSX, useEffect } from "react";
+import { JSX } from "react";
 import { createPortal } from "react-dom";
 import { IoCloseOutline } from "react-icons/io5";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 interface Props {
   children: JSX.Element;
@@ -17,14 +18,7 @@ export const Modal = ({
   close,
   hideCloseButton = false,
 }: Props) => {
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    // Bloquea el scroll del body mientras el modal esta abierto.
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
+  useBodyScrollLock();
 
   if (typeof document === "undefined") return null;
 
