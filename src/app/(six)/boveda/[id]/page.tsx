@@ -4,7 +4,8 @@ import {
   getBovedaCardDetailAction,
   getBovedaProductCardsAction,
 } from "@/actions";
-import { BovedaCardDetail, BovedaProductCardsTable } from "@/components";
+import { BovedaCardDetail } from "@/components/boveda/BovedaCardDetail";
+import { BovedaProductCardsTable } from "@/components/boveda/BovedaProductCardsTable";
 import { Pagination } from "@/components/ui/pagination/pagination";
 import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 
