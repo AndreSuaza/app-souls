@@ -223,6 +223,12 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     });
 
     set({
+      tournament: tournament
+        ? {
+            ...tournament,
+            maxRounds: newPlayer.maxRounds,
+          }
+        : tournament,
       players: [
         ...get().players,
         {

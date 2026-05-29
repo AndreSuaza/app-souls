@@ -120,7 +120,7 @@ export const PlayerList = () => {
   const isCompetitiveTier = ["Tier 1", "Tier 2"].includes(
     tournament?.typeTournamentName ?? "",
   );
-  const canRemoveDeck = tournament?.status === "in_progress";
+  const canRemoveDeck = tournament?.status === "pending";
 
   const handleCloseDeckActionModal = () => {
     setSelectedDeckAction(null);
@@ -227,7 +227,7 @@ export const PlayerList = () => {
       {showInitialModal && selectedUserForInitialPoints && (
         <InitialPointsModal
           user={selectedUserForInitialPoints}
-          maxRounds={rounds.length - 1}
+          maxRounds={rounds.length}
           onConfirm={confirmInitialRoundsWon}
           onCancel={cancelInitialPoints}
         />

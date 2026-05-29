@@ -32,7 +32,7 @@ export const PlayerDeckActionModal = ({
             Gestionar mazo asociado
           </h2>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">
-            Puedes revisar o remover el mazo mientras el torneo está en progreso.
+            Puedes revisar o remover el mazo antes de iniciar el torneo.
           </p>
         </div>
 
@@ -55,7 +55,7 @@ export const PlayerDeckActionModal = ({
             title={
               canRemove
                 ? "Eliminar mazo asociado"
-                : "Solo disponible mientras el torneo está en progreso"
+                : "Solo disponible mientras el torneo esta pendiente"
             }
           >
             Eliminar mazo
