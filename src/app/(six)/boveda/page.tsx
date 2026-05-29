@@ -1,5 +1,6 @@
 import { getPaginatedPricesCards, getPropertiesCards } from "@/actions";
-import { CardFinderPrices, Pagination } from "@/components";
+import { CardFinderPrices } from "@/components/finders/CardFinderPrices";
+import { Pagination } from "@/components/ui/pagination/pagination";
 import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
 import { Metadata } from "next";
 import Image from "next/image";
@@ -90,47 +91,58 @@ export default async function BovedaPage({ searchParams }: Props) {
           </div>
 
           <ul className="grid gap-4 pb-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {cards.map((card) => (
-              <li key={card.id}>
-                <Link
-                  href={`/boveda/${card.slug}`}
-                  title={`Ver detalles de ${card.name}`}
-                  className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:border-purple-400/40"
-                >
-                  <Image
-                    src={`/cards/${card.code}-${card.idd}.webp`}
-                    alt={card.name}
-                    title={card.name}
-                    placeholder="blur"
-                    blurDataURL={cardImageBlurDataURL}
-                    className="h-full w-full object-cover rounded-lg"
-                    width={500}
-                    height={718}
-                  />
-                  <div className="flex flex-col gap-2">
-                    <h4 className="text-base font-semibold text-slate-900 dark:text-white line-clamp-2">
-                      {card.name}
-                    </h4>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {card.product.name}
-                    </span>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">
-                      {card.code}-{card.idd}
-                    </p>
-                    <div className="mt-auto">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                        Precio
+            {cards.map((card) => {
+              const rarityText = card.rarities
+                .map((rarity) => rarity.name)
+                .join(", ");
+
+              return (
+                <li key={card.id}>
+                  <Link
+                    href={`/boveda/${card.slug}`}
+                    title={`Ver detalles de ${card.name}`}
+                    className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:border-purple-400/40"
+                  >
+                    <Image
+                      src={`/cards/${card.code}-${card.idd}.webp`}
+                      alt={card.name}
+                      title={card.name}
+                      placeholder="blur"
+                      blurDataURL={cardImageBlurDataURL}
+                      className="h-full w-full object-cover rounded-lg"
+                      width={500}
+                      height={718}
+                    />
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-base font-semibold text-slate-900 dark:text-white line-clamp-2">
+                        {card.name}
+                      </h4>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {card.product.name}
+                      </span>
+                      {rarityText && (
+                        <span className="w-fit rounded-full border border-purple-200 bg-purple-50 px-2 py-1 text-[11px] font-semibold text-purple-700 dark:border-purple-400/30 dark:bg-purple-500/10 dark:text-purple-200">
+                          {rarityText}
+                        </span>
+                      )}
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
+                        {card.code}-{card.idd}
                       </p>
-                      <p className="text-lg font-bold text-purple-600 dark:text-purple-300">
-                        {card.price != null
-                          ? `$${priceFormatter.format(card.price)}`
-                          : "Sin precio"}
-                      </p>
+                      <div className="mt-auto">
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                          Precio
+                        </p>
+                        <p className="text-lg font-bold text-purple-600 dark:text-purple-300">
+                          {card.price != null
+                            ? `$${priceFormatter.format(card.price)}`
+                            : "Sin precio"}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </li>
-            ))}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </Pagination>
