@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useSession } from "next-auth/react";
 import {
   getProfileTournament,
@@ -19,6 +20,7 @@ import {
   ProfileDashboardSidebar,
   type ProfileDashboardSection,
 } from "./ProfileDashboardSidebar";
+import { PLAYER_COSMETIC_STORE_ENABLED } from "@/config/features";
 import { getAvatarValue } from "@/utils/avatar-image";
 import {
   DEFAULT_PROFILE_BANNER,
@@ -30,7 +32,6 @@ import { ProfileGeneralSection } from "./ProfileGeneralSection";
 import { ProfileAvatarSection } from "./ProfileAvatarSection";
 import { ProfileBannerSection } from "./ProfileBannerSection";
 import { ProfileSectionHeader } from "./ProfileSectionHeader";
-import { ProfileStoreSection } from "./ProfileStoreSection";
 import { ProfileSecuritySection } from "./ProfileSecuritySection";
 import { ProfileTournamentsSection } from "./ProfileTournamentsSection";
 import type {
@@ -39,6 +40,10 @@ import type {
   ProfileUser,
   TournamentHistoryItem,
 } from "./ProfileSection.types";
+
+const ProfileStoreSection = dynamic(() =>
+  import("./ProfileStoreSection").then((mod) => mod.ProfileStoreSection),
+);
 
 // interface Archetype {
 //   name: string| null;
@@ -95,7 +100,7 @@ interface Props {
   activeTournament: ActiveTournamentData | null;
   tournaments: TournamentHistoryItem[];
   deckCounts: DeckCounts;
-  cosmeticStoreData: CosmeticStoreData;
+  cosmeticStoreData: CosmeticStoreData | null;
 }
 
 const sectionTitles: Record<ProfileDashboardSection, string> = {
@@ -127,6 +132,24 @@ export const Pefil = ({
   deckCounts,
   cosmeticStoreData,
 }: Props) => {
+  const showToast = useToastStore((state) => state.showToast);
+  const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
+  const { data: session, update } = useSession();
+  const hasSession = Boolean(session?.user?.idd ?? user.email);
+  const shouldShowStore =
+    PLAYER_COSMETIC_STORE_ENABLED && Boolean(cosmeticStoreData);
+  const fallbackStoreData: CosmeticStoreData = useMemo(
+    () => ({
+      isAuthenticated: hasSession,
+      currentSeasonNumber: 0,
+      victoryPoints: user.victoryPoints ?? 0,
+      featured: [],
+      items: [],
+    }),
+    [hasSession, user.victoryPoints],
+  );
+  const initialStoreData = cosmeticStoreData ?? fallbackStoreData;
   const [activeSection, setActiveSection] =
     useState<ProfileDashboardSection>("general");
   const [baseAvatar, setBaseAvatar] = useState(getAvatarValue(user.image));
@@ -142,10 +165,16 @@ export const Pefil = ({
   const [avatarItems, setAvatarItems] = useState(avatars);
   const [bannerItems, setBannerItems] = useState(banners);
   const [frameItems, setFrameItems] = useState(frames);
-  const [storeData, setStoreData] = useState(cosmeticStoreData);
+  const [storeData, setStoreData] = useState(initialStoreData);
   const [victoryPoints, setVictoryPoints] = useState(
-    user.victoryPoints ?? cosmeticStoreData.victoryPoints,
+    user.victoryPoints ?? initialStoreData.victoryPoints,
   );
+
+  useEffect(() => {
+    if (!shouldShowStore && activeSection === "store") {
+      setActiveSection("general");
+    }
+  }, [activeSection, shouldShowStore]);
 
   useEffect(() => {
     const nextAvatar = getAvatarValue(user.image);
@@ -180,18 +209,12 @@ export const Pefil = ({
   }, [frames]);
 
   useEffect(() => {
-    setStoreData(cosmeticStoreData);
-  }, [cosmeticStoreData]);
+    setStoreData(initialStoreData);
+  }, [initialStoreData]);
 
   useEffect(() => {
-    setVictoryPoints(user.victoryPoints ?? cosmeticStoreData.victoryPoints);
-  }, [cosmeticStoreData.victoryPoints, user.victoryPoints]);
-
-  const showToast = useToastStore((state) => state.showToast);
-  const showLoading = useUIStore((state) => state.showLoading);
-  const hideLoading = useUIStore((state) => state.hideLoading);
-  const { data: session, update } = useSession();
-  const hasSession = Boolean(session?.user?.idd ?? user.email);
+    setVictoryPoints(user.victoryPoints ?? initialStoreData.victoryPoints);
+  }, [initialStoreData.victoryPoints, user.victoryPoints]);
 
   const handleSelectAvatar = (avatar: ProfileCosmeticItem) => {
     setSelectedAvatar(getAvatarValue(avatar.imageUrl));
@@ -406,7 +429,7 @@ export const Pefil = ({
             title={sectionTitles[activeSection]}
             description={sectionDescriptions[activeSection]}
             rightSlot={
-              activeSection === "store" ? (
+              shouldShowStore && activeSection === "store" ? (
                 <div className="grid gap-3 sm:grid-cols-2 xl:w-[360px]">
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 shadow-sm dark:border-amber-400/30 dark:bg-amber-500/10">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-700 dark:text-amber-200/80">
@@ -472,7 +495,7 @@ export const Pefil = ({
             />
           )}
 
-          {activeSection === "store" && (
+          {shouldShowStore && activeSection === "store" && (
             <ProfileStoreSection
               storeData={storeData}
               onPurchase={handleCosmeticPurchase}

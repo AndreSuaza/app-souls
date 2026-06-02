@@ -6,58 +6,53 @@ export interface Route {
 
 export const Routes: Route[] = [
   {
-    name: "Jugar",
+    path: "/productos",
+    name: "Productos",
+  },
+  {
+    name: "Juega Souls",
     menu: [
       {
         path: "/como-jugar",
-        name: "Aprender a jugar",
+        name: "Aprende a jugar",
       },
       {
-        path: "/preguntas-frecuentes",
-        name: "Preguntas frecuentes",
+        path: "/torneos",
+        name: "Torneos",
+      },
+      {
+        path: "/torneos#jugadores",
+        name: "Jugadores",
       },
     ],
-  },
-  {
-    path: "/noticias",
-    name: "Noticias",
   },
   {
     name: "Cartas",
     menu: [
       {
         path: "/cartas",
-        name: "Explorar cartas",
-      },
-      {
-        path: "/boveda",
-        name: "Precios de las cartas",
-      },
-    ],
-  },
-  {
-    name: "Mazos",
-    menu: [
-      {
-        path: "/mazos",
-        name: "Explorar mazos",
+        name: "Biblioteca",
       },
       {
         path: "/laboratorio",
-        name: "Creación de mazos",
+        name: "Crea tu mazo",
+      },
+      {
+        path: "/mazos",
+        name: "Mazo de la comunidad",
+      },
+      {
+        path: "/boveda",
+        name: "Boveda",
       },
     ],
-  },
-  {
-    path: "/torneos",
-    name: "Torneos",
-  },
-  {
-    path: "/productos",
-    name: "Productos",
   },
   {
     path: "/tiendas",
     name: "Tiendas",
+  },
+  {
+    path: "/noticias",
+    name: "Noticias",
   },
 ];

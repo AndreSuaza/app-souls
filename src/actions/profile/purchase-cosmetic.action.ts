@@ -1,6 +1,7 @@
 ﻿"use server";
 
 import { auth } from "@/auth";
+import { PLAYER_COSMETIC_STORE_ENABLED } from "@/config/features";
 import { prisma } from "@/lib/prisma";
 import { CosmeticPurchaseSchema, type CosmeticPurchaseInput } from "@/schemas";
 import type { Prisma } from "@prisma/client";
@@ -24,6 +25,11 @@ export const purchaseCosmeticAction = async (
   input: CosmeticPurchaseInput,
 ): Promise<PurchaseCosmeticResult> => {
   const parsed = CosmeticPurchaseSchema.parse(input);
+
+  if (!PLAYER_COSMETIC_STORE_ENABLED) {
+    throw new Error("La tienda de cosmeticos no esta disponible por ahora.");
+  }
+
   const session = await auth();
 
   if (!session?.user?.email) {

@@ -9,6 +9,7 @@ import {
 } from "@/actions";
 import { getUserById } from "@/actions/auth/find-user";
 import { Pefil } from "@/components/perfil/perfil";
+import { PLAYER_COSMETIC_STORE_ENABLED } from "@/config/features";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -53,7 +54,9 @@ export default async function PerfilPage() {
   const activeTournament = await getActiveTournament();
   const tournaments = await getUserTournaments();
   const deckCounts = await getProfileDeckCountsAction();
-  const cosmeticStoreData = await getCosmeticStoreDataAction();
+  const cosmeticStoreData = PLAYER_COSMETIC_STORE_ENABLED
+    ? await getCosmeticStoreDataAction()
+    : null;
   // const userDecks = await getDecksByUser();
 
   return (

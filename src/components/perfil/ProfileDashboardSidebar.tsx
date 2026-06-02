@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import clsx from "clsx";
 import type { IconType } from "react-icons";
 import {
@@ -15,6 +15,8 @@ import {
   IoStorefrontOutline,
   IoTrophyOutline,
 } from "react-icons/io5";
+import { PLAYER_COSMETIC_STORE_ENABLED } from "@/config/features";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { ButtonLogOut } from "../login/ButtonLogOut";
 
 export type ProfileDashboardSection =
@@ -78,6 +80,10 @@ const sidebarItems: SidebarItem[] = [
   },
 ];
 
+const visibleSidebarItems = sidebarItems.filter(
+  (item) => PLAYER_COSMETIC_STORE_ENABLED || item.id !== "store",
+);
+
 type Props = {
   activeSection: ProfileDashboardSection;
   onChange: (section: ProfileDashboardSection) => void;
@@ -92,20 +98,12 @@ export const ProfileDashboardSidebar = ({
   fullName,
 }: Props) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useBodyScrollLock(isMobileMenuOpen);
+
   const activeItem =
-    sidebarItems.find((item) => item.id === activeSection) ?? sidebarItems[0];
+    visibleSidebarItems.find((item) => item.id === activeSection) ??
+    visibleSidebarItems[0];
   const ActiveIcon = activeItem.icon;
-
-  useEffect(() => {
-    if (!isMobileMenuOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [isMobileMenuOpen]);
 
   const handleMobileChange = (section: ProfileDashboardSection) => {
     onChange(section);
@@ -224,7 +222,7 @@ export const ProfileDashboardSidebar = ({
 
             <div className="max-h-[calc(84vh-9rem)] overflow-y-auto p-3">
               <nav className="space-y-2">
-                {sidebarItems.map((item) =>
+                {visibleSidebarItems.map((item) =>
                   renderNavigationItem(item, handleMobileChange, true),
                 )}
               </nav>
@@ -259,7 +257,9 @@ export const ProfileDashboardSidebar = ({
 
           <nav className="min-h-0 flex-1 space-y-1 overflow-x-auto overflow-y-auto p-3 lg:overflow-x-visible">
             <div className="flex gap-2 lg:block lg:space-y-1">
-              {sidebarItems.map((item) => renderNavigationItem(item, onChange))}
+              {visibleSidebarItems.map((item) =>
+                renderNavigationItem(item, onChange),
+              )}
             </div>
           </nav>
 
