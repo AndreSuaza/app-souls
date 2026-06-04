@@ -21,6 +21,10 @@ export const Routes: Route[] = [
         name: "Torneos",
       },
       {
+        path: "/eventos",
+        name: "Eventos",
+      },
+      {
         path: "/torneos#jugadores",
         name: "Jugadores",
       },

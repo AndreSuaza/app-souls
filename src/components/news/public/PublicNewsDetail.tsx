@@ -1,10 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import type { PublicNewsCard, PublicNewsDetail } from "@/interfaces";
 import { MarkdownContent } from "@/components/ui/markdown/MarkdownContent";
 import { NewsCarousel } from "./NewsCarousel";
+import { newsImageFallbacks } from "@/models/media-fallbacks.models";
+import { FallbackImage } from "@/components/ui/image/FallbackImage";
 
 type Props = {
   news: PublicNewsDetail;
@@ -45,8 +46,9 @@ export const PublicNewsDetailView = ({ news, recommended }: Props) => {
   return (
     <div className="bg-slate-50 text-slate-900 dark:bg-tournament-dark-bg dark:text-white">
       <div className="relative w-full overflow-hidden h-[calc(100vh-4.5rem)]">
-        <Image
+        <FallbackImage
           src={news.featuredImage}
+          fallbackSrc={newsImageFallbacks.banners}
           alt={news.title}
           title={news.title}
           fill

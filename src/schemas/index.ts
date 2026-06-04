@@ -39,3 +39,4 @@ export * from "./stores/store-id.schema";
 export * from "./stores/store-slug.schema";
 
 export * from "./news/news.schema";
+export * from "./events/event.schema";

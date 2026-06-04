@@ -198,6 +198,9 @@ Prisma is forbidden in:
 Additional rules:
 - Use selective queries (`select`/`include`) intentionally.
 - Avoid exposing internal fields when not required by UI/store contracts.
+- Before running any Prisma command, seed, migration, database write, maintenance script, or DB-mutating action from the local environment, inspect the active database URL/environment.
+- If the active DB URL points to `six2`/`Six2` instead of `SixDev`/`sixDev`, do not modify the database or run Prisma write operations. Stop and inform the user that the environment is pointing to `six2` and must be switched to `SixDev` before DB/Prisma changes.
+- Read-only code edits to Prisma-related files are allowed, but executing DB-changing commands is blocked while the DB URL points to `six2`.
 
 ## 11) Components and Naming
 UI component rules:

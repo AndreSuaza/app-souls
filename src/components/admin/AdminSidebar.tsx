@@ -12,6 +12,7 @@ import {
   IoLayersOutline,
   IoNewspaperOutline,
   IoBagRemoveOutline,
+  IoCalendarOutline,
   IoImagesOutline,
   IoLogOutOutline,
   IoPeopleOutline,
@@ -33,6 +34,7 @@ export const AdminSidebar = () => {
   const pathname = usePathname();
   const isTournamentSection = pathname.startsWith("/admin/torneos");
   const isNewsSection = pathname.startsWith("/admin/noticias");
+  const isEventsSection = pathname.startsWith("/admin/eventos");
   const isDeckSection = pathname.startsWith("/admin/mazos");
   const isCardsSection = pathname.startsWith("/admin/cartas");
   const isProductSection = pathname.startsWith("/admin/productos");
@@ -61,6 +63,11 @@ export const AdminSidebar = () => {
           label: "Noticias",
           href: "/admin/noticias",
           icon: IoNewspaperOutline,
+        },
+        {
+          label: "Eventos",
+          href: "/admin/eventos",
+          icon: IoCalendarOutline,
         },
         {
           label: "Productos",
@@ -143,6 +150,28 @@ export const AdminSidebar = () => {
         href: "/admin",
         icon: IoArrowBackOutline,
       });
+    }
+  }
+
+  if (isEventsSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Crear evento",
+          href: "/admin/eventos/crear-evento",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Eventos",
+          href: "/admin/eventos",
+          icon: IoCalendarOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
     }
   }
 

@@ -106,6 +106,15 @@ export * from "./news/get-public-news.action";
 export * from "./news/get-public-news-categories.action";
 export * from "./news/get-public-news-detail.action";
 
+export * from "./events/get-public-events.action";
+export * from "./events/get-public-event-detail.action";
+export * from "./events/get-admin-events.action";
+export * from "./events/get-event-by-id.action";
+export * from "./events/create-event.action";
+export * from "./events/update-event.action";
+export * from "./events/delete-event.action";
+export * from "./events/get-event-images.action";
+
 export * from "./media/get-media-images.action";
 export * from "./media/upload-media-image.action";
 export * from "./media/delete-media-image.action";

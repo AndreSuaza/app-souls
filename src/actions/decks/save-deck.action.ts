@@ -210,7 +210,7 @@ export async function saveDeck(input: SaveDeckInput) {
         success: false,
         message:
           error.cause?.err?.message ??
-          "No se pudo validar la sesion activa. Vuelve a iniciar sesion.",
+          "No se pudo validar la sesion activa. Vuelve a iniciar sesión.",
       };
     }
 

@@ -12,6 +12,7 @@ import {
   IoImagesOutline,
   IoNewspaperOutline,
   IoBagHandleOutline,
+  IoCalendarOutline,
   IoTrashOutline,
 } from "react-icons/io5";
 import type { ReadonlyURLSearchParams } from "next/navigation";
@@ -66,6 +67,7 @@ export const AdminMediaManager = () => {
   const sectionConfig = MEDIA_SECTION_CONFIG[activeSection];
   const groupIcons: Record<string, ReactNode> = {
     news: <IoNewspaperOutline className="h-4 w-4" />,
+    events: <IoCalendarOutline className="h-4 w-4" />,
     products: <IoBagHandleOutline className="h-4 w-4" />,
   };
 

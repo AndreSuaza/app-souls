@@ -7,3 +7,4 @@ export * from './store.interface';
 export * from './decklist.interface';
 export * from './deck.interface';
 export * from './news.interface';
+export * from './events.interface';

@@ -1,6 +1,8 @@
 export type MediaSectionKey =
   | "news-banners"
   | "news-cards"
+  | "event-banners"
+  | "event-cards"
   | "profile-avatars"
   | "profile-banners"
   | "profile-frames"
@@ -27,6 +29,20 @@ export const MEDIA_SECTION_CONFIG: Record<MediaSectionKey, MediaSectionConfig> =
     "news-cards": {
       label: "Cards",
       folder: "souls/news/cards",
+      maxSizeMb: 4,
+      allowUpload: true,
+      allowDelete: true,
+    },
+    "event-banners": {
+      label: "Banners",
+      folder: "souls/events/banners",
+      maxSizeMb: 8,
+      allowUpload: true,
+      allowDelete: true,
+    },
+    "event-cards": {
+      label: "Cards",
+      folder: "souls/events/cards",
       maxSizeMb: 4,
       allowUpload: true,
       allowDelete: true,
@@ -77,6 +93,11 @@ export const MEDIA_GROUPS: Array<{
     id: "news",
     label: "Noticias",
     sections: ["news-banners", "news-cards"],
+  },
+  {
+    id: "events",
+    label: "Eventos",
+    sections: ["event-banners", "event-cards"],
   },
   {
     id: "products",

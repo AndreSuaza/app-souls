@@ -4,6 +4,26 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import type { AdminNewsListItem } from "@/interfaces";
 
+const getCategoryNamesById = async (categoryIds: string[]) => {
+  const uniqueCategoryIds = Array.from(new Set(categoryIds));
+
+  if (uniqueCategoryIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const categories = await prisma.newCategory.findMany({
+    where: {
+      id: { in: uniqueCategoryIds },
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  return new Map(categories.map((category) => [category.id, category.name]));
+};
+
 export async function getAdminNewsAction(): Promise<AdminNewsListItem[]> {
   try {
     const session = await auth();
@@ -38,13 +58,11 @@ export async function getAdminNewsAction(): Promise<AdminNewsListItem[]> {
             nickname: true,
           },
         },
-        newCategory: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
+    const categoryNames = await getCategoryNamesById(
+      news.map((item) => item.newCategoryId),
+    );
 
     return news.map((item) => ({
       id: item.id,
@@ -60,7 +78,7 @@ export async function getAdminNewsAction(): Promise<AdminNewsListItem[]> {
         ? `${item.user.name ?? ""} ${item.user.lastname ?? ""}`.trim() ||
           item.user.nickname
         : null,
-      categoryName: item.newCategory?.name ?? null,
+      categoryName: categoryNames.get(item.newCategoryId) ?? null,
       createdAt: item.createdAt.toISOString(),
     }));
   } catch (error) {

@@ -28,11 +28,7 @@ import {
 import { resetEloSeasonAction } from "@/actions";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { Routes } from "@/models/routes.models";
-import {
-  useAlertConfirmationStore,
-  useToastStore,
-  useUIStore,
-} from "@/store";
+import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 
 const visibleRoutes = Routes.filter((route) => route.name !== "");
 
@@ -247,18 +243,18 @@ export const Sidebar = () => {
                       className="flex w-full items-center gap-3 px-7 py-3 text-left text-sm font-semibold uppercase tracking-wide text-slate-200 transition hover:text-yellow-400"
                     >
                       <IoLogOutOutline className="h-5 w-5" />
-                      Cerrar sesion
+                      Cerrar sesión
                     </button>
                   </>
                 ) : (
                   <Link
                     href="/auth/login"
-                    title="Iniciar sesion"
+                    title="Iniciar sesión"
                     className="flex items-center gap-3 px-7 py-3 text-sm font-black uppercase tracking-wide text-yellow-400 transition hover:text-yellow-300"
                     onClick={handleClose}
                   >
                     <IoLogInOutline className="h-5 w-5" />
-                    Iniciar sesion
+                    Iniciar sesión
                   </Link>
                 )}
               </div>

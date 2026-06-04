@@ -126,7 +126,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
 
   const handlePurchase = (item: CosmeticStoreItem) => {
     if (!initialData.isAuthenticated) {
-      showToast("Debes iniciar sesion para comprar cosméticos.", "info");
+      showToast("Debes iniciar sesión para comprar cosméticos.", "info");
       return;
     }
 
@@ -391,10 +391,10 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
                     ) : (
                       <Link
                         href="/auth/login"
-                        title="Iniciar sesion"
+                        title="Iniciar sesión"
                         className="rounded-lg border border-purple-300 bg-purple-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-purple-800 transition hover:bg-purple-200 dark:border-purple-500/60 dark:bg-purple-500/15 dark:text-purple-100 dark:hover:bg-purple-500/30"
                       >
-                        Iniciar sesion
+                        Iniciar sesión
                       </Link>
                     )}
                   </div>

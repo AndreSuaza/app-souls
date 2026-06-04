@@ -1,10 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
 import { IoArrowForwardOutline } from "react-icons/io5";
 import type { PublicNewsCard } from "@/interfaces";
+import { newsImageFallbacks } from "@/models/media-fallbacks.models";
+import { FallbackImage } from "@/components/ui/image/FallbackImage";
 
 type Props = {
   item: PublicNewsCard;
@@ -36,8 +37,9 @@ export const NewsCarouselCard = ({
       )}
     >
       <div className={clsx("relative w-full overflow-hidden", imageClassName)}>
-        <Image
+        <FallbackImage
           src={item.cardImage}
+          fallbackSrc={newsImageFallbacks.cards}
           alt={item.title}
           title={item.title}
           fill

@@ -7,10 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate",
-    "seed": "ts-node src/seed/seed-database",
-    "seed-test": "ts-node src/seed/seed-exp",
-    "seed:cosmetics": "ts-node src/seed/seed-cosmetic-store.ts"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/core": "0.41.0",

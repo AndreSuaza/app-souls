@@ -3,7 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import {
   IoCloseOutline,
   IoLogInOutline,
@@ -22,6 +27,7 @@ export const TopMenu = () => {
   const openMenu = useUIStore((state) => state.openSideMenu);
   const closeMenu = useUIStore((state) => state.closeSideMenu);
   const [openRoute, setOpenRoute] = useState<Route | null>(null);
+  const [pinnedRouteName, setPinnedRouteName] = useState<string | null>(null);
   const [openProfile, setOpenProfile] = useState(false);
   const [dropdownArrowLeft, setDropdownArrowLeft] = useState(0);
   const closeMenuTimeoutRef = useRef<number | null>(null);
@@ -44,6 +50,8 @@ export const TopMenu = () => {
   };
 
   const scheduleCloseMenu = () => {
+    if (pinnedRouteName) return;
+
     clearCloseMenuTimeout();
     closeMenuTimeoutRef.current = window.setTimeout(() => {
       setOpenRoute(null);
@@ -73,18 +81,49 @@ export const TopMenu = () => {
     await signOut();
   };
 
-  const openRouteMenu = (
-    route: Route,
-    trigger: HTMLElement,
-  ) => {
+  const openRouteMenu = (route: Route, trigger: HTMLElement) => {
     if (!route.menu?.length) {
       setOpenRoute(null);
+      setPinnedRouteName(null);
       return;
     }
 
     const rect = trigger.getBoundingClientRect();
     setDropdownArrowLeft(rect.left + rect.width / 2);
     setOpenRoute(route);
+  };
+
+  const closeRouteMenu = () => {
+    setOpenRoute(null);
+    setPinnedRouteName(null);
+  };
+
+  const handleRouteClick = (route: Route, trigger: HTMLElement) => {
+    const isSameOpenRoute = openRoute?.name === route.name;
+    const isPinnedRoute = pinnedRouteName === route.name;
+
+    if (isSameOpenRoute && isPinnedRoute) {
+      closeRouteMenu();
+      return;
+    }
+
+    clearCloseMenuTimeout();
+    openRouteMenu(route, trigger);
+    setPinnedRouteName(route.name);
+  };
+
+  const handleDropdownMouseLeave = (
+    event: ReactMouseEvent<HTMLDivElement>,
+  ) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const isLeavingThroughBottom = event.clientY >= rect.bottom - 1;
+
+    if (isLeavingThroughBottom) {
+      closeRouteMenu();
+      return;
+    }
+
+    scheduleCloseMenu();
   };
 
   return (
@@ -100,7 +139,7 @@ export const TopMenu = () => {
             className="group flex min-w-0 items-center gap-3"
             onMouseEnter={() => {
               clearCloseMenuTimeout();
-              setOpenRoute(null);
+              closeRouteMenu();
             }}
           >
             <Image
@@ -129,6 +168,9 @@ export const TopMenu = () => {
                   className="flex h-full items-center"
                   onMouseEnter={(event) => {
                     clearCloseMenuTimeout();
+                    setPinnedRouteName((current) =>
+                      current === route.name ? current : null,
+                    );
                     openRouteMenu(route, event.currentTarget);
                   }}
                 >
@@ -139,9 +181,7 @@ export const TopMenu = () => {
                       aria-haspopup="menu"
                       aria-expanded={isOpen}
                       onClick={(event) =>
-                        isOpen
-                          ? setOpenRoute(null)
-                          : openRouteMenu(route, event.currentTarget)
+                        handleRouteClick(route, event.currentTarget)
                       }
                       className="relative flex h-full items-center px-3 text-sm font-black uppercase tracking-wide transition hover:text-yellow-400 xl:px-4"
                     >
@@ -152,7 +192,7 @@ export const TopMenu = () => {
                       href={route.path ?? "/"}
                       title={`Ir a ${route.name}`}
                       className="relative flex h-full items-center px-3 text-sm font-black uppercase tracking-wide transition hover:text-yellow-400 xl:px-4"
-                      onMouseEnter={() => setOpenRoute(null)}
+                      onMouseEnter={() => closeRouteMenu()}
                     >
                       {route.name}
                     </Link>
@@ -169,7 +209,7 @@ export const TopMenu = () => {
               <button
                 type="button"
                 onClick={() => setOpenProfile((current) => !current)}
-                onMouseEnter={() => setOpenRoute(null)}
+                onMouseEnter={() => closeRouteMenu()}
                 className="flex items-center gap-2 rounded-full border border-purple-500/40 bg-purple-950/40 px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition hover:border-yellow-400 hover:text-yellow-400"
                 title="Abrir menu de cuenta"
                 aria-haspopup="menu"
@@ -232,12 +272,12 @@ export const TopMenu = () => {
           ) : (
             <Link
               href="/auth/login"
-              title="Iniciar sesion"
+              title="Iniciar sesión"
               className="inline-flex items-center gap-2 rounded-full border border-yellow-400/70 bg-yellow-400 px-4 py-2 text-xs font-black uppercase tracking-wide text-black transition hover:bg-yellow-300"
-              onMouseEnter={() => setOpenRoute(null)}
+              onMouseEnter={() => closeRouteMenu()}
             >
               <IoLogInOutline className="h-4 w-4" />
-              Iniciar sesion
+              Iniciar sesión
             </Link>
           )}
         </div>
@@ -277,7 +317,7 @@ export const TopMenu = () => {
         <div
           role="menu"
           onMouseEnter={clearCloseMenuTimeout}
-          onMouseLeave={scheduleCloseMenu}
+          onMouseLeave={handleDropdownMouseLeave}
           className="absolute inset-x-0 top-full hidden bg-black px-8 py-8 shadow-2xl shadow-black/60 lg:block"
         >
           <span
@@ -299,7 +339,7 @@ export const TopMenu = () => {
                     <Link
                       href={item.path}
                       title={`Ir a ${item.name}`}
-                      onClick={() => setOpenRoute(null)}
+                      onClick={() => closeRouteMenu()}
                       className="text-base font-semibold text-slate-300 transition hover:text-yellow-400"
                     >
                       {item.name}

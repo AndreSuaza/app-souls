@@ -1,8 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { PublicNewsListItem } from "@/interfaces";
+import { newsImageFallbacks } from "@/models/media-fallbacks.models";
+import { FallbackImage } from "@/components/ui/image/FallbackImage";
 
 type Props = {
   item: PublicNewsListItem;
@@ -30,8 +31,9 @@ export const PublicNewsRowCard = ({ item }: Props) => {
       className="group flex flex-col overflow-hidden rounded-2xl border border-tournament-dark-accent bg-white shadow-sm transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:flex-row"
     >
       <div className="relative h-[200px] w-full md:h-full md:min-h-[220px] md:w-1/3">
-        <Image
+        <FallbackImage
           src={item.cardImage}
+          fallbackSrc={newsImageFallbacks.cards}
           alt={item.title}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
