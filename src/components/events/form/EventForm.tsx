@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { uploadMediaImageAction } from "@/actions/media/upload-media-image.action";
@@ -132,6 +132,7 @@ export const EventForm = ({
   const [stagedCardPreview, setStagedCardPreview] = useState<string | null>(
     null,
   );
+  const localPreviewRefs = useRef<Array<string | null>>([null, null, null, null]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -140,22 +141,27 @@ export const EventForm = ({
   }, [imageOptions]);
 
   useEffect(() => {
-    return () => {
-      [
-        pendingFeaturedPreview,
-        pendingCardPreview,
-        stagedFeaturedPreview,
-        stagedCardPreview,
-      ].forEach((preview) => {
-        if (preview) URL.revokeObjectURL(preview);
-      });
-    };
+    localPreviewRefs.current = [
+      pendingFeaturedPreview,
+      pendingCardPreview,
+      stagedFeaturedPreview,
+      stagedCardPreview,
+    ];
   }, [
     pendingFeaturedPreview,
     pendingCardPreview,
     stagedFeaturedPreview,
     stagedCardPreview,
   ]);
+
+  useEffect(() => {
+    return () => {
+      const previews = new Set(localPreviewRefs.current.filter(Boolean));
+      previews.forEach((preview) => {
+        if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+      });
+    };
+  }, []);
 
   const updateField = <T extends keyof EventSubmitValues>(
     field: T,
@@ -181,18 +187,18 @@ export const EventForm = ({
     });
   };
 
-  const clearStagedFeatured = () => {
+  const clearStagedFeatured = ({ revoke = true } = {}) => {
     setStagedFeaturedFile(null);
     setStagedFeaturedPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
+      if (revoke && prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
       return null;
     });
   };
 
-  const clearStagedCard = () => {
+  const clearStagedCard = ({ revoke = true } = {}) => {
     setStagedCardFile(null);
     setStagedCardPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
+      if (revoke && prev?.startsWith("blob:")) URL.revokeObjectURL(prev);
       return null;
     });
   };
@@ -258,7 +264,7 @@ export const EventForm = ({
         clearFeaturedLocal();
         setPendingFeaturedFile(stagedFeaturedFile);
         setPendingFeaturedPreview(stagedFeaturedPreview);
-        clearStagedFeatured();
+        clearStagedFeatured({ revoke: false });
         updateField("featuredImage", `local:${stagedFeaturedFile.name}`);
       } else if (
         pendingFeaturedFile &&
@@ -274,7 +280,7 @@ export const EventForm = ({
       clearCardLocal();
       setPendingCardFile(stagedCardFile);
       setPendingCardPreview(stagedCardPreview);
-      clearStagedCard();
+      clearStagedCard({ revoke: false });
       updateField("cardImage", `local:${stagedCardFile.name}`);
     } else if (pendingCardFile && pendingCardPreview === pendingImage) {
       updateField("cardImage", `local:${pendingCardFile.name}`);

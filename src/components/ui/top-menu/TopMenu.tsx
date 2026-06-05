@@ -112,9 +112,7 @@ export const TopMenu = () => {
     setPinnedRouteName(route.name);
   };
 
-  const handleDropdownMouseLeave = (
-    event: ReactMouseEvent<HTMLDivElement>,
-  ) => {
+  const handleDropdownMouseLeave = (event: ReactMouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const isLeavingThroughBottom = event.clientY >= rect.bottom - 1;
 
@@ -260,10 +258,10 @@ export const TopMenu = () => {
                     <button
                       type="button"
                       onClick={handleSignOut}
-                      title="Cerrar sesion"
+                      title="Cerrar sesión"
                       className="block w-full px-4 py-2 text-left text-sm font-semibold text-slate-200 transition hover:bg-purple-950/60 hover:text-yellow-400"
                     >
-                      Cerrar sesion
+                      Cerrar sesión
                     </button>
                   </li>
                 </ul>
