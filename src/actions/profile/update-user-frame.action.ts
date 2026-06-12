@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ProfileFrameSchema } from "@/schemas";
 import { getProfileFrameValue } from "@/utils/profile-frame";
 import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { PLAYER_PROFILE_FRAMES_ENABLED } from "@/config/features";
 
 const buildFrameCandidates = (value: string) => {
   const normalized = getProfileFrameValue(value);
@@ -15,6 +16,10 @@ const buildFrameCandidates = (value: string) => {
 };
 
 export const updateUserFrame = async (frameImage: string | null) => {
+  if (!PLAYER_PROFILE_FRAMES_ENABLED) {
+    throw new Error("Los marcos de perfil no estan disponibles actualmente");
+  }
+
   const session = await auth();
 
   if (!session?.user.email) {

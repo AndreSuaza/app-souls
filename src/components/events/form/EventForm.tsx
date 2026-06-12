@@ -11,6 +11,7 @@ import type {
   EventImageOptions,
   EventStatus,
 } from "@/interfaces/events.interface";
+import type { StoreOption } from "@/interfaces/store.interface";
 import {
   CreateEventSchema,
   type CreateEventInput,
@@ -23,6 +24,7 @@ export type EventSubmitValues = CreateEventInput;
 type Props = {
   initialValues?: EventDetail;
   imageOptions: EventImageOptions;
+  storeOptions: StoreOption[];
   submitLabel: string;
   onSubmit: (values: EventSubmitValues) => void;
   onDelete?: () => void;
@@ -61,6 +63,7 @@ const buildInitialValues = (initialValues?: EventDetail): EventSubmitValues => (
       ? initialValues.status
       : "draft",
   badgeLabel: initialValues?.badgeLabel ?? "",
+  storeId: initialValues?.storeId ?? null,
 });
 
 const FormField = ({
@@ -92,6 +95,7 @@ const inputClassName =
 export const EventForm = ({
   initialValues,
   imageOptions,
+  storeOptions,
   submitLabel,
   onSubmit,
   onDelete,
@@ -474,7 +478,7 @@ export const EventForm = ({
         </FormField>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
         <FormField label="Inicio" htmlFor="event-starts-at" error={errors.startsAt}>
           <input
             id="event-starts-at"
@@ -527,6 +531,24 @@ export const EventForm = ({
             maxLength={40}
             placeholder="Ej: Premier"
           />
+        </FormField>
+
+        <FormField label="Tienda" htmlFor="event-store" error={errors.storeId}>
+          <select
+            id="event-store"
+            value={values.storeId ?? ""}
+            onChange={(event) =>
+              updateField("storeId", event.target.value || null)
+            }
+            className={inputClassName}
+          >
+            <option value="">Sin tienda asociada</option>
+            {storeOptions.map((store) => (
+              <option key={store.id} value={store.id}>
+                {store.name}
+              </option>
+            ))}
+          </select>
         </FormField>
       </div>
 

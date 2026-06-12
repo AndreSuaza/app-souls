@@ -13,10 +13,6 @@ import { ProfilePublicDecksSection } from "./ProfilePublicDecksSection";
 import { ProfileAvatarFrame } from "./ProfileAvatarFrame";
 import { getAvatarUrl } from "@/utils/avatar-image";
 import { getProfileBannerUrl } from "@/utils/profile-banner";
-import {
-  getProfileFrameUrl,
-  getProfileFrameValue,
-} from "@/utils/profile-frame";
 import type { Deck, DeckPagination } from "@/interfaces";
 
 type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
@@ -68,7 +64,6 @@ export const ProfilePublicView = ({
   const winrateRaw = matchesPlayed > 0 ? (eloPoints / matchesPlayed) * 100 : 0;
   const winrate = Math.min(100, Math.max(0, Math.round(winrateRaw)));
   const tournamentsPlayed = tournaments.length;
-  const frameValue = getProfileFrameValue(user.frameImage);
   const handleTournamentSelect = (tournamentId: string) => {
     window.open(`/torneos/${tournamentId}`, "_blank", "noopener,noreferrer");
   };
@@ -106,9 +101,6 @@ export const ProfilePublicView = ({
                 }
                 avatarClassName="cursor-crosshair"
                 className="cursor-crosshair"
-                frameSrc={
-                  frameValue ? getProfileFrameUrl(frameValue) : undefined
-                }
               />
               <div className="space-y-2 text-left">
                 <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">

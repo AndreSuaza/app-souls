@@ -25,7 +25,7 @@ export const Routes: Route[] = [
         name: "Eventos",
       },
       {
-        path: "/torneos#jugadores",
+        path: "/jugadores",
         name: "Jugadores",
       },
     ],

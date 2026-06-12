@@ -212,6 +212,7 @@ UI component rules:
 - Prefer `useBodyScrollLock` over ad hoc `document.body.style.overflow` handling, especially when overlays can be nested.
 - Actions launched from the shared confirmation modal must show the global loading overlay until the confirmed async work finishes.
 - Components that trigger `openAlertConfirmation` should not rely on browser-native confirmations and should avoid duplicating loading logic unless a specific message or staged loading state is needed.
+- Every text search input must debounce the value used for filtering or querying by 300 ms. The visible input value must update immediately while the derived search or request uses the debounced value.
 
 Legacy compatibility:
 - Existing legacy names/exports can remain unless the task explicitly includes cleanup.

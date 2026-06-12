@@ -130,7 +130,12 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
       if (!matchesDate(event.startsAt)) return false;
       if (!term) return true;
 
-      return [event.title, event.subtitle, event.badgeLabel]
+      return [
+        event.title,
+        event.subtitle,
+        event.badgeLabel,
+        event.storeName,
+      ]
         .filter(Boolean)
         .some((value) => value?.toLowerCase().includes(term));
     });
@@ -277,6 +282,7 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
                     <th className="px-4 py-3">Evento</th>
                     <th className="px-4 py-3">Estado</th>
                     <th className="px-4 py-3">Inicio</th>
+                    <th className="px-4 py-3">Tienda</th>
                     <th className="px-4 py-3">Etiqueta</th>
                     <th className="px-4 py-3 text-right">Acciones</th>
                   </tr>
@@ -309,6 +315,9 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
                       </td>
                       <td className="px-4 py-3 text-xs">
                         {formatDate(event.startsAt)}
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        {event.storeName ?? "Sin tienda"}
                       </td>
                       <td className="px-4 py-3 text-xs">
                         {event.badgeLabel ?? "Sin etiqueta"}
@@ -378,6 +387,7 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
                 </div>
 
                 <div className="mt-3 space-y-1 text-xs text-slate-500 dark:text-slate-400">
+                  <p>Tienda: {event.storeName ?? "Sin tienda"}</p>
                   <p>Etiqueta: {event.badgeLabel ?? "Sin etiqueta"}</p>
                 </div>
               </div>

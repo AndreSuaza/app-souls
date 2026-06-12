@@ -118,3 +118,5 @@ export * from "./events/get-event-images.action";
 export * from "./media/get-media-images.action";
 export * from "./media/upload-media-image.action";
 export * from "./media/delete-media-image.action";
+
+export * from "./players/get-public-player-ranking.action";

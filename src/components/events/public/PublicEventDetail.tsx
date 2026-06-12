@@ -410,7 +410,9 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                     Detalles del evento
                   </p>
                   <h2 className="mt-3 font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-                    Reglamento y requisitos
+                    {!event.badgeLabel
+                      ? event.badgeLabel
+                      : "Reglamento y requisitoss"}
                   </h2>
                 </div>
                 <MarkdownContent

@@ -21,6 +21,11 @@ export async function getPublicEventsAction(): Promise<PublicEventListItem[]> {
         startsAt: true,
         endsAt: true,
         badgeLabel: true,
+        store: {
+          select: {
+            city: true,
+          },
+        },
       },
     });
 
@@ -34,6 +39,7 @@ export async function getPublicEventsAction(): Promise<PublicEventListItem[]> {
       startsAt: event.startsAt.toISOString(),
       endsAt: event.endsAt ? event.endsAt.toISOString() : null,
       badgeLabel: event.badgeLabel,
+      storeCity: event.store?.city ?? null,
     }));
   } catch (error) {
     console.error("[getPublicEventsAction]", error);

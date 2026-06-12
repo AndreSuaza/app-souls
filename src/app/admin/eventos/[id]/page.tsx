@@ -6,6 +6,7 @@ import clsx from "clsx";
 import { deleteEventAction } from "@/actions/events/delete-event.action";
 import { getEventByIdAction } from "@/actions/events/get-event-by-id.action";
 import { getEventImagesAction } from "@/actions/events/get-event-images.action";
+import { getStoreOptionsAction } from "@/actions/stores/get-store-options.action";
 import { updateEventAction } from "@/actions/events/update-event.action";
 import {
   EventForm,
@@ -16,6 +17,7 @@ import type {
   EventImageOptions,
   EventStatus,
 } from "@/interfaces/events.interface";
+import type { StoreOption } from "@/interfaces/store.interface";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 
 const STATUS_STYLES: Record<EventStatus, { label: string; className: string }> =
@@ -56,6 +58,7 @@ export default function EditEventPage() {
     banners: [],
     cards: [],
   });
+  const [storeOptions, setStoreOptions] = useState<StoreOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,9 +68,10 @@ export default function EditEventPage() {
     const loadData = async () => {
       try {
         showLoading("Cargando evento...");
-        const [detail, images] = await Promise.all([
+        const [detail, images, stores] = await Promise.all([
           getEventByIdAction(id),
           getEventImagesAction(),
+          getStoreOptionsAction(),
         ]);
 
         if (!detail) {
@@ -80,6 +84,7 @@ export default function EditEventPage() {
         if (active) {
           setEvent(detail);
           setEventImages(images);
+          setStoreOptions(stores);
         }
       } catch {
         if (active) {
@@ -199,6 +204,7 @@ export default function EditEventPage() {
       <EventForm
         initialValues={event}
         imageOptions={eventImages}
+        storeOptions={storeOptions}
         submitLabel="Guardar cambios"
         onSubmit={handleSubmit}
         onDelete={handleDelete}

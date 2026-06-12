@@ -28,6 +28,11 @@ const BaseEventObjectSchema = z.object({
     .enum(["draft", "scheduled", "published", "deleted"])
     .default("draft"),
   badgeLabel: z.string().max(40).optional().nullable(),
+  storeId: z
+    .string()
+    .regex(/^[a-f\d]{24}$/i, "La tienda seleccionada no es válida")
+    .optional()
+    .nullable(),
 });
 
 const validateEventDates = (data: {

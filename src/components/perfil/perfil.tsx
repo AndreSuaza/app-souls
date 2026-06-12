@@ -20,7 +20,10 @@ import {
   ProfileDashboardSidebar,
   type ProfileDashboardSection,
 } from "./ProfileDashboardSidebar";
-import { PLAYER_COSMETIC_STORE_ENABLED } from "@/config/features";
+import {
+  PLAYER_COSMETIC_STORE_ENABLED,
+  PLAYER_PROFILE_FRAMES_ENABLED,
+} from "@/config/features";
 import { getAvatarValue } from "@/utils/avatar-image";
 import {
   DEFAULT_PROFILE_BANNER,
@@ -114,7 +117,7 @@ const sectionTitles: Record<ProfileDashboardSection, string> = {
 };
 const sectionDescriptions: Record<ProfileDashboardSection, string> = {
   general: "Resumen público y estadísticas principales del jugador.",
-  avatar: "Gestiona el avatar y el marco visible en tu perfil.",
+  avatar: "Gestiona el avatar visible en tu perfil.",
   banner: "Selecciona el fondo principal que acompana tu perfil.",
   store: "Consulta tu saldo y accede a cosméticos canjeables.",
   decks: "Administra tus mazos guardados y competitivos.",
@@ -159,7 +162,7 @@ export const Pefil = ({
   );
   const [selectedBanner, setSelectedBanner] = useState(baseBanner);
   const [baseFrame, setBaseFrame] = useState(
-    getProfileFrameValue(user.frameImage),
+    PLAYER_PROFILE_FRAMES_ENABLED ? getProfileFrameValue(user.frameImage) : "",
   );
   const [selectedFrame, setSelectedFrame] = useState(baseFrame);
   const [avatarItems, setAvatarItems] = useState(avatars);
@@ -191,7 +194,9 @@ export const Pefil = ({
   }, [user.bannerImage]);
 
   useEffect(() => {
-    const nextFrame = getProfileFrameValue(user.frameImage);
+    const nextFrame = PLAYER_PROFILE_FRAMES_ENABLED
+      ? getProfileFrameValue(user.frameImage)
+      : "";
     setBaseFrame(nextFrame);
     setSelectedFrame(nextFrame);
   }, [user.frameImage]);
@@ -225,11 +230,13 @@ export const Pefil = ({
   };
 
   const handleSelectFrame = (frame: ProfileCosmeticItem | null) => {
+    if (!PLAYER_PROFILE_FRAMES_ENABLED) return;
     setSelectedFrame(frame ? getProfileFrameValue(frame.imageUrl) : "");
   };
 
   const hasAvatarChanges =
-    selectedAvatar !== baseAvatar || selectedFrame !== baseFrame;
+    selectedAvatar !== baseAvatar ||
+    (PLAYER_PROFILE_FRAMES_ENABLED && selectedFrame !== baseFrame);
   const hasBannerChanges = selectedBanner !== baseBanner;
 
   const cancelAvatarChanges = () => {
@@ -251,7 +258,8 @@ export const Pefil = ({
 
     try {
       const avatarChanged = selectedAvatar !== baseAvatar;
-      const frameChanged = selectedFrame !== baseFrame;
+      const frameChanged =
+        PLAYER_PROFILE_FRAMES_ENABLED && selectedFrame !== baseFrame;
 
       if (avatarChanged) {
         await updateUser(selectedAvatar);
@@ -267,7 +275,9 @@ export const Pefil = ({
       }
 
       setBaseAvatar(selectedAvatar);
-      setBaseFrame(selectedFrame);
+      if (PLAYER_PROFILE_FRAMES_ENABLED) {
+        setBaseFrame(selectedFrame);
+      }
       showToast("Avatar actualizado correctamente", "success");
     } catch (error) {
       showToast(

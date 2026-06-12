@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { PLAYER_PROFILE_FRAMES_ENABLED } from "@/config/features";
 
 type ProfileAvatarFrameProps = {
   avatarSrc: string;
@@ -19,7 +20,7 @@ export const ProfileAvatarFrame = ({
   className = "",
   avatarClassName = "",
 }: ProfileAvatarFrameProps) => {
-  const hasFrame = Boolean(frameSrc);
+  const hasFrame = PLAYER_PROFILE_FRAMES_ENABLED && Boolean(frameSrc);
 
   return (
     <div

@@ -9,6 +9,8 @@ export type AdminEventListItem = {
   startsAt: string;
   endsAt?: string | null;
   badgeLabel?: string | null;
+  storeId?: string | null;
+  storeName?: string | null;
   createdAt: string;
 };
 
@@ -34,6 +36,7 @@ export type PublicEventListItem = {
   startsAt: string;
   endsAt?: string | null;
   badgeLabel?: string | null;
+  storeCity?: string | null;
 };
 
 export type PublicEventDetail = PublicEventListItem & {

@@ -32,6 +32,12 @@ export async function getEventByIdAction(
         endsAt: true,
         status: true,
         badgeLabel: true,
+        storeId: true,
+        store: {
+          select: {
+            name: true,
+          },
+        },
         createdAt: true,
       },
     });
@@ -53,6 +59,8 @@ export async function getEventByIdAction(
       endsAt: event.endsAt ? event.endsAt.toISOString() : null,
       status: event.status,
       badgeLabel: event.badgeLabel,
+      storeId: event.storeId,
+      storeName: event.store?.name ?? null,
       createdAt: event.createdAt.toISOString(),
     };
   } catch (error) {

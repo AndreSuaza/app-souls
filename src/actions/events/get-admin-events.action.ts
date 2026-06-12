@@ -26,6 +26,12 @@ export async function getAdminEventsAction(): Promise<AdminEventListItem[]> {
         startsAt: true,
         endsAt: true,
         badgeLabel: true,
+        storeId: true,
+        store: {
+          select: {
+            name: true,
+          },
+        },
         createdAt: true,
       },
     });
@@ -39,6 +45,8 @@ export async function getAdminEventsAction(): Promise<AdminEventListItem[]> {
       startsAt: event.startsAt.toISOString(),
       endsAt: event.endsAt ? event.endsAt.toISOString() : null,
       badgeLabel: event.badgeLabel,
+      storeId: event.storeId,
+      storeName: event.store?.name ?? null,
       createdAt: event.createdAt.toISOString(),
     }));
   } catch (error) {

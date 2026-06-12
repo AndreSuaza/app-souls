@@ -60,6 +60,17 @@ export async function updateEventAction(input: UpdateEventInput) {
       ? parseEventDate(data.endsAt, "La fecha de cierre")
       : null;
 
+    if (data.storeId) {
+      const store = await prisma.store.findUnique({
+        where: { id: data.storeId },
+        select: { id: true },
+      });
+
+      if (!store) {
+        throw new Error("La tienda seleccionada no existe");
+      }
+    }
+
     await prisma.event.update({
       where: { id: data.eventId },
       data: {
@@ -74,6 +85,7 @@ export async function updateEventAction(input: UpdateEventInput) {
         endsAt,
         status: data.status,
         badgeLabel: data.badgeLabel?.trim() || null,
+        storeId: data.storeId || null,
       },
     });
 

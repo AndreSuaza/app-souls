@@ -45,7 +45,7 @@ const sidebarItems: SidebarItem[] = [
   {
     id: "avatar",
     label: "Avatar",
-    description: "Avatar y marco",
+    description: "Imagen de perfil",
     icon: IoPersonCircleOutline,
   },
   {

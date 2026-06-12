@@ -18,6 +18,12 @@ type EventDay = {
   weekday: string;
 };
 
+type EventMonthGroup = {
+  key: string;
+  label: string;
+  events: PublicEventListItem[];
+};
+
 const getEventDate = (value: string) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
@@ -51,28 +57,6 @@ const formatEventTime = (value: string) => {
   }).format(date);
 };
 
-const formatRange = (events: PublicEventListItem[]) => {
-  if (events.length === 0) return "Proximamente";
-
-  const dates = events
-    .map((event) => getEventDate(event.startsAt))
-    .filter((date): date is Date => Boolean(date));
-
-  if (dates.length === 0) return "Proximamente";
-
-  const first = dates[0];
-  const last = dates[dates.length - 1];
-  const monthFormatter = new Intl.DateTimeFormat("es-CO", { month: "short" });
-  const firstMonth = monthFormatter.format(first).replace(".", "");
-  const lastMonth = monthFormatter.format(last).replace(".", "");
-
-  if (first.getFullYear() === last.getFullYear()) {
-    return `${firstMonth} - ${lastMonth} ${last.getFullYear()}`.toUpperCase();
-  }
-
-  return `${firstMonth} ${first.getFullYear()} - ${lastMonth} ${last.getFullYear()}`.toUpperCase();
-};
-
 const buildEventDays = (events: PublicEventListItem[]): EventDay[] => {
   const grouped = new Map<string, Date>();
 
@@ -97,6 +81,50 @@ const buildEventDays = (events: PublicEventListItem[]): EventDay[] => {
         .toUpperCase(),
     }));
 };
+
+const buildEventMonthGroups = (
+  events: PublicEventListItem[],
+): EventMonthGroup[] => {
+  const groups = new Map<string, EventMonthGroup>();
+
+  events.forEach((event) => {
+    const date = getEventDate(event.startsAt);
+    if (!date) return;
+
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0",
+    )}`;
+    const currentGroup = groups.get(key);
+
+    if (currentGroup) {
+      currentGroup.events.push(event);
+      return;
+    }
+
+    const month = new Intl.DateTimeFormat("es-CO", { month: "short" })
+      .format(date)
+      .replace(".", "")
+      .toUpperCase();
+
+    groups.set(key, {
+      key,
+      label: `${month} ${date.getFullYear()}`,
+      events: [event],
+    });
+  });
+
+  return Array.from(groups.values());
+};
+
+const EventMonthDivider = ({ label }: { label: string }) => (
+  <div className="flex items-center gap-5">
+    <div className="h-px flex-1 bg-slate-300 dark:bg-white/10" />
+    <h2 className="event-calendar-glow shrink-0 font-['Bebas_Neue'] text-4xl uppercase leading-none tracking-wide text-teal-700 dark:text-teal-200 md:text-5xl">
+      {label}
+    </h2>
+  </div>
+);
 
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
 
@@ -151,6 +179,7 @@ const PastEventCard = ({
 
 export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
   const [isPathHovered, setIsPathHovered] = useState(false);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const referenceTime = useMemo(() => {
     const date = getEventDate(referenceDate);
     return date ? date.getTime() : Date.now();
@@ -159,6 +188,24 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
     () => events.filter((event) => !isPastEvent(event, referenceTime)),
     [events, referenceTime],
   );
+  const availableCities = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          upcomingEvents
+            .map((event) => event.storeCity?.trim())
+            .filter((city): city is string => Boolean(city)),
+        ),
+      ).sort((cityA, cityB) => cityA.localeCompare(cityB, "es")),
+    [upcomingEvents],
+  );
+  const filteredUpcomingEvents = useMemo(() => {
+    if (selectedCities.length === 0) return upcomingEvents;
+
+    return upcomingEvents.filter((event) =>
+      selectedCities.includes(event.storeCity ?? ""),
+    );
+  }, [selectedCities, upcomingEvents]);
   const pastEvents = useMemo(
     () =>
       events
@@ -171,17 +218,19 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
     [events, referenceTime],
   );
   const [selectedDay, setSelectedDay] = useState(() =>
-    upcomingEvents[0] ? getDayKey(upcomingEvents[0].startsAt) : "",
+    filteredUpcomingEvents[0]
+      ? getDayKey(filteredUpcomingEvents[0].startsAt)
+      : "",
   );
   const scrollAnimationFrameRef = useRef<number | null>(null);
 
-  const dateRange = useMemo(
-    () => formatRange(upcomingEvents),
-    [upcomingEvents],
-  );
   const eventDays = useMemo(
-    () => buildEventDays(upcomingEvents),
-    [upcomingEvents],
+    () => buildEventDays(filteredUpcomingEvents),
+    [filteredUpcomingEvents],
+  );
+  const upcomingEventGroups = useMemo(
+    () => buildEventMonthGroups(filteredUpcomingEvents),
+    [filteredUpcomingEvents],
   );
 
   useEffect(() => {
@@ -211,7 +260,7 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
     cards.forEach((card) => observer.observe(card));
 
     return () => observer.disconnect();
-  }, [events.length]);
+  }, [filteredUpcomingEvents]);
 
   useEffect(() => {
     return () => {
@@ -258,6 +307,14 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
       window.requestAnimationFrame(animateScroll);
   };
 
+  const toggleCity = (city: string) => {
+    setSelectedCities((currentCities) =>
+      currentCities.includes(city)
+        ? currentCities.filter((currentCity) => currentCity !== city)
+        : [...currentCities, city],
+    );
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-950 dark:bg-[#0b0b0c] dark:text-white">
       <div className="event-calendar-nebula" />
@@ -294,87 +351,122 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
           </p>
         </section>
 
-        <section className="relative z-10 hidden md:block">
-          <div className="mb-12 flex items-center gap-6 border-b border-slate-200 pb-5 dark:border-white/5">
-            <h2 className="font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-              Calendario competitivo
-            </h2>
-            <div className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
-            <span className="event-calendar-glow font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-teal-700 dark:text-teal-200">
-              {dateRange}
-            </span>
-          </div>
+        {availableCities.length > 0 && (
+          <section
+            className="relative z-10 mb-10 md:mb-14"
+            aria-label="Filtrar eventos por ciudad"
+          >
+            <p className="mb-3 text-center text-[11px] font-black uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">
+              Filtrar por ciudad
+            </p>
+            <div className="-mx-4 overflow-x-auto px-4 pb-2 md:mx-0 md:overflow-visible md:px-0">
+              <div className="flex min-w-max justify-start gap-2 md:min-w-0 md:flex-wrap md:justify-center md:gap-3">
+                {availableCities.map((city) => {
+                  const isSelected = selectedCities.includes(city);
 
+                  return (
+                    <button
+                      key={city}
+                      type="button"
+                      onClick={() => toggleCity(city)}
+                      aria-pressed={isSelected}
+                      className={`whitespace-nowrap rounded border px-4 py-2 text-xs font-black uppercase tracking-[0.12em] transition duration-200 ${
+                        isSelected
+                          ? "border-teal-500 bg-teal-500 text-slate-950 shadow-[0_0_18px_rgba(45,212,191,0.35)] dark:border-teal-300 dark:bg-teal-300"
+                          : "border-slate-300 bg-white/70 text-slate-600 hover:border-purple-400 hover:text-purple-700 dark:border-white/15 dark:bg-white/[0.04] dark:text-slate-300 dark:hover:border-purple-300/60 dark:hover:text-purple-200"
+                      }`}
+                    >
+                      {city}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="relative z-10 hidden md:block">
           {upcomingEvents.length === 0 ? (
             <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-600 shadow-sm dark:border-white/15 dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-none">
               No hay próximos eventos publicados por ahora.
             </div>
+          ) : filteredUpcomingEvents.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-600 shadow-sm dark:border-white/15 dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-none">
+              No hay próximos eventos en las ciudades seleccionadas.
+            </div>
           ) : (
-            <div className="grid grid-cols-4 gap-5">
-              {upcomingEvents.map((event) => {
-                const hasBadge = Boolean(event.badgeLabel);
+            <div className="space-y-16">
+              {upcomingEventGroups.map((group) => (
+                <section key={group.key} className="space-y-10">
+                  <EventMonthDivider label={group.label} />
+                  <div className="grid grid-cols-4 gap-5">
+                    {group.events.map((event) => {
+                      const hasBadge = Boolean(event.badgeLabel);
 
-                return (
-                  <Link
-                    key={event.id}
-                    href={`/eventos/${event.slug}`}
-                    className="group relative block"
-                    onMouseEnter={() => setIsPathHovered(true)}
-                    onMouseLeave={() => setIsPathHovered(false)}
-                  >
-                    <article
-                      className={`event-calendar-card event-calendar-holo relative aspect-[2/3] overflow-hidden rounded-lg ${
-                        hasBadge ? "event-calendar-card-accent" : ""
-                      }`}
-                    >
-                      <FallbackImage
-                        src={event.cardImage}
-                        fallbackSrc={eventImageFallbacks.cards}
-                        alt={event.title}
-                        title={event.title}
-                        fill
-                        sizes="(min-width: 1280px) 280px, 25vw"
-                        className="object-cover transition duration-700 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
-                      <div className="absolute inset-x-0 bottom-0 p-6">
-                        {event.badgeLabel && (
-                          <span
-                            className={`mb-3 inline-block rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${
-                              hasBadge
-                                ? "border-amber-300/70 bg-black/60 text-amber-100"
-                                : "border-purple-300/70 bg-black/60 text-purple-100"
+                      return (
+                        <Link
+                          key={event.id}
+                          href={`/eventos/${event.slug}`}
+                          className="group relative block"
+                          onMouseEnter={() => setIsPathHovered(true)}
+                          onMouseLeave={() => setIsPathHovered(false)}
+                        >
+                          <article
+                            className={`event-calendar-card event-calendar-holo relative aspect-[2/3] overflow-hidden rounded-lg ${
+                              hasBadge ? "event-calendar-card-accent" : ""
                             }`}
                           >
-                            {event.badgeLabel}
-                          </span>
-                        )}
-                        <h3
-                          className={`font-['Bebas_Neue'] text-3xl uppercase leading-none tracking-wide ${
-                            hasBadge ? "text-amber-100" : "text-white"
-                          }`}
-                        >
-                          {event.title}
-                        </h3>
-                        <p className="mt-2 text-xs font-bold uppercase tracking-widest text-slate-300">
-                          {event.subtitle}
-                        </p>
-                      </div>
-                    </article>
-                    <div className="mt-4 text-center">
-                      <p
-                        className={`text-sm font-semibold ${
-                          hasBadge
-                            ? "event-calendar-glow text-amber-700 dark:text-amber-200"
-                            : "text-slate-800 dark:text-white"
-                        }`}
-                      >
-                        {formatEventDate(event.startsAt)}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
+                            <FallbackImage
+                              src={event.cardImage}
+                              fallbackSrc={eventImageFallbacks.cards}
+                              alt={event.title}
+                              title={event.title}
+                              fill
+                              sizes="(min-width: 1280px) 280px, 25vw"
+                              className="object-cover transition duration-700 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
+                            <div className="absolute inset-x-0 bottom-0 p-6">
+                              {event.badgeLabel && (
+                                <span
+                                  className={`mb-3 inline-block rounded border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${
+                                    hasBadge
+                                      ? "border-amber-300/70 bg-black/60 text-amber-100"
+                                      : "border-purple-300/70 bg-black/60 text-purple-100"
+                                  }`}
+                                >
+                                  {event.badgeLabel}
+                                </span>
+                              )}
+                              <h3
+                                className={`font-['Bebas_Neue'] text-3xl uppercase leading-none tracking-wide ${
+                                  hasBadge ? "text-amber-100" : "text-white"
+                                }`}
+                              >
+                                {event.title}
+                              </h3>
+                              <p className="mt-2 text-xs font-bold uppercase tracking-widest text-slate-300">
+                                {event.subtitle}
+                              </p>
+                            </div>
+                          </article>
+                          <div className="mt-4 text-center">
+                            <p
+                              className={`text-sm font-semibold ${
+                                hasBadge
+                                  ? "event-calendar-glow text-amber-700 dark:text-amber-200"
+                                  : "text-slate-800 dark:text-white"
+                              }`}
+                            >
+                              {formatEventDate(event.startsAt)}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </div>
           )}
 
@@ -404,10 +496,7 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
 
         <section className="relative z-10 -mx-4 space-y-6 md:hidden">
           <div className="px-4">
-            <h2 className="font-['Bebas_Neue'] text-4xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-              Calendario competitivo
-            </h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
               Elige una fecha para saltar al evento correspondiente.
             </p>
           </div>
@@ -415,6 +504,10 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
           {upcomingEvents.length === 0 ? (
             <div className="mx-4 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600 shadow-sm dark:border-white/15 dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-none">
               No hay próximos eventos publicados por ahora.
+            </div>
+          ) : filteredUpcomingEvents.length === 0 ? (
+            <div className="mx-4 rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600 shadow-sm dark:border-white/15 dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-none">
+              No hay próximos eventos en las ciudades seleccionadas.
             </div>
           ) : (
             <>
@@ -450,80 +543,91 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
 
               <div className="relative px-4 pb-8">
                 <div className="event-calendar-mobile-timeline-line" />
-                <div className="space-y-7">
-                  {upcomingEvents.map((event) => {
-                    const dayKey = getDayKey(event.startsAt);
-                    const hasBadge = Boolean(event.badgeLabel);
+                <div className="space-y-10">
+                  {upcomingEventGroups.map((group) => (
+                    <section key={group.key} className="space-y-6">
+                      <div className="pl-20">
+                        <EventMonthDivider label={group.label} />
+                      </div>
+                      <div className="space-y-7">
+                        {group.events.map((event) => {
+                          const dayKey = getDayKey(event.startsAt);
+                          const hasBadge = Boolean(event.badgeLabel);
 
-                    return (
-                      <div
-                        key={event.id}
-                        data-event-day={dayKey}
-                        className="relative flex scroll-mt-28 gap-5"
-                      >
-                        <div className="relative z-10 flex w-16 shrink-0 flex-col items-center">
-                          <div
-                            className={`event-calendar-mobile-node ${
-                              hasBadge
-                                ? "event-calendar-mobile-node-accent"
-                                : ""
-                            }`}
-                          >
-                            <span className="h-2.5 w-2.5 rounded-full bg-teal-300" />
-                          </div>
-                          <span className="mt-2 text-xs font-bold text-purple-700 dark:text-purple-200">
-                            {formatEventTime(event.startsAt)}
-                          </span>
-                        </div>
-
-                        <Link
-                          href={`/eventos/${event.slug}`}
-                          className={`event-calendar-mobile-card group ${
-                            hasBadge ? "event-calendar-mobile-card-accent" : ""
-                          }`}
-                        >
-                          <div className="relative h-32 overflow-hidden rounded-t-lg">
-                            <FallbackImage
-                              src={event.cardImage}
-                              fallbackSrc={eventImageFallbacks.cards}
-                              alt={event.title}
-                              fill
-                              sizes="calc(100vw - 112px)"
-                              className="object-cover transition duration-500 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-transparent" />
-                            <div className="absolute bottom-3 left-4 right-4">
-                              {event.badgeLabel && (
-                                <span
-                                  className={`mb-2 inline-block rounded-sm border bg-black/60 px-2 py-1 text-[10px] font-black uppercase tracking-widest ${
+                          return (
+                            <div
+                              key={event.id}
+                              data-event-day={dayKey}
+                              className="relative flex scroll-mt-28 gap-5"
+                            >
+                              <div className="relative z-10 flex w-16 shrink-0 flex-col items-center">
+                                <div
+                                  className={`event-calendar-mobile-node ${
                                     hasBadge
-                                      ? "border-amber-300/70 text-amber-100"
-                                      : "border-teal-300/70 text-teal-100"
+                                      ? "event-calendar-mobile-node-accent"
+                                      : ""
                                   }`}
                                 >
-                                  {event.badgeLabel}
+                                  <span className="h-2.5 w-2.5 rounded-full bg-teal-300" />
+                                </div>
+                                <span className="mt-2 text-xs font-bold text-purple-700 dark:text-purple-200">
+                                  {formatEventTime(event.startsAt)}
                                 </span>
-                              )}
-                              <h3 className="font-['Bebas_Neue'] text-3xl uppercase leading-none tracking-wide text-white">
-                                {event.title}
-                              </h3>
-                            </div>
-                          </div>
+                              </div>
 
-                          <div className="space-y-3 p-4">
-                            <p className="line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-100">
-                              {event.shortSummary}
-                            </p>
-                            <div className="flex flex-wrap gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-600 dark:text-amber-200">
-                              <span className="rounded border border-slate-200 bg-slate-50 px-2 py-1 dark:border-amber-300/25 dark:bg-amber-300/10">
-                                {formatEventDate(event.startsAt)}
-                              </span>
+                              <Link
+                                href={`/eventos/${event.slug}`}
+                                className={`event-calendar-mobile-card group ${
+                                  hasBadge
+                                    ? "event-calendar-mobile-card-accent"
+                                    : ""
+                                }`}
+                              >
+                                <div className="relative h-32 overflow-hidden rounded-t-lg">
+                                  <FallbackImage
+                                    src={event.cardImage}
+                                    fallbackSrc={eventImageFallbacks.cards}
+                                    alt={event.title}
+                                    fill
+                                    sizes="calc(100vw - 112px)"
+                                    className="object-cover transition duration-500 group-hover:scale-105"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-transparent" />
+                                  <div className="absolute bottom-3 left-4 right-4">
+                                    {event.badgeLabel && (
+                                      <span
+                                        className={`mb-2 inline-block rounded-sm border bg-black/60 px-2 py-1 text-[10px] font-black uppercase tracking-widest ${
+                                          hasBadge
+                                            ? "border-amber-300/70 text-amber-100"
+                                            : "border-teal-300/70 text-teal-100"
+                                        }`}
+                                      >
+                                        {event.badgeLabel}
+                                      </span>
+                                    )}
+                                    <h3 className="font-['Bebas_Neue'] text-3xl uppercase leading-none tracking-wide text-white">
+                                      {event.title}
+                                    </h3>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-3 p-4">
+                                  <p className="line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-100">
+                                    {event.shortSummary}
+                                  </p>
+                                  <div className="flex flex-wrap gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-600 dark:text-amber-200">
+                                    <span className="rounded border border-slate-200 bg-slate-50 px-2 py-1 dark:border-amber-300/25 dark:bg-amber-300/10">
+                                      {formatEventDate(event.startsAt)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </Link>
                             </div>
-                          </div>
-                        </Link>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    </section>
+                  ))}
                 </div>
               </div>
             </>

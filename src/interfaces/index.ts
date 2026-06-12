@@ -8,3 +8,4 @@ export * from './decklist.interface';
 export * from './deck.interface';
 export * from './news.interface';
 export * from './events.interface';
+export * from './player-ranking.interface';

@@ -7,6 +7,7 @@ import { ProfileCosmeticShelf } from "./ProfileCosmeticShelf";
 import type { ProfileCosmeticItem } from "./ProfileSection.types";
 import { getAvatarUrl, getAvatarValue } from "@/utils/avatar-image";
 import { getProfileFrameUrl, getProfileFrameValue } from "@/utils/profile-frame";
+import { PLAYER_PROFILE_FRAMES_ENABLED } from "@/config/features";
 
 type Props = {
   userImage?: string | null;
@@ -41,23 +42,27 @@ export const ProfileAvatarSection = ({
             avatarSrc={getAvatarUrl(selectedAvatar || userImage)}
             avatarAlt="Avatar actual"
             avatarTitle="Avatar actual"
-            frameSrc={selectedFrame ? getProfileFrameUrl(selectedFrame) : undefined}
+            frameSrc={
+              PLAYER_PROFILE_FRAMES_ENABLED && selectedFrame
+                ? getProfileFrameUrl(selectedFrame)
+                : undefined
+            }
           />
           <p className="mt-5 text-sm font-semibold text-slate-800 dark:text-white">
             Avatar actual
           </p>
           <p className="mt-1 text-center text-xs text-slate-500 dark:text-slate-400">
-            Vista previa del avatar y marco seleccionado.
+            Vista previa del avatar seleccionado.
           </p>
         </div>
 
         <div className="flex flex-col justify-center">
           <IoPersonCircleOutline className="h-10 w-10 text-purple-600 dark:text-purple-300" />
           <h3 className="mt-4 text-2xl font-semibold text-slate-900 dark:text-white">
-            Avatar y marco
+            Avatar
           </h3>
           <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-            Selecciona la imagen principal del perfil y el marco que la rodea.
+            Selecciona la imagen principal de tu perfil.
           </p>
         </div>
       </div>
@@ -100,12 +105,13 @@ export const ProfileAvatarSection = ({
         </div>
       </ProfileCosmeticShelf>
 
-      <ProfileCosmeticShelf
-        title="Tus marcos"
-        description="Selecciona un marco o conserva el avatar sin marco."
-        compactHeight={228}
-      >
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {PLAYER_PROFILE_FRAMES_ENABLED && (
+        <ProfileCosmeticShelf
+          title="Tus marcos"
+          description="Selecciona un marco o conserva el avatar sin marco."
+          compactHeight={228}
+        >
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           <button
             type="button"
             onClick={() => onSelectFrame(null)}
@@ -156,8 +162,9 @@ export const ProfileAvatarSection = ({
               </button>
             );
           })}
-        </div>
-      </ProfileCosmeticShelf>
+          </div>
+        </ProfileCosmeticShelf>
+      )}
 
       <div className="flex flex-wrap justify-start gap-3 border-t border-slate-200 pt-5 dark:border-tournament-dark-border">
         <button

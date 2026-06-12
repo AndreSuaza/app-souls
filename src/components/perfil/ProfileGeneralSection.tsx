@@ -11,6 +11,7 @@ import type { ProfileUser } from "./ProfileSection.types";
 import { getAvatarUrl } from "@/utils/avatar-image";
 import { getProfileBannerUrl } from "@/utils/profile-banner";
 import { getProfileFrameUrl } from "@/utils/profile-frame";
+import { PLAYER_PROFILE_FRAMES_ENABLED } from "@/config/features";
 
 type Props = {
   user: ProfileUser;
@@ -65,7 +66,7 @@ export const ProfileGeneralSection = ({
         <button
           type="button"
           onClick={() => onSectionChange("avatar")}
-          title="Personalizar avatar y marco"
+          title="Personalizar avatar"
           className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/60 bg-purple-600/80 text-white shadow-lg shadow-purple-700/30 transition hover:bg-purple-500 sm:bottom-4 sm:right-4 sm:top-auto"
         >
           <TbPhotoEdit className="h-5 w-5" />
@@ -82,7 +83,9 @@ export const ProfileGeneralSection = ({
                 user.nickname ? `Avatar de ${user.nickname}` : "Avatar de usuario"
               }
               frameSrc={
-                selectedFrame ? getProfileFrameUrl(selectedFrame) : undefined
+                PLAYER_PROFILE_FRAMES_ENABLED && selectedFrame
+                  ? getProfileFrameUrl(selectedFrame)
+                  : undefined
               }
             />
             <div className="space-y-2 text-left">

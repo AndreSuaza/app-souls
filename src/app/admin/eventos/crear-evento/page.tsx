@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createEventAction } from "@/actions/events/create-event.action";
 import { getEventImagesAction } from "@/actions/events/get-event-images.action";
+import { getStoreOptionsAction } from "@/actions/stores/get-store-options.action";
 import {
   EventForm,
   type EventSubmitValues,
 } from "@/components/events/form/EventForm";
 import type { EventImageOptions } from "@/interfaces/events.interface";
+import type { StoreOption } from "@/interfaces/store.interface";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 
 export default function CreateEventPage() {
@@ -23,6 +25,7 @@ export default function CreateEventPage() {
     banners: [],
     cards: [],
   });
+  const [storeOptions, setStoreOptions] = useState<StoreOption[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -30,9 +33,13 @@ export default function CreateEventPage() {
     const loadImages = async () => {
       try {
         showLoading("Cargando imagenes...");
-        const images = await getEventImagesAction();
+        const [images, stores] = await Promise.all([
+          getEventImagesAction(),
+          getStoreOptionsAction(),
+        ]);
         if (active) {
           setEventImages(images);
+          setStoreOptions(stores);
         }
       } catch {
         showToast("No se pudieron cargar las imagenes", "error");
@@ -91,6 +98,7 @@ export default function CreateEventPage() {
 
       <EventForm
         imageOptions={eventImages}
+        storeOptions={storeOptions}
         submitLabel="Crear evento"
         onSubmit={handleSubmit}
       />

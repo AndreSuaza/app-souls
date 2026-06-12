@@ -1,7 +1,10 @@
 ﻿"use server";
 
 import { auth } from "@/auth";
-import { PLAYER_COSMETIC_STORE_ENABLED } from "@/config/features";
+import {
+  PLAYER_COSMETIC_STORE_ENABLED,
+  PLAYER_PROFILE_FRAMES_ENABLED,
+} from "@/config/features";
 import { prisma } from "@/lib/prisma";
 import { CosmeticPurchaseSchema, type CosmeticPurchaseInput } from "@/schemas";
 import type { Prisma } from "@prisma/client";
@@ -70,6 +73,7 @@ export const purchaseCosmeticAction = async (
     select: {
       id: true,
       name: true,
+      type: true,
       rarity: true,
       price: true,
       isSeasonal: true,
@@ -78,6 +82,10 @@ export const purchaseCosmeticAction = async (
 
   if (!cosmetic) {
     throw new Error("El cosmetico no esta disponible en la tienda.");
+  }
+
+  if (!PLAYER_PROFILE_FRAMES_ENABLED && cosmetic.type === "FRAME") {
+    throw new Error("Los marcos de perfil no estan disponibles actualmente.");
   }
 
   if (cosmetic.rarity === "ASCENDED") {

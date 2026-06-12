@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { PLAYER_PROFILE_FRAMES_ENABLED } from "@/config/features";
 import { prisma } from "@/lib/prisma";
 
 const getCurrentSeasonNumber = async () => {
@@ -54,6 +55,9 @@ export const getCosmeticStoreDataAction =
     const items = await prisma.avatar.findMany({
       where: {
         availability: "STORE",
+        ...(PLAYER_PROFILE_FRAMES_ENABLED
+          ? {}
+          : { type: { not: "FRAME" as const } }),
         OR: [{ storeVisible: true }, { storeVisible: null }],
         AND: [
           {

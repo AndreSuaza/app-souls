@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { PLAYER_PROFILE_FRAMES_ENABLED } from "@/config/features";
 import { prisma } from "@/lib/prisma";
 
 const resolveUserId = async () => {
@@ -62,6 +63,8 @@ export const getProfileBanners = async () => {
 };
 
 export const getProfileFrames = async () => {
+  if (!PLAYER_PROFILE_FRAMES_ENABLED) return [];
+
   try {
     return await getProfileMedia("FRAME");
   } catch (error) {
