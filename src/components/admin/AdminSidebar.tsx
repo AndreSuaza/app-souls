@@ -9,13 +9,19 @@ import {
   IoArrowBackOutline,
   IoCloseOutline,
   IoHomeOutline,
-  IoLayers,
+  IoLayersOutline,
   IoNewspaperOutline,
   IoBagRemoveOutline,
+  IoCalendarOutline,
   IoImagesOutline,
   IoLogOutOutline,
+  IoPeopleOutline,
+  IoReceiptOutline,
+  IoSettingsOutline,
+  IoStorefrontOutline,
 } from "react-icons/io5";
-import { IoMdTrophy } from "react-icons/io";
+import { TbCards } from "react-icons/tb";
+import { IoTrophyOutline } from "react-icons/io5";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 
@@ -28,9 +34,13 @@ export const AdminSidebar = () => {
   const pathname = usePathname();
   const isTournamentSection = pathname.startsWith("/admin/torneos");
   const isNewsSection = pathname.startsWith("/admin/noticias");
+  const isEventsSection = pathname.startsWith("/admin/eventos");
   const isDeckSection = pathname.startsWith("/admin/mazos");
+  const isCardsSection = pathname.startsWith("/admin/cartas");
   const isProductSection = pathname.startsWith("/admin/productos");
   const isMediaSection = pathname.startsWith("/admin/medios");
+  const isStoreSection = pathname.startsWith("/admin/tienda");
+  const isUsersSection = pathname.startsWith("/admin/usuarios");
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
 
   const menuItems = [
@@ -47,12 +57,17 @@ export const AdminSidebar = () => {
         {
           label: "Torneos",
           href: "/admin/torneos",
-          icon: IoMdTrophy,
+          icon: IoTrophyOutline,
         },
         {
           label: "Noticias",
           href: "/admin/noticias",
           icon: IoNewspaperOutline,
+        },
+        {
+          label: "Eventos",
+          href: "/admin/eventos",
+          icon: IoCalendarOutline,
         },
         {
           label: "Productos",
@@ -65,9 +80,24 @@ export const AdminSidebar = () => {
           icon: IoImagesOutline,
         },
         {
+          label: "Tienda",
+          href: "/admin/tienda",
+          icon: IoStorefrontOutline,
+        },
+        {
+          label: "Usuarios",
+          href: "/admin/usuarios",
+          icon: IoPeopleOutline,
+        },
+        {
           label: "Mazos",
           href: "/admin/mazos",
-          icon: IoLayers,
+          icon: IoLayersOutline,
+        },
+        {
+          label: "Cartas",
+          href: "/admin/cartas/importar-excel",
+          icon: TbCards,
         },
       );
     }
@@ -84,7 +114,7 @@ export const AdminSidebar = () => {
         {
           label: "Torneos",
           href: "/admin/torneos",
-          icon: IoMdTrophy,
+          icon: IoTrophyOutline,
         },
       );
     }
@@ -123,6 +153,28 @@ export const AdminSidebar = () => {
     }
   }
 
+  if (isEventsSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Crear evento",
+          href: "/admin/eventos/crear-evento",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Eventos",
+          href: "/admin/eventos",
+          icon: IoCalendarOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
+    }
+  }
+
   if (isProductSection) {
     if (role === "admin") {
       menuItems.push(
@@ -157,7 +209,7 @@ export const AdminSidebar = () => {
         {
           label: "Mazos",
           href: "/admin/mazos",
-          icon: IoLayers,
+          icon: IoLayersOutline,
         },
       );
 
@@ -169,6 +221,23 @@ export const AdminSidebar = () => {
     }
   }
 
+  if (isCardsSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Importar excel",
+          href: "/admin/cartas/importar-excel",
+          icon: IoAddCircleOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
+    }
+  }
+
   if (isMediaSection) {
     if (role === "admin") {
       menuItems.push(
@@ -176,6 +245,50 @@ export const AdminSidebar = () => {
           label: "Medios",
           href: "/admin/medios",
           icon: IoImagesOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
+    }
+  }
+
+  if (isStoreSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Cosméticos",
+          href: "/admin/tienda",
+          icon: IoStorefrontOutline,
+        },
+        {
+          label: "Ventas",
+          href: "/admin/tienda/ventas",
+          icon: IoReceiptOutline,
+        },
+        {
+          label: "Configuracion",
+          href: "/admin/tienda/configuracion",
+          icon: IoSettingsOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
+    }
+  }
+
+  if (isUsersSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Usuarios",
+          href: "/admin/usuarios",
+          icon: IoPeopleOutline,
         },
         {
           label: "Volver",
@@ -250,7 +363,7 @@ export const AdminSidebar = () => {
             className="mt-3 flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white"
           >
             <IoLogOutOutline size={22} />
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
       </aside>

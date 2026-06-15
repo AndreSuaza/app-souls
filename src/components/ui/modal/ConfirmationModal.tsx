@@ -1,9 +1,10 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { IoWarningOutline } from "react-icons/io5";
-import { useAlertConfirmationStore } from "@/store";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { useAlertConfirmationStore, useUIStore } from "@/store";
 
 interface Props {
   className?: string;
@@ -18,26 +19,26 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
     closeAlertConfirmation,
     runAction,
   } = useAlertConfirmationStore();
+  const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmValue, setConfirmValue] = useState("");
   const hasTextConfirmation = !!confirmText;
 
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    // Evita el scroll de fondo mientras el modal este abierto.
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
+  useBodyScrollLock();
 
   const handleConfirm = async () => {
     // Evita dobles confirmaciones antes de que el modal se cierre.
     if (isSubmitting) return;
     if (!!confirmText && confirmValue.trim() !== confirmText) return;
     setIsSubmitting(true);
-    await runAction();
-    setIsSubmitting(false);
+    showLoading("Procesando confirmacion...");
+    try {
+      await runAction();
+    } finally {
+      hideLoading();
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -379,7 +379,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
     );
 
     const paragraphClass =
-      "text-sm break-words break-all leading-relaxed text-slate-700 dark:text-slate-200 md:text-base";
+      "text-sm break-words leading-relaxed text-slate-700 dark:text-slate-200 md:text-base";
     const hasInstagramElement = childrenArray.some(
       (child) =>
         (isValidElement(child) && child.type === InstagramEmbed) ||
@@ -564,7 +564,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
           src={src}
           alt={alt ?? "Imagen"}
           title={alt ?? "Imagen"}
-          className="h-auto w-[240px] max-w-full rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border"
+          className="h-auto w-auto max-w-full rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border"
         />
       );
     }
@@ -576,8 +576,8 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
         title={alt ?? "Imagen"}
         width={800}
         height={600}
-        sizes="(max-width: 640px) 240px, 320px"
-        className="h-auto w-[240px] max-w-full rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border"
+        sizes="(max-width: 1024px) 100vw, 800px"
+        className="h-auto w-auto max-w-full rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border"
       />
     );
   },
@@ -740,7 +740,7 @@ export function MarkdownContent({
   };
 
   return (
-    <div className={clsx("space-y-3 break-words break-all", className)}>
+    <div className={clsx("space-y-3 break-words", className)}>
       {renderBlockList(blocks, "root")}
     </div>
   );

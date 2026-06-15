@@ -11,7 +11,7 @@ import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import clsx from "clsx";
 import { FiX } from "react-icons/fi";
-import { MarkdownEditor } from "@/components";
+import { MarkdownEditor } from "@/components/ui/markdown/MarkdownEditor";
 import {
   FormField,
   FormInput,

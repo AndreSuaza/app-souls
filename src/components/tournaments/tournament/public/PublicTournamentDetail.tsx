@@ -8,13 +8,17 @@ import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { AnimatePresence, motion } from "framer-motion";
 import { getPublicTournamentDetailAction } from "@/actions";
-import { Map, MarkdownContent, TournamentRankingPanel } from "@/components";
+import { Map } from "@/components/map/Map";
+import { TournamentRankingPanel } from "@/components/perfil/TournamentRankingPanel";
+import { MarkdownContent } from "@/components/ui/markdown/MarkdownContent";
 import { type MatchInterface, type PublicTournamentDetail } from "@/interfaces";
 import { useToastStore, useUIStore } from "@/store";
 import { MatchCard } from "../current-round/MarchCard";
 import { RoundHistoryCardBase } from "../hisotry/RoundHistoryCardBase";
 import { ResultButton } from "../current-round/ResultButton";
 import { orderMatchesByBye } from "@/utils/matches";
+import { TopCutBracket } from "../top-cut/TopCutBracket";
+import { isTopCutStage, isTopCutTournamentType } from "@/logic";
 
 type Props = {
   initialTournament: PublicTournamentDetail;
@@ -111,6 +115,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
   const showCurrentRoundSection = tournament?.status === "in_progress";
   const showPodium = tournament?.status === "finished";
+  const showTopCutSection = isTopCutTournamentType(tournament?.typeTournamentName);
 
   useEffect(() => {
     hideLoading();
@@ -159,8 +164,10 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   });
 
   // Botones de resultado reutilizables renderizados en solo lectura.
-  const renderResultButtons = (match: MatchInterface) => (
-    <div className="grid grid-cols-3 gap-2 w-full md:flex md:items-center md:justify-center">
+  const renderResultButtons = (match: MatchInterface, allowDraw = true) => (
+    <div
+      className={`grid ${allowDraw ? "grid-cols-3" : "grid-cols-2"} gap-2 w-full md:flex md:items-center md:justify-center`}
+    >
       <div className="flex justify-end">
         <ResultButton
           label="Victoria"
@@ -171,15 +178,17 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
         />
       </div>
 
-      <div className="flex justify-center">
-        <ResultButton
-          label="Empate"
-          variant="draw"
-          active={match.result === "DRAW"}
-          readOnly
-          onClick={() => {}}
-        />
-      </div>
+      {allowDraw && (
+        <div className="flex justify-center">
+          <ResultButton
+            label="Empate"
+            variant="draw"
+            active={match.result === "DRAW"}
+            readOnly
+            onClick={() => {}}
+          />
+        </div>
+      )}
 
       <div className="flex justify-start">
         <ResultButton
@@ -390,6 +399,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                             players={players}
                             readOnly
                             decorated
+                            allowDraw={!isTopCutStage(currentRound?.stage)}
                             renderResult={() => renderVS()}
                           />
                         ))}
@@ -404,6 +414,15 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
               </div>
             )}
           </div>
+
+          {showTopCutSection && (
+            <TopCutBracket
+              rounds={rounds}
+              players={players}
+              topCutPvBonus={tournament?.topCutPvBonus}
+              compact
+            />
+          )}
 
           {tournament && (
             <div className="space-y-4">
@@ -451,11 +470,12 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                           : round.matches
                       }
                       readOnly
+                      allowDraw={!isTopCutStage(round.stage)}
                       allowExpand={false}
                       renderResult={(match) =>
                         status === "IN_PROGRESS"
                           ? renderVS()
-                          : renderResultButtons(match)
+                          : renderResultButtons(match, !isTopCutStage(round.stage))
                       }
                     />
                   );

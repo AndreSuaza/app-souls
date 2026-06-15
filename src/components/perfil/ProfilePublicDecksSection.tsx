@@ -30,7 +30,7 @@ export const ProfilePublicDecksSection = ({
   return (
     <section id="public-decks" className="w-full space-y-4">
       <h2 className="text-2xl font-semibold text-slate-800 dark:text-purple-200">
-        Mazos publicos
+        Mazos públicos
       </h2>
       <DeckLibrary
         initialDecks={initialDecks}
@@ -50,7 +50,7 @@ export const ProfilePublicDecksSection = ({
           event.preventDefault();
           window.open(`/mazos/${deck.id}`, "_blank", "noopener,noreferrer");
         }}
-        emptyStateText="Este jugador aun no tiene mazos publicos."
+        emptyStateText="Este jugador aun no tiene mazos públicos."
       />
     </section>
   );

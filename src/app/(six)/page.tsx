@@ -1,4 +1,4 @@
-import { YoutubeList } from "@/components";
+import { YoutubeList } from "@/components/home/YoutubeList";
 import { getPublicNewsAction } from "@/actions";
 import { NewsCarousel } from "@/components/news/public/NewsCarousel";
 import type { PublicNewsCard } from "@/interfaces";

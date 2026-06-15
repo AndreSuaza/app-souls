@@ -1,6 +1,8 @@
 import moment from "moment";
 import "moment/locale/es";
-import { ConfirmationModalHost, Sidebar, TopMenu } from "@/components";
+import { ConfirmationModalHost } from "@/components/ui/modal/ConfirmationModalHost";
+import { Sidebar } from "@/components/ui/sidebar/Sidebar";
+import { TopMenu } from "@/components/ui/top-menu/TopMenu";
 
 export default function SixLayout({
   children,

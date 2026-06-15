@@ -6,7 +6,7 @@
   getPropertiesCards,
 } from "@/actions";
 import { auth } from "@/auth";
-import { DeckCreator } from "@/components";
+import { DeckCreator } from "@/components/cartas/deck-creator/DeckCreator";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 

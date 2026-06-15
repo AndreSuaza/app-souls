@@ -1,13 +1,11 @@
-import {
-  Sidebar,
-  TopMenu,
-  AdminTopMenu,
-  LoadingOverlay,
-  ToastContainer,
-  AdminSidebar,
-  ConfirmationModalHost,
-  AdminFooter,
-} from "@/components";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminFooter } from "@/components/ui/footer/AdminFooter";
+import { LoadingOverlay } from "@/components/ui/loading/LoadingOverlay";
+import { ConfirmationModalHost } from "@/components/ui/modal/ConfirmationModalHost";
+import { Sidebar } from "@/components/ui/sidebar/Sidebar";
+import { ToastContainer } from "@/components/ui/toast/ToastContainer";
+import { AdminTopMenu } from "@/components/ui/top-menu/AdminTopMenu";
+import { TopMenu } from "@/components/ui/top-menu/TopMenu";
 import moment from "moment";
 import { Metadata } from "next";
 
@@ -35,7 +33,7 @@ export default function TournamentLayout({
         <ToastContainer />
         <AdminSidebar />
 
-        <div className="flex-1 px-4 py-6 lg:px-8 overflow-visible mb-4">
+        <div className="min-w-0 flex-1 overflow-x-hidden px-4 py-6 lg:px-8 mb-4">
           {children}
         </div>
       </div>

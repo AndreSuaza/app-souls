@@ -1,9 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
 import type { PublicNewsCard } from "@/interfaces";
+import { newsImageFallbacks } from "@/models/media-fallbacks.models";
+import { FallbackImage } from "@/components/ui/image/FallbackImage";
 
 type Props = {
   item: PublicNewsCard;
@@ -35,8 +36,9 @@ export const NewsHeroCard = ({ item, className }: Props) => {
       )}
     >
       <div className="relative min-h-[220px] w-full overflow-hidden md:min-h-0">
-        <Image
+        <FallbackImage
           src={item.cardImage}
+          fallbackSrc={newsImageFallbacks.cards}
           alt={item.title}
           title={item.title}
           fill

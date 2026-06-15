@@ -1,12 +1,15 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { assertCanManageTournament } from "./tournament-action-auth";
 
 export async function deleteTournamentAction(
   tournamentId: string,
   status: string
 ) {
   try {
+    await assertCanManageTournament(tournamentId);
+
     if (status === "finished") {
       throw new Error("No se puede cancelar un torneo finalizado");
     }

@@ -3,13 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, notFound } from "next/navigation";
 import { useTournamentStore, useUIStore } from "@/store";
-import {
-  TournamentTabs,
-  TournamentPlayersView,
-  TournamentCurrentRound,
-  TournamentRoundsHistory,
-  TournamentInformation,
-} from "@/components";
+import { TournamentCurrentRound } from "@/components/tournaments/tournament/current-round/TournamentCurrentRound";
+import { TournamentRoundsHistory } from "@/components/tournaments/tournament/hisotry/TournamentRoundsHistory";
+import { TournamentInformation } from "@/components/tournaments/tournament/information/TournamentInformation";
+import { TournamentPlayersView } from "@/components/tournaments/tournament/players/TournamentPlayersView";
+import { TournamentTabs } from "@/components/tournaments/tournament/TournamentTabs";
 
 export type TournamentTab =
   | "players"

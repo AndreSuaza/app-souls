@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { DeletePlayerSchema } from "@/schemas";
+import { assertCanManageTournament } from "./tournament-action-auth";
 
 export async function deletePlayerAction(input: {
   playerId: string;
@@ -17,6 +18,16 @@ export async function deletePlayerAction(input: {
 }) {
   try {
     const data = DeletePlayerSchema.parse(input);
+    const tournamentPlayer = await prisma.tournamentPlayer.findUnique({
+      where: { id: data.playerId },
+      select: { tournamentId: true },
+    });
+
+    if (!tournamentPlayer) {
+      throw new Error("Jugador de torneo no encontrado");
+    }
+
+    await assertCanManageTournament(tournamentPlayer.tournamentId);
 
     await prisma.$transaction(async (tx) => {
       if (data.matchDeleteId) {

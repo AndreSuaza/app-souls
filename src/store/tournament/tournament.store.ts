@@ -3,9 +3,11 @@ import {
   getTournamentAction,
   addPlayerAction,
   generateRoundAction,
+  generateTopCutBracketAction,
   recalculateRoundAction,
   saveMatchResultAction,
   finalizeRoundAction,
+  finalizeTopCutRoundAction,
   finalizeTournamentAction,
   deletePlayerAction,
   editRoundResultsAction,
@@ -14,7 +16,14 @@ import {
   updateTournamentInfoAction,
   removeTournamentDeckAction,
 } from "@/actions";
-import { applySwissResults, calculateBuchholzForPlayers } from "@/logic";
+import {
+  applySwissResults,
+  calculateBuchholzForPlayers,
+  getTopCutChampionId,
+  isSwissStage,
+  isTopCutStage,
+  isTopCutTournamentType,
+} from "@/logic";
 import {
   TournamentPlayerInterface,
   RoundInterface,
@@ -30,6 +39,8 @@ export type BasicTournament = {
   status: "pending" | "in_progress" | "finished" | "cancelled";
   currentRoundNumber: number;
   maxRounds: number;
+  topCutGeneratedAt?: string | null;
+  topCutPvBonus?: number | null;
   format?: string;
   typeTournamentName?: string;
 };
@@ -57,6 +68,7 @@ type TournamentStoreState = {
   ) => Promise<void>;
 
   generateRound: () => Promise<void>;
+  generateTopCutBracket: (topCutPvBonus: number) => Promise<void>;
   saveMatchResult: (
     matchId: string,
     result: "P1" | "P2" | "DRAW",
@@ -125,6 +137,10 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           status: data.status,
           currentRoundNumber: data.currentRoundNumber,
           maxRounds: data.maxRounds,
+          topCutGeneratedAt: data.topCutGeneratedAt
+            ? data.topCutGeneratedAt.toISOString()
+            : null,
+          topCutPvBonus: data.topCutPvBonus ?? null,
           format: data.format ?? undefined,
           typeTournamentName: data.typeTournament?.name ?? undefined,
         },
@@ -141,11 +157,13 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           hadBye: p.hadBye,
           rivals: p.rivals,
           deckId: p.deckId ?? undefined,
+          topCutSeed: p.topCutSeed ?? null,
         })),
 
         rounds: data.tournamentRounds.map((r) => ({
           id: r.id,
           roundNumber: r.roundNumber,
+          stage: r.stage ?? "SWISS",
           startedAt: r.startedAt ? r.startedAt.toISOString() : null,
           finishedAt: r.finishedAt ? r.finishedAt.toISOString() : null,
           matches: r.matches.map((m) => ({
@@ -155,6 +173,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
             player1Nickname: m.player1Nickname,
             player2Nickname: m.player2Nickname,
             result: m.result,
+            bracketPosition: m.bracketPosition ?? null,
           })),
         })),
 
@@ -233,6 +252,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     const shouldRecalculate =
       after.tournament?.status === "in_progress" &&
       currentRound &&
+      isSwissStage(currentRound.stage) &&
       !currentRound.startedAt &&
       currentRound.roundNumber === after.tournament.currentRoundNumber + 1;
 
@@ -260,6 +280,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       const newRound: RoundInterface = {
         id: apiRound.roundId,
         roundNumber: apiRound.swissRound.number,
+        stage: "SWISS",
         startedAt: null, // NO iniciar automáticamente
         matches: apiRound.swissRound.matches.map((m, index) => {
           const matchId = apiRound.matchIds[index];
@@ -271,6 +292,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
             player1Nickname: m.player1.playerNickname,
             player2Nickname: m.player2?.playerNickname ?? "BYE",
             result: m.player2 ? null : "P1",
+            bracketPosition: null,
           };
         }),
       };
@@ -292,12 +314,52 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     }
   },
 
+  generateTopCutBracket: async (topCutPvBonus: number) => {
+    const state = get();
+    const tournamentId = state.tournamentId;
+    if (!tournamentId || !state.tournament) return;
+
+    try {
+      const apiBracket = await generateTopCutBracketAction({
+        tournamentId,
+        topCutPvBonus,
+      });
+
+      set((state) => ({
+        players: state.players.map((player) => {
+          const seededPlayer = apiBracket.seededPlayers.find(
+            (seeded) => seeded.id === player.id,
+          );
+
+          return {
+            ...player,
+            topCutSeed: seededPlayer?.topCutSeed ?? null,
+          };
+        }),
+        rounds: [...state.rounds, apiBracket.round],
+        tournament: state.tournament
+          ? {
+              ...state.tournament,
+              status: "in_progress",
+              topCutGeneratedAt: apiBracket.topCutGeneratedAt,
+              topCutPvBonus: apiBracket.topCutPvBonus,
+            }
+          : null,
+      }));
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error generando el bracket Top 8" });
+      throw error;
+    }
+  },
+
   saveMatchResult: async (matchId, result, player2Nickname) => {
     if (!matchId) return;
 
     const currentRound = get().rounds[get().rounds.length - 1];
 
     if (!currentRound.startedAt) return; // ronda no iniciada
+    if (result === "DRAW" && isTopCutStage(currentRound.stage)) return;
 
     const state = get();
     if (
@@ -337,8 +399,32 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     if (!snapshot.tournament) return;
 
     const round = snapshot.rounds[snapshot.rounds.length - 1];
+    if (!round) return;
 
     try {
+      if (isTopCutStage(round.stage)) {
+        const apiResult = await finalizeTopCutRoundAction({
+          tournamentId: snapshot.tournament.id,
+          roundId: round.id,
+        });
+
+        set((state) => ({
+          rounds: [
+            ...state.rounds.slice(0, -1),
+            {
+              ...round,
+              finishedAt: new Date().toISOString(),
+            },
+            ...(apiResult.nextRound ? [apiResult.nextRound] : []),
+          ],
+          tournament: {
+            ...state.tournament!,
+            currentRoundNumber: state.tournament!.currentRoundNumber + 1,
+          },
+        }));
+        return;
+      }
+
       applySwissResults(round, snapshot.players);
 
       // calcular buchholz
@@ -373,6 +459,15 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     if (!state.tournamentId) return;
 
     try {
+      if (
+        state.tournament &&
+        isTopCutTournamentType(state.tournament.typeTournamentName) &&
+        !getTopCutChampionId(state.rounds)
+      ) {
+        set({ error: "Primero debes finalizar el bracket Top 8" });
+        return;
+      }
+
       // Construye el mapa playerId -> userId para contar victorias por usuario.
       const playerIdToUserId = new Map(
         state.players.map((p) => [p.id, p.userId]),
@@ -546,6 +641,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       const shouldRecalculate =
         after.tournament?.status === "in_progress" &&
         recalculationRound &&
+        isSwissStage(recalculationRound.stage) &&
         !recalculationRound.startedAt &&
         recalculationRound.roundNumber ===
           after.tournament.currentRoundNumber + 1;
@@ -583,6 +679,30 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     if (roundIndex === -1) return;
 
     const currentRound = state.rounds[roundIndex];
+
+    if (isTopCutStage(currentRound.stage)) {
+      if (updatedMatches.some((match) => match.result === "DRAW")) {
+        set({ error: "El bracket Top 8 no permite empates" });
+        return;
+      }
+
+      set((state) => ({
+        rounds: state.rounds.map((round, idx) =>
+          idx === roundIndex ? { ...round, matches: updatedMatches } : round,
+        ),
+      }));
+
+      try {
+        await editRoundResultsAction({
+          matches: updatedMatches,
+          players: [],
+        });
+      } catch (error) {
+        console.error(error);
+        set({ error: "Error guardando ediciÃ³n de ronda" });
+      }
+      return;
+    }
 
     // Copia mutable de players para aplicar cambios incrementales
     const playersMap = new Map(state.players.map((p) => [p.id, { ...p }]));
@@ -634,6 +754,11 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
 
     // Resultado final
     const updatedPlayers = Array.from(playersMap.values());
+    const changedPlayers = updatedPlayers.filter((player) => {
+      const previousPlayer = state.players.find((p) => p.id === player.id);
+
+      return previousPlayer?.points !== player.points;
+    });
 
     // Actualizar store optimistamente
     set((state) => ({
@@ -647,7 +772,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     try {
       await editRoundResultsAction({
         matches: updatedMatches,
-        players: updatedPlayers,
+        players: changedPlayers,
       });
     } catch (error) {
       console.error(error);
@@ -689,6 +814,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     const { tournamentId, tournament } = state;
     const currentRound = state.rounds[state.rounds.length - 1];
     if (!tournamentId || !tournament || !currentRound) return false;
+    if (!isSwissStage(currentRound.stage)) return false;
 
     try {
       const apiRound = await recalculateRoundAction({
@@ -701,6 +827,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
       const updatedRound: RoundInterface = {
         id: currentRound.id,
         roundNumber: apiRound.swissRound.number,
+        stage: "SWISS",
         startedAt: null, // Reinicia la ronda para permitir un nuevo inicio.
         matches: apiRound.swissRound.matches.map((m, index) => {
           const matchId = apiRound.matchIds[index];
@@ -712,6 +839,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
             player1Nickname: m.player1.playerNickname,
             player2Nickname: m.player2?.playerNickname ?? "BYE",
             result: m.player2 ? null : "P1",
+            bracketPosition: null,
           };
         }),
       };

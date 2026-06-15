@@ -8,7 +8,6 @@ import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import ImageExtension from "@tiptap/extension-image";
 import { Markdown } from "@tiptap/markdown";
-import type { JSONContent } from "@tiptap/core";
 import { mergeAttributes } from "@tiptap/core";
 import {
   FiBold,
@@ -78,6 +77,9 @@ const CardImageExtension = ImageExtension.extend({
   renderHTML({ HTMLAttributes }) {
     const { src, "data-preview": dataPreview, ...rest } = HTMLAttributes;
     const resolvedSrc = dataPreview || src;
+    const imageStyle = dataPreview
+      ? "max-width: 190px; width: 100%; height: auto;"
+      : "max-width: 100%; width: auto; height: auto;";
 
     return [
       "img",
@@ -85,7 +87,7 @@ const CardImageExtension = ImageExtension.extend({
         src: resolvedSrc,
         "data-src": src,
         ...(dataPreview ? { "data-preview": dataPreview } : {}),
-        style: "max-width: 190px; width: 100%; height: auto;",
+        style: imageStyle,
       }),
     ];
   },
@@ -165,6 +167,10 @@ export const MarkdownEditor = ({
   const headingMenuRef = useRef<HTMLDivElement | null>(null);
   const listMenuRef = useRef<HTMLDivElement | null>(null);
   const previewCacheRef = useRef(new Map<string, string>());
+  const indentSelectionRef = useRef<{ from: number; to: number } | null>(null);
+  const cardBlockSelectionRef = useRef<{ from: number; to: number } | null>(
+    null,
+  );
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
@@ -179,7 +185,6 @@ export const MarkdownEditor = ({
     "none" | "sm" | "md" | "lg" | "xl"
   >("none");
   const [cardBlockTitle, setCardBlockTitle] = useState("");
-  const [selectionSnapshot, setSelectionSnapshot] = useState("");
   const [isHeadingMenuOpen, setIsHeadingMenuOpen] = useState(false);
   const [isListMenuOpen, setIsListMenuOpen] = useState(false);
   const [cardSearch, setCardSearch] = useState("");
@@ -234,7 +239,7 @@ export const MarkdownEditor = ({
       CardImageExtension.configure({
         HTMLAttributes: {
           class:
-            "my-2 inline-block h-auto w-[140px] max-w-full rounded-lg border border-slate-200 shadow-sm sm:w-[170px] md:w-[190px] dark:border-tournament-dark-border",
+            "my-2 inline-block h-auto max-w-full rounded-lg border border-slate-200 shadow-sm dark:border-tournament-dark-border",
         },
       }),
       Markdown,
@@ -244,7 +249,7 @@ export const MarkdownEditor = ({
     editorProps: {
       attributes: {
         class:
-          "min-h-[220px] w-full max-w-full break-words break-all whitespace-pre-wrap outline-none text-sm leading-relaxed text-slate-700 dark:text-slate-200" +
+          "min-h-[220px] w-full max-w-full break-words whitespace-pre-wrap outline-none text-sm leading-relaxed text-slate-700 dark:text-slate-200" +
           " space-y-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold" +
           " [&_h3]:text-lg [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:pl-5" +
           " [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_a]:font-semibold" +
@@ -260,10 +265,7 @@ export const MarkdownEditor = ({
     },
   });
 
-  const previewValue = useMemo(
-    () => editor?.getMarkdown() ?? value,
-    [editor, value],
-  );
+  const previewValue = value;
 
   const updateCardPreview = useCallback(
     (cardId: string, preview: string) => {
@@ -685,82 +687,53 @@ export const MarkdownEditor = ({
     setIsProductModalOpen(false);
   };
 
-  const resolveMarkdownContentNodes = (markdown: string): JSONContent[] => {
-    const trimmed = markdown.trim();
-    if (!editor || trimmed.length === 0) {
-      return [
-        {
-          type: "paragraph",
-        },
-      ];
-    }
-
-    const manager = editor.storage?.markdown?.manager;
-    if (!manager) {
-      return [
-        {
-          type: "paragraph",
-        },
-      ];
-    }
-
-    // Convertimos markdown a nodos para mantener el render WYSIWYG.
-    const parsed = manager.parse(markdown) as JSONContent | JSONContent[];
-    if (Array.isArray(parsed)) {
-      return parsed.length
-        ? parsed
-        : [{ type: "paragraph" }];
-    }
-
-    const content = parsed?.content ?? [];
-    return content.length
-      ? content
-      : [{ type: "paragraph" }];
-  };
-
-  const getSelectedText = () => {
-    if (!editor) return "";
-    const { from, to } = editor.state.selection;
-    if (from === to) return "";
-    return editor.state.doc.textBetween(from, to, "\n");
-  };
-
   const openIndentModal = () => {
-    // Guardamos el texto seleccionado para envolverlo en el bloque.
-    setSelectionSnapshot(getSelectedText());
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    // Conservamos el rango para envolver los nodos originales y sus estilos.
+    indentSelectionRef.current = { from, to };
     setIsIndentModalOpen(true);
   };
 
   const openCardBlockModal = () => {
-    // Guardamos el texto seleccionado para reutilizarlo como contenido.
-    setSelectionSnapshot(getSelectedText());
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    // Conservamos los nodos seleccionados para no perder su formato.
+    cardBlockSelectionRef.current = { from, to };
     setIsCardBlockModalOpen(true);
   };
 
   const handleInsertIndent = () => {
     if (!editor) return;
-    const hasSelection = selectionSnapshot.trim().length > 0;
-    const content = hasSelection ? selectionSnapshot : "";
+    const selection = indentSelectionRef.current;
+    const hasSelection = Boolean(selection && selection.from !== selection.to);
     const leftValue = indentLeft !== "none" ? indentLeft : null;
     const rightValue = indentRight !== "none" ? indentRight : null;
-    const contentNodes = resolveMarkdownContentNodes(content);
-    const safeContentNodes =
-      contentNodes.length > 0 ? contentNodes : [{ type: "paragraph" }];
 
-    editor
-      .chain()
-      .focus()
-      .insertContent({
-        type: "indentBlock",
-        attrs: {
+    if (hasSelection && selection) {
+      editor
+        .chain()
+        .focus()
+        .setTextSelection(selection)
+        .wrapIn("indentBlock", {
           left: leftValue,
           right: rightValue,
-        },
-        content: safeContentNodes,
-      })
-      .run();
+        })
+        .run();
+    } else {
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: "indentBlock",
+          attrs: {
+            left: leftValue,
+            right: rightValue,
+          },
+          content: [{ type: "paragraph" }],
+        })
+        .run();
 
-    if (!hasSelection) {
       // Movemos el cursor dentro de la sangria para escribir sin texto previo.
       const { $from } = editor.state.selection;
       const nodeBefore = $from.nodeBefore;
@@ -772,30 +745,40 @@ export const MarkdownEditor = ({
     }
 
     setIsIndentModalOpen(false);
-    setSelectionSnapshot("");
+    indentSelectionRef.current = null;
   };
 
   const handleInsertCardBlock = () => {
     if (!editor) return;
-    const content = selectionSnapshot.trim().length ? selectionSnapshot : "";
+    const selection = cardBlockSelectionRef.current;
+    const hasSelection = Boolean(selection && selection.from !== selection.to);
     const safeTitle = cardBlockTitle.trim().replace(/"/g, "'");
-    const contentNodes = resolveMarkdownContentNodes(content);
-    const safeContentNodes =
-      contentNodes.length > 0 ? contentNodes : [{ type: "paragraph" }];
 
-    editor
-      .chain()
-      .focus()
-      .insertContent({
-        type: "cardBlock",
-        attrs: {
+    if (hasSelection && selection) {
+      editor
+        .chain()
+        .focus()
+        .setTextSelection(selection)
+        .wrapIn("cardBlock", {
           title: safeTitle || null,
-        },
-        content: safeContentNodes,
-      })
-      .run();
+        })
+        .run();
+    } else {
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: "cardBlock",
+          attrs: {
+            title: safeTitle || null,
+          },
+          content: [{ type: "paragraph" }],
+        })
+        .run();
+    }
+
     setIsCardBlockModalOpen(false);
-    setSelectionSnapshot("");
+    cardBlockSelectionRef.current = null;
     setCardBlockTitle("");
   };
 

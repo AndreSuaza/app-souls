@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { generateSwissRoundBackend } from "@/logic";
 import { TournamentPlayerInterface } from "@/interfaces";
+import { assertCanManageTournament } from "./tournament-action-auth";
 
 type GenerateRoundInput = {
   tournamentId: string;
@@ -14,6 +15,7 @@ type GenerateRoundInput = {
 export async function generateRoundAction(input: GenerateRoundInput) {
   try {
     const { tournamentId, players, currentRoundNumber, maxRounds } = input;
+    await assertCanManageTournament(tournamentId);
 
     // validar jugadores
     if (players.length === 0) {

@@ -26,6 +26,10 @@ export const DeckFiltersSchema = z.object({
       return Math.floor(parsed);
     }, z.number().int().min(0).optional())
     .optional(),
+  includeLikedDeckIds: z.preprocess(
+    (value) => value === undefined || value === true || value === "true" || value === "1",
+    z.boolean().default(true),
+  ),
 });
 
 export type DeckFiltersInput = z.input<typeof DeckFiltersSchema>;

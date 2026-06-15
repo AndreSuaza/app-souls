@@ -3,10 +3,12 @@
 import React from "react";
 import Image from "next/image";
 import { useUIStore } from "@/store";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 export const LoadingOverlay: React.FC = () => {
   const isLoading = useUIStore((state) => state.isLoading);
   const loadingMessage = useUIStore((state) => state.loadingMessage);
+  useBodyScrollLock(isLoading);
 
   if (!isLoading) return null;
 

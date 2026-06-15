@@ -11,9 +11,8 @@ import {
   IoCloseOutline,
   IoImagesOutline,
   IoNewspaperOutline,
-  IoPersonCircleOutline,
   IoBagHandleOutline,
-  IoLayersOutline,
+  IoCalendarOutline,
   IoTrashOutline,
 } from "react-icons/io5";
 import type { ReadonlyURLSearchParams } from "next/navigation";
@@ -31,7 +30,6 @@ import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { Modal } from "@/components/ui/modal/modal";
-import { ProfileMediaManager } from "./ProfileMediaManager";
 
 const PAGE_SIZE = 16;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
@@ -62,8 +60,6 @@ export const AdminMediaManager = () => {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const isProfileSection =
-    activeSection === "profile-avatars" || activeSection === "profile-banners";
   const currentGroup = useMemo(
     () => MEDIA_GROUPS.find((group) => group.id === activeGroup),
     [activeGroup],
@@ -71,9 +67,8 @@ export const AdminMediaManager = () => {
   const sectionConfig = MEDIA_SECTION_CONFIG[activeSection];
   const groupIcons: Record<string, ReactNode> = {
     news: <IoNewspaperOutline className="h-4 w-4" />,
-    profile: <IoPersonCircleOutline className="h-4 w-4" />,
+    events: <IoCalendarOutline className="h-4 w-4" />,
     products: <IoBagHandleOutline className="h-4 w-4" />,
-    cards: <IoLayersOutline className="h-4 w-4" />,
   };
 
   useEffect(() => {
@@ -90,13 +85,6 @@ export const AdminMediaManager = () => {
       try {
         setLoading(true);
         setError(null);
-        if (isProfileSection) {
-          if (active) {
-            setImages([]);
-            setLoading(false);
-          }
-          return;
-        }
         const list = await getMediaImagesAction(activeSection);
         if (active) {
           setImages(list);
@@ -122,7 +110,7 @@ export const AdminMediaManager = () => {
     return () => {
       active = false;
     };
-  }, [activeSection, isProfileSection]);
+  }, [activeSection]);
 
   const filteredImages = useMemo(() => {
     const term = debouncedSearch.trim().toLowerCase();
@@ -356,13 +344,7 @@ export const AdminMediaManager = () => {
               ))}
             </div>
           )}
-          {isProfileSection ? (
-            <ProfileMediaManager
-              section={activeSection as "profile-avatars" | "profile-banners"}
-              type={activeSection === "profile-avatars" ? "AVATAR" : "BANNER"}
-            />
-          ) : (
-            <>
+          <>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-600/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-200">
@@ -492,8 +474,7 @@ export const AdminMediaManager = () => {
                   />
                 </>
               )}
-            </>
-          )}
+          </>
         </section>
       </div>
 

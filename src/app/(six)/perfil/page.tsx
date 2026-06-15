@@ -1,12 +1,18 @@
 import {
   getAvatars,
   getProfileBanners,
+  getProfileFrames,
   getActiveTournament,
+  getCosmeticStoreDataAction,
   getUserTournaments,
   getProfileDeckCountsAction,
 } from "@/actions";
 import { getUserById } from "@/actions/auth/find-user";
 import { Pefil } from "@/components/perfil/perfil";
+import {
+  PLAYER_COSMETIC_STORE_ENABLED,
+  PLAYER_PROFILE_FRAMES_ENABLED,
+} from "@/config/features";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -47,9 +53,15 @@ export default async function PerfilPage() {
   const user = await getUserById();
   const avatars = await getAvatars();
   const banners = await getProfileBanners();
+  const frames = PLAYER_PROFILE_FRAMES_ENABLED
+    ? await getProfileFrames()
+    : [];
   const activeTournament = await getActiveTournament();
   const tournaments = await getUserTournaments();
   const deckCounts = await getProfileDeckCountsAction();
+  const cosmeticStoreData = PLAYER_COSMETIC_STORE_ENABLED
+    ? await getCosmeticStoreDataAction()
+    : null;
   // const userDecks = await getDecksByUser();
 
   return (
@@ -59,9 +71,11 @@ export default async function PerfilPage() {
           user={user}
           avatars={avatars}
           banners={banners}
+          frames={frames}
           activeTournament={activeTournament}
           tournaments={tournaments}
           deckCounts={deckCounts}
+          cosmeticStoreData={cosmeticStoreData}
         />
       )}
     </>

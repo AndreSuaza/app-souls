@@ -12,6 +12,7 @@ import {
 } from "@/store";
 import { RoundHistoryCardBase } from "./RoundHistoryCardBase";
 import { getAvatarUrl } from "@/utils/avatar-image";
+import { isTopCutStage } from "@/logic";
 
 interface Props {
   round: RoundInterface;
@@ -548,6 +549,7 @@ export const RoundHistoryCard = ({ round, tournament, players }: Props) => {
       status={status}
       matches={isEditing ? editableMatches : round.matches}
       readOnly={!isEditing}
+      allowDraw={!isTopCutStage(round.stage)}
       onChangeResult={isEditing ? handleLocalResultChange : undefined}
       defaultExpanded={isLastRound}
       allowExpand

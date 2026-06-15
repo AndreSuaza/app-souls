@@ -1,5 +1,6 @@
 import { getStoreDetailAction } from "@/actions";
-import { StoreDetailInfo, StoreDetailMap } from "@/components";
+import { StoreDetailInfo } from "@/components/stores/StoreDetailInfo";
+import { StoreDetailMap } from "@/components/stores/StoreDetailMap";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 

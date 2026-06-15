@@ -12,6 +12,37 @@ type PublicNewsDetailResponse = {
   recommended: PublicNewsCard[];
 };
 
+type NewsCardSource = {
+  id: string;
+  slug: string;
+  title: string;
+  shortSummary: string;
+  featuredImage: string;
+  cardImage: string;
+  publishedAt: Date | null;
+  newCategoryId: string;
+};
+
+const getCategoryNamesById = async (categoryIds: string[]) => {
+  const uniqueCategoryIds = Array.from(new Set(categoryIds));
+
+  if (uniqueCategoryIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const categories = await prisma.newCategory.findMany({
+    where: {
+      id: { in: uniqueCategoryIds },
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  return new Map(categories.map((category) => [category.id, category.name]));
+};
+
 export async function getPublicNewsDetailAction(
   slug: string,
 ): Promise<PublicNewsDetailResponse | null> {
@@ -32,11 +63,6 @@ export async function getPublicNewsDetailAction(
         publishedAt: true,
         status: true,
         newCategoryId: true,
-        newCategory: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
 
@@ -53,11 +79,6 @@ export async function getPublicNewsDetailAction(
       cardImage: true,
       publishedAt: true,
       newCategoryId: true,
-      newCategory: {
-        select: {
-          name: true,
-        },
-      },
     };
 
     const sameCategoryNews = await prisma.new.findMany({
@@ -86,9 +107,13 @@ export async function getPublicNewsDetailAction(
           })
         : [];
 
-    const mapCard = (
-      item: typeof sameCategoryNews[number],
-    ): PublicNewsCard => ({
+    const recommendedNews = [...sameCategoryNews, ...fallbackNews];
+    const categoryNames = await getCategoryNamesById([
+      news.newCategoryId,
+      ...recommendedNews.map((item) => item.newCategoryId),
+    ]);
+
+    const mapCard = (item: NewsCardSource): PublicNewsCard => ({
       id: item.id,
       slug: item.slug,
       title: item.title,
@@ -97,7 +122,7 @@ export async function getPublicNewsDetailAction(
       cardImage: resolveNewsImageUrl(item.cardImage, "cards"),
       publishedAt: item.publishedAt ? item.publishedAt.toISOString() : null,
       newCategoryId: item.newCategoryId,
-      categoryName: item.newCategory?.name ?? null,
+      categoryName: categoryNames.get(item.newCategoryId) ?? null,
     });
 
     return {
@@ -112,10 +137,10 @@ export async function getPublicNewsDetailAction(
         cardImage: resolveNewsImageUrl(news.cardImage, "cards"),
         publishedAt: news.publishedAt ? news.publishedAt.toISOString() : null,
         newCategoryId: news.newCategoryId,
-        categoryName: news.newCategory?.name ?? null,
+        categoryName: categoryNames.get(news.newCategoryId) ?? null,
       },
       // Prioriza noticias de la misma categoría y completa con las más recientes.
-      recommended: [...sameCategoryNews, ...fallbackNews].map(mapCard),
+      recommended: recommendedNews.map(mapCard),
     };
   } catch (error) {
     console.error("[getPublicNewsDetailAction]", error);

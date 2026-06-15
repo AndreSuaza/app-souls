@@ -17,7 +17,6 @@ enum Role {
   player
   admin
   store
-  seller
   news
 }
 
@@ -101,6 +100,7 @@ model Card {
   idd        String
   code       String
   limit      String
+  rotation   Int      @default(0)
   cost       Int
   force      String
   defense    String
@@ -144,6 +144,7 @@ model Store {
   createDate DateTime @default(now())
 
   Tournament Tournament[]
+  events     Event[]
   users      User[]
 }
 
@@ -160,6 +161,8 @@ model Tournament {
   finishedAt         DateTime?
   currentRoundNumber Int              @default(0)
   maxRounds          Int              @default(1)
+  topCutGeneratedAt  DateTime?
+  topCutPvBonus      Int?
   createDate         DateTime         @default(now())
 
   storeId String @db.ObjectId
@@ -200,6 +203,13 @@ enum MatchResult {
   DRAW
 }
 
+enum RoundStage {
+  SWISS
+  TOP8_QUARTERFINAL
+  TOP8_SEMIFINAL
+  TOP8_FINAL
+}
+
 model TournamentPlayer {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   tournamentId   String   @db.ObjectId
@@ -213,6 +223,7 @@ model TournamentPlayer {
   hadBye         Boolean  @default(false)
   buchholz       Int      @default(0)
   rivals         String[] @default([]) @db.ObjectId
+  topCutSeed     Int?
   createDate     DateTime @default(now())
 
   deckId String? @db.ObjectId
@@ -229,6 +240,7 @@ model TournamentPlayer {
 model Round {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   roundNumber  Int
+  stage        RoundStage? @default(SWISS)
   tournamentId String   @db.ObjectId
   matches      Match[]
   createDate   DateTime @default(now())
@@ -249,6 +261,7 @@ model Match {
   player2Id       String?      @db.ObjectId
   player2Nickname String?
   result          MatchResult?
+  bracketPosition Int?
   createdAt       DateTime     @default(now())
 
   round Round @relation(fields: [roundId], references: [id])
@@ -263,28 +276,30 @@ enum UserStatus {
 }
 
 model User {
-  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
   name              String?
   lastname          String?
-  email             String?      @unique
-  nickname          String       @unique
+  email             String?          @unique
+  nickname          String           @unique
   country           String?
   city              String?
-  tournamentsPlayed Int          @default(0)
-  victoryPoints     Int          @default(0)
-  eloPoints         Int          @default(0)
-  matchesPlayed     Int          @default(0)
+  tournamentsPlayed Int              @default(0)
+  victoryPoints     Int              @default(0)
+  eloPoints         Int              @default(0)
+  matchesPlayed     Int              @default(0)
   password          String?
   emailVerified     DateTime?
-  image             String       @default("player")
+  image             String           @default("player")
   bannerImage       String?
-  role              Role         @default(player)
-  status            UserStatus   @default(active)
+  frameImage        String?
+  role              Role             @default(player)
+  status            UserStatus       @default(active)
   accounts          Account[]
   sessions          Session[]
   likes             Like[]
   decks             Deck[]
   userAvatar        UserAvatar[]
+  avatarPurchases   AvatarPurchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -293,9 +308,18 @@ model User {
   store            Store?             @relation(fields: [storeId], references: [id])
   news             New[]
   EloSeasonHistory EloSeasonHistory[]
+  victoryPointAdjustments      VictoryPointAdjustment[] @relation("VictoryPointAdjustmentUser")
+  victoryPointAdjustmentsMade  VictoryPointAdjustment[] @relation("VictoryPointAdjustmentAdmin")
 }
 
 enum NewStatus {
+  draft
+  scheduled
+  published
+  deleted
+}
+
+enum EventStatus {
   draft
   scheduled
   published
@@ -333,6 +357,29 @@ model New {
   @@index([newCategoryId])
   @@index([status])
   @@index([publishedAt])
+}
+
+model Event {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  slug          String      @unique
+  subtitle      String
+  shortSummary  String
+  content       String
+  featuredImage String
+  cardImage     String
+  startsAt      DateTime
+  endsAt        DateTime?
+  status        EventStatus @default(draft)
+  badgeLabel    String?
+  storeId       String?     @db.ObjectId
+  store         Store?      @relation(fields: [storeId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([status])
+  @@index([startsAt])
+  @@index([storeId])
 }
 
 model Account {
@@ -421,14 +468,15 @@ model Deck {
 enum AvatarRarity {
   COMMON
   RARE
-  EPIC
-  LEGENDARY
-  EVENT
+  ULTRA
+  SECRET
+  ASCENDED
 }
 
 enum AvatarType {
   AVATAR
   BANNER
+  FRAME
 }
 
 enum AvatarAvailability {
@@ -449,14 +497,21 @@ enum UserAvatarSource {
 }
 
 model Avatar {
-  id           String              @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  imageUrl     String
-  rarity       AvatarRarity        @default(COMMON)
-  availability AvatarAvailability? @default(PUBLIC)
-  price        Int?                @default(0)
-  type         AvatarType          @default(AVATAR)
-  userAvatars  UserAvatar[]
+  id            String              @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  imageUrl      String
+  rarity        AvatarRarity        @default(COMMON)
+  availability  AvatarAvailability? @default(PUBLIC)
+  price         Int?                @default(0)
+  type          AvatarType          @default(AVATAR)
+  storeVisible  Boolean?            @default(true)
+  isSeasonal    Boolean?            @default(false)
+  seasonNumber  Int?
+  seasonEndsAt  DateTime?
+  featured      Boolean?            @default(false)
+  featuredOrder Int?                @default(0)
+  userAvatars   UserAvatar[]
+  purchases     AvatarPurchase[]
 
   createdAt DateTime @default(now())
 }
@@ -474,6 +529,42 @@ model UserAvatar {
   avatar   Avatar @relation(fields: [avatarId], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+model AvatarPurchase {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  pricePaid    Int
+  seasonNumber Int?
+  metadata     String?
+  createdAt    DateTime @default(now())
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  avatarId String @db.ObjectId
+  avatar   Avatar @relation(fields: [avatarId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([avatarId, createdAt])
+  @@index([seasonNumber])
+}
+
+model VictoryPointAdjustment {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount          Int
+  previousBalance Int
+  nextBalance     Int
+  reason          String
+  createdAt       DateTime @default(now())
+
+  userId String @db.ObjectId
+  user   User   @relation("VictoryPointAdjustmentUser", fields: [userId], references: [id])
+
+  adminId String @db.ObjectId
+  admin   User   @relation("VictoryPointAdjustmentAdmin", fields: [adminId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([adminId, createdAt])
 }
 
 model EloSeasonHistory {

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { ResetPasswordForm } from "@/components";
+import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 import Link from "next/link";
 import { Metadata } from "next";
 

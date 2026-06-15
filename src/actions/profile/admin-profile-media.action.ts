@@ -6,11 +6,15 @@ import { prisma } from "@/lib/prisma";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import { AvatarSchema, AvatarTypeSchema, AvatarUpdateSchema } from "@/schemas";
 import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { Prisma } from "@prisma/client";
 import sharp from "sharp";
 
 const AvatarMetadataSchema = AvatarSchema.omit({ imageUrl: true });
 
-type ProfileMediaType = "AVATAR" | "BANNER";
+const getValidationMessage = (issues: { message?: string }[]) =>
+  issues.find((issue) => issue.message)?.message ?? "Datos invalidos.";
+
+type ProfileMediaType = "AVATAR" | "BANNER" | "FRAME";
 
 type ProfileMediaItem = {
   id: string;
@@ -20,10 +24,20 @@ type ProfileMediaItem = {
   availability: string | null;
   price: number | null;
   type: ProfileMediaType;
+  storeVisible: boolean;
+  isSeasonal: boolean;
+  seasonNumber: number | null;
+  seasonEndsAt: Date | null;
+  featured: boolean;
+  featuredOrder: number;
 };
 
 const resolveProfileSection = (type: ProfileMediaType) =>
-  type === "AVATAR" ? "profile-avatars" : "profile-banners";
+  type === "AVATAR"
+    ? "profile-avatars"
+    : type === "BANNER"
+      ? "profile-banners"
+      : "profile-frames";
 
 const buildSafeName = (name: string) => {
   const base = name.replace(/\.[^/.]+$/, "");
@@ -51,6 +65,12 @@ const pickProfileMediaSelect = {
   availability: true,
   price: true,
   type: true,
+  storeVisible: true,
+  isSeasonal: true,
+  seasonNumber: true,
+  seasonEndsAt: true,
+  featured: true,
+  featuredOrder: true,
 } as const;
 
 export const getAdminProfileMediaAction = async (type: string) => {
@@ -76,13 +96,25 @@ export const createProfileMediaAction = async (formData: FormData) => {
     throw new Error("Solo se permiten imágenes");
   }
 
-  const parsed = AvatarMetadataSchema.parse({
+  const parsedResult = AvatarMetadataSchema.safeParse({
     name: formData.get("name"),
     rarity: formData.get("rarity"),
     availability: formData.get("availability"),
     price: formData.get("price"),
     type: formData.get("type"),
+    storeVisible: formData.get("storeVisible"),
+    isSeasonal: formData.get("isSeasonal"),
+    seasonNumber: formData.get("seasonNumber"),
+    seasonEndsAt: formData.get("seasonEndsAt"),
+    featured: formData.get("featured"),
+    featuredOrder: formData.get("featuredOrder"),
   });
+
+  if (!parsedResult.success) {
+    throw new Error(getValidationMessage(parsedResult.error.issues));
+  }
+
+  const parsed = parsedResult.data;
 
   const sectionKey = resolveProfileSection(parsed.type as ProfileMediaType);
   const config = MEDIA_SECTION_CONFIG[sectionKey];
@@ -120,6 +152,12 @@ export const createProfileMediaAction = async (formData: FormData) => {
       availability: parsed.availability,
       price: parsed.price,
       type: parsed.type as ProfileMediaType,
+      storeVisible: parsed.storeVisible,
+      isSeasonal: parsed.isSeasonal,
+      seasonNumber: parsed.isSeasonal ? parsed.seasonNumber : null,
+      seasonEndsAt: parsed.isSeasonal ? parsed.seasonEndsAt : null,
+      featured: parsed.featured,
+      featuredOrder: parsed.featuredOrder,
     },
     select: pickProfileMediaSelect,
   });
@@ -130,7 +168,12 @@ export const createProfileMediaAction = async (formData: FormData) => {
 export const updateProfileMediaAction = async (input: unknown) => {
   await ensureAdmin();
 
-  const parsed = AvatarUpdateSchema.parse(input);
+  const parsedResult = AvatarUpdateSchema.safeParse(input);
+  if (!parsedResult.success) {
+    throw new Error(getValidationMessage(parsedResult.error.issues));
+  }
+
+  const parsed = parsedResult.data;
 
   const updated = await prisma.avatar.update({
     where: { id: parsed.id },
@@ -139,6 +182,12 @@ export const updateProfileMediaAction = async (input: unknown) => {
       rarity: parsed.rarity,
       availability: parsed.availability,
       price: parsed.price,
+      storeVisible: parsed.storeVisible,
+      isSeasonal: parsed.isSeasonal,
+      seasonNumber: parsed.isSeasonal ? parsed.seasonNumber : null,
+      seasonEndsAt: parsed.isSeasonal ? parsed.seasonEndsAt : null,
+      featured: parsed.featured,
+      featuredOrder: parsed.featuredOrder,
     },
     select: pickProfileMediaSelect,
   });
@@ -172,7 +221,11 @@ export const deleteProfileMediaAction = async (avatarId: string) => {
   // Evitamos borrar recursos que siguen ligados a usuarios o inventarios.
   const usedByUser = await prisma.user.findFirst({
     where: {
-      OR: [{ image: { in: candidates } }, { bannerImage: { in: candidates } }],
+      OR: [
+        { image: { in: candidates } },
+        { bannerImage: { in: candidates } },
+        { frameImage: { in: candidates } },
+      ],
     },
     select: { id: true },
   });
@@ -190,8 +243,32 @@ export const deleteProfileMediaAction = async (avatarId: string) => {
     throw new Error("La imagen esta en uso y no se puede eliminar");
   }
 
+  const usedByPurchase = await prisma.avatarPurchase.findFirst({
+    where: { avatarId: avatar.id },
+    select: { id: true },
+  });
+
+  if (usedByPurchase) {
+    throw new Error(
+      "La imagen esta asociada a compras de usuarios y no se puede eliminar",
+    );
+  }
+
+  try {
+    await prisma.avatar.delete({ where: { id: avatar.id } });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      (error.code === "P2014" || error.code === "P2003")
+    ) {
+      throw new Error("La imagen esta en uso y no se puede eliminar");
+    }
+
+    console.error("[deleteProfileMediaAction]", error);
+    throw new Error("No se pudo eliminar la imagen");
+  }
+
   await deleteBlob(avatar.imageUrl);
-  await prisma.avatar.delete({ where: { id: avatar.id } });
 
   return { ok: true };
 };

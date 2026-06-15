@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { IoCloseOutline } from "react-icons/io5";
 import { titleFont } from "@/config/fonts";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useTournamentStore } from "@/store";
 import { RoundProgressBar } from "./RoundProgressBar";
 import { TournamentTimer } from "./TournamentTimer";
@@ -15,20 +16,12 @@ type Props = {
 
 export const CurrentRoundTimerModal = ({ open, onClose }: Props) => {
   const { tournament, rounds } = useTournamentStore();
+  useBodyScrollLock(open);
 
   const currentRound = useMemo(() => {
     if (rounds.length === 0) return undefined;
     return rounds[rounds.length - 1];
   }, [rounds]);
-
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [open]);
 
   if (!open || !tournament) return null;
 

@@ -9,7 +9,7 @@ import {
   getNewsImagesAction,
   updateNewsAction,
 } from "@/actions";
-import { NewsForm, type NewsSubmitValues } from "@/components";
+import { NewsForm, type NewsSubmitValues } from "@/components/news/form/NewsForm";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import type {
   NewsCategoryOption,
