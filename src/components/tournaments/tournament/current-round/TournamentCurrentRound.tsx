@@ -18,11 +18,7 @@ export const TournamentCurrentRound = () => {
       <CurrentRoundHeader />
 
       {showTopCutSection && (
-        <TopCutBracket
-          rounds={rounds}
-          players={players}
-          topCutPvBonus={tournament?.topCutPvBonus}
-        />
+        <TopCutBracket rounds={rounds} players={players} />
       )}
 
       {/* Seccion de rondas */}

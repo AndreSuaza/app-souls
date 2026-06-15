@@ -59,6 +59,13 @@ export async function getPublicEventDetailAction(
         endsAt: true,
         status: true,
         badgeLabel: true,
+        store: {
+          select: {
+            name: true,
+            lat: true,
+            lgn: true,
+          },
+        },
       },
     });
 
@@ -92,6 +99,7 @@ export async function getPublicEventDetailAction(
         ...mapListItem(event),
         content: event.content,
         featuredImage: resolveEventImageUrl(event.featuredImage, "banners"),
+        store: event.store,
       },
       recommended: recommended.map(mapListItem),
     };

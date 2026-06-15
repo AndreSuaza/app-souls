@@ -385,6 +385,7 @@ export const ProfileCurrentTournament = ({
             players={players}
             rounds={rounds}
             status={tournament.status}
+            typeTournamentName={tournament.typeTournamentName}
             showPodium={showPodium}
             showTitle={false}
           />

@@ -49,7 +49,6 @@ export interface TournamentInterface {
   currentRoundNumber: number;
   maxRounds: number;
   topCutGeneratedAt?: Date | null;
-  topCutPvBonus?: number | null;
   createDate: Date;
   storeId: string;
   typeTournamentId: string;
@@ -108,7 +107,6 @@ export interface TournamentSnapshot {
     maxRounds?: number;
     typeTournamentName?: string | null;
     topCutGeneratedAt?: string | null;
-    topCutPvBonus?: number | null;
   };
   players: TournamentPlayerInterface[];
   rounds: RoundInterface[];
@@ -125,7 +123,6 @@ export interface PublicTournamentDetail {
     currentRoundNumber: number;
     maxRounds: number;
     topCutGeneratedAt?: string | null;
-    topCutPvBonus?: number | null;
     format?: string | null;
     typeTournamentName?: string | null;
   };

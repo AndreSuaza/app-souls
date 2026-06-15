@@ -419,7 +419,6 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
             <TopCutBracket
               rounds={rounds}
               players={players}
-              topCutPvBonus={tournament?.topCutPvBonus}
               compact
             />
           )}
@@ -434,6 +433,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                 players={players}
                 rounds={rounds}
                 status={tournament.status}
+                typeTournamentName={tournament.typeTournamentName}
                 showPodium={showPodium}
                 showTitle={false}
               />

@@ -106,10 +106,10 @@ export const RoundActionButton = () => {
     }
   };
 
-  const handleGenerateTopCut = async (topCutPvBonus: number) => {
+  const handleGenerateTopCut = async () => {
     showLoading("Generando bracket Top 8");
     try {
-      await generateTopCutBracket(topCutPvBonus);
+      await generateTopCutBracket();
       setIsTopCutModalOpen(false);
       showToast("Bracket Top 8 generado", "info");
     } catch {

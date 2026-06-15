@@ -20,6 +20,7 @@ interface Props {
   pageSize: number;
   showPodium?: boolean;
   showDeckLink?: boolean;
+  topCutPvByPlayerId?: ReadonlyMap<string, number>;
   classNames?: RankingMobileListClassNames;
 }
 
@@ -30,12 +31,14 @@ export const RankingMobileList = ({
   pageSize,
   showPodium = true,
   showDeckLink = false,
+  topCutPvByPlayerId,
   classNames,
 }: Props) => {
   return (
     <div className={clsx("md:hidden space-y-3", classNames?.wrapper)}>
       {players.map((player, index) => {
         const rank = (currentPage - 1) * pageSize + index + 1;
+        const topCutPv = topCutPvByPlayerId?.get(player.id);
 
         return (
           <div
@@ -45,9 +48,16 @@ export const RankingMobileList = ({
               classNames?.card
             )}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <RankBadge rank={rank} showPodium={showPodium} />
-              <PlayerCell player={player} showDeckLink={showDeckLink} />
+              <div className="min-w-0">
+                <PlayerCell player={player} showDeckLink={showDeckLink} />
+                {topCutPv !== undefined && (
+                  <span className="mt-1 inline-flex rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+                    +{topCutPv} PV
+                  </span>
+                )}
+              </div>
             </div>
 
             <div
