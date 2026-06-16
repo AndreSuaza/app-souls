@@ -44,6 +44,7 @@ export type PublicEventDetail = PublicEventListItem & {
   featuredImage: string;
   store: {
     name: string;
+    slug: string;
     lat: number;
     lgn: number;
   } | null;

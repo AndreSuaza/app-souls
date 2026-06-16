@@ -62,6 +62,7 @@ export async function getPublicEventDetailAction(
         store: {
           select: {
             name: true,
+            slug: true,
             lat: true,
             lgn: true,
           },

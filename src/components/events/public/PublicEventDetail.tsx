@@ -187,7 +187,6 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
       event.store.name.trim().toLocaleLowerCase("es");
   const timelineItems = [
     { href: "#fecha", label: "Fecha" },
-    { href: "#resumen", label: "Resumen" },
     { href: "#detalles", label: "Detalles" },
     ...(event.store ? [{ href: "#ubicacion", label: "Ubicación" }] : []),
     ...(recommended.length > 0
@@ -208,7 +207,7 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
               fill
               priority
               sizes="(min-width: 1024px) 1280px, 100vw"
-              className="object-cover transition duration-700 hover:scale-105"
+              className="object-cover object-top transition duration-700 hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-8 p-8">
@@ -218,9 +217,14 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                   {event.title}
                 </h1>
                 {event.store && (
-                  <p className="mt-3 text-lg font-semibold tracking-wide text-slate-200 drop-shadow-md">
+                  <Link
+                    href={`/tiendas/${event.store.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex text-lg font-semibold tracking-wide text-slate-200 drop-shadow-md transition hover:text-amber-200"
+                  >
                     {event.store.name}
-                  </p>
+                  </Link>
                 )}
               </div>
               <Link
@@ -291,17 +295,6 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
             <MobileTimelineBlock icon={<IoTimeOutline />} label={eventRange}>
               <p className="text-lg leading-8 text-slate-700 dark:text-slate-100">
                 {event.shortSummary}
-              </p>
-            </MobileTimelineBlock>
-
-            <MobileTimelineBlock icon={<IoFlashOutline />} label="Evento">
-              <h2 className="font-['Bebas_Neue'] text-3xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-                {event.subtitle}
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-300">
-                {event.badgeLabel
-                  ? `Categoria del calendario: ${event.badgeLabel}.`
-                  : "Evento oficial del calendario competitivo Souls In Xtinction."}
               </p>
             </MobileTimelineBlock>
 
@@ -400,53 +393,6 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                   {event.shortSummary}
                 </p>
               </div>
-            </section>
-
-            <section
-              id="resumen"
-              className="grid scroll-mt-28 gap-8 xl:grid-cols-2"
-            >
-              <article className="flex min-h-[330px] flex-col justify-between rounded-lg border border-slate-200 bg-white p-8 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-                <div>
-                  <IoFlashOutline className="h-9 w-9 text-purple-700 dark:text-purple-200" />
-                  <h2 className="mt-5 font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-                    Identidad del evento
-                  </h2>
-                  <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
-                    {event.badgeLabel
-                      ? `${event.badgeLabel} dentro del calendario competitivo Souls In Xtinction.`
-                      : "Evento oficial dentro del calendario competitivo Souls In Xtinction."}
-                  </p>
-                </div>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <span className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-slate-600 dark:border-tournament-dark-accent dark:bg-tournament-dark-muted dark:text-slate-200">
-                    {event.badgeLabel ?? "Evento oficial"}
-                  </span>
-                  <span className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-amber-700 dark:border-tournament-dark-accent dark:bg-tournament-dark-muted dark:text-amber-200">
-                    {dateParts.monthShort} {dateParts.day}
-                  </span>
-                </div>
-              </article>
-
-              <article className="group relative min-h-[330px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-                <FallbackImage
-                  src={event.cardImage}
-                  fallbackSrc={eventImageFallbacks.cards}
-                  alt={event.title}
-                  fill
-                  sizes="(min-width: 1280px) 560px, 50vw"
-                  className="object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-7">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200">
-                    Imagen del evento
-                  </p>
-                  <h3 className="mt-2 font-['Bebas_Neue'] text-4xl uppercase leading-none tracking-wide text-white">
-                    {event.title}
-                  </h3>
-                </div>
-              </article>
             </section>
 
             <section
