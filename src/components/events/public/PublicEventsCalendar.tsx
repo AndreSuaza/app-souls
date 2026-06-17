@@ -155,7 +155,7 @@ const PastEventCard = ({
         alt={event.title}
         fill
         sizes={compact ? "170px" : "(min-width: 1280px) 240px, 25vw"}
-        className="object-cover grayscale transition duration-500 group-hover:scale-105 group-hover:grayscale-0"
+        className="object-cover object-top grayscale transition duration-500 group-hover:scale-105 group-hover:grayscale-0"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
       <span className="absolute right-2 top-2 rounded-sm border border-slate-300/60 bg-white/85 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-slate-700 dark:bg-black/70 dark:text-slate-200">
@@ -583,14 +583,14 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
                                     : ""
                                 }`}
                               >
-                                <div className="relative h-32 overflow-hidden rounded-t-lg">
+                                <div className="relative h-48 overflow-hidden rounded-t-lg">
                                   <FallbackImage
                                     src={event.cardImage}
                                     fallbackSrc={eventImageFallbacks.cards}
                                     alt={event.title}
                                     fill
                                     sizes="calc(100vw - 112px)"
-                                    className="object-cover transition duration-500 group-hover:scale-105"
+                                    className="object-cover object-top transition duration-500 group-hover:scale-105"
                                   />
                                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-transparent" />
                                   <div className="absolute bottom-3 left-4 right-4">
