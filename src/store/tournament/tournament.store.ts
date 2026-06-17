@@ -40,7 +40,6 @@ export type BasicTournament = {
   currentRoundNumber: number;
   maxRounds: number;
   topCutGeneratedAt?: string | null;
-  topCutPvBonus?: number | null;
   format?: string;
   typeTournamentName?: string;
 };
@@ -68,7 +67,7 @@ type TournamentStoreState = {
   ) => Promise<void>;
 
   generateRound: () => Promise<void>;
-  generateTopCutBracket: (topCutPvBonus: number) => Promise<void>;
+  generateTopCutBracket: () => Promise<void>;
   saveMatchResult: (
     matchId: string,
     result: "P1" | "P2" | "DRAW",
@@ -140,7 +139,6 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           topCutGeneratedAt: data.topCutGeneratedAt
             ? data.topCutGeneratedAt.toISOString()
             : null,
-          topCutPvBonus: data.topCutPvBonus ?? null,
           format: data.format ?? undefined,
           typeTournamentName: data.typeTournament?.name ?? undefined,
         },
@@ -314,7 +312,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     }
   },
 
-  generateTopCutBracket: async (topCutPvBonus: number) => {
+  generateTopCutBracket: async () => {
     const state = get();
     const tournamentId = state.tournamentId;
     if (!tournamentId || !state.tournament) return;
@@ -322,7 +320,6 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     try {
       const apiBracket = await generateTopCutBracketAction({
         tournamentId,
-        topCutPvBonus,
       });
 
       set((state) => ({
@@ -342,7 +339,6 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
               ...state.tournament,
               status: "in_progress",
               topCutGeneratedAt: apiBracket.topCutGeneratedAt,
-              topCutPvBonus: apiBracket.topCutPvBonus,
             }
           : null,
       }));
@@ -468,58 +464,9 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         return;
       }
 
-      // Construye el mapa playerId -> userId para contar victorias por usuario.
-      const playerIdToUserId = new Map(
-        state.players.map((p) => [p.id, p.userId]),
-      );
-      // Inicializa los contadores en 0 para todos los inscritos.
-      const winsByUserId = new Map(state.players.map((p) => [p.userId, 0]));
-
-      // Contador de matches jugados por usuario.
-      const matchesByUserId = new Map(state.players.map((p) => [p.userId, 0]));
-
-      // Suma 1 victoria por match ganado (P1/P2); empates no cuentan.
-      state.rounds.forEach((round) => {
-        round.matches.forEach((match) => {
-          // Cuenta el match jugado para ambos jugadores.
-          const incrementUserMatch = (playerId: string | null | undefined) => {
-            if (!playerId) return;
-            const userId = playerIdToUserId.get(playerId);
-            if (!userId) return;
-
-            matchesByUserId.set(userId, (matchesByUserId.get(userId) ?? 0) + 1);
-          };
-
-          incrementUserMatch(match.player1Id);
-          incrementUserMatch(match.player2Id);
-
-          if (match.result === "P1") {
-            const userId = playerIdToUserId.get(match.player1Id);
-            if (userId) {
-              winsByUserId.set(userId, (winsByUserId.get(userId) ?? 0) + 1);
-            }
-          }
-
-          if (match.result === "P2" && match.player2Id) {
-            const userId = playerIdToUserId.get(match.player2Id);
-            if (userId) {
-              winsByUserId.set(userId, (winsByUserId.get(userId) ?? 0) + 1);
-            }
-          }
-        });
-      });
-
-      // Genera el payload minimo para actualizar puntos y torneos jugados.
-      const players = state.players.map((p) => ({
-        userId: p.userId,
-        wins: winsByUserId.get(p.userId) ?? 0,
-        matches: matchesByUserId.get(p.userId) ?? 0,
-      }));
-
-      // Actualiza el torneo y los usuarios en el backend.
+      // El servidor calcula victorias y partidas desde todas las rondas persistidas.
       await finalizeTournamentAction({
         tournamentId: state.tournamentId,
-        players,
       });
 
       set((state) => ({

@@ -3,6 +3,7 @@ import {
   IoChevronForwardOutline,
   IoDocumentTextOutline,
   IoFlashOutline,
+  IoLocationOutline,
   IoTimeOutline,
 } from "react-icons/io5";
 import type {
@@ -13,6 +14,7 @@ import { MarkdownContent } from "@/components/ui/markdown/MarkdownContent";
 import { EventDetailTimelineNav } from "./EventDetailTimelineNav";
 import { eventImageFallbacks } from "@/models/media-fallbacks.models";
 import { FallbackImage } from "@/components/ui/image/FallbackImage";
+import { Map } from "@/components/map/Map";
 
 type Props = {
   event: PublicEventDetail;
@@ -106,13 +108,6 @@ const formatEventRange = (startsAt: string, endsAt?: string | null) => {
   return `${formatEventDateParts(startsAt).fullDate} - ${endDate}`;
 };
 
-const timelineItems = [
-  { href: "#fecha", label: "Fecha" },
-  { href: "#resumen", label: "Resumen" },
-  { href: "#detalles", label: "Detalles" },
-  { href: "#proximos-eventos", label: "Otros eventos" },
-];
-
 const EventBadge = ({ label }: { label?: string | null }) => {
   if (!label) return null;
 
@@ -179,6 +174,25 @@ const RecommendedCard = ({
 export const PublicEventDetailView = ({ event, recommended }: Props) => {
   const dateParts = formatEventDateParts(event.startsAt);
   const eventRange = formatEventRange(event.startsAt, event.endsAt);
+  // Valida coordenadas para evitar inicializar Google Maps con datos invalidos.
+  const hasValidCoordinates =
+    event.store !== null &&
+    Number.isFinite(event.store.lat) &&
+    Number.isFinite(event.store.lgn) &&
+    Math.abs(event.store.lat) <= 90 &&
+    Math.abs(event.store.lgn) <= 180;
+  const showMobileSubtitle =
+    !event.store ||
+    event.subtitle.trim().toLocaleLowerCase("es") !==
+      event.store.name.trim().toLocaleLowerCase("es");
+  const timelineItems = [
+    { href: "#fecha", label: "Fecha" },
+    { href: "#detalles", label: "Detalles" },
+    ...(event.store ? [{ href: "#ubicacion", label: "Ubicación" }] : []),
+    ...(recommended.length > 0
+      ? [{ href: "#proximos-eventos", label: "Otros eventos" }]
+      : []),
+  ];
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-950 dark:bg-[#0b0b0c] dark:text-white">
@@ -193,7 +207,7 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
               fill
               priority
               sizes="(min-width: 1024px) 1280px, 100vw"
-              className="object-cover transition duration-700 hover:scale-105"
+              className="object-cover object-top transition duration-700 hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-8 p-8">
@@ -202,6 +216,16 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                 <h1 className="mt-5 font-['Bebas_Neue'] text-7xl uppercase leading-[0.9] tracking-wide text-white drop-shadow-xl xl:text-8xl">
                   {event.title}
                 </h1>
+                {event.store && (
+                  <Link
+                    href={`/tiendas/${event.store.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex text-lg font-semibold tracking-wide text-slate-200 drop-shadow-md transition hover:text-amber-200"
+                  >
+                    {event.store.name}
+                  </Link>
+                )}
               </div>
               <Link
                 href="/eventos"
@@ -253,9 +277,16 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                     <h2 className="font-['Bebas_Neue'] text-4xl uppercase leading-none tracking-wide text-purple-100">
                       {event.title}
                     </h2>
-                    <p className="mt-1 text-sm text-slate-200">
-                      {event.subtitle}
-                    </p>
+                    {event.store && (
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber-100">
+                        {event.store.name}
+                      </p>
+                    )}
+                    {showMobileSubtitle && (
+                      <p className="mt-1 text-sm text-slate-200">
+                        {event.subtitle}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -264,17 +295,6 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
             <MobileTimelineBlock icon={<IoTimeOutline />} label={eventRange}>
               <p className="text-lg leading-8 text-slate-700 dark:text-slate-100">
                 {event.shortSummary}
-              </p>
-            </MobileTimelineBlock>
-
-            <MobileTimelineBlock icon={<IoFlashOutline />} label="Evento">
-              <h2 className="font-['Bebas_Neue'] text-3xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-                {event.subtitle}
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-slate-500 dark:text-slate-300">
-                {event.badgeLabel
-                  ? `Categoria del calendario: ${event.badgeLabel}.`
-                  : "Evento oficial del calendario competitivo Souls In Xtinction."}
               </p>
             </MobileTimelineBlock>
 
@@ -287,6 +307,28 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                 className="text-sm leading-7 text-slate-700 dark:text-slate-200"
               />
             </MobileTimelineBlock>
+
+            {event.store && (
+              <div id="ubicacion" className="scroll-mt-28">
+                <MobileTimelineBlock
+                  icon={<IoLocationOutline />}
+                  label={event.store.name}
+                >
+                  {hasValidCoordinates ? (
+                    <Map
+                      className="h-[280px] w-full rounded-lg"
+                      lat={event.store.lat}
+                      lgn={event.store.lgn}
+                      title={event.store.name}
+                    />
+                  ) : (
+                    <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
+                      Mapa no disponible.
+                    </div>
+                  )}
+                </MobileTimelineBlock>
+              </div>
+            )}
           </div>
 
           <Link
@@ -354,53 +396,6 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
             </section>
 
             <section
-              id="resumen"
-              className="grid scroll-mt-28 gap-8 xl:grid-cols-2"
-            >
-              <article className="flex min-h-[330px] flex-col justify-between rounded-lg border border-slate-200 bg-white p-8 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-                <div>
-                  <IoFlashOutline className="h-9 w-9 text-purple-700 dark:text-purple-200" />
-                  <h2 className="mt-5 font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-                    Identidad del evento
-                  </h2>
-                  <p className="mt-4 text-base leading-8 text-slate-600 dark:text-slate-300">
-                    {event.badgeLabel
-                      ? `${event.badgeLabel} dentro del calendario competitivo Souls In Xtinction.`
-                      : "Evento oficial dentro del calendario competitivo Souls In Xtinction."}
-                  </p>
-                </div>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <span className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-slate-600 dark:border-tournament-dark-accent dark:bg-tournament-dark-muted dark:text-slate-200">
-                    {event.badgeLabel ?? "Evento oficial"}
-                  </span>
-                  <span className="rounded-sm border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-amber-700 dark:border-tournament-dark-accent dark:bg-tournament-dark-muted dark:text-amber-200">
-                    {dateParts.monthShort} {dateParts.day}
-                  </span>
-                </div>
-              </article>
-
-              <article className="group relative min-h-[330px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-                <FallbackImage
-                  src={event.cardImage}
-                  fallbackSrc={eventImageFallbacks.cards}
-                  alt={event.title}
-                  fill
-                  sizes="(min-width: 1280px) 560px, 50vw"
-                  className="object-cover transition duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-7">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-amber-200">
-                    Imagen del evento
-                  </p>
-                  <h3 className="mt-2 font-['Bebas_Neue'] text-4xl uppercase leading-none tracking-wide text-white">
-                    {event.title}
-                  </h3>
-                </div>
-              </article>
-            </section>
-
-            <section
               id="detalles"
               className="scroll-mt-28 rounded-lg border border-slate-200 bg-white p-8 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface xl:px-28 xl:py-16"
             >
@@ -410,9 +405,7 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                     Detalles del evento
                   </p>
                   <h2 className="mt-3 font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-                    {!event.badgeLabel
-                      ? event.badgeLabel
-                      : "Reglamento y requisitoss"}
+                    {event.badgeLabel ?? "Evento oficial"}
                   </h2>
                 </div>
                 <MarkdownContent
@@ -422,11 +415,38 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
               </div>
             </section>
 
+            {event.store && (
+              <section id="ubicacion" className="scroll-mt-28 space-y-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.24em] text-purple-700 dark:text-purple-200">
+                    Ubicación del evento
+                  </p>
+                  <h2 className="mt-3 font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
+                    {event.store.name}
+                  </h2>
+                </div>
+                <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+                  {hasValidCoordinates ? (
+                    <Map
+                      className="h-[320px] w-full"
+                      lat={event.store.lat}
+                      lgn={event.store.lgn}
+                      title={event.store.name}
+                    />
+                  ) : (
+                    <div className="flex h-[320px] items-center justify-center border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
+                      Mapa no disponible.
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {recommended.length > 0 && (
               <section id="proximos-eventos" className="scroll-mt-28">
                 <div className="mb-8 flex items-end justify-between gap-5">
                   <h2 className="font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-                    Proximos encuentros
+                    Próximos encuentros
                   </h2>
                   <Link
                     href="/eventos"

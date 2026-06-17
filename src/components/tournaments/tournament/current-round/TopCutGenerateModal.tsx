@@ -1,48 +1,23 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { TOP_CUT_PV_BY_POSITION } from "@/logic";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onConfirm: (topCutPvBonus: number) => Promise<void>;
+  onConfirm: () => Promise<void>;
 };
 
 export const TopCutGenerateModal = ({ open, onClose, onConfirm }: Props) => {
-  const [topCutPvBonus, setTopCutPvBonus] = useState("0");
   useBodyScrollLock(open);
-
-  useEffect(() => {
-    if (open) setTopCutPvBonus("0");
-  }, [open]);
 
   if (!open) return null;
 
-  const parsedBonus = Number(topCutPvBonus);
-  const isValidBonus =
-    Number.isInteger(parsedBonus) && Number.isFinite(parsedBonus) && parsedBonus >= 0;
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!isValidBonus) return;
-    await onConfirm(parsedBonus);
-  };
-
-  const handleBonusChange = (value: string) => {
-    if (value === "") {
-      setTopCutPvBonus("");
-      return;
-    }
-
-    const onlyDigits = value.replace(/\D/g, "");
-    if (!onlyDigits) {
-      setTopCutPvBonus("");
-      return;
-    }
-
-    setTopCutPvBonus(String(Number(onlyDigits)));
+    await onConfirm();
   };
 
   return (
@@ -60,8 +35,8 @@ export const TopCutGenerateModal = ({ open, onClose, onConfirm }: Props) => {
               Generar bracket
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-300">
-              Se congelara el ranking actual y se asignara el bonus de PV a los
-              jugadores clasificados cuando el torneo finalice.
+              Se congelara el ranking actual. Los PV extra se asignaran segun
+              la posicion final de cada jugador en el bracket.
             </p>
           </div>
 
@@ -75,25 +50,21 @@ export const TopCutGenerateModal = ({ open, onClose, onConfirm }: Props) => {
           </button>
         </div>
 
-        <label className="mt-6 flex flex-col gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
-          PV extra por clasificar al Top 8
-          <input
-            type="number"
-            min={0}
-            step={1}
-            value={topCutPvBonus}
-            onChange={(event) => handleBonusChange(event.target.value)}
-            onFocus={(event) => event.currentTarget.select()}
-            className="rounded-lg border border-tournament-dark-accent bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
-            placeholder="Ej: 10"
-          />
-        </label>
-
-        {!isValidBonus && (
-          <p className="mt-2 text-sm text-rose-600 dark:text-rose-300">
-            Ingresa un numero entero mayor o igual a 0.
-          </p>
-        )}
+        <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {TOP_CUT_PV_BY_POSITION.map((pv, index) => (
+            <div
+              key={index}
+              className="rounded-lg border border-tournament-dark-accent bg-slate-50 px-3 py-3 text-center dark:border-tournament-dark-border dark:bg-tournament-dark-muted"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Puesto {index + 1}
+              </p>
+              <p className="mt-1 text-lg font-bold text-amber-700 dark:text-amber-200">
+                +{pv} PV
+              </p>
+            </div>
+          ))}
+        </div>
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
@@ -105,8 +76,7 @@ export const TopCutGenerateModal = ({ open, onClose, onConfirm }: Props) => {
           </button>
           <button
             type="submit"
-            disabled={!isValidBonus}
-            className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-amber-300"
+            className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-700"
           >
             Generar Top 8
           </button>

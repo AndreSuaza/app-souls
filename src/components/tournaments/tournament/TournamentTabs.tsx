@@ -7,11 +7,13 @@ import {
   IoPlayCircleOutline,
   IoListOutline,
   IoInformationCircleOutline,
+  IoTrophyOutline,
 } from "react-icons/io5";
 export type TournamentTab =
   | "players"
   | "currentRound"
   | "rounds"
+  | "topCut"
   | "information";
 
 type Props = {
@@ -20,6 +22,7 @@ type Props = {
   tournamentTitle: string;
   playersCount: number;
   tournamentStatus?: "pending" | "in_progress" | "finished" | "cancelled";
+  showTopCutTab?: boolean;
   hiddenTabs?: TournamentTab[];
 };
 
@@ -31,6 +34,7 @@ const tabs: { id: TournamentTab; label: string; icon: ReactElement }[] = [
     icon: <IoPlayCircleOutline size={18} />,
   },
   { id: "rounds", label: "Rondas", icon: <IoListOutline size={18} /> },
+  { id: "topCut", label: "Top 8", icon: <IoTrophyOutline size={18} /> },
   {
     id: "information",
     label: "Información",
@@ -46,6 +50,7 @@ export const TournamentTabs = ({
   tournamentTitle,
   playersCount,
   tournamentStatus,
+  showTopCutTab = false,
   hiddenTabs,
 }: Props) => {
   const canEnableCurrentRound =
@@ -56,6 +61,7 @@ export const TournamentTabs = ({
   const visibleTabs = tabs.filter(
     (tab) =>
       (tab.id !== "currentRound" || canEnableCurrentRound) &&
+      (tab.id !== "topCut" || showTopCutTab) &&
       !hiddenTabs?.includes(tab.id)
   );
 

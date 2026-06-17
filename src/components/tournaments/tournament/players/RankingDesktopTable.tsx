@@ -22,6 +22,7 @@ interface Props {
   pageSize: number;
   showPodium?: boolean;
   showDeckLink?: boolean;
+  topCutPvByPlayerId?: ReadonlyMap<string, number>;
   classNames?: RankingDesktopTableClassNames;
 }
 
@@ -32,6 +33,7 @@ export const RankingDesktopTable = ({
   pageSize,
   showPodium = true,
   showDeckLink = false,
+  topCutPvByPlayerId,
   classNames,
 }: Props) => {
   return (
@@ -67,6 +69,7 @@ export const RankingDesktopTable = ({
         <tbody>
           {players.map((player, index) => {
             const rank = (currentPage - 1) * pageSize + index + 1;
+            const topCutPv = topCutPvByPlayerId?.get(player.id);
 
             return (
               <tr
@@ -91,7 +94,14 @@ export const RankingDesktopTable = ({
                     classNames?.cell
                   )}
                 >
-                  <PlayerCell player={player} showDeckLink={showDeckLink} />
+                  <div className="flex items-center gap-2">
+                    <PlayerCell player={player} showDeckLink={showDeckLink} />
+                    {topCutPv !== undefined && (
+                      <span className="shrink-0 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+                        +{topCutPv} PV
+                      </span>
+                    )}
+                  </div>
                 </td>
 
                 <td

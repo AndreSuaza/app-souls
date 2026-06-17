@@ -221,7 +221,8 @@ export const IndentBlock = Node.create({
     if (left) attrs.push(`left=${left}`);
     if (right) attrs.push(`right=${right}`);
     const attrsString = attrs.length ? ` ${attrs.join(" ")}` : "";
-    const content = helpers.renderChildren(node.content ?? []);
+    // Separa los nodos de bloque para que listas, titulos y parrafos mantengan Markdown valido.
+    const content = helpers.renderChildren(node.content ?? [], "\n\n").trim();
 
     return `[indent${attrsString}]\n${content}\n[/indent]`;
   },
@@ -303,7 +304,8 @@ export const CardBlock = Node.create({
         ? rawTitle.replace(/"/g, '\\"')
         : "";
     const titleAttr = safeTitle ? ` title="${safeTitle}"` : "";
-    const content = helpers.renderChildren(node.content ?? []);
+    // Separa los nodos de bloque para que la vista publica no muestre sintaxis pegada.
+    const content = helpers.renderChildren(node.content ?? [], "\n\n").trim();
 
     return `[card${titleAttr}]\n${content}\n[/card]`;
   },

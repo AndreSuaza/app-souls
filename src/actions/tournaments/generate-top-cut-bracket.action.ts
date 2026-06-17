@@ -14,7 +14,6 @@ import type { TournamentPlayerInterface } from "@/interfaces";
 
 type Input = {
   tournamentId: string;
-  topCutPvBonus: number;
 };
 
 const mapTournamentPlayer = (player: {
@@ -115,7 +114,6 @@ export async function generateTopCutBracketAction(input: Input) {
         where: { id: tournament.id },
         data: {
           topCutGeneratedAt,
-          topCutPvBonus: data.topCutPvBonus,
         },
       });
 
@@ -182,7 +180,6 @@ export async function generateTopCutBracketAction(input: Input) {
 
       return {
         topCutGeneratedAt: topCutGeneratedAt.toISOString(),
-        topCutPvBonus: data.topCutPvBonus,
         seededPlayers: seededPlayers.map((player) => ({
           id: player.id,
           topCutSeed: player.topCutSeed,

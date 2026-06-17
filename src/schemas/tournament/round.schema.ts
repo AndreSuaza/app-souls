@@ -30,7 +30,6 @@ export const RecalculateRoundSchema = z.object({
 
 export const GenerateTopCutBracketSchema = z.object({
   tournamentId: z.string().min(1, "El ID del torneo es requerido"),
-  topCutPvBonus: z.number().int().min(0, "El bonus de PV no puede ser negativo"),
 });
 
 export const FinalizeTopCutRoundSchema = z.object({

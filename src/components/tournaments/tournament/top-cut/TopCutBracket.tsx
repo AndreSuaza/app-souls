@@ -6,12 +6,14 @@ import {
   RoundInterface,
   TournamentPlayerInterface,
 } from "@/interfaces";
-import { getRoundStageLabel, getTopCutChampionId } from "@/logic";
+import {
+  getRoundStageLabel,
+  getTopCutChampionId,
+} from "@/logic";
 
 type Props = {
   rounds: RoundInterface[];
   players: TournamentPlayerInterface[];
-  topCutPvBonus?: number | null;
   compact?: boolean;
 };
 
@@ -176,7 +178,6 @@ const TopCutMatch = ({
 export const TopCutBracket = ({
   rounds,
   players,
-  topCutPvBonus,
   compact = false,
 }: Props) => {
   const bracketRounds = STAGES.map((stage) => ({
@@ -209,11 +210,6 @@ export const TopCutBracket = ({
           </h3>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-500 dark:text-slate-300">
-          {typeof topCutPvBonus === "number" && (
-            <span className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
-              +{topCutPvBonus} PV Top 8
-            </span>
-          )}
           {champion && (
             <span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
               Campeón: {champion.playerNickname}

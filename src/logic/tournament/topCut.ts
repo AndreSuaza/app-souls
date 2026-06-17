@@ -7,6 +7,24 @@ import { sortPlayersByRanking } from "@/utils/ranking";
 
 export const TOP_CUT_SIZE = 8;
 
+export const TOP_CUT_PV_POINTS = {
+  champion: 45,
+  runnerUp: 35,
+  semifinalist: 25,
+  quarterfinalist: 15,
+} as const;
+
+export const TOP_CUT_PV_BY_POSITION = [
+  TOP_CUT_PV_POINTS.champion,
+  TOP_CUT_PV_POINTS.runnerUp,
+  TOP_CUT_PV_POINTS.semifinalist,
+  TOP_CUT_PV_POINTS.semifinalist,
+  TOP_CUT_PV_POINTS.quarterfinalist,
+  TOP_CUT_PV_POINTS.quarterfinalist,
+  TOP_CUT_PV_POINTS.quarterfinalist,
+  TOP_CUT_PV_POINTS.quarterfinalist,
+] as const;
+
 export const TOP_CUT_QUARTERFINAL_PAIRINGS = [
   [1, 8],
   [4, 5],
@@ -58,19 +76,31 @@ export const getTopCutPlayerBySeed = (
   seed: number,
 ) => players.find((player) => player.topCutSeed === seed);
 
-export const getMatchWinnerId = (match: MatchInterface) => {
+type ResolvedMatch = Pick<
+  MatchInterface,
+  "player1Id" | "player2Id" | "result"
+>;
+
+type TopCutPlacementRound = {
+  stage?: RoundStage | null;
+  matches: ResolvedMatch[];
+};
+
+export const getMatchWinnerId = (match: ResolvedMatch) => {
   if (match.result === "P1") return match.player1Id;
   if (match.result === "P2") return match.player2Id;
   return null;
 };
 
-export const getMatchLoserId = (match: MatchInterface) => {
+export const getMatchLoserId = (match: ResolvedMatch) => {
   if (match.result === "P1") return match.player2Id;
   if (match.result === "P2") return match.player1Id;
   return null;
 };
 
-export const assertTopCutRoundResolved = (matches: MatchInterface[]) => {
+export const assertTopCutRoundResolved = (
+  matches: Pick<MatchInterface, "result">[],
+) => {
   if (matches.some((match) => match.result === null)) {
     throw new Error("No puedes finalizar el bracket: hay partidas sin resultado.");
   }
@@ -78,6 +108,61 @@ export const assertTopCutRoundResolved = (matches: MatchInterface[]) => {
   if (matches.some((match) => match.result === "DRAW")) {
     throw new Error("El bracket Top 8 no permite empates.");
   }
+};
+
+export const getTopCutPvByPlayerId = (rounds: TopCutPlacementRound[]) => {
+  const quarterfinal = rounds.find(
+    (round) => round.stage === "TOP8_QUARTERFINAL",
+  );
+  const semifinal = rounds.find(
+    (round) => round.stage === "TOP8_SEMIFINAL",
+  );
+  const final = rounds.find((round) => round.stage === "TOP8_FINAL");
+
+  if (
+    quarterfinal?.matches.length !== 4 ||
+    semifinal?.matches.length !== 2 ||
+    final?.matches.length !== 1
+  ) {
+    throw new Error("El bracket Top 8 esta incompleto.");
+  }
+
+  assertTopCutRoundResolved(quarterfinal.matches);
+  assertTopCutRoundResolved(semifinal.matches);
+  assertTopCutRoundResolved(final.matches);
+
+  const finalMatch = final.matches[0];
+  const championId = getMatchWinnerId(finalMatch);
+  const runnerUpId = getMatchLoserId(finalMatch);
+  const semifinalistIds = semifinal.matches.map(getMatchLoserId);
+  const quarterfinalistIds = quarterfinal.matches.map(getMatchLoserId);
+
+  if (
+    !championId ||
+    !runnerUpId ||
+    semifinalistIds.some((playerId) => !playerId) ||
+    quarterfinalistIds.some((playerId) => !playerId)
+  ) {
+    throw new Error("No se pudieron resolver las posiciones del Top 8.");
+  }
+
+  const pvByPlayerId = new Map<string, number>([
+    [championId, TOP_CUT_PV_POINTS.champion],
+    [runnerUpId, TOP_CUT_PV_POINTS.runnerUp],
+  ]);
+
+  semifinalistIds.forEach((playerId) => {
+    pvByPlayerId.set(playerId as string, TOP_CUT_PV_POINTS.semifinalist);
+  });
+  quarterfinalistIds.forEach((playerId) => {
+    pvByPlayerId.set(playerId as string, TOP_CUT_PV_POINTS.quarterfinalist);
+  });
+
+  if (pvByPlayerId.size !== TOP_CUT_SIZE) {
+    throw new Error("Las posiciones del Top 8 contienen jugadores duplicados.");
+  }
+
+  return pvByPlayerId;
 };
 
 export const getNextTopCutStage = (
