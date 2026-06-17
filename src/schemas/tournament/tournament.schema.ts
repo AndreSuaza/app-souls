@@ -91,13 +91,6 @@ export type UpdateTournamentInfoInput = z.infer<
 
 export const FinalizeTournamentSchema = z.object({
   tournamentId: z.string().min(1),
-  players: z.array(
-    z.object({
-      userId: z.string().min(1),
-      wins: z.number().int().min(0),
-      matches: z.number().int().min(0),
-    })
-  ),
 });
 
 export type FinalizeTournamentInput = z.infer<typeof FinalizeTournamentSchema>;

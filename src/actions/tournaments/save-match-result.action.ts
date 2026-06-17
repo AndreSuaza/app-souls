@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { isTopCutStage } from "@/logic";
+import { assertCanManageTournament } from "./tournament-action-auth";
 
 export async function saveMatchResultAction(
   id: string,
@@ -13,6 +15,28 @@ export async function saveMatchResultAction(
     // Validaciones ligeras
     if (player2Nickname === null || player2Nickname == "BYE") {
       throw new Error("Los matches con BYE no pueden modificarse.");
+    }
+
+    const match = await prisma.match.findUnique({
+      where: { id },
+      select: {
+        round: {
+          select: {
+            stage: true,
+            tournamentId: true,
+          },
+        },
+      },
+    });
+
+    if (!match) {
+      throw new Error("El match no existe");
+    }
+
+    await assertCanManageTournament(match.round.tournamentId);
+
+    if (result === "DRAW" && isTopCutStage(match.round.stage)) {
+      throw new Error("El bracket Top 8 no permite empates.");
     }
 
     // Actualizar match

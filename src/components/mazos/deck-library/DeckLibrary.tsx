@@ -10,6 +10,7 @@ import type {
 import type { DeckFiltersInput } from "@/schemas";
 import { Pagination } from "@/components/ui/pagination/pagination";
 import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
+import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import {
   useCallback,
@@ -124,6 +125,8 @@ export function DeckLibrary({
   const [isPending, startTransition] = useTransition();
   const requestIdRef = useRef(0);
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const { status } = useSession();
+  const resolvedHasSession = hasSession || status === "authenticated";
   const autoColumnsRef = useRef<number | null>(null);
   const [autoColumns, setAutoColumns] = useState(1);
   const [isGridReady, setIsGridReady] = useState(false);
@@ -383,7 +386,7 @@ export function DeckLibrary({
                       <li key={deck.id} className="h-full">
                         <DeckCard
                           mazo={deck}
-                          hasSession={hasSession}
+                          hasSession={resolvedHasSession}
                           isLiked={likedDecksSet.has(deck.id)}
                           onLikedChange={handleLikedChange}
                           showLikeButton={showLikeButton}

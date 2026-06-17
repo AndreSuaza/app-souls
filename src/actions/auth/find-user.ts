@@ -24,6 +24,7 @@ export const getUserById = async () => {
       nickname: user?.nickname,
       image: user?.image,
       bannerImage: user?.bannerImage ?? null,
+      frameImage: user?.frameImage ?? null,
       role: user?.role,
       victoryPoints: user?.victoryPoints,
       eloPoints: user?.eloPoints,

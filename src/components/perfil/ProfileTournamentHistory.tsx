@@ -2,11 +2,9 @@
 
 import { useEffect, useMemo, useState, type MouseEventHandler } from "react";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { PaginationLine } from "@/components/ui";
-import {
-  PublicTournamentsMobileList,
-  PublicTournamentsTable,
-} from "@/components";
+import { PublicTournamentsMobileList } from "@/components/tournaments/public/PublicTournamentsMobileList";
+import { PublicTournamentsTable } from "@/components/tournaments/public/PublicTournamentsTable";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 
 type TournamentStatus = "pending" | "in_progress" | "finished" | "cancelled";
 

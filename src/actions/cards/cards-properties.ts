@@ -25,9 +25,6 @@ export const getPropertiesCards = async() => {
                 name: true,
                 code: true,
             },
-            where: {
-                show: true
-            },
             orderBy: [
                 {
                     createDate: 'desc',

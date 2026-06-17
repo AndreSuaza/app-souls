@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState, type MouseEventHandler } from "react";
 import clsx from "clsx";
 import { usePathname, useSearchParams } from "next/navigation";
-import { PaginationLine } from "@/components/ui";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { RoundInterface, TournamentPlayerInterface } from "@/interfaces";
+import { getTopCutPvByPlayerId, isTopCutTournamentType } from "@/logic";
 import { sortPlayersByRanking } from "@/utils/ranking";
 import {
   RankingDesktopTable,
@@ -28,6 +29,7 @@ type Props = {
   players: TournamentPlayerInterface[];
   rounds: RoundInterface[];
   status?: TournamentStatus;
+  typeTournamentName?: string | null;
   showPodium?: boolean;
   title?: string;
   showTitle?: boolean;
@@ -44,6 +46,7 @@ export const TournamentRankingPanel = ({
   players,
   rounds,
   status,
+  typeTournamentName,
   showPodium,
   showDeckLink,
   title = "Clasificación general",
@@ -61,6 +64,20 @@ export const TournamentRankingPanel = ({
   // Por privacidad competitiva, solo mostramos el icono de mazo al finalizar.
   const shouldShowDeckLink =
     showDeckLink !== undefined ? showDeckLink : status === "finished";
+  const topCutPvByPlayerId = useMemo(() => {
+    if (
+      status !== "finished" ||
+      !isTopCutTournamentType(typeTournamentName)
+    ) {
+      return undefined;
+    }
+
+    try {
+      return getTopCutPvByPlayerId(rounds);
+    } catch {
+      return undefined;
+    }
+  }, [rounds, status, typeTournamentName]);
 
   // Ordena los jugadores sin mutar el arreglo original.
   const sortedPlayers = useMemo(() => sortPlayersByRanking(players), [players]);
@@ -134,6 +151,7 @@ export const TournamentRankingPanel = ({
         pageSize={pageSize}
         showPodium={shouldShowPodium}
         showDeckLink={shouldShowDeckLink}
+        topCutPvByPlayerId={topCutPvByPlayerId}
         classNames={desktopClassNames}
       />
 
@@ -144,6 +162,7 @@ export const TournamentRankingPanel = ({
         pageSize={pageSize}
         showPodium={shouldShowPodium}
         showDeckLink={shouldShowDeckLink}
+        topCutPvByPlayerId={topCutPvByPlayerId}
         classNames={mobileClassNames}
       />
 

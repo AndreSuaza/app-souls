@@ -1,8 +1,11 @@
 export type MediaSectionKey =
   | "news-banners"
   | "news-cards"
+  | "event-banners"
+  | "event-cards"
   | "profile-avatars"
   | "profile-banners"
+  | "profile-frames"
   | "products"
   | "cards";
 
@@ -30,6 +33,20 @@ export const MEDIA_SECTION_CONFIG: Record<MediaSectionKey, MediaSectionConfig> =
       allowUpload: true,
       allowDelete: true,
     },
+    "event-banners": {
+      label: "Banners",
+      folder: "souls/events/banners",
+      maxSizeMb: 8,
+      allowUpload: true,
+      allowDelete: true,
+    },
+    "event-cards": {
+      label: "Cards",
+      folder: "souls/events/cards",
+      maxSizeMb: 4,
+      allowUpload: true,
+      allowDelete: true,
+    },
     "profile-avatars": {
       label: "Avatares",
       folder: "souls/profile/avatars",
@@ -41,6 +58,13 @@ export const MEDIA_SECTION_CONFIG: Record<MediaSectionKey, MediaSectionConfig> =
       label: "Banners de perfil",
       folder: "souls/profile/banners",
       maxSizeMb: 6,
+      allowUpload: true,
+      allowDelete: true,
+    },
+    "profile-frames": {
+      label: "Marcos de perfil",
+      folder: "souls/profile/frames",
+      maxSizeMb: 2,
       allowUpload: true,
       allowDelete: true,
     },
@@ -71,18 +95,13 @@ export const MEDIA_GROUPS: Array<{
     sections: ["news-banners", "news-cards"],
   },
   {
-    id: "profile",
-    label: "Perfil",
-    sections: ["profile-avatars", "profile-banners"],
+    id: "events",
+    label: "Eventos",
+    sections: ["event-banners", "event-cards"],
   },
   {
     id: "products",
     label: "Productos",
     sections: ["products"],
-  },
-  {
-    id: "cards",
-    label: "Cartas",
-    sections: ["cards"],
   },
 ];

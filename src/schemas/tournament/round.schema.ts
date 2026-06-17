@@ -28,6 +28,21 @@ export const RecalculateRoundSchema = z.object({
     .min(1, "No hay jugadores para recalcular la ronda"),
 });
 
+export const GenerateTopCutBracketSchema = z.object({
+  tournamentId: z.string().min(1, "El ID del torneo es requerido"),
+});
+
+export const FinalizeTopCutRoundSchema = z.object({
+  tournamentId: z.string().min(1, "El ID del torneo es requerido"),
+  roundId: z.string().min(1, "El ID de la ronda es requerido"),
+});
+
 export type GenerateRoundInput = z.infer<typeof GenerateRoundSchema>;
 export type FinalizeRoundInput = z.infer<typeof FinalizeRoundSchema>;
 export type RecalculateRoundInput = z.infer<typeof RecalculateRoundSchema>;
+export type GenerateTopCutBracketInput = z.infer<
+  typeof GenerateTopCutBracketSchema
+>;
+export type FinalizeTopCutRoundInput = z.infer<
+  typeof FinalizeTopCutRoundSchema
+>;

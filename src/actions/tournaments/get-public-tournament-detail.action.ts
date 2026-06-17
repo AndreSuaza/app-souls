@@ -24,6 +24,7 @@ export async function getPublicTournamentDetailAction(
         status: true,
         currentRoundNumber: true,
         maxRounds: true,
+        topCutGeneratedAt: true,
         format: true,
         typeTournament: {
           select: {
@@ -55,13 +56,16 @@ export async function getPublicTournamentDetailAction(
             hadBye: true,
             rivals: true,
             deckId: true,
+            topCutSeed: true,
           },
         },
         tournamentRounds: {
           select: {
             id: true,
             roundNumber: true,
+            stage: true,
             startedAt: true,
+            finishedAt: true,
             matches: {
               select: {
                 id: true,
@@ -70,7 +74,9 @@ export async function getPublicTournamentDetailAction(
                 player2Id: true,
                 player2Nickname: true,
                 result: true,
+                bracketPosition: true,
               },
+              orderBy: [{ bracketPosition: "asc" }, { createdAt: "asc" }],
             },
           },
           orderBy: {
@@ -93,6 +99,9 @@ export async function getPublicTournamentDetailAction(
         status: tournament.status,
         currentRoundNumber: tournament.currentRoundNumber,
         maxRounds: tournament.maxRounds,
+        topCutGeneratedAt: tournament.topCutGeneratedAt
+          ? tournament.topCutGeneratedAt.toISOString()
+          : null,
         format: tournament.format ?? null,
         typeTournamentName: tournament.typeTournament?.name ?? null,
       },
@@ -119,11 +128,14 @@ export async function getPublicTournamentDetailAction(
         hadBye: player.hadBye,
         rivals: player.rivals ?? [],
         deckId: player.deckId ?? undefined,
+        topCutSeed: player.topCutSeed ?? null,
       })),
       rounds: tournament.tournamentRounds.map((round) => ({
         id: round.id,
         roundNumber: round.roundNumber,
+        stage: round.stage ?? "SWISS",
         startedAt: round.startedAt ? round.startedAt.toISOString() : null,
+        finishedAt: round.finishedAt ? round.finishedAt.toISOString() : null,
         matches: round.matches.map((match) => ({
           id: match.id,
           player1Id: match.player1Id,
@@ -131,6 +143,7 @@ export async function getPublicTournamentDetailAction(
           player1Nickname: match.player1Nickname,
           player2Nickname: match.player2Nickname ?? null,
           result: match.result,
+          bracketPosition: match.bracketPosition ?? null,
         })),
       })),
     };

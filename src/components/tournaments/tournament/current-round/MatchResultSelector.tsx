@@ -8,6 +8,7 @@ interface MatchResultSelectorProps {
   match: MatchInterface;
   layout?: "row" | "mobileGrid";
   readOnly?: boolean;
+  allowDraw?: boolean;
   onChangeResult?: (result: "P1" | "P2" | "DRAW") => void;
 }
 
@@ -15,6 +16,7 @@ export const MatchResultSelector = ({
   match,
   layout = "row",
   readOnly = false, // solo lectura
+  allowDraw = true,
   onChangeResult,
 }: MatchResultSelectorProps) => {
   const { saveMatchResult } = useTournamentStore();
@@ -37,7 +39,7 @@ export const MatchResultSelector = ({
     <div
       className={
         layout === "mobileGrid"
-          ? "grid grid-cols-3 gap-2 w-full md:flex md:items-center md:justify-center"
+          ? `grid ${allowDraw ? "grid-cols-3" : "grid-cols-2"} gap-2 w-full md:flex md:items-center md:justify-center`
           : "flex items-center justify-center gap-2"
       }
     >
@@ -51,15 +53,17 @@ export const MatchResultSelector = ({
         />
       </div>
 
-      <div className={layout === "mobileGrid" ? "flex justify-center" : ""}>
-        <ResultButton
-          label="Empate"
-          variant="draw"
-          active={match.result === "DRAW"}
-          readOnly={noInteraction}
-          onClick={() => handleResult("DRAW")}
-        />
-      </div>
+      {allowDraw && (
+        <div className={layout === "mobileGrid" ? "flex justify-center" : ""}>
+          <ResultButton
+            label="Empate"
+            variant="draw"
+            active={match.result === "DRAW"}
+            readOnly={noInteraction}
+            onClick={() => handleResult("DRAW")}
+          />
+        </div>
+      )}
 
       <div className={layout === "mobileGrid" ? "flex justify-start" : ""}>
         <ResultButton

@@ -14,9 +14,9 @@ type Props = {
 };
 
 export const metadata: Metadata = {
-  title: "Perfil publico | Souls In Xtinction TCG",
+  title: "Perfil público | Souls In Xtinction TCG",
   description:
-    "Explora el perfil publico de jugadores de Souls In Xtinction TCG, con su historial de torneos y mazos publicados.",
+    "Explora el perfil público de jugadores de Souls In Xtinction TCG, con su historial de torneos y mazos publicados.",
 };
 
 export default async function PublicProfilePage({ params }: Props) {

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { CardFinderLab, Pagination } from "@/components";
+import { CardFinderLab } from "@/components/finders/CardFinderLab";
+import { Pagination } from "@/components/ui/pagination/pagination";
 import { Card, PaginationFilters, FilterSelections } from "@/interfaces";
 import { getPaginatedCards } from "@/actions";
 import {

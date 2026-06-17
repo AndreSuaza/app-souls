@@ -4,6 +4,26 @@ import { prisma } from "@/lib/prisma";
 import type { PublicNewsListItem } from "@/interfaces";
 import { resolveNewsImageUrl } from "@/utils/news-image";
 
+const getCategoryNamesById = async (categoryIds: string[]) => {
+  const uniqueCategoryIds = Array.from(new Set(categoryIds));
+
+  if (uniqueCategoryIds.length === 0) {
+    return new Map<string, string>();
+  }
+
+  const categories = await prisma.newCategory.findMany({
+    where: {
+      id: { in: uniqueCategoryIds },
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  return new Map(categories.map((category) => [category.id, category.name]));
+};
+
 export async function getPublicNewsAction(): Promise<PublicNewsListItem[]> {
   try {
     const news = await prisma.new.findMany({
@@ -22,13 +42,11 @@ export async function getPublicNewsAction(): Promise<PublicNewsListItem[]> {
         tags: true,
         newCategoryId: true,
         createdAt: true,
-        newCategory: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
+    const categoryNames = await getCategoryNamesById(
+      news.map((item) => item.newCategoryId),
+    );
 
     return news.map((item) => ({
       id: item.id,
@@ -40,7 +58,7 @@ export async function getPublicNewsAction(): Promise<PublicNewsListItem[]> {
       publishedAt: item.publishedAt ? item.publishedAt.toISOString() : null,
       tags: item.tags ?? [],
       newCategoryId: item.newCategoryId,
-      categoryName: item.newCategory?.name ?? null,
+      categoryName: categoryNames.get(item.newCategoryId) ?? null,
       createdAt: item.createdAt.toISOString(),
     }));
   } catch (error) {

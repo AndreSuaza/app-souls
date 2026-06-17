@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
 import Link from "next/link";
 import {
@@ -22,6 +21,8 @@ import {
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { toggleDeckLikeAction } from "@/actions";
 import type { Deck } from "@/interfaces";
+import { deckCardImageFallback } from "@/models/media-fallbacks.models";
+import { FallbackImage } from "@/components/ui/image/FallbackImage";
 
 interface Props {
   mazo: Deck;
@@ -212,8 +213,9 @@ export const DeckCard = ({
         title={`Ver mazo ${mazo.name}`}
       >
         <div className="relative h-56 w-full shrink-0 overflow-hidden">
-          <Image
+          <FallbackImage
             src={`/cards/${mazo.imagen}.webp`}
+            fallbackSrc={deckCardImageFallback}
             alt={mazo.name}
             title={mazo.name}
             placeholder="blur"

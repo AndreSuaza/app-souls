@@ -119,5 +119,14 @@ export default baseAuth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    "/admin/:path*",
+    "/perfil",
+    "/auth/login",
+    "/auth/register",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+    "/mantenimiento",
+    "/api/auth/:path*",
+  ],
 };

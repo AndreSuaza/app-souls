@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-export const AvatarTypeSchema = z.enum(["AVATAR", "BANNER"]);
+export const AvatarTypeSchema = z.enum(["AVATAR", "BANNER", "FRAME"]);
 export const AvatarRaritySchema = z.enum([
   "COMMON",
   "RARE",
-  "EPIC",
-  "LEGENDARY",
-  "EVENT",
+  "ULTRA",
+  "SECRET",
+  "ASCENDED",
 ]);
 export const AvatarAvailabilitySchema = z.preprocess(
   (value) => {
@@ -25,11 +25,44 @@ const AvatarPriceSchema = z.preprocess(
     }
     return value;
   },
-  z
-    .coerce
+  z.coerce
     .number()
     .int("El precio debe ser un numero entero.")
     .min(0, "El precio debe ser mayor o igual a 0."),
+);
+
+const AvatarBooleanSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    return value === "true" || value === "on";
+  }
+  return Boolean(value);
+}, z.boolean());
+
+const AvatarSeasonNumberSchema = z.preprocess((value) => {
+  if (value === "" || value === null || value === undefined) {
+    return null;
+  }
+  return value;
+}, z.coerce.number().int("La temporada debe ser un numero entero.").min(1, "La temporada debe ser mayor o igual a 1.").nullable());
+
+const AvatarSeasonEndsAtSchema = z.preprocess((value) => {
+  if (value === "" || value === null || value === undefined) {
+    return null;
+  }
+  return value;
+}, z.coerce.date().nullable());
+
+const AvatarFeaturedOrderSchema = z.preprocess(
+  (value) => {
+    if (value === "" || value === null || value === undefined) {
+      return 0;
+    }
+    return value;
+  },
+  z.coerce
+    .number()
+    .int("El orden destacado debe ser un numero entero.")
+    .min(0, "El orden destacado debe ser mayor o igual a 0."),
 );
 
 export const AvatarSchema = z.object({
@@ -39,6 +72,12 @@ export const AvatarSchema = z.object({
   availability: AvatarAvailabilitySchema.default("PUBLIC"),
   price: AvatarPriceSchema,
   type: AvatarTypeSchema,
+  storeVisible: AvatarBooleanSchema.default(true),
+  isSeasonal: AvatarBooleanSchema.default(false),
+  seasonNumber: AvatarSeasonNumberSchema,
+  seasonEndsAt: AvatarSeasonEndsAtSchema,
+  featured: AvatarBooleanSchema.default(false),
+  featuredOrder: AvatarFeaturedOrderSchema.default(0),
 });
 
 export const ProfileAvatarSchema = z.object({
@@ -51,6 +90,12 @@ export const AvatarUpdateSchema = z.object({
   rarity: AvatarRaritySchema,
   availability: AvatarAvailabilitySchema.default("PUBLIC"),
   price: AvatarPriceSchema,
+  storeVisible: AvatarBooleanSchema.default(true),
+  isSeasonal: AvatarBooleanSchema.default(false),
+  seasonNumber: AvatarSeasonNumberSchema,
+  seasonEndsAt: AvatarSeasonEndsAtSchema,
+  featured: AvatarBooleanSchema.default(false),
+  featuredOrder: AvatarFeaturedOrderSchema.default(0),
 });
 
 export type AvatarInput = z.infer<typeof AvatarSchema>;

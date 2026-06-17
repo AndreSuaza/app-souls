@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IoCalendarOutline } from "react-icons/io5";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { PaginationLine } from "@/components/ui";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { PublicTournamentsFilters } from "./PublicTournamentsFilters";
 import { PublicTournamentsTable } from "./PublicTournamentsTable";
 import { PublicTournamentsMobileList } from "./PublicTournamentsMobileList";

@@ -1,11 +1,9 @@
 import { Suspense } from "react";
 import { getPublicTournaments } from "@/actions";
 import { Metadata } from "next";
-import {
-  PublicTournamentsHero,
-  PublicTournamentsHighlights,
-  PublicTournamentsList,
-} from "@/components";
+import { PublicTournamentsHero } from "@/components/tournaments/public/PublicTournamentsHero";
+import { PublicTournamentsHighlights } from "@/components/tournaments/public/PublicTournamentsHighlights";
+import { PublicTournamentsList } from "@/components/tournaments/public/PublicTournamentsList";
 
 export const metadata: Metadata = {
   title: "Torneos Souls In Xtinction TCG | Calendario",

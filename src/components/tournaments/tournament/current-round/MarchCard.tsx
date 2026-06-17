@@ -14,6 +14,7 @@ interface MatchCardProps {
   players: TournamentPlayerInterface[];
   readOnly?: boolean; // indica si el resultado es editable
   decorated?: boolean; // controla borde, sombra y redondeo
+  allowDraw?: boolean;
   onChangeResult?: (matchId: string, result: "P1" | "P2" | "DRAW") => void;
   renderResult?: (match: MatchInterface) => ReactNode;
   classNames?: {
@@ -31,6 +32,7 @@ export const MatchCard = ({
   players,
   readOnly = false, // por defecto editable
   decorated = true, // ← por defecto con estilos visuales
+  allowDraw = true,
   onChangeResult,
   renderResult,
   classNames,
@@ -150,6 +152,7 @@ export const MatchCard = ({
             match={match}
             layout="mobileGrid"
             readOnly={readOnly || !player2}
+            allowDraw={allowDraw}
             onChangeResult={
               onChangeResult
                 ? (result) => onChangeResult(match.id, result)

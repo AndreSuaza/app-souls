@@ -6,7 +6,7 @@ import {
   getPropertiesCards,
 } from "@/actions";
 import { auth } from "@/auth";
-import { DeckCreator } from "@/components";
+import { DeckCreator } from "@/components/cartas/deck-creator/DeckCreator";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";

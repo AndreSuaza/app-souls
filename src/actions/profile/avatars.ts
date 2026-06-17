@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { PLAYER_PROFILE_FRAMES_ENABLED } from "@/config/features";
 import { prisma } from "@/lib/prisma";
 
 const resolveUserId = async () => {
@@ -21,7 +22,7 @@ const resolveUserId = async () => {
   return user.id;
 };
 
-const getProfileMedia = async (type: "AVATAR" | "BANNER") => {
+const getProfileMedia = async (type: "AVATAR" | "BANNER" | "FRAME") => {
   const userId = await resolveUserId();
 
   return prisma.avatar.findMany({
@@ -58,5 +59,15 @@ export const getProfileBanners = async () => {
     return await getProfileMedia("BANNER");
   } catch (error) {
     throw new Error(`No se pudo cargar los banners ${error}`);
+  }
+};
+
+export const getProfileFrames = async () => {
+  if (!PLAYER_PROFILE_FRAMES_ENABLED) return [];
+
+  try {
+    return await getProfileMedia("FRAME");
+  } catch (error) {
+    throw new Error(`No se pudo cargar los marcos ${error}`);
   }
 };

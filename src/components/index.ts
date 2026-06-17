@@ -21,6 +21,7 @@ export * from "./cartas/decklist-image/DecklistImage";
 export * from "./cartas/decklist-image/DeckImage";
 export * from "./cartas/deck-creator/ShowDeck";
 export * from "./cartas/card-finder/CardFinder";
+export * from "./cartas/admin/AdminCardsExcelImport";
 
 export * from "./eventos/event-grid/TournamentGrid";
 export * from "./eventos/event-grid/TournamentItem";
@@ -98,6 +99,7 @@ export * from "./tournaments/public/PublicTournamentsHighlights";
 export * from "./tournaments/public/PublicTournamentsList";
 export * from "./tournaments/public/PublicTournamentsMobileList";
 export * from "./tournaments/public/PublicTournamentsTable";
+export * from "./users/admin/AdminUsersManager";
 
 export * from "./news/admin/AdminNewsList";
 export * from "./news/form/NewsForm";

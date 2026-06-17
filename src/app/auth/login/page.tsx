@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { LoginForm } from "@/components";
+import { LoginForm } from "@/components/auth/LoginForm";
 import Link from "next/link";
 import { Metadata } from "next";
 

@@ -10,7 +10,7 @@ export async function getDecksFilteredAction(
   input: DeckFiltersInput,
 ): Promise<DeckFilteredResult> {
   const filters = DeckFiltersSchema.parse(input);
-  const perPage = 24;
+  const perPage = 25;
   const adminDeckFilter: Prisma.DeckWhereInput = {
     OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }],
   };
@@ -42,19 +42,15 @@ export async function getDecksFilteredAction(
     },
   ];
 
+  const dateOrder = filters.date === "old" ? ("asc" as const) : ("desc" as const);
+
   const orderBy = filters.likes
     ? [
-        ...priorityOrder,
         { likesCount: "desc" as const },
-        { createdAt: "desc" as const },
-      ]
-    : [
         ...priorityOrder,
-        {
-          createdAt:
-            filters.date === "old" ? ("asc" as const) : ("desc" as const),
-        },
-      ];
+        { createdAt: dateOrder },
+      ]
+    : [...priorityOrder, { createdAt: dateOrder }];
 
   const totalCount = await prisma.deck.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
@@ -106,7 +102,7 @@ export async function getDecksFilteredAction(
     };
   });
 
-  const session = await auth();
+  const session = filters.includeLikedDeckIds ? await auth() : null;
   const userId = session?.user?.idd;
 
   const likedDeckIds = userId

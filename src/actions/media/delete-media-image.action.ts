@@ -36,6 +36,30 @@ const validateUsage = async (section: string, url: string) => {
     return Boolean(used);
   }
 
+  if (section === "event-banners") {
+    const used = await prisma.event.findFirst({
+      where: {
+        featuredImage: {
+          in: candidates,
+        },
+      },
+      select: { id: true },
+    });
+    return Boolean(used);
+  }
+
+  if (section === "event-cards") {
+    const used = await prisma.event.findFirst({
+      where: {
+        cardImage: {
+          in: candidates,
+        },
+      },
+      select: { id: true },
+    });
+    return Boolean(used);
+  }
+
   if (section === "products") {
     const used = await prisma.productImage.findFirst({
       where: {

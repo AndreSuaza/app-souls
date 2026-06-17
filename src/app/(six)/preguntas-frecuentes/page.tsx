@@ -1,4 +1,4 @@
-import { PreguntasFrecuentes } from "@/components";
+import { PreguntasFrecuentes } from "@/components/cartas/preguntas-frecuentes/preguntasFrecuentes";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -3,24 +3,25 @@
 import { useEffect, useState } from "react";
 import { useParams, notFound } from "next/navigation";
 import { useTournamentStore, useUIStore } from "@/store";
+import { TournamentCurrentRound } from "@/components/tournaments/tournament/current-round/TournamentCurrentRound";
+import { TournamentRoundsHistory } from "@/components/tournaments/tournament/hisotry/TournamentRoundsHistory";
+import { TournamentInformation } from "@/components/tournaments/tournament/information/TournamentInformation";
+import { TournamentPlayersView } from "@/components/tournaments/tournament/players/TournamentPlayersView";
 import {
   TournamentTabs,
-  TournamentPlayersView,
-  TournamentCurrentRound,
-  TournamentRoundsHistory,
-  TournamentInformation,
-} from "@/components";
-
-export type TournamentTab =
-  | "players"
-  | "currentRound"
-  | "rounds"
-  | "information";
+  type TournamentTab,
+} from "@/components/tournaments/tournament/TournamentTabs";
+import { TopCutBracket } from "@/components/tournaments/tournament/top-cut/TopCutBracket";
+import { isTopCutTournamentType } from "@/logic";
 
 export default function TournamentAdminPage() {
   const { id } = useParams<{ id: string }>();
-  const { tournament, fetchTournament, players, error } = useTournamentStore();
+  const { tournament, fetchTournament, players, rounds, error } =
+    useTournamentStore();
   const hideLoading = useUIStore((s) => s.hideLoading);
+  const showTopCutTab =
+    tournament?.status === "finished" &&
+    isTopCutTournamentType(tournament.typeTournamentName);
 
   useEffect(() => {
     hideLoading(); // La navegación terminó
@@ -39,6 +40,7 @@ export default function TournamentAdminPage() {
         detail === "players" ||
         detail === "currentRound" ||
         detail === "rounds" ||
+        detail === "topCut" ||
         detail === "information"
       ) {
         setActiveTab(detail);
@@ -55,6 +57,11 @@ export default function TournamentAdminPage() {
   useEffect(() => {
     // Esperar a que el torneo esté cargado
     if (!tournament) return;
+
+    if (activeTab === "topCut" && !showTopCutTab) {
+      setActiveTab("players");
+      return;
+    }
 
     // Si el torneo finalizó:
     // - se permite "players" y "rounds"
@@ -73,7 +80,7 @@ export default function TournamentAdminPage() {
       }
       return;
     }
-  }, [tournament, players.length, activeTab]);
+  }, [tournament, players.length, activeTab, showTopCutTab]);
 
   if (error === "Torneo no encontrado") {
     notFound();
@@ -89,6 +96,7 @@ export default function TournamentAdminPage() {
         tournamentTitle={tournament?.title ?? "Torneo"}
         playersCount={players.length}
         tournamentStatus={tournament?.status}
+        showTopCutTab={showTopCutTab}
       />
 
       {activeTab === "players" && <TournamentPlayersView />}
@@ -96,6 +104,10 @@ export default function TournamentAdminPage() {
       {activeTab === "currentRound" && <TournamentCurrentRound />}
 
       {activeTab === "rounds" && <TournamentRoundsHistory />}
+
+      {activeTab === "topCut" && showTopCutTab && (
+        <TopCutBracket rounds={rounds} players={players} />
+      )}
 
       {activeTab === "information" && <TournamentInformation />}
     </div>

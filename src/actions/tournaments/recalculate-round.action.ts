@@ -4,10 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { generateSwissRoundBackend } from "@/logic";
 import { RecalculateRoundSchema, RecalculateRoundInput } from "@/schemas";
 import { TournamentPlayerInterface } from "@/interfaces";
+import { assertCanManageTournament } from "./tournament-action-auth";
 
 export async function recalculateRoundAction(input: RecalculateRoundInput) {
   try {
     const data = RecalculateRoundSchema.parse(input);
+    await assertCanManageTournament(data.tournamentId);
 
     const round = await prisma.round.findFirst({
       where: { id: data.roundId, tournamentId: data.tournamentId },

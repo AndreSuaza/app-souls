@@ -1,7 +1,6 @@
-import { auth } from "@/auth";
 import { getDeckFiltersAction, getDecksFilteredAction } from "@/actions";
-import { DeckLibrary } from "@/components";
-import type { DeckFiltersState } from "@/components";
+import { DeckLibrary } from "@/components/mazos/deck-library/DeckLibrary";
+import type { DeckFiltersState } from "@/components/mazos/deck-filters/DeckFiltersBar";
 import type { Metadata } from "next";
 
 export const revalidate = 120;
@@ -83,19 +82,17 @@ export default async function Page({ searchParams }: PageProps) {
     likes: likesParam === "1" ? "1" : "",
   };
 
-  const [decksResult, filters, session] = await Promise.all([
+  const [decksResult, filters] = await Promise.all([
     getDecksFilteredAction({
       tournament: initialFilters.tournament,
       archetypeId: initialFilters.archetypeId || undefined,
       date: initialFilters.date,
       likes: initialFilters.likes === "1",
       page: initialPage,
+      includeLikedDeckIds: false,
     }),
     getDeckFiltersAction(),
-    auth(),
   ]);
-
-  const hasSession = Boolean(session?.user);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 px-4 pb-12 pt-6 dark:from-tournament-dark-bg dark:via-tournament-dark-muted dark:to-tournament-dark-bg sm:px-6 lg:px-10">
@@ -113,7 +110,7 @@ export default async function Page({ searchParams }: PageProps) {
           initialLikedDeckIds={decksResult.likedDeckIds}
           archetypes={filters.archetypes}
           initialFilters={initialFilters}
-          hasSession={hasSession}
+          hasSession={false}
         />
       </div>
     </main>

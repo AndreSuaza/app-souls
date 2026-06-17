@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import type { ReadonlyURLSearchParams } from "next/navigation";
-import { PaginationLine } from "@/components";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { getStoresByDistanceAction } from "@/actions";
 import { StoreListCard } from "./StoreListCard";
 import { StoresMap } from "./StoresMap";

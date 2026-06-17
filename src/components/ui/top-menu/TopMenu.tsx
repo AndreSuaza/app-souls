@@ -1,41 +1,46 @@
-﻿"use client";
+"use client";
 
-import Link from "next/link";
-import { titleFont } from "@/config/fonts";
-import { useUIStore } from "@/store";
 import Image from "next/image";
-import { Routes } from "@/models/routes.models";
-import { useEffect, useRef, useState } from "react";
-import { IoMenuSharp } from "react-icons/io5";
+import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
+import {
+  IoCloseOutline,
+  IoLogInOutline,
+  IoMenuSharp,
+  IoPersonCircleOutline,
+} from "react-icons/io5";
+import { titleFont } from "@/config/fonts";
+import { Routes, type Route } from "@/models/routes.models";
+import { useUIStore } from "@/store";
 import { getAvatarUrl } from "@/utils/avatar-image";
 
-export const TopMenu = () => {
-  const openMenu = useUIStore((state) => state.openSideMenu);
-  const [open, setOpen] = useState<string | null>(null);
-  const [openProfile, setOpenProfile] = useState<boolean>(false);
-  const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const dropdownRefProfile = useRef<HTMLDivElement | null>(null);
-  const closeMenuTimeoutRef = useRef<number | null>(null);
+const visibleRoutes = Routes.filter((route) => route.name !== "");
 
+export const TopMenu = () => {
+  const isSideMenuOpen = useUIStore((state) => state.isSideMenuOpen);
+  const openMenu = useUIStore((state) => state.openSideMenu);
+  const closeMenu = useUIStore((state) => state.closeSideMenu);
+  const [openRoute, setOpenRoute] = useState<Route | null>(null);
+  const [pinnedRouteName, setPinnedRouteName] = useState<string | null>(null);
+  const [openProfile, setOpenProfile] = useState(false);
+  const [dropdownArrowLeft, setDropdownArrowLeft] = useState(0);
+  const closeMenuTimeoutRef = useRef<number | null>(null);
+  const profileRef = useRef<HTMLDivElement | null>(null);
   const { data: session } = useSession();
+
   const adminShortcut = (() => {
     const role = session?.user?.role;
-    if (role === "admin") {
-      return { label: "Administrar", href: "/admin" };
-    }
-    if (role === "store") {
-      return { label: "Torneos", href: "/admin/torneos" };
-    }
-    if (role === "news") {
-      return { label: "Noticias", href: "/admin/noticias" };
-    }
+    if (role === "admin") return { label: "Administrar", href: "/admin" };
+    if (role === "store") return { label: "Torneos", href: "/admin/torneos" };
+    if (role === "news") return { label: "Noticias", href: "/admin/noticias" };
     return null;
   })();
-
-  const handleClick = async () => {
-    await signOut();
-  };
 
   const clearCloseMenuTimeout = () => {
     if (closeMenuTimeoutRef.current !== null) {
@@ -45,26 +50,26 @@ export const TopMenu = () => {
   };
 
   const scheduleCloseMenu = () => {
+    if (pinnedRouteName) return;
+
     clearCloseMenuTimeout();
     closeMenuTimeoutRef.current = window.setTimeout(() => {
-      setOpen(null);
+      setOpenRoute(null);
       closeMenuTimeoutRef.current = null;
-    }, 160);
+    }, 140);
   };
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (!open) return;
-      const currentRef = dropdownRefs.current[open];
-      if (currentRef && currentRef.contains(event.target as Node)) {
-        return;
+    const handleClickOutsideProfile = (event: MouseEvent) => {
+      if (!profileRef.current?.contains(event.target as Node)) {
+        setOpenProfile(false);
       }
-      clearCloseMenuTimeout();
-      setOpen(null);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
+    };
+
+    document.addEventListener("mousedown", handleClickOutsideProfile);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutsideProfile);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -72,205 +77,278 @@ export const TopMenu = () => {
     };
   }, []);
 
-  useEffect(() => {
-    function handleClickOutsideProfile(event: MouseEvent) {
-      if (
-        dropdownRefProfile.current &&
-        !dropdownRefProfile.current.contains(event.target as Node)
-      ) {
-        setOpenProfile(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutsideProfile);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutsideProfile);
-  }, []);
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
-  const visibleRoutes = Routes.filter((route) => route.name !== "");
+  const openRouteMenu = (route: Route, trigger: HTMLElement) => {
+    if (!route.menu?.length) {
+      setOpenRoute(null);
+      setPinnedRouteName(null);
+      return;
+    }
+
+    const rect = trigger.getBoundingClientRect();
+    setDropdownArrowLeft(rect.left + rect.width / 2);
+    setOpenRoute(route);
+  };
+
+  const closeRouteMenu = () => {
+    setOpenRoute(null);
+    setPinnedRouteName(null);
+  };
+
+  const handleRouteClick = (route: Route, trigger: HTMLElement) => {
+    const isSameOpenRoute = openRoute?.name === route.name;
+    const isPinnedRoute = pinnedRouteName === route.name;
+
+    if (isSameOpenRoute && isPinnedRoute) {
+      closeRouteMenu();
+      return;
+    }
+
+    clearCloseMenuTimeout();
+    openRouteMenu(route, trigger);
+    setPinnedRouteName(route.name);
+  };
+
+  const handleDropdownMouseLeave = (event: ReactMouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const isLeavingThroughBottom = event.clientY >= rect.bottom - 1;
+
+    if (isLeavingThroughBottom) {
+      closeRouteMenu();
+      return;
+    }
+
+    scheduleCloseMenu();
+  };
 
   return (
-    <nav className="flex px-5 justify-between items-center w-full bg-gray-950 text-white py-3">
-      {/* Logo */}
-
-      <Link href="/" title="Ir al inicio">
-        <div className="flex flex-grow items-center gap-2">
-          <Image
-            src={`/souls-in-xtinction-logo-sm.png`}
-            alt="logo-icono-souls-in-xtinction"
-            title="Souls In Xtinction | TCG"
-            className="order-1 h-12 w-12"
-            width={40}
-            height={40}
-          />
-          <span
-            className={`${titleFont.className} order-2 text-xl font-bold antialiased`}
+    <header
+      className="sticky top-0 z-50 bg-[#080a0d] text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+      onMouseLeave={scheduleCloseMenu}
+    >
+      <nav className="relative flex h-[68px] items-center justify-between px-4 sm:px-6 lg:h-[64px] lg:px-8">
+        <div className="flex h-full min-w-0 items-center gap-8">
+          <Link
+            href="/"
+            title="Ir al inicio"
+            className="group flex min-w-0 items-center gap-3"
+            onMouseEnter={() => {
+              clearCloseMenuTimeout();
+              closeRouteMenu();
+            }}
           >
-            Souls In Xtinction | TCG
-          </span>
-        </div>
-      </Link>
-
-      <div className="hidden lg:block lg:text-xs xl:text-base">
-        <ul className="flex">
-          {visibleRoutes.map((route) => (
-            <li key={route.name}>
-              {route.menu ? (
-                <div
-                  className="relative inline-block text-left"
-                  ref={(node) => {
-                    dropdownRefs.current[route.name] = node;
-                  }}
-                  onMouseEnter={() => {
-                    clearCloseMenuTimeout();
-                    setOpen(route.name);
-                  }}
-                  onMouseLeave={scheduleCloseMenu}
-                >
-                  {/* Botón */}
-                  <button
-                    type="button"
-                    className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-                    title={`Abrir menú ${route.name}`}
-                    aria-haspopup="menu"
-                    aria-expanded={open === route.name}
-                  >
-                    {route.name}
-                  </button>
-
-                  {/* Menú */}
-                  {open === route.name && (
-                    <ul
-                      onMouseEnter={clearCloseMenuTimeout}
-                      onMouseLeave={scheduleCloseMenu}
-                      className="absolute left-0 top-full mt-1 w-56 bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50"
-                    >
-                      {route.menu.map((menu) =>
-                        menu.path ? (
-                          <li key={menu.name}>
-                            <Link
-                              href={menu.path}
-                              title={`Ir a ${menu.name}`}
-                              onClick={() => setOpen(null)}
-                              className="m-2 inline-flex items-center whitespace-nowrap xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600"
-                            >
-                              {menu.name}
-                            </Link>
-                          </li>
-                        ) : null,
-                      )}
-                    </ul>
-                  )}
-                </div>
-              ) : route.path ? (
-                <Link
-                  href={route.path}
-                  title={`Ir a ${route.name}`}
-                  onMouseEnter={() => {
-                    clearCloseMenuTimeout();
-                    setOpen(null);
-                  }}
-                  className="m-2 inline-flex items-center xl:p-2 transition-all uppercase font-bold leading-none hover:text-yellow-600 hover:border-b-2 hover:border-yellow-600"
-                >
-                  {route.name}
-                </Link>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/*Search, Menu*/}
-      <div className="items-center hidden lg:block">
-        {session ? (
-          <div
-            className="relative inline-block text-left"
-            ref={dropdownRefProfile}
-          >
-            {/* Botón */}
-            <button
-              type="button"
-              onMouseEnter={() => setOpenProfile(!openProfile)}
-              className="flex flex-grow items-center gap-2 rounded bg-slate-900 px-3 py-2 transition-all hover:bg-slate-800"
-              title="Abrir menú de perfil"
-              aria-haspopup="menu"
-              aria-expanded={openProfile}
+            <Image
+              src="/souls-in-xtinction-logo-sm.png"
+              alt="Logo Souls In Xtinction"
+              title="Souls In Xtinction | TCG"
+              className="h-10 w-10 shrink-0 drop-shadow-[0_0_12px_rgba(147,51,234,0.35)]"
+              width={40}
+              height={40}
+              priority
+            />
+            <span
+              className={`${titleFont.className} max-w-[210px] truncate text-base font-bold tracking-wide antialiased sm:max-w-[260px] sm:text-xl xl:max-w-none`}
             >
-              {session?.user.image && (
-                <>
-                  <Image
-                    src={getAvatarUrl(session?.user.image)}
-                    alt="Imagen de perfil"
-                    title={`Avatar de ${session?.user.nickname ?? "usuario"}`}
-                    className="order-1 w-8 rounded-full"
-                    width={80}
-                    height={80}
-                  />
-                  <p className="order-2 uppercase font-semibold">
-                    {session?.user.nickname}
-                  </p>
-                </>
-              )}
-            </button>
+              Souls In Xtinction | TCG
+            </span>
+          </Link>
 
-            {/* Menú */}
-            {openProfile && (
-              <ul
-                onMouseLeave={() => setOpenProfile(!openProfile)}
-                className="absolute font-sem pt-2 pb-2 px-2 w-36 rounded-md bg-gray-950 shadow-lg ring-1 ring-white/10 focus:outline-none transition-transform duration-150 scale-100 z-50"
-              >
-                <li>
-                  <Link
-                    href="/perfil"
-                    title="Ir a tu perfil"
-                    className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
-                  >
-                    Tu perfil
-                  </Link>
+          <ul className="hidden h-full items-center lg:flex">
+            {visibleRoutes.map((route) => {
+              const isOpen = openRoute?.name === route.name;
+
+              return (
+                <li
+                  key={route.name}
+                  className="flex h-full items-center"
+                  onMouseEnter={(event) => {
+                    clearCloseMenuTimeout();
+                    setPinnedRouteName((current) =>
+                      current === route.name ? current : null,
+                    );
+                    openRouteMenu(route, event.currentTarget);
+                  }}
+                >
+                  {route.menu?.length ? (
+                    <button
+                      type="button"
+                      title={`Abrir menu ${route.name}`}
+                      aria-haspopup="menu"
+                      aria-expanded={isOpen}
+                      onClick={(event) =>
+                        handleRouteClick(route, event.currentTarget)
+                      }
+                      className="relative flex h-full items-center px-3 text-sm font-black uppercase tracking-wide transition hover:text-yellow-400 xl:px-4"
+                    >
+                      {route.name}
+                    </button>
+                  ) : (
+                    <Link
+                      href={route.path ?? "/"}
+                      title={`Ir a ${route.name}`}
+                      className="relative flex h-full items-center px-3 text-sm font-black uppercase tracking-wide transition hover:text-yellow-400 xl:px-4"
+                      onMouseEnter={() => closeRouteMenu()}
+                    >
+                      {route.name}
+                    </Link>
+                  )}
                 </li>
-                {adminShortcut && (
+              );
+            })}
+          </ul>
+        </div>
+
+        <div className="hidden items-center gap-4 lg:flex">
+          {session ? (
+            <div className="relative" ref={profileRef}>
+              <button
+                type="button"
+                onClick={() => setOpenProfile((current) => !current)}
+                onMouseEnter={() => closeRouteMenu()}
+                className="flex items-center gap-2 rounded-full border border-purple-500/40 bg-purple-950/40 px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition hover:border-yellow-400 hover:text-yellow-400"
+                title="Abrir menu de cuenta"
+                aria-haspopup="menu"
+                aria-expanded={openProfile}
+              >
+                {session.user.image ? (
+                  <Image
+                    src={getAvatarUrl(session.user.image)}
+                    alt="Imagen de perfil"
+                    title={`Avatar de ${session.user.nickname ?? "usuario"}`}
+                    className="h-7 w-7 rounded-full border border-purple-400/50 object-cover"
+                    width={56}
+                    height={56}
+                  />
+                ) : (
+                  <IoPersonCircleOutline className="h-6 w-6" />
+                )}
+                <span className="max-w-[120px] truncate">
+                  {session.user.nickname ?? "Cuenta"}
+                </span>
+              </button>
+
+              {openProfile && (
+                <ul className="absolute right-0 top-full mt-3 w-48 overflow-hidden rounded-xl border border-purple-700/60 bg-[#050507] py-2 shadow-2xl shadow-black/50">
                   <li>
                     <Link
-                      href={adminShortcut.href}
-                      title={`Ir a ${adminShortcut.label}`}
-                      className="block w-full h-full mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
+                      href="/perfil"
+                      title="Ir a tu perfil"
+                      onClick={() => setOpenProfile(false)}
+                      className="block px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-purple-950/60 hover:text-yellow-400"
                     >
-                      {adminShortcut.label}
+                      Tu perfil
                     </Link>
                   </li>
-                )}
-                <li>
-                  <button
-                    onClick={handleClick}
-                    title="Cerrar sesión"
-                    className="block w-full h-full text-left mb-2 mt-2 p-1 hover:bg-gray-800 transition-transform"
-                  >
-                    Cerrar sesión
-                  </button>
-                </li>
-              </ul>
-            )}
-          </div>
-        ) : (
-          <Link
-            href="/auth/login"
-            title="Iniciar sesión"
-            className="uppercase font-semibold bg-yellow-600 px-4 py-2 rounded text-sm hover:bg-yellow-700 transition-all"
-          >
-            iniciar sesión
-          </Link>
-        )}
-      </div>
+                  {adminShortcut && (
+                    <li>
+                      <Link
+                        href={adminShortcut.href}
+                        title={`Ir a ${adminShortcut.label}`}
+                        onClick={() => setOpenProfile(false)}
+                        className="block px-4 py-2 text-sm font-semibold text-slate-200 transition hover:bg-purple-950/60 hover:text-yellow-400"
+                      >
+                        {adminShortcut.label}
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      title="Cerrar sesión"
+                      className="block w-full px-4 py-2 text-left text-sm font-semibold text-slate-200 transition hover:bg-purple-950/60 hover:text-yellow-400"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </li>
+                </ul>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/auth/login"
+              title="Iniciar sesión"
+              className="inline-flex items-center gap-2 rounded-full border border-yellow-400/70 bg-yellow-400 px-4 py-2 text-xs font-black uppercase tracking-wide text-black transition hover:bg-yellow-300"
+              onMouseEnter={() => closeRouteMenu()}
+            >
+              <IoLogInOutline className="h-4 w-4" />
+              Iniciar sesión
+            </Link>
+          )}
+        </div>
 
-      <div className="block lg:hidden">
         <button
           type="button"
-          className="m-2 p-2 rounded-md transition-all hover:bg-gray-100"
-          onClick={openMenu}
-          title="Abrir menú"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-purple-800/70 text-white transition hover:border-yellow-400 hover:text-yellow-400 lg:hidden"
+          onClick={isSideMenuOpen ? closeMenu : openMenu}
+          title={isSideMenuOpen ? "Cerrar menu" : "Abrir menu"}
+          aria-label={isSideMenuOpen ? "Cerrar menu" : "Abrir menu"}
+          aria-expanded={isSideMenuOpen}
         >
-          <IoMenuSharp className="w-6 h-6" />
+          <span className="relative flex h-7 w-7 items-center justify-center">
+            <IoMenuSharp
+              className={`absolute h-7 w-7 transition duration-200 ${
+                isSideMenuOpen
+                  ? "rotate-90 scale-75 opacity-0"
+                  : "rotate-0 scale-100 opacity-100"
+              }`}
+            />
+            <IoCloseOutline
+              className={`absolute h-7 w-7 transition duration-200 ${
+                isSideMenuOpen
+                  ? "rotate-0 scale-100 opacity-100"
+                  : "-rotate-90 scale-75 opacity-0"
+              }`}
+            />
+          </span>
         </button>
-      </div>
-    </nav>
+      </nav>
+
+      {openRoute?.menu?.length && (
+        <span className="absolute inset-x-0 bottom-0 hidden h-0.5 bg-yellow-400 lg:block" />
+      )}
+
+      {openRoute?.menu?.length && (
+        <div
+          role="menu"
+          onMouseEnter={clearCloseMenuTimeout}
+          onMouseLeave={handleDropdownMouseLeave}
+          className="absolute inset-x-0 top-full hidden bg-black px-8 py-8 shadow-2xl shadow-black/60 lg:block"
+        >
+          <span
+            className="absolute top-0 h-0 w-0 -translate-x-1/2 -translate-y-full border-x-[12px] border-b-[12px] border-x-transparent border-b-yellow-400"
+            style={{ left: `${dropdownArrowLeft}px` }}
+          />
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-4 inline-block">
+              <p className="text-base uppercase tracking-wide text-white">
+                {openRoute.name}
+              </p>
+              <span className="mt-1 block h-0.5 w-8 bg-yellow-400" />
+            </div>
+
+            <ul className="flex max-w-xs flex-col gap-3">
+              {openRoute.menu.map((item) =>
+                item.path ? (
+                  <li key={item.name}>
+                    <Link
+                      href={item.path}
+                      title={`Ir a ${item.name}`}
+                      onClick={() => closeRouteMenu()}
+                      className="text-base font-semibold text-slate-300 transition hover:text-yellow-400"
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                ) : null,
+              )}
+            </ul>
+          </div>
+        </div>
+      )}
+    </header>
   );
 };

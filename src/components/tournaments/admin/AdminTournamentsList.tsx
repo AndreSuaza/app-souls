@@ -2,11 +2,9 @@
 
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { PaginationLine } from "@/components/ui";
-import {
-  PublicTournamentsMobileList,
-  PublicTournamentsTable,
-} from "@/components";
+import { PublicTournamentsMobileList } from "@/components/tournaments/public/PublicTournamentsMobileList";
+import { PublicTournamentsTable } from "@/components/tournaments/public/PublicTournamentsTable";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { AdminTournamentsSearch } from "./AdminTournamentsSearch";
 import clsx from "clsx";
 

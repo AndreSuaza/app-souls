@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useTournamentStore } from "@/store";
 import { MatchCard } from "./MarchCard";
 import { orderMatchesByBye } from "@/utils/matches";
+import { isTopCutStage } from "@/logic";
 
 export const RoundMatchesSection = () => {
   const { rounds, players } = useTournamentStore();
@@ -47,6 +48,7 @@ export const RoundMatchesSection = () => {
             tableNumber={index + 1}
             players={players}
             readOnly={!currentRound.startedAt}
+            allowDraw={!isTopCutStage(currentRound.stage)}
             classNames={{
               container:
                 "bg-white border-tournament-dark-accent dark:bg-tournament-dark-surface",

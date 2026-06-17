@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminNewsList } from "@/components";
+import { AdminNewsList } from "@/components/news/admin/AdminNewsList";
 import { getAdminNewsAction, getNewsCategoriesAction } from "@/actions";
 import { useUIStore } from "@/store";
 import type { AdminNewsListItem, NewsCategoryOption } from "@/interfaces";

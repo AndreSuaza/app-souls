@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ForgotPasswordForm } from "@/components";
+import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import Link from "next/link";
 import { Metadata } from "next";
 

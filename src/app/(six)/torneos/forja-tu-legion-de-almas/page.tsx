@@ -1,4 +1,4 @@
-import { Map } from "@/components";
+import { Map } from "@/components/map/Map";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";

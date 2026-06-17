@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useUIStore } from "@/store";
-import { AdminTournamentsList } from "@/components";
+import { AdminTournamentsList } from "@/components/tournaments/admin/AdminTournamentsList";
 import {
   getAdminTournamentsAction,
   getTournamentTypesAction,

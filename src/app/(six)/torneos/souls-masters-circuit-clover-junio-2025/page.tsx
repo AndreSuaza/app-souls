@@ -1,4 +1,4 @@
-import { Map } from "@/components";
+import { Map } from "@/components/map/Map";
 import { IoCalendarOutline } from "react-icons/io5";
 
 
@@ -119,4 +119,3 @@ export default function Tournaments() {
       </>
     )
   }
-  

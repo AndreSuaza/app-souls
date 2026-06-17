@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPublicTournamentDetailAction } from "@/actions";
-import { PublicTournamentDetail } from "@/components";
+import { PublicTournamentDetail } from "@/components/tournaments/tournament/public/PublicTournamentDetail";
 import type { Metadata } from "next";
 
 export const revalidate = 60;

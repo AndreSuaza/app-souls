@@ -1,14 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { FaStopCircle, FaCheckCircle, FaPlay } from "react-icons/fa";
 import { useTournamentStore, useUIStore, useToastStore } from "@/store";
+import { isTopCutStage, isTopCutTournamentType } from "@/logic";
+import { TopCutGenerateModal } from "./TopCutGenerateModal";
 
 export const RoundActionButton = () => {
+  const [isTopCutModalOpen, setIsTopCutModalOpen] = useState(false);
   const {
     tournament,
     rounds,
     players,
     generateRound,
+    generateTopCutBracket,
     startCurrentRound,
     finalizeRound,
     finalizeTournament,
@@ -29,6 +34,23 @@ export const RoundActionButton = () => {
     currentRound?.matches.every((m) => m.result !== null) ?? false;
 
   const isLastRound = tournament.currentRoundNumber === tournament.maxRounds;
+  const currentRoundStage = currentRound?.stage ?? "SWISS";
+  const currentRoundIsTopCut = isTopCutStage(currentRoundStage);
+  const currentRoundIsTopCutFinal = currentRoundStage === "TOP8_FINAL";
+  const currentRoundIsFinished = !!currentRound?.finishedAt;
+  const requiresTopCut = isTopCutTournamentType(tournament.typeTournamentName);
+  const canShowTopCutGeneration =
+    tournament.status !== "finished" &&
+    requiresTopCut &&
+    !tournament.topCutGeneratedAt &&
+    hasRounds &&
+    currentRound &&
+    !currentRoundIsTopCut &&
+    isLastRound &&
+    isRoundStarted &&
+    allMatchesResolved;
+  const hasEnoughTopCutPlayers = players.length >= 8;
+  const canGenerateTopCut = canShowTopCutGeneration && hasEnoughTopCutPlayers;
 
   const canGenerateFirstRound =
     tournament.status !== "finished" && !hasRounds && players.length > 3;
@@ -84,6 +106,19 @@ export const RoundActionButton = () => {
     }
   };
 
+  const handleGenerateTopCut = async () => {
+    showLoading("Generando bracket Top 8");
+    try {
+      await generateTopCutBracket();
+      setIsTopCutModalOpen(false);
+      showToast("Bracket Top 8 generado", "info");
+    } catch {
+      showToast("Error al generar el bracket Top 8", "error");
+    } finally {
+      hideLoading();
+    }
+  };
+
   const handleFinalizeTournament = async () => {
     showLoading("Finalizando torneo");
     try {
@@ -106,6 +141,35 @@ export const RoundActionButton = () => {
         <FaPlay className="flex shrink-0" size={16} />
         Generar ronda
       </button>
+    );
+  }
+
+  if (canShowTopCutGeneration) {
+    return (
+      <>
+        <button
+          onClick={() => {
+            if (!canGenerateTopCut) {
+              showToast("Se requieren al menos 8 jugadores para generar Top 8", "warning");
+              return;
+            }
+            setIsTopCutModalOpen(true);
+          }}
+          className={`flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg font-semibold text-white ${
+            canGenerateTopCut
+              ? "bg-amber-600 hover:bg-amber-700"
+              : "bg-amber-300 cursor-not-allowed"
+          }`}
+        >
+          <FaPlay className="flex shrink-0" size={16} />
+          Generar Top 8
+        </button>
+        <TopCutGenerateModal
+          open={isTopCutModalOpen}
+          onClose={() => setIsTopCutModalOpen(false)}
+          onConfirm={handleGenerateTopCut}
+        />
+      </>
     );
   }
 
@@ -142,7 +206,9 @@ export const RoundActionButton = () => {
     hasRounds &&
     currentRound &&
     isRoundStarted &&
-    !isLastRound
+    ((!currentRoundIsTopCut && !isLastRound) ||
+      (currentRoundIsTopCut &&
+        (!currentRoundIsTopCutFinal || !currentRoundIsFinished)))
   ) {
     return (
       <button
@@ -165,8 +231,9 @@ export const RoundActionButton = () => {
   if (
     tournament.status !== "finished" &&
     hasRounds &&
-    isLastRound &&
-    isRoundStarted
+    isRoundStarted &&
+    ((!requiresTopCut && isLastRound) ||
+      (requiresTopCut && currentRoundIsTopCutFinal && currentRoundIsFinished))
   ) {
     return (
       <button

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { MdBarChart, MdEmojiEvents } from "react-icons/md";
-import { PaginationLine } from "@/components/ui";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { PublicTournamentsTable } from "./PublicTournamentsTable";
 import { PublicTournamentsMobileList } from "./PublicTournamentsMobileList";
 import { RankBadge } from "../tournament/players/RankBadge";
@@ -129,7 +129,7 @@ export function PublicTournamentsHighlights({
         )}
       </div>
 
-      <div className="space-y-4">
+      <div id="jugadores" className="space-y-4 scroll-mt-24">
         <div className="flex items-center justify-between gap-3">
           <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-white">
             <MdBarChart className="h-5 w-5 text-purple-600 dark:text-purple-300" />
