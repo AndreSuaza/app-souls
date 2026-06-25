@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /auth
+Disallow: /auth/
+Disallow: /laboratorio
+Disallow: /perfil
+Disallow: /api
+Disallow: /api/
+
+Sitemap: https://soulsinxtinction.com/sitemap.xml

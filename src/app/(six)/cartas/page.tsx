@@ -1,4 +1,5 @@
-import { getPaginatedCards, getPropertiesCards } from "@/actions";
+import { getPaginatedCards } from "@/actions/cards/cards-pagination";
+import { getPropertiesCards } from "@/actions/cards/cards-properties";
 import { CardFinder } from "@/components/cartas/card-finder/CardFinder";
 import { Metadata } from "next";
 

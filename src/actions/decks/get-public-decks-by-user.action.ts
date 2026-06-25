@@ -95,7 +95,7 @@ export async function getPublicDecksByUserAction(
     user: userSnapshot,
   }));
 
-  const session = await auth();
+  const session = filters.includeLikedDeckIds ? await auth() : null;
   const viewerId = session?.user?.idd;
 
   const likedDeckIds = viewerId
