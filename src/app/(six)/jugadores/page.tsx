@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 60;
+export const revalidate = 600;
 
 export default async function JugadoresPage() {
   const players = await getPublicPlayerRankingAction();

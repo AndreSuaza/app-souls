@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getPublicTournaments } from "@/actions";
+import { getPublicTournaments } from "@/actions/tournaments/get-public-tournaments.action";
 import { Metadata } from "next";
 import { PublicTournamentsHero } from "@/components/tournaments/public/PublicTournamentsHero";
 import { PublicTournamentsHighlights } from "@/components/tournaments/public/PublicTournamentsHighlights";
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 60;
+export const revalidate = 600;
 
 const isHeroTournament = (
   tournament: Awaited<

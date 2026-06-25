@@ -1,11 +1,12 @@
-import { getPublicNewsAction, getPublicNewsCategoriesAction } from "@/actions";
+import { getPublicNewsAction } from "@/actions/news/get-public-news.action";
+import { getPublicNewsCategoriesAction } from "@/actions/news/get-public-news-categories.action";
 import type { PublicNewsCard, PublicNewsListItem } from "@/interfaces";
 import { NewsCarouselCard } from "@/components/news/public/NewsCarouselCard";
 import { NewsHeroCard } from "@/components/news/public/NewsHeroCard";
 import { PublicNewsExplorer } from "@/components/news/public/PublicNewsExplorer";
 import { Metadata } from "next";
 
-export const revalidate = 120;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Noticias de Souls In Xtinction TCG",

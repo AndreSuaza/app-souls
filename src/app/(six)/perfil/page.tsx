@@ -47,6 +47,10 @@ export const metadata: Metadata = {
     locale: "es_ES",
     type: "website",
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function PerfilPage() {

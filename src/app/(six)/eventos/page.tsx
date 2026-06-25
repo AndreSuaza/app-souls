@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getPublicEventsAction } from "@/actions/events/get-public-events.action";
 import { PublicEventsCalendar } from "@/components/events/public/PublicEventsCalendar";
 
-export const revalidate = 120;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Calendario de eventos | Souls In Xtinction TCG",

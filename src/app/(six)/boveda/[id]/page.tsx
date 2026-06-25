@@ -1,9 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import {
-  getBovedaCardDetailAction,
-  getBovedaProductCardsAction,
-} from "@/actions";
+import { getBovedaCardDetailAction } from "@/actions/cards/get-boveda-card-detail.action";
+import { getBovedaProductCardsAction } from "@/actions/cards/get-boveda-product-cards.action";
 import { BovedaCardDetail } from "@/components/boveda/BovedaCardDetail";
 import { BovedaProductCardsTable } from "@/components/boveda/BovedaProductCardsTable";
 import { Pagination } from "@/components/ui/pagination/pagination";
