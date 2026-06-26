@@ -19,18 +19,26 @@ const maintenancePath = "/mantenimiento";
 const maintenanceEnabled =
   process.env.MAINTENANCE_MODE === "true" ||
   process.env.MAINTENANCE_MODE === "1";
-const crawlerSensitiveRoutes = ["/laboratorio", "/perfil"];
+const crawlerSensitiveRoutes = ["/boveda", "/laboratorio", "/perfil"];
 const blockedCrawlerUserAgents = [
   "ahrefsbot",
   "amazonbot",
   "bytespider",
   "claudebot",
+  "curl",
   "dataforseobot",
   "dotbot",
+  "go-http-client",
+  "httpclient",
+  "libwww-perl",
   "mj12bot",
   "petalbot",
+  "python-requests",
+  "scrapy",
   "semrushbot",
   "serpstatbot",
+  "wget",
+  "zgrab",
 ];
 
 // Config especial para middleware: NADA de MongoDB, Prisma, bcrypt, etc.
@@ -67,7 +75,8 @@ export default baseAuth((req) => {
 
   if (
     crawlerSensitiveRoutes.some((route) => path.startsWith(route)) &&
-    blockedCrawlerUserAgents.some((bot) => userAgent.includes(bot))
+    (userAgent.length === 0 ||
+      blockedCrawlerUserAgents.some((bot) => userAgent.includes(bot)))
   ) {
     return new NextResponse("Forbidden", { status: 403 });
   }
@@ -142,6 +151,8 @@ export default baseAuth((req) => {
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/boveda",
+    "/boveda/:path*",
     "/laboratorio/:path*",
     "/perfil",
     "/perfil/:path*",

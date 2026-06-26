@@ -36,6 +36,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://soulsinxtinction.com/boveda",
   },
+  robots: {
+    index: false,
+    follow: true,
+  },
   openGraph: {
     title: "Boveda - Precios de cartas Souls In Xtinction TCG",
     description:

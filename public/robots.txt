@@ -4,6 +4,8 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /auth
 Disallow: /auth/
+Disallow: /boveda
+Disallow: /boveda/
 Disallow: /laboratorio
 Disallow: /perfil
 Disallow: /api
