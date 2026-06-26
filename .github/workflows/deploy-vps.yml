@@ -43,9 +43,18 @@ jobs:
           npm ci
           NEXT_TELEMETRY_DISABLED=1 npm run build
 
-          pm2 startOrReload ecosystem.config.cjs --env production
+          pm2 startOrReload ecosystem.config.cjs
           pm2 save
 
           sudo nginx -t
-          curl -fsS -A "GitHubActionsDeployCheck" http://127.0.0.1:3000/ >/dev/null
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS -A "GitHubActionsDeployCheck" http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          pm2 logs app-souls --lines 80 --nostream --no-color
+          exit 1
           REMOTE
