@@ -95,7 +95,10 @@ Tambien se actualizo:
 
 ```env
 NEXTAUTH_URL=https://soulsinxtinction.com
+AUTH_TRUST_HOST=true
 ```
+
+`AUTH_TRUST_HOST=true` es necesario porque Auth.js corre detras de Cloudflare/Nginx. Sin esa variable, Auth.js rechaza `soulsinxtinction.com` con `UntrustedHost` y puede romper `/auth/login` o `/api/auth/session`.
 
 Regla operativa:
 
