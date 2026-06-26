@@ -1,0 +1,51 @@
+name: Deploy app-souls to Contabo VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: app-souls-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/app_souls_vps
+          chmod 600 ~/.ssh/app_souls_vps
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -i ~/.ssh/app_souls_vps -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+
+          cd /opt/apps/app-souls
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+
+          npm ci
+          NEXT_TELEMETRY_DISABLED=1 npm run build
+
+          pm2 startOrReload ecosystem.config.cjs --env production
+          pm2 save
+
+          sudo nginx -t
+          curl -fsS -A "GitHubActionsDeployCheck" http://127.0.0.1:3000/ >/dev/null
+          REMOTE
