@@ -3,7 +3,9 @@ import { AvanceEtereoAscendidaStack } from "@/components/productos/avance-etereo
 export function AvanceEtereoSplitSection() {
   return (
     <section className="w-full bg-[#081018] py-16 md:py-20">
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 text-center lg:grid-cols-[1.15fr_0.85fr] lg:px-10 lg:text-left">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 text-center lg:grid-cols-[0.9fr_1.1fr] lg:px-10 lg:text-left">
+        <AvanceEtereoAscendidaStack />
+
         <div className="space-y-4">
           <p className="text-sm font-black uppercase tracking-[0.24em] text-[#7BE7DE]">
             Rareza Ascendida
@@ -18,8 +20,6 @@ export function AvanceEtereoSplitSection() {
             aliquip ex ea commodo consequat.
           </p>
         </div>
-
-        <AvanceEtereoAscendidaStack />
       </div>
     </section>
   );

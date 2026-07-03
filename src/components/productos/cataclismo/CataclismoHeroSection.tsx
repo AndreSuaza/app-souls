@@ -9,7 +9,7 @@ export function CataclismoHeroSection() {
             <div className="space-y-4">
               <div className="mx-auto w-full max-w-[250px] sm:max-w-[320px] lg:max-w-[400px]">
                 <Image
-                  src="/products/cataclismo/logo_cataclismo.png"
+                  src="/products/cataclismo/logo_cataclismo.webp"
                   alt="Logo Cataclismo"
                   title="Logo Cataclismo"
                   width={350}
@@ -34,7 +34,7 @@ export function CataclismoHeroSection() {
 
         <div className="order-1 relative z-0 h-[360px] w-full sm:h-[440px] lg:absolute lg:inset-y-0 lg:-right-16 lg:h-full lg:w-[65%]">
           <Image
-            src="/products/cataclismo/Catakairon.jpg.jpeg"
+            src="/products/cataclismo/Catakairon.webp"
             alt="Mazo Cataclismo"
             title="Mazo Cataclismo"
             fill

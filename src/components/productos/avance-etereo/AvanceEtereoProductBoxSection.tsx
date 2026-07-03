@@ -27,7 +27,7 @@ export function AvanceEtereoProductBoxSection() {
 
         <div className="flex justify-center lg:justify-center">
           <Image
-            src="/products/avance-etereo/product-box.png"
+            src="/products/avance-etereo/product-box.webp"
             alt="Caja Avance Etéreo"
             title="Caja Avance Etéreo"
             width={560}

@@ -9,7 +9,7 @@ export function AvanceEtereoHeroSection() {
             <div className="space-y-4">
               <div className="mx-auto w-full max-w-[250px] sm:max-w-[320px] lg:max-w-[420px]">
                 <Image
-                  src="/products/avance-etereo/logo.png"
+                  src="/products/avance-etereo/logo.webp"
                   alt="Logo Avance Etéreo"
                   title="Logo Avance Etéreo"
                   width={430}
@@ -35,7 +35,7 @@ export function AvanceEtereoHeroSection() {
 
         <div className="order-1 relative z-0 h-[360px] w-full sm:h-[440px] lg:absolute lg:inset-y-0 lg:-right-16 lg:h-full lg:w-[65%]">
           <Image
-            src="/products/avance-etereo/hero-banner.jpg"
+            src="/products/avance-etereo/hero-banner.webp"
             alt="Arte Avance Etéreo"
             title="Arte Avance Etéreo"
             fill

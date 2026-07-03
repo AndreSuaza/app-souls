@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: "Cataclismo",
     images: [
       {
-        url: "https://soulsinxtinction.com/products/cataclismo/logo_cataclismo.png",
+        url: "https://soulsinxtinction.com/products/cataclismo/logo_cataclismo.webp",
         width: 500,
         height: 500,
         alt: "Cataclismo Souls In Xtinction TCG",
@@ -49,7 +49,7 @@ export default async function Page() {
   return (
     <>
       <h1 className="sr-only">Productos Cataclismo</h1>
-      <main className="relative isolate min-h-screen bg-[url('/products/cataclismo/bg-cataclismo.jpg.jpeg')] bg-cover bg-center bg-fixed text-white before:absolute before:inset-0 before:z-0 before:bg-gradient-to-br before:from-[#17050a]/70 before:via-[#2a0b12]/70 before:to-[#120308]/70 before:content-['']">
+      <main className="relative isolate min-h-screen bg-[url('/products/cataclismo/bg-cataclismo.webp')] bg-cover bg-center bg-fixed text-white before:absolute before:inset-0 before:z-0 before:bg-gradient-to-br before:from-[#17050a]/70 before:via-[#2a0b12]/70 before:to-[#120308]/70 before:content-['']">
         <div className="relative z-10">
           <CataclismoHeroSection />
           <CataclismoDuoCardsSection />

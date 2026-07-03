@@ -3,10 +3,7 @@
 import Image from "next/image";
 import clsx from "clsx";
 import { useCallback, useEffect, useState } from "react";
-import {
-  IoChevronBackOutline,
-  IoChevronForwardOutline,
-} from "react-icons/io5";
+import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 
 const pages = [
   {
@@ -14,11 +11,12 @@ const pages = [
     title: "Lorem ipsum dolor",
     description:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio praesent libero sed cursus ante dapibus diam.",
+    renderSrc: "/products/avance-etereo/reden-vampiro.webp",
     renderPosition: "52% 48%",
     cards: [
-      "/products/avance-etereo/bloque-1-1.png",
-      "/products/avance-etereo/bloque-1-2.png",
-      "/products/avance-etereo/bloque-1-3.png",
+      "/products/avance-etereo/bloque-1-1.webp",
+      "/products/avance-etereo/bloque-1-2.webp",
+      "/products/avance-etereo/bloque-1-3.webp",
     ],
   },
   {
@@ -26,11 +24,12 @@ const pages = [
     title: "Sed cursus ante",
     description:
       "Sed nisi nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum praesent mauris fusce nec tellus.",
+    renderSrc: "/products/avance-etereo/reden-vampiro.webp",
     renderPosition: "44% 48%",
     cards: [
-      "/products/avance-etereo/bloque-2-1.png",
-      "/products/avance-etereo/bloque-2-2.png",
-      "/products/avance-etereo/bloque-2-3.png",
+      "/products/avance-etereo/bloque-2-1.webp",
+      "/products/avance-etereo/bloque-2-2.webp",
+      "/products/avance-etereo/bloque-2-3.webp",
     ],
   },
   {
@@ -38,11 +37,12 @@ const pages = [
     title: "Fusce nec tellus",
     description:
       "Praesent mauris fusce nec tellus sed augue semper porta. Mauris massa vestibulum lacinia arcu eget nulla.",
+    renderSrc: "/products/avance-etereo/reden-vampiro.webp",
     renderPosition: "61% 48%",
     cards: [
-      "/products/avance-etereo/bloque-3-1.jpg",
-      "/products/avance-etereo/bloque-3-2.png",
-      "/products/avance-etereo/bloque-3-3.png",
+      "/products/avance-etereo/bloque-3-1.webp",
+      "/products/avance-etereo/bloque-3-2.webp",
+      "/products/avance-etereo/bloque-3-3.webp",
     ],
   },
   {
@@ -50,11 +50,12 @@ const pages = [
     title: "Vestibulum lacinia",
     description:
       "Class aptent taciti sociosqu ad litora torquent per conubia nostra per inceptos himenaeos curabitur sodales.",
+    renderSrc: "/products/avance-etereo/reden-vampiro.webp",
     renderPosition: "70% 48%",
     cards: [
-      "/products/avance-etereo/bloque-4-1.png",
-      "/products/avance-etereo/bloque-4-2.png",
-      "/products/avance-etereo/bloque-4-3.png",
+      "/products/avance-etereo/bloque-4-1.webp",
+      "/products/avance-etereo/bloque-4-2.webp",
+      "/products/avance-etereo/bloque-4-3.webp",
     ],
   },
 ];
@@ -116,8 +117,7 @@ export function AvanceEtereoCardsCarouselSection() {
   }, [goToNext]);
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#edf8f6] py-14 text-[#081018] md:py-20">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(123,231,222,0.18),transparent_22%),radial-gradient(circle_at_78%_22%,rgba(200,167,234,0.32),transparent_34%)]" />
+    <section className="relative w-full overflow-hidden bg-transparent py-14  md:py-20">
       <div className="relative mx-auto grid min-h-[680px] w-full max-w-7xl grid-cols-1 items-start gap-8 px-6 pb-48 lg:grid-cols-2 lg:px-10 lg:pb-56">
         <div className="relative z-20 grid max-w-xl text-center lg:pt-6 lg:text-left">
           {pages.map((page, index) => (
@@ -155,22 +155,21 @@ export function AvanceEtereoCardsCarouselSection() {
             <div
               key={page.id}
               className={clsx(
-                "absolute inset-x-0 top-0 mx-auto h-[360px] w-full max-w-[620px] overflow-hidden rounded-b-[48%] rounded-t-[18px] transition-[opacity,filter,transform] duration-1000 ease-in-out lg:h-[560px] lg:max-w-[720px]",
+                "absolute inset-x-0 top-0 mx-auto h-[360px] w-full max-w-[620px] transition-[opacity,filter,transform] duration-1000 ease-in-out lg:h-[560px] lg:max-w-[720px]",
                 activeIndex === index
                   ? "scale-100 opacity-100 blur-0"
                   : "scale-[1.015] opacity-0 blur-[1px]",
               )}
             >
               <Image
-                src="/products/avance-etereo/hero-banner.jpg"
-                alt={`Arte destacado ${page.title}`}
-                title={`Arte destacado ${page.title}`}
+                src={page.renderSrc}
+                alt={`Render destacado ${page.title}`}
+                title={`Render destacado ${page.title}`}
                 fill
                 sizes="(min-width: 1024px) 50vw, 90vw"
-                className="scale-125 object-cover"
+                className="object-contain object-bottom drop-shadow-[0_28px_44px_rgba(8,16,24,0.36)]"
                 style={{ objectPosition: page.renderPosition }}
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#edf8f6]" />
             </div>
           ))}
         </div>
