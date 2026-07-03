@@ -1,9 +1,8 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import {
-  getBovedaCardDetailAction,
-  getBovedaProductCardsAction,
-} from "@/actions";
+import { cache } from "react";
+import { getBovedaCardDetailAction } from "@/actions/cards/get-boveda-card-detail.action";
+import { getBovedaProductCardsAction } from "@/actions/cards/get-boveda-product-cards.action";
 import { BovedaCardDetail } from "@/components/boveda/BovedaCardDetail";
 import { BovedaProductCardsTable } from "@/components/boveda/BovedaProductCardsTable";
 import { Pagination } from "@/components/ui/pagination/pagination";
@@ -14,7 +13,11 @@ interface Props {
   searchParams: Promise<{ page?: string }>;
 }
 
-export const revalidate = 3600;
+export const revalidate = 86400;
+
+const getBovedaDetail = cache((slug: string) =>
+  getBovedaCardDetailAction({ slug }),
+);
 
 const formatStatsRange = (page: number, perPage: number, total: number) => {
   if (total <= 0) return "0-0 de 0";
@@ -25,7 +28,7 @@ const formatStatsRange = (page: number, perPage: number, total: number) => {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const detail = await getBovedaCardDetailAction({ slug: id });
+  const detail = await getBovedaDetail(id);
 
   if (!detail) {
     return {
@@ -49,6 +52,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${detail.name} | Bóveda`,
     description,
     keywords,
+    robots: {
+      index: false,
+      follow: true,
+    },
     alternates: {
       canonical,
     },
@@ -73,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params, searchParams }: Props) {
   const { id } = await params;
-  const detail = await getBovedaCardDetailAction({ slug: id });
+  const detail = await getBovedaDetail(id);
   if (!detail) {
     notFound();
   }

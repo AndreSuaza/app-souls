@@ -44,6 +44,10 @@ export const metadata: Metadata = {
     locale: "es_ES",
     type: "website",
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 interface Props {

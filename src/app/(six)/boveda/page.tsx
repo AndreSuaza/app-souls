@@ -1,4 +1,5 @@
-import { getPaginatedPricesCards, getPropertiesCards } from "@/actions";
+import { getPaginatedPricesCards } from "@/actions/cards/cards-prices-pagination";
+import { getPropertiesCards } from "@/actions/cards/cards-properties";
 import { CardFinderPrices } from "@/components/finders/CardFinderPrices";
 import { Pagination } from "@/components/ui/pagination/pagination";
 import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
@@ -34,6 +35,10 @@ export const metadata: Metadata = {
   ],
   alternates: {
     canonical: "https://soulsinxtinction.com/boveda",
+  },
+  robots: {
+    index: false,
+    follow: true,
   },
   openGraph: {
     title: "Boveda - Precios de cartas Souls In Xtinction TCG",

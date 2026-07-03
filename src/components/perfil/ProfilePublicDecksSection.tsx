@@ -3,7 +3,7 @@
 import type { Deck, DeckPagination } from "@/interfaces";
 import { DeckLibrary } from "../mazos/deck-library/DeckLibrary";
 import type { DeckFiltersState } from "../mazos/deck-filters/DeckFiltersBar";
-import { getPublicDecksByUserAction } from "@/actions";
+import { getPublicDecksByUserAction } from "@/actions/decks/get-public-decks-by-user.action";
 
 type Props = {
   userId: string;
@@ -40,7 +40,11 @@ export const ProfilePublicDecksSection = ({
         initialFilters={DEFAULT_FILTERS}
         hasSession={hasSession}
         fetchDecksAction={(input) =>
-          getPublicDecksByUserAction({ ...input, userId })
+          getPublicDecksByUserAction({
+            ...input,
+            userId,
+            includeLikedDeckIds: hasSession,
+          })
         }
         disableUrlSync
         hideFilters

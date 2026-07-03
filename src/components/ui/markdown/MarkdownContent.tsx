@@ -29,6 +29,18 @@ const normalizeImageParagraphs = (value: string) => {
   );
 };
 
+const normalizeInlineFormattingSoftBreaks = (value: string) => {
+  if (!value) return value;
+  // Evita que un salto blando generado despues de negrilla se vea como corte visual.
+  return value.replace(
+    /(\*\*[^*\n]+?\*\*|__[^_\n]+?__)[ \t]*\n(?!\s*\n)/g,
+    "$1 ",
+  );
+};
+
+const normalizeMarkdownContent = (value: string) =>
+  normalizeInlineFormattingSoftBreaks(normalizeImageParagraphs(value));
+
 const renderInlineWithUnderline = (children: React.ReactNode) => {
   let keyIndex = 0;
   const regex = /\+\+([^+]+)\+\+/g;
@@ -600,7 +612,7 @@ const buildComponents = (enableInstagramEmbeds: boolean): Components => ({
     </blockquote>
   ),
   strong: ({ children }) => (
-    <strong className="font-semibold text-slate-900 dark:text-white">
+    <strong className="inline font-semibold text-slate-900 dark:text-white">
       {children}
     </strong>
   ),
@@ -623,7 +635,7 @@ export function MarkdownContent({
   enableCustomBlocks = true,
 }: Props) {
   const normalizedContent = useMemo(
-    () => normalizeImageParagraphs(content),
+    () => normalizeMarkdownContent(content),
     [content],
   );
   const components = useMemo(

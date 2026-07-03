@@ -247,7 +247,7 @@ export const HowToPlayGuide = () => {
                 </p>
               </div>
 
-              <div className="order-1 mx-auto md:order-2">
+              <div className="order-1 flex w-full justify-center pt-10 md:order-2 md:pt-0">
                 <StepNode number="01" />
               </div>
 

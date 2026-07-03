@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPublicNewsDetailAction } from "@/actions";
+import { getPublicNewsDetailAction } from "@/actions/news/get-public-news-detail.action";
 import { toBlobUrl } from "@/utils/blob-path";
 import { PublicNewsDetailView } from "@/components/news/public/PublicNewsDetail";
 

@@ -1,17 +1,16 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import {
-  getPublicProfileAction,
-  getPublicUserTournamentsAction,
-  getPublicDeckCountsAction,
-  getPublicDecksByUserAction,
-} from "@/actions";
+import { getPublicDeckCountsAction } from "@/actions/profile/get-public-deck-counts.action";
+import { getPublicProfileAction } from "@/actions/profile/get-public-profile.action";
+import { getPublicUserTournamentsAction } from "@/actions/profile/get-public-user-tournaments.action";
+import { getPublicDecksByUserAction } from "@/actions/decks/get-public-decks-by-user.action";
 import { ProfilePublicView } from "@/components/perfil/ProfilePublicView";
-import { auth } from "@/auth";
 
 type Props = {
   params: Promise<{ id: string }>;
 };
+
+export const revalidate = 600;
 
 export const metadata: Metadata = {
   title: "Perfil público | Souls In Xtinction TCG",
@@ -27,7 +26,7 @@ export default async function PublicProfilePage({ params }: Props) {
     notFound();
   }
 
-  const [tournaments, deckCounts, deckLibrary, session] = await Promise.all([
+  const [tournaments, deckCounts, deckLibrary] = await Promise.all([
     getPublicUserTournamentsAction({ userId: user.id }),
     getPublicDeckCountsAction({ userId: user.id }),
     getPublicDecksByUserAction({
@@ -37,8 +36,8 @@ export default async function PublicProfilePage({ params }: Props) {
       likes: false,
       page: 1,
       archetypeId: "",
+      includeLikedDeckIds: false,
     }),
-    auth(),
   ]);
 
   return (
@@ -54,9 +53,9 @@ export default async function PublicProfilePage({ params }: Props) {
           currentPage: deckLibrary.currentPage,
           perPage: deckLibrary.perPage,
         },
-        likedDeckIds: deckLibrary.likedDeckIds,
+        likedDeckIds: [],
       }}
-      hasSession={Boolean(session?.user?.idd)}
+      hasSession={false}
     />
   );
 }
