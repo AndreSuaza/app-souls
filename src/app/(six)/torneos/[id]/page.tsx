@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { getPublicTournamentDetailAction } from "@/actions";
+import { getPublicTournamentDetailAction } from "@/actions/tournaments/get-public-tournament-detail.action";
 import { PublicTournamentDetail } from "@/components/tournaments/tournament/public/PublicTournamentDetail";
 import type { Metadata } from "next";
 
-export const revalidate = 60;
+export const revalidate = 600;
 
 type PageProps = {
   params: Promise<{

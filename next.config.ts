@@ -22,6 +22,32 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async headers() {
+    const staticAssetFolders = [
+      "cards",
+      "decks",
+      "global",
+      "home",
+      "howtoplay",
+      "national",
+      "news",
+      "products",
+      "profile",
+      "tournaments",
+    ];
+
+    return [
+      ...staticAssetFolders.map((folder) => ({
+        source: `/${folder}/:path*`,
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      })),
+    ];
+  },
 };
 
 export default nextConfig;

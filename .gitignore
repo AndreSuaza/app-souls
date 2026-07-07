@@ -42,3 +42,11 @@ next-env.d.ts
 
 # Codex / AI instructions
 # AGENTS.md
+
+# Documentation is restricted to root README.md and AGENTS.md.
+*.md
+*.mdx
+*.rst
+*.adoc
+!/README.md
+!/AGENTS.md

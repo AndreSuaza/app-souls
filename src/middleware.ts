@@ -19,6 +19,27 @@ const maintenancePath = "/mantenimiento";
 const maintenanceEnabled =
   process.env.MAINTENANCE_MODE === "true" ||
   process.env.MAINTENANCE_MODE === "1";
+const crawlerSensitiveRoutes = ["/boveda", "/laboratorio", "/perfil"];
+const blockedCrawlerUserAgents = [
+  "ahrefsbot",
+  "amazonbot",
+  "bytespider",
+  "claudebot",
+  "curl",
+  "dataforseobot",
+  "dotbot",
+  "go-http-client",
+  "httpclient",
+  "libwww-perl",
+  "mj12bot",
+  "petalbot",
+  "python-requests",
+  "scrapy",
+  "semrushbot",
+  "serpstatbot",
+  "wget",
+  "zgrab",
+];
 
 // Config especial para middleware: NADA de MongoDB, Prisma, bcrypt, etc.
 // Esto debido a que EDGE no soporta esas librerías (solo Node.js).
@@ -50,6 +71,15 @@ export default baseAuth((req) => {
   const { nextUrl } = req;
   const path = nextUrl.pathname;
   const isLoggedIn = !!req.auth;
+  const userAgent = req.headers.get("user-agent")?.toLowerCase() ?? "";
+
+  if (
+    crawlerSensitiveRoutes.some((route) => path.startsWith(route)) &&
+    (userAgent.length === 0 ||
+      blockedCrawlerUserAgents.some((bot) => userAgent.includes(bot)))
+  ) {
+    return new NextResponse("Forbidden", { status: 403 });
+  }
 
   // Permitir todas las rutas de API de autenticación
   if (path.startsWith(apiAuthPrefix)) {
@@ -121,7 +151,11 @@ export default baseAuth((req) => {
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/boveda",
+    "/boveda/:path*",
+    "/laboratorio/:path*",
     "/perfil",
+    "/perfil/:path*",
     "/auth/login",
     "/auth/register",
     "/auth/forgot-password",

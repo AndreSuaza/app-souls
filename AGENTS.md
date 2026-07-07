@@ -309,7 +309,13 @@ When generating or modifying code:
 - Ask before making high-impact architectural changes.
 - Keep production-level quality and maintainability.
 
-## 19) Delivery Checklist (Before Finishing a Change)
+## 19) Documentation File Policy (Strict)
+- Do not create, modify, or commit documentation/text-only files in this repository except root `AGENTS.md` and root `README.md`.
+- Forbidden examples include `.codex-token-worklog.md`, deployment runbooks, VPS notes, audit reports, implementation notes, changelogs, docs folders, and new `*.md`, `*.mdx`, `*.rst`, or `*.adoc` files unless the target is root `AGENTS.md` or root `README.md`.
+- If operational notes, migration steps, or long-task context are needed, keep them outside `app-souls` or report them in the final response.
+- Any exception requires explicit user approval before creating or committing the file.
+
+## 20) Delivery Checklist (Before Finishing a Change)
 1. Input validation present at server boundary?
 2. Auth and role checks explicit where needed?
 3. Mutation flow avoids unnecessary read-after-write refetch?
@@ -344,7 +350,7 @@ Use the global Codex skills:
 - Read only targeted files or line ranges when possible.
 - Avoid generated, vendored, build, cache, coverage, and dependency folders unless directly relevant.
 - Broaden to repository-wide analysis only when the task requires it, and state why.
-- For long tasks, keep a compact `.codex-token-worklog.md` to avoid rereading the same context.
+- Do not create `.codex-token-worklog.md` or any in-repo worklog/documentation file; keep long-task notes outside `app-souls` or summarize them in the final response.
 
 ## Large File Defaults
 

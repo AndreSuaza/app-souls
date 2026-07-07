@@ -1,9 +1,10 @@
-import { getDeckFiltersAction, getDecksFilteredAction } from "@/actions";
+import { getDeckFiltersAction } from "@/actions/decks/get-deck-filters.action";
+import { getDecksFilteredAction } from "@/actions/decks/get-decks-filtered.action";
 import { DeckLibrary } from "@/components/mazos/deck-library/DeckLibrary";
 import type { DeckFiltersState } from "@/components/mazos/deck-filters/DeckFiltersBar";
 import type { Metadata } from "next";
 
-export const revalidate = 120;
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Mazos Souls In Xtinction TCG | Biblioteca",

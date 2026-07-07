@@ -1,5 +1,5 @@
 import { YoutubeList } from "@/components/home/YoutubeList";
-import { getPublicNewsAction } from "@/actions";
+import { getPublicNewsAction } from "@/actions/news/get-public-news.action";
 import { NewsCarousel } from "@/components/news/public/NewsCarousel";
 import type { PublicNewsCard } from "@/interfaces";
 import { Metadata } from "next";
