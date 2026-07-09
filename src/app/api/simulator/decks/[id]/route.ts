@@ -12,20 +12,23 @@ export async function OPTIONS(request: Request) {
   return simulatorOptionsResponse(request, "GET, OPTIONS");
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const headers = simulatorCorsHeaders(request.headers.get("origin"));
   const session = verifySimulatorToken(getToken(request));
   if (!session) return NextResponse.json({ error: "Token de simulador invalido." }, { status: 401, headers });
 
-  const decks = await prisma.deck.findMany({
+  const { id } = await params;
+  const deck = await prisma.deck.findFirst({
     where: {
+      id,
       userId: session.userId,
       cardsNumber: { gte: 40 },
       AND: [{ OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }] }],
     },
     select: { id: true, name: true, cards: true, userId: true },
-    orderBy: { updatedAt: "desc" },
   });
 
-  return NextResponse.json({ decks: decks.map(toSimulatorDeckDto) }, { headers });
+  if (!deck) return NextResponse.json({ error: "Mazo no encontrado." }, { status: 404, headers });
+
+  return NextResponse.json({ deck: toSimulatorDeckDto(deck) }, { headers });
 }
