@@ -646,7 +646,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         });
       } catch (error) {
         console.error(error);
-        set({ error: "Error guardando ediciÃ³n de ronda" });
+        set({ error: "Error guardando edición de ronda" });
       }
       return;
     }

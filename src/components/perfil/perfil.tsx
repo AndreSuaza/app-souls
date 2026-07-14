@@ -355,7 +355,7 @@ export const Pefil = ({
     );
   const tournamentTabLabel = activeTournament?.currentTournament
     ? "Torneo actual"
-    : "Ãšltimo torneo";
+    : "Último torneo";
   const showHistoryTab = isPlayer;
   const [selectedTournament, setSelectedTournament] =
     useState<TournamentSnapshot | null>(null);
