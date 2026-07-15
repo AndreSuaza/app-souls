@@ -4,7 +4,7 @@ import { useState } from "react";
 import clsx from "clsx";
 import type { IconType } from "react-icons";
 import {
-  IoChevronUpOutline,
+  IoChevronDownOutline,
   IoColorPaletteOutline,
   IoCloseOutline,
   IoHomeOutline,
@@ -162,22 +162,25 @@ export const ProfileDashboardSidebar = ({
           onClick={() => setIsMobileMenuOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={isMobileMenuOpen}
-          className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white/95 p-3 text-left shadow-lg shadow-slate-200/70 backdrop-blur dark:border-tournament-dark-border dark:bg-tournament-dark-surface/95 dark:shadow-black/20"
+          className="flex w-full items-center justify-between rounded-2xl border border-purple-300 bg-purple-600/95 p-3 text-left text-white shadow-lg shadow-purple-900/25 backdrop-blur transition hover:bg-purple-500 dark:border-purple-500/70 dark:bg-purple-700/80 dark:shadow-black/30"
         >
           <span className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-purple-300 bg-purple-100 text-purple-700 dark:border-purple-500/50 dark:bg-purple-500/20 dark:text-purple-100">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/30 bg-white/15 text-white">
               <ActiveIcon className="h-5 w-5" />
             </span>
             <span className="min-w-0">
-              <span className="block text-xs font-semibold uppercase tracking-[0.22em] text-purple-600 dark:text-purple-300">
+              <span className="block text-xs font-semibold uppercase tracking-[0.22em] text-purple-100">
                 Seccion de perfil
               </span>
-              <span className="mt-0.5 block truncate text-base font-semibold text-slate-900 dark:text-white">
+              <span className="mt-0.5 block truncate text-base font-semibold text-white">
                 {activeItem.label}
               </span>
             </span>
           </span>
-          <IoChevronUpOutline className="h-5 w-5 shrink-0 text-slate-500 dark:text-slate-300" />
+          <span className="ml-3 inline-flex shrink-0 items-center gap-1 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white">
+            Cambiar
+            <IoChevronDownOutline className="h-4 w-4" />
+          </span>
         </button>
       </div>
 

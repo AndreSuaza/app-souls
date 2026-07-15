@@ -34,7 +34,8 @@ export const ProfileBannerSection = ({
           alt="Fondo actual del perfil"
           title="Fondo actual del perfil"
           fill
-          className="object-cover"
+          sizes="(min-width: 1024px) 1100px, 100vw"
+          className="bg-slate-950 object-contain"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
         <div className="relative z-10 flex min-h-[260px] max-w-xl flex-col justify-end p-6 text-white">

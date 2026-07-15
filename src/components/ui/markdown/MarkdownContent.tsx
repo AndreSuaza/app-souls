@@ -33,7 +33,7 @@ const normalizeInlineFormattingSoftBreaks = (value: string) => {
   if (!value) return value;
   // Evita que un salto blando generado despues de negrilla se vea como corte visual.
   return value.replace(
-    /(\*\*[^*\n]+?\*\*|__[^_\n]+?__)[ \t]*\n(?!\s*\n)/g,
+    /(\*\*[^*\n]+?\*\*|__[^_\n]+?__)(?:[ \t]*\\)?[ \t]*\n(?!\s*\n)/g,
     "$1 ",
   );
 };

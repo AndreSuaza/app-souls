@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import Link from "next/link";
 import {
   MatchInterface,
   RoundInterface,
@@ -27,6 +28,7 @@ type PlayerDisplay = {
   nickname: string;
   seed: number | null;
   isPlaceholder: boolean;
+  profileHref: string | null;
 };
 
 const getPlayerDisplay = (
@@ -35,18 +37,29 @@ const getPlayerDisplay = (
   fallback: string,
 ) => {
   if (!playerId) {
-    return { nickname: fallback, seed: null, isPlaceholder: true };
+    return {
+      nickname: fallback,
+      seed: null,
+      isPlaceholder: true,
+      profileHref: null,
+    };
   }
 
   const player = players.find((item) => item.id === playerId);
   if (!player) {
-    return { nickname: fallback, seed: null, isPlaceholder: true };
+    return {
+      nickname: fallback,
+      seed: null,
+      isPlaceholder: true,
+      profileHref: null,
+    };
   }
 
   return {
     nickname: player.playerNickname,
     seed: player.topCutSeed ?? null,
     isPlaceholder: false,
+    profileHref: `/perfil/${encodeURIComponent(player.playerNickname)}`,
   };
 };
 
@@ -138,7 +151,19 @@ const TopCutMatch = ({
       ) : (
         <span className="h-7 min-w-9 shrink-0" />
       )}
-      <span className="truncate">{player.nickname}</span>
+      {player.profileHref ? (
+        <Link
+          href={player.profileHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`Ver perfil de ${player.nickname}`}
+          className="block min-w-0 truncate transition hover:text-purple-600 dark:hover:text-purple-200"
+        >
+          {player.nickname}
+        </Link>
+      ) : (
+        <span className="truncate">{player.nickname}</span>
+      )}
     </div>
   );
 
@@ -211,9 +236,15 @@ export const TopCutBracket = ({
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-500 dark:text-slate-300">
           {champion && (
-            <span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200">
+            <Link
+              href={`/perfil/${encodeURIComponent(champion.playerNickname)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Ver perfil de ${champion.playerNickname}`}
+              className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-emerald-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-200 dark:hover:border-purple-300 dark:hover:text-purple-200"
+            >
               Campeón: {champion.playerNickname}
-            </span>
+            </Link>
           )}
         </div>
       </div>

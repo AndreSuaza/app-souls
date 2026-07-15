@@ -1,18 +1,33 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent,
+} from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { IoChevronDownOutline, IoLocationOutline } from "react-icons/io5";
 import { FiRefreshCw } from "react-icons/fi";
 import { FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { GiCardDraw } from "react-icons/gi";
 import { AnimatePresence, motion } from "framer-motion";
-import { getPublicTournamentDetailAction } from "@/actions";
+import { associateDeckToTournamentAction } from "@/actions/tournaments/associate-deck-to-tournament.action";
+import { getPublicTournamentDetailAction } from "@/actions/tournaments/get-public-tournament-detail.action";
 import { Map } from "@/components/map/Map";
 import { TournamentRankingPanel } from "@/components/perfil/TournamentRankingPanel";
 import { MarkdownContent } from "@/components/ui/markdown/MarkdownContent";
-import { type MatchInterface, type PublicTournamentDetail } from "@/interfaces";
+import { Modal } from "@/components/ui/modal/modal";
+import {
+  type Deck,
+  type MatchInterface,
+  type PublicTournamentDetail,
+} from "@/interfaces";
 import { useToastStore, useUIStore } from "@/store";
+import { useSession } from "next-auth/react";
 import { MatchCard } from "../current-round/MarchCard";
 import { RoundHistoryCardBase } from "../hisotry/RoundHistoryCardBase";
 import { ResultButton } from "../current-round/ResultButton";
@@ -26,7 +41,24 @@ type Props = {
 
 const EMPTY_ROUNDS: [] = [];
 
+const UserDeckLibrary = dynamic(
+  () =>
+    import("@/components/mazos/deck-library/UserDeckLibrary").then(
+      (mod) => mod.UserDeckLibrary,
+    ),
+  { ssr: false },
+);
+
+const TournamentDeckConfirmModal = dynamic(
+  () =>
+    import("@/components/perfil/TournamentDeckConfirmModal").then(
+      (mod) => mod.TournamentDeckConfirmModal,
+    ),
+  { ssr: false },
+);
+
 export function PublicTournamentDetail({ initialTournament }: Props) {
+  const { data: session, status: sessionStatus } = useSession();
   const [tournamentData, setTournamentData] =
     useState<PublicTournamentDetail>(initialTournament);
   const showLoading = useUIStore((s) => s.showLoading);
@@ -35,19 +67,29 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(
     initialTournament.tournament?.status === "pending",
   );
+  const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
+  const [isDeckConfirmModalOpen, setIsDeckConfirmModalOpen] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
+  const [associatedDeckId, setAssociatedDeckId] = useState<string | null>(null);
 
   const { tournament, players, rounds = EMPTY_ROUNDS, store } = tournamentData;
+  const currentTournamentPlayer = useMemo(
+    () =>
+      session?.user?.idd
+        ? players.find((player) => player.userId === session.user.idd) ?? null
+        : null,
+    [players, session?.user?.idd],
+  );
+  const canAssociateDeck =
+    sessionStatus === "authenticated" &&
+    tournament?.status === "pending" &&
+    Boolean(currentTournamentPlayer) &&
+    !associatedDeckId;
 
-  const whatsappLink = useMemo(() => {
-    if (!tournament?.title) return "";
-    const rawPhone = store.phone ?? "";
-    const normalizedPhone = rawPhone.replace(/\D/g, "");
-    if (!normalizedPhone) return "";
-    const message = `Hola, quiero inscribirme al torneo ${tournament.title}. ¿Me brindas más información?`;
-    return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(
-      message,
-    )}`;
-  }, [store.phone, tournament?.title]);
+  useEffect(() => {
+    setAssociatedDeckId(currentTournamentPlayer?.deckId ?? null);
+  }, [currentTournamentPlayer?.deckId]);
+
 
   const formattedDate = useMemo(() => {
     if (!tournament?.date) return "";
@@ -148,6 +190,54 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
     }
   }, [showLoading, hideLoading, showToast, tournament]);
 
+  const handleOpenDeckModal = () => {
+    setIsDeckModalOpen(true);
+  };
+
+  const handleDeckSelect = (
+    deck: Deck,
+    event: MouseEvent<HTMLAnchorElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setSelectedDeck(deck);
+    setIsDeckModalOpen(false);
+    setIsDeckConfirmModalOpen(true);
+  };
+
+  const handleAssociateDeck = async (deckId: string) => {
+    if (!tournament) return;
+    showLoading("Asociando mazo...");
+
+    try {
+      const result = await associateDeckToTournamentAction({
+        tournamentId: tournament.id,
+        deckId,
+      });
+
+      setAssociatedDeckId(result.deckId);
+      setTournamentData((current) => ({
+        ...current,
+        players: current.players.map((player) =>
+          player.id === currentTournamentPlayer?.id
+            ? { ...player, deckId: result.deckId }
+            : player,
+        ),
+      }));
+      setIsDeckModalOpen(false);
+      setIsDeckConfirmModalOpen(false);
+      setSelectedDeck(null);
+      showToast("Mazo asociado correctamente.", "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "No se pudo asociar el mazo.",
+        "error",
+      );
+    } finally {
+      hideLoading();
+    }
+  };
+
   // Render simple VS para rondas no finalizadas en vista publica/perfil
   const renderVS = () => (
     <div className="hidden w-full items-center justify-center md:flex">
@@ -203,7 +293,8 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   );
 
   return (
-    <div className="relative min-h-screen flex flex-col items-stretch justify-center bg-slate-50 text-slate-900 overflow-hidden px-3 pb-14 pt-2 md:pt-6 dark:bg-tournament-dark-bg dark:text-white sm:px-6 md:px-10 lg:px-16">
+    <>
+      <div className="relative min-h-screen flex flex-col items-stretch justify-center bg-slate-50 text-slate-900 overflow-hidden px-3 pb-14 pt-2 md:pt-6 dark:bg-tournament-dark-bg dark:text-white sm:px-6 md:px-10 lg:px-16">
       <div className="absolute inset-0 hidden" />
 
       <div className="w-full max-w-6xl mx-auto flex flex-col space-y-3">
@@ -286,18 +377,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                   </div>
 
                   <div className="flex min-h-full flex-col justify-between gap-3 lg:items-end">
-                    <div className="flex flex-wrap items-center justify-between gap-3 lg:justify-end">
-                      {tournament.status === "pending" && whatsappLink && (
-                        <Link
-                          href={whatsappLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Inscribirse al torneo"
-                          className="inline-flex w-[120px] items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:bg-purple-700 lg:hidden"
-                        >
-                          Inscribirse
-                        </Link>
-                      )}
+                    <div className="flex flex-col items-start gap-3 lg:items-end">
                       <div className="flex w-[120px] items-center gap-3">
                         <Link
                           href={whatsappShareLink}
@@ -330,6 +410,17 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                           <FaXTwitter className="h-4 w-4" />
                         </Link>
                       </div>
+                      {canAssociateDeck && (
+                        <button
+                          type="button"
+                          onClick={handleOpenDeckModal}
+                          title="Asociar mazo"
+                          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-yellow-300 bg-yellow-400 px-4 text-sm font-black text-slate-950 shadow-sm transition hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                        >
+                          <GiCardDraw className="h-5 w-5" />
+                          Asociar mazo
+                        </button>
+                      )}
                       {tournament.status === "in_progress" && (
                         <button
                           type="button"
@@ -342,21 +433,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                       )}
                     </div>
 
-                    <div className="mt-auto flex text-right gap-3 text-sm text-slate-600 dark:text-slate-300 lg:max-w-xs">
-                      <div className="flex flex-col items-end gap-2">
-                        {tournament.status === "pending" && whatsappLink && (
-                          <Link
-                            href={whatsappLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Inscribirse al torneo"
-                            className="hidden w-[120px] items-center justify-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:bg-purple-700 lg:inline-flex"
-                          >
-                            Inscribirse
-                          </Link>
-                        )}
-                      </div>
-                    </div>
+                    <div className="mt-auto flex text-right gap-3 text-sm text-slate-600 dark:text-slate-300 lg:max-w-xs" />
                   </div>
                 </div>
 
@@ -502,6 +579,48 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      {isDeckModalOpen && (
+        <Modal
+          className="left-1/2 top-1/2 w-[94%] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xl transition-all dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
+          close={() => setIsDeckModalOpen(false)}
+        >
+          <div className="flex max-h-[80vh] w-full flex-col overflow-hidden">
+            <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white sm:text-2xl">
+                Mis mazos
+              </h1>
+            </div>
+            <div className="overflow-auto px-5 pb-6 pt-5">
+              <UserDeckLibrary
+                archetypes={[]}
+                hasSession={sessionStatus === "authenticated"}
+                onSelect={handleDeckSelect}
+                minCardsNumber={40}
+                tournamentFilter="all"
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {isDeckConfirmModalOpen && selectedDeck && (
+        <TournamentDeckConfirmModal
+          deck={selectedDeck}
+          hasSession={sessionStatus === "authenticated"}
+          onConfirm={() => handleAssociateDeck(selectedDeck.id)}
+          onChangeDeck={() => {
+            setIsDeckConfirmModalOpen(false);
+            setSelectedDeck(null);
+            setIsDeckModalOpen(true);
+          }}
+          onClose={() => {
+            setIsDeckConfirmModalOpen(false);
+            setSelectedDeck(null);
+          }}
+        />
+      )}
+    </>
   );
 }

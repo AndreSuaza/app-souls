@@ -9,6 +9,7 @@ import {
   type CosmeticStoreItem,
   updateUser,
 } from "@/actions";
+import { getActiveTournament } from "@/actions/profile/get-active-tournament.action";
 import { useToastStore, useUIStore } from "@/store";
 import {
   type ActiveTournamentData,
@@ -33,6 +34,7 @@ import { getProfileFrameValue } from "@/utils/profile-frame";
 import { updateUserBanner, updateUserFrame } from "@/actions";
 import { ProfileGeneralSection } from "./ProfileGeneralSection";
 import { ProfileAvatarSection } from "./ProfileAvatarSection";
+import { ProfileActiveTournamentHeader } from "./ProfileActiveTournamentHeader";
 import { ProfileBannerSection } from "./ProfileBannerSection";
 import { ProfileSectionHeader } from "./ProfileSectionHeader";
 import { ProfileSecuritySection } from "./ProfileSecuritySection";
@@ -125,6 +127,20 @@ const sectionDescriptions: Record<ProfileDashboardSection, string> = {
   security: "Actualiza credenciales y opciones de acceso.",
 };
 
+const isCompetitiveActiveTournament = (
+  tournament: TournamentSnapshot | null | undefined,
+) => {
+  if (!tournament) return false;
+
+  const status = tournament.tournament.status;
+  const tierName = tournament.tournament.typeTournamentName ?? "";
+
+  return (
+    (status === "pending" || status === "in_progress") &&
+    (tierName === "Tier 1" || tierName === "Tier 2")
+  );
+};
+
 export const Pefil = ({
   user,
   avatars,
@@ -172,12 +188,42 @@ export const Pefil = ({
   const [victoryPoints, setVictoryPoints] = useState(
     user.victoryPoints ?? initialStoreData.victoryPoints,
   );
+  const [activeTournamentState, setActiveTournamentState] =
+    useState<ActiveTournamentData | null>(activeTournament);
 
   useEffect(() => {
     if (!shouldShowStore && activeSection === "store") {
       setActiveSection("general");
     }
   }, [activeSection, shouldShowStore]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const refreshActiveTournament = async () => {
+      if (!hasSession) return;
+
+      try {
+        const refreshed = await getActiveTournament();
+        if (!isActive) return;
+        setActiveTournamentState(refreshed);
+      } catch (error) {
+        if (!isActive) return;
+        showToast(
+          error instanceof Error
+            ? error.message
+            : "No se pudo actualizar el torneo activo",
+          "error",
+        );
+      }
+    };
+
+    void refreshActiveTournament();
+
+    return () => {
+      isActive = false;
+    };
+  }, [hasSession, showToast]);
 
   useEffect(() => {
     const nextAvatar = getAvatarValue(user.image);
@@ -351,12 +397,19 @@ export const Pefil = ({
   const hasTournamentTab =
     isPlayer &&
     Boolean(
-      activeTournament?.currentTournament || activeTournament?.lastTournament,
+      activeTournamentState?.currentTournament || activeTournamentState?.lastTournament,
     );
-  const tournamentTabLabel = activeTournament?.currentTournament
+  const tournamentTabLabel = activeTournamentState?.currentTournament
     ? "Torneo actual"
     : "Último torneo";
   const showHistoryTab = isPlayer;
+  const activeCompetitiveTournament = isCompetitiveActiveTournament(
+    activeTournamentState?.currentTournament,
+  )
+    ? activeTournamentState?.currentTournament
+    : isCompetitiveActiveTournament(activeTournamentState?.lastTournament)
+      ? activeTournamentState?.lastTournament
+      : null;
   const [selectedTournament, setSelectedTournament] =
     useState<TournamentSnapshot | null>(null);
   const availableTabs = useMemo(() => {
@@ -435,32 +488,40 @@ export const Pefil = ({
         />
 
         <main id="perfil-content" className="min-w-0 space-y-6">
-          <ProfileSectionHeader
-            title={sectionTitles[activeSection]}
-            description={sectionDescriptions[activeSection]}
-            rightSlot={
-              shouldShowStore && activeSection === "store" ? (
-                <div className="grid gap-3 sm:grid-cols-2 xl:w-[360px]">
-                  <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 shadow-sm dark:border-amber-400/30 dark:bg-amber-500/10">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-700 dark:text-amber-200/80">
-                      PV disponibles
-                    </p>
-                    <p className="mt-2 text-3xl font-bold text-amber-700 dark:text-amber-100">
-                      {formatProfilePv(victoryPoints)} PV
-                    </p>
+          {activeSection === "general" && activeCompetitiveTournament ? (
+            <ProfileActiveTournamentHeader
+              tournamentSnapshot={activeCompetitiveTournament}
+              currentUserId={activeTournamentState?.currentUserId ?? ""}
+              hasSession={hasSession}
+            />
+          ) : (
+            <ProfileSectionHeader
+              title={sectionTitles[activeSection]}
+              description={sectionDescriptions[activeSection]}
+              rightSlot={
+                shouldShowStore && activeSection === "store" ? (
+                  <div className="grid gap-3 sm:grid-cols-2 xl:w-[360px]">
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 shadow-sm dark:border-amber-400/30 dark:bg-amber-500/10">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-700 dark:text-amber-200/80">
+                        PV disponibles
+                      </p>
+                      <p className="mt-2 text-3xl font-bold text-amber-700 dark:text-amber-100">
+                        {formatProfilePv(victoryPoints)} PV
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                        Temporada actual
+                      </p>
+                      <p className="mt-2 text-3xl font-bold text-purple-700 dark:text-purple-100">
+                        {storeData.currentSeasonNumber}
+                      </p>
+                    </div>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
-                      Temporada actual
-                    </p>
-                    <p className="mt-2 text-3xl font-bold text-purple-700 dark:text-purple-100">
-                      {storeData.currentSeasonNumber}
-                    </p>
-                  </div>
-                </div>
-              ) : undefined
-            }
-          />
+                ) : undefined
+              }
+            />
+          )}
 
           {activeSection === "general" && (
             <ProfileGeneralSection
@@ -521,7 +582,7 @@ export const Pefil = ({
               activeTab={activeTab}
               onChangeTab={setActiveTab}
               tournamentTabLabel={tournamentTabLabel}
-              activeTournament={activeTournament}
+              activeTournament={activeTournamentState}
               fallbackTournamentData={profileTournamentData}
               hasSession={hasSession}
               isPlayer={isPlayer}
