@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export const getActiveTournament = async () => {
   const session = await auth();
@@ -21,7 +22,12 @@ export const getActiveTournament = async () => {
       points: true,
       buchholz: true,
       deckId: true,
-    };
+    } satisfies Prisma.TournamentPlayerSelect;
+
+    const matchOrderBy: Prisma.MatchOrderByWithRelationInput[] = [
+      { bracketPosition: "asc" },
+      { createdAt: "asc" },
+    ];
 
     const roundSelect = {
       id: true,
@@ -32,9 +38,11 @@ export const getActiveTournament = async () => {
           player1Id: true,
           player2Id: true,
           result: true,
+          bracketPosition: true,
         },
+        orderBy: matchOrderBy,
       },
-    };
+    } satisfies Prisma.RoundSelect;
 
     // Cuenta cuantos torneos en progreso tiene registrados el usuario.
     const inProgressCount = await prisma.tournamentPlayer.count({
@@ -161,6 +169,7 @@ export const getActiveTournament = async () => {
             player1Id: string;
             player2Id: string | null;
             result: "P1" | "P2" | "DRAW" | null;
+            bracketPosition: number | null;
           }>;
         }>;
       }
@@ -200,6 +209,7 @@ export const getActiveTournament = async () => {
           player1Nickname: "",
           player2Nickname: null,
           result: match.result,
+          bracketPosition: match.bracketPosition ?? null,
         })),
       })),
     });

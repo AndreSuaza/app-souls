@@ -42,7 +42,7 @@ export async function recalculateRoundAction(input: RecalculateRoundInput) {
           startedAt: null,
           finishedAt: null,
           matches: {
-            create: swissRound.matches.map((m) => {
+            create: swissRound.matches.map((m, index) => {
               const isBye = !m.player2;
 
               return {
@@ -51,11 +51,17 @@ export async function recalculateRoundAction(input: RecalculateRoundInput) {
                 player2Id: isBye ? null : m.player2!.id,
                 player2Nickname: isBye ? "BYE" : m.player2!.playerNickname,
                 result: isBye ? "P1" : null,
+                bracketPosition: index + 1,
               };
             }),
           },
         },
-        select: { matches: { select: { id: true } } },
+        select: {
+          matches: {
+            select: { id: true },
+            orderBy: [{ bracketPosition: "asc" }, { createdAt: "asc" }],
+          },
+        },
       });
 
       return updatedRound.matches.map((m) => m.id);

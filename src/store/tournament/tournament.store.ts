@@ -290,7 +290,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
             player1Nickname: m.player1.playerNickname,
             player2Nickname: m.player2?.playerNickname ?? "BYE",
             result: m.player2 ? null : "P1",
-            bracketPosition: null,
+            bracketPosition: index + 1,
           };
         }),
       };
@@ -786,7 +786,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
             player1Nickname: m.player1.playerNickname,
             player2Nickname: m.player2?.playerNickname ?? "BYE",
             result: m.player2 ? null : "P1",
-            bracketPosition: null,
+            bracketPosition: index + 1,
           };
         }),
       };

@@ -125,6 +125,37 @@ function shufflePlayers(
   return arr;
 }
 
+const comparePlayersByStanding = (
+  a: TournamentPlayerInterface,
+  b: TournamentPlayerInterface
+) => {
+  if (b.points !== a.points) return b.points - a.points;
+  return b.buchholz - a.buchholz;
+};
+
+const getBestPlayerInMatch = (match: SwissMatch) => {
+  if (!match.player2) return match.player1;
+
+  return comparePlayersByStanding(match.player1, match.player2) <= 0
+    ? match.player1
+    : match.player2;
+};
+
+function orderMatchesByTablePriority(matches: SwissMatch[]) {
+  return [...matches].sort((a, b) => {
+    const aIsBye = !a.player2;
+    const bIsBye = !b.player2;
+
+    if (aIsBye !== bIsBye) return aIsBye ? 1 : -1;
+
+    // La mesa se deriva del orden del arreglo, por eso se prioriza el mejor ranking del match.
+    return comparePlayersByStanding(
+      getBestPlayerInMatch(a),
+      getBestPlayerInMatch(b)
+    );
+  });
+}
+
 /**
  * FUNCIÓN PRINCIPAL DEL BACKEND
  * Genera una ronda Swiss real desde los datos de BD.
@@ -162,6 +193,6 @@ export function generateSwissRoundBackend(
 
   return {
     number: dbCurrentRounds + 1,
-    matches: finalMatches,
+    matches: orderMatchesByTablePriority(finalMatches),
   };
 }

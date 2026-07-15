@@ -63,7 +63,9 @@ export const getProfileTournament = async (input: Input) => {
               player1Id: true,
               player2Id: true,
               result: true,
+              bracketPosition: true,
             },
+            orderBy: [{ bracketPosition: "asc" }, { createdAt: "asc" }],
           },
         },
         orderBy: {
@@ -114,6 +116,7 @@ export const getProfileTournament = async (input: Input) => {
         player1Nickname: "",
         player2Nickname: null,
         result: match.result,
+        bracketPosition: match.bracketPosition ?? null,
       })),
     })),
   };
