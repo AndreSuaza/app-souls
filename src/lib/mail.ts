@@ -2,9 +2,24 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.AUTH_RESEND_KEY);
 
+const getEmailErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message;
+
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+
+  return "No se pudo enviar el correo.";
+};
+
 export const sendEmailVerification = async (email: string, token: string) => {
   try {
-    await resend.emails.send({
+    const response = await resend.emails.send({
       from: "Souls In Xtinction Verificación de correo <verificacion@soulsinxtinction.com>",
       to: email,
       subject: "Verifica tu correo",
@@ -93,20 +108,32 @@ export const sendEmailVerification = async (email: string, token: string) => {
       `,
     });
 
+    if (response.error || !response.data?.id) {
+      console.error("Error enviando correo de verificación:", response.error);
+      return {
+        success: false,
+        error: true,
+        message: getEmailErrorMessage(response.error),
+      };
+    }
+
     return {
       success: true,
+      id: response.data.id,
     };
   } catch (error) {
-    console.error(error);
+    console.error("Error enviando correo de verificación:", error);
     return {
+      success: false,
       error: true,
+      message: getEmailErrorMessage(error),
     };
   }
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
   try {
-    await resend.emails.send({
+    const response = await resend.emails.send({
       from: "Souls In Xtinction Soporte <soporte@soulsinxtinction.com>",
       to: email,
       subject: "Restablece tu contraseña",
@@ -201,9 +228,18 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
       `,
     });
 
-    return { success: true };
+    if (response.error || !response.data?.id) {
+      console.error("Error enviando correo de recuperación:", response.error);
+      return {
+        success: false,
+        error: true,
+        message: getEmailErrorMessage(response.error),
+      };
+    }
+
+    return { success: true, id: response.data.id };
   } catch (error) {
     console.error("Error enviando correo de recuperación:", error);
-    return { error: true };
+    return { success: false, error: true, message: getEmailErrorMessage(error) };
   }
 };

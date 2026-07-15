@@ -2,6 +2,11 @@
 
 import { sendEmailVerification } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import {
+  EMAIL_VERIFICATION_TOKEN_TTL_MS,
+  getVerificationTokenIdentifier,
+  getVerificationTokenIdentifiers,
+} from "@/lib/verification-token";
 import { palabrasProhibidas } from "@/models/inappropriateWords.model";
 import { RegisterSchema } from "@/schemas";
 import { getAvatarValue } from "@/utils/avatar-image";
@@ -110,24 +115,62 @@ export async function userRegistration(formData: FormInputs) {
     // Crear token + enviar email
     if (userdb && userdb.email) {
       const token = nanoid();
+      const identifier = getVerificationTokenIdentifier(
+        userdb.email,
+        "email-verification",
+      );
+
+      await prisma.verificationToken.deleteMany({
+        where: {
+          OR: [
+            { expires: { lt: new Date() } },
+            {
+              identifier: {
+                in: getVerificationTokenIdentifiers(
+                  userdb.email,
+                  "email-verification",
+                ),
+              },
+            },
+          ],
+        },
+      });
 
       await prisma.verificationToken.create({
         data: {
-          identifier: userdb.email,
+          identifier,
           token,
-          expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+          expires: new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS),
         },
       });
 
       // enviar email de verificación
-      await sendEmailVerification(userdb.email, token);
+      const emailResult = await sendEmailVerification(userdb.email, token);
+      if (!emailResult.success) {
+        await prisma.verificationToken.deleteMany({ where: { token } });
+        await prisma.user.delete({ where: { id: userdb.id } });
+        return {
+          success: false,
+          message: emailResult.message
+            ? `No se pudo enviar el correo de verificación: ${emailResult.message}`
+            : "No se pudo enviar el correo de verificación. Intenta nuevamente.",
+        };
+      }
     }
 
     return { success: true };
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: error.cause?.err?.message };
+      return {
+        success: false,
+        message:
+          error.cause?.err?.message ??
+          "No se pudo completar el registro. Intenta nuevamente.",
+      };
     }
-    return { error: "error 500" };
+    return {
+      success: false,
+      message: "No se pudo completar el registro. Intenta nuevamente.",
+    };
   }
 }

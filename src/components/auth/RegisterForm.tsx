@@ -31,14 +31,20 @@ export const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
+    setError(null);
+    setSuccess(false);
+
     startTransition(async () => {
       const resp = await userRegistration(data);
 
-      if (!resp.success && resp.message) {
-        setError(resp.message);
-      } else {
+      if (resp.success) {
         setSuccess(true);
+        return;
       }
+
+      setError(
+        resp.message ?? "No se pudo completar el registro. Intenta nuevamente.",
+      );
     });
   };
 

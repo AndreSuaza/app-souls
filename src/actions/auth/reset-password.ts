@@ -1,6 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import {
+  isVerificationTokenForPurpose,
+  resolveVerificationTokenEmail,
+} from "@/lib/verification-token";
 import bcrypt from "bcryptjs";
 
 export async function resetPassword(token: string, newPassword: string) {
@@ -11,7 +15,34 @@ export async function resetPassword(token: string, newPassword: string) {
     });
 
     // token inválido o expirado
-    if (!storedToken || storedToken.expires < new Date()) {
+    if (!storedToken) {
+      return { success: false, message: "Token inválido o expirado." };
+    }
+
+    if (
+      !isVerificationTokenForPurpose(storedToken.identifier, "password-reset")
+    ) {
+      return { success: false, message: "Token inválido o expirado." };
+    }
+
+    if (storedToken.expires < new Date()) {
+      await prisma.verificationToken.deleteMany({ where: { token } });
+      return { success: false, message: "Token inválido o expirado." };
+    }
+
+    const email = resolveVerificationTokenEmail(storedToken.identifier);
+    const user = await prisma.user.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: "insensitive",
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!user) {
+      await prisma.verificationToken.deleteMany({ where: { token } });
       return { success: false, message: "Token inválido o expirado." };
     }
 
@@ -20,7 +51,7 @@ export async function resetPassword(token: string, newPassword: string) {
 
     // actualizar contraseña del usuario
     await prisma.user.update({
-      where: { email: storedToken.identifier },
+      where: { id: user.id },
       data: { password: hashed },
     });
 
