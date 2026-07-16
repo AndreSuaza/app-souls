@@ -2,8 +2,8 @@
 
 import clsx from "clsx";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useState, useTransition } from "react";
-import { userRegistration } from "@/actions";
+import { useEffect, useState, useTransition } from "react";
+import { resendEmailVerification, userRegistration } from "@/actions";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { MdError, MdCheckCircle } from "react-icons/md";
 import Link from "next/link";
@@ -23,12 +23,24 @@ export const RegisterForm = () => {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<FormInputs>();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (!success || cooldownSeconds <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setCooldownSeconds((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [cooldownSeconds, success]);
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     setError(null);
@@ -39,12 +51,37 @@ export const RegisterForm = () => {
 
       if (resp.success) {
         setSuccess(true);
+        setCooldownSeconds(resp.retryAfterSeconds ?? 60);
         return;
       }
 
       setError(
         resp.message ?? "No se pudo completar el registro. Intenta nuevamente.",
       );
+    });
+  };
+
+  const onResendVerification = () => {
+    if (cooldownSeconds > 0) return;
+
+    setError(null);
+
+    startTransition(async () => {
+      const resp = await resendEmailVerification(getValues("email"));
+
+      if (resp.success) {
+        setSuccess(true);
+        setCooldownSeconds(resp.retryAfterSeconds ?? 60);
+        return;
+      }
+
+      setError(
+        resp.message ??
+          "No se pudo reenviar el correo de verificacion. Intenta nuevamente.",
+      );
+      if (resp.retryAfterSeconds) {
+        setCooldownSeconds(resp.retryAfterSeconds);
+      }
     });
   };
 
@@ -396,6 +433,24 @@ export const RegisterForm = () => {
         )}
         {isPending ? "Registrando..." : "Registrarse"}
       </button>
+
+      {success && (
+        <button
+          type="button"
+          onClick={onResendVerification}
+          disabled={isPending || cooldownSeconds > 0}
+          className={clsx(
+            "py-2 text-sm font-semibold transition",
+            cooldownSeconds > 0 || isPending
+              ? "text-slate-400 cursor-not-allowed"
+              : "text-indigo-600 hover:text-indigo-700",
+          )}
+        >
+          {cooldownSeconds > 0
+            ? `Reenviar correo en ${cooldownSeconds}s`
+            : "Reenviar correo de verificacion"}
+        </button>
+      )}
 
       <Link
         className="mt-0.5 text-center text-sm font-semibold text-slate-500"

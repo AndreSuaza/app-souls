@@ -5,16 +5,29 @@ import { nanoid } from "nanoid";
 import { sendPasswordResetEmail } from "@/lib/mail";
 import {
   PASSWORD_RESET_TOKEN_TTL_MS,
+  VERIFICATION_TOKEN_RESEND_COOLDOWN_MS,
   getVerificationTokenIdentifier,
   getVerificationTokenIdentifiers,
+  getVerificationTokenRetryAfterSeconds,
 } from "@/lib/verification-token";
 import { normalizeEmail } from "@/utils/email";
 
-export async function requestPasswordReset(email: string) {
+const RESEND_COOLDOWN_SECONDS = Math.ceil(
+  VERIFICATION_TOKEN_RESEND_COOLDOWN_MS / 1000,
+);
+
+type PasswordResetRequestResult = {
+  success: boolean;
+  message?: string;
+  retryAfterSeconds?: number;
+};
+
+export async function requestPasswordReset(
+  email: string,
+): Promise<PasswordResetRequestResult> {
   try {
     const normalizedEmail = normalizeEmail(email);
 
-    // buscar usuario por email
     const user = await prisma.user.findFirst({
       where: {
         email: {
@@ -25,36 +38,52 @@ export async function requestPasswordReset(email: string) {
       select: { email: true },
     });
 
-    // No revelar si el usuario no existe
     if (!user?.email) {
-      return { success: true };
+      return { success: true, retryAfterSeconds: RESEND_COOLDOWN_SECONDS };
     }
 
-    // Eliminar tokens previos de recuperación
+    const identifiers = getVerificationTokenIdentifiers(
+      user.email,
+      "password-reset",
+    );
+    const now = new Date();
+
+    // Limpia expirados y evita multiples envios seguidos para el mismo correo.
     await prisma.verificationToken.deleteMany({
-      where: {
-        OR: [
-          { expires: { lt: new Date() } },
-          {
-            identifier: {
-              in: getVerificationTokenIdentifiers(
-                user.email,
-                "password-reset",
-              ),
-            },
-          },
-        ],
-      },
+      where: { expires: { lt: now } },
     });
 
-    // crea token nuevo
+    const activeToken = await prisma.verificationToken.findFirst({
+      where: {
+        identifier: { in: identifiers },
+        expires: { gt: now },
+      },
+      select: { expires: true },
+    });
+
+    if (activeToken) {
+      const retryAfterSeconds = getVerificationTokenRetryAfterSeconds(
+        activeToken.expires,
+        PASSWORD_RESET_TOKEN_TTL_MS,
+        now,
+      );
+
+      if (retryAfterSeconds > 0) {
+        return { success: true, retryAfterSeconds };
+      }
+    }
+
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: { in: identifiers } },
+    });
+
     const token = nanoid();
 
     await prisma.verificationToken.create({
       data: {
         identifier: getVerificationTokenIdentifier(user.email, "password-reset"),
         token,
-        expires: new Date(Date.now() + PASSWORD_RESET_TOKEN_TTL_MS), // 30 minutos
+        expires: new Date(Date.now() + PASSWORD_RESET_TOKEN_TTL_MS),
       },
     });
 
@@ -63,13 +92,14 @@ export async function requestPasswordReset(email: string) {
       await prisma.verificationToken.deleteMany({ where: { token } });
       return {
         success: false,
+        retryAfterSeconds: RESEND_COOLDOWN_SECONDS,
         message: emailResult.message
           ? `Error al enviar el correo: ${emailResult.message}`
           : "Error al enviar el correo.",
       };
     }
 
-    return { success: true };
+    return { success: true, retryAfterSeconds: RESEND_COOLDOWN_SECONDS };
   } catch (err) {
     console.error("Error en request-password-reset:", err);
     return { success: false, message: "Error al procesar la solicitud." };
