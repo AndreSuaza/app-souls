@@ -22,8 +22,8 @@ export async function getNewsImagesAction(): Promise<NewsImageOptions> {
     }
 
     const [banners, cards] = await Promise.all([
-      listBlob("souls/news/banners/"),
-      listBlob("souls/news/cards/"),
+      listBlob("news/banners/"),
+      listBlob("news/cards/"),
     ]);
 
     return {

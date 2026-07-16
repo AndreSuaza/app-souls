@@ -96,7 +96,7 @@ export const AdminSidebar = () => {
         },
         {
           label: "Cartas",
-          href: "/admin/cartas/importar-excel",
+          href: "/admin/cartas",
           icon: TbCards,
         },
       );
@@ -225,9 +225,19 @@ export const AdminSidebar = () => {
     if (role === "admin") {
       menuItems.push(
         {
+          label: "Cartas",
+          href: "/admin/cartas",
+          icon: TbCards,
+        },
+        {
+          label: "Crear carta",
+          href: "/admin/cartas/crear-carta",
+          icon: IoAddCircleOutline,
+        },
+        {
           label: "Importar excel",
           href: "/admin/cartas/importar-excel",
-          icon: IoAddCircleOutline,
+          icon: TbCards,
         },
         {
           label: "Volver",

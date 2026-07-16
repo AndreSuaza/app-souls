@@ -64,7 +64,7 @@ export async function uploadNewsImageAction(formData: FormData) {
     const uniqueSuffix = crypto.randomUUID();
     const filename = `${safeName}-${uniqueSuffix}.webp`;
 
-    const path = `souls/news/${folder}/${filename}`;
+    const path = `news/${folder}/${filename}`;
     const blob = await uploadBlob({
       path,
       buffer: outputBuffer,

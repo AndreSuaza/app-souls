@@ -1,23 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-
-interface WhereClause {
-  product?: { code: { in: string[] } };
-  typeIds?: { hasEvery: string[] };
-  archetypesIds?: { hasEvery: string[] };
-  keywordsIds?: { hasEvery: string[] };
-  cost?: { in: number[] };
-  force?: { in: string[] };
-  defense?: { in: string[] };
-  raritiesIds?: { hasEvery: string[] };
-  limit?: { in: string[] };
-  OR?: Array<{
-    effect?: { contains: string; mode: "insensitive" };
-    idd?: { equals: string; mode: "insensitive" };
-    name?: { contains: string; mode: "insensitive" };
-  }>;
-}
+import type { Prisma } from "@prisma/client";
+import { activeCardWhere } from "./card-status";
 
 interface PaginationOptions {
   page?: number;
@@ -53,7 +38,7 @@ export const getPaginatedCards = async ({
 
   try {
     const whereConstruction = () => {
-      const where: WhereClause = {};
+      const where: Prisma.CardWhereInput = {};
       if (products) {
         where.product = {
           code: {
@@ -102,7 +87,7 @@ export const getPaginatedCards = async ({
       if (limit) {
         where.limit = { in: limit.split(",").map((item) => item.trim()) };
       }
-      return where;
+      return { AND: [activeCardWhere(), where] };
     };
 
     const cards = await prisma.card.findMany({

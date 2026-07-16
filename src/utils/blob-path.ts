@@ -35,6 +35,8 @@ const getPathFromUrl = (value: string) => {
   }
 };
 
+const stripQueryAndHash = (value: string) => value.split(/[?#]/, 1)[0] ?? "";
+
 const toStorageUrl = (path: string) => {
   const normalized = path.replace(/^\/+/, "");
   if (!storageBaseUrl) return path.startsWith("/") ? path : normalized;
@@ -76,8 +78,8 @@ export const toAssetUrl = (value?: string | null): string => {
 
 export const toBlobPath = (value?: string | null): string => {
   if (!value) return "";
-  if (value.startsWith("/")) return value.replace(/^\/+/, "");
-  if (!isHttpUrl(value)) return value.replace(/^\/+/, "");
+  if (value.startsWith("/")) return stripQueryAndHash(value).replace(/^\/+/, "");
+  if (!isHttpUrl(value)) return stripQueryAndHash(value).replace(/^\/+/, "");
   return getPathFromUrl(value);
 };
 

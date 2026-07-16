@@ -24,7 +24,7 @@ export const resolveCardImageUrl = ({
   idd,
   imageKey,
 }: CardImageInput) => {
-  if (imageUrl) return imageUrl;
+  if (imageUrl) return toAssetUrl(imageUrl);
 
   const key = imageKey
     ? normalizeCardImageKey(imageKey)

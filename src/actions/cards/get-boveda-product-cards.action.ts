@@ -5,6 +5,7 @@ import {
   BovedaProductCardsSchema,
   type BovedaProductCardsInput,
 } from "@/schemas";
+import { activeCardWhere } from "./card-status";
 
 const PAGE_SIZE = 10;
 
@@ -18,6 +19,7 @@ export async function getBovedaProductCardsAction(
       id: cardId,
     },
     select: {
+      status: true,
       productId: true,
       product: {
         select: {
@@ -29,7 +31,7 @@ export async function getBovedaProductCardsAction(
     },
   });
 
-  if (!card) {
+  if (!card || card.status === "deleted") {
     return {
       product: null,
       cards: [],
@@ -43,7 +45,7 @@ export async function getBovedaProductCardsAction(
   const [cards, totalCount] = await Promise.all([
     prisma.card.findMany({
       where: {
-        productId: card.productId,
+        AND: [activeCardWhere(), { productId: card.productId }],
       },
       select: {
         id: true,
@@ -69,7 +71,7 @@ export async function getBovedaProductCardsAction(
     }),
     prisma.card.count({
       where: {
-        productId: card.productId,
+        AND: [activeCardWhere(), { productId: card.productId }],
       },
     }),
   ]);

@@ -18,8 +18,8 @@ export async function getEventImagesAction(): Promise<EventImageOptions> {
     }
 
     const [banners, cards] = await Promise.all([
-      listBlob("souls/events/banners/"),
-      listBlob("souls/events/cards/"),
+      listBlob("events/banners/"),
+      listBlob("events/cards/"),
     ]);
 
     return {

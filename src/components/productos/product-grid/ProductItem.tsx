@@ -14,7 +14,7 @@ const resolveProductImage = (value?: string | null) => {
   if (value.startsWith("http") || value.startsWith("/")) return value;
   const blobCandidate = value.includes("/")
     ? value
-    : `souls/products/${value}.webp`;
+    : `products/${value}.webp`;
   const resolved = toBlobUrl(blobCandidate);
   if (resolved.startsWith("http") || resolved.startsWith("/")) return resolved;
   return `/products/${value}.webp`;

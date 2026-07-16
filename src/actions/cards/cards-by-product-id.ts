@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { activeCardWhere } from "./card-status";
 
 export const getCardsByProductId = async (id: string) => {
   if (!id) return [];
@@ -38,7 +39,7 @@ export const getCardsByProductId = async (id: string) => {
         },
       },
       where: {
-        productId: id,
+        AND: [activeCardWhere(), { productId: id }],
       },
     });
 

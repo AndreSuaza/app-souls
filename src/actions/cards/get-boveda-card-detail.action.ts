@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { CardSlugSchema, type CardSlugInput } from "@/schemas";
 import { normalizeCardSlug } from "@/utils/card-slug";
+import { activeCardWhere } from "./card-status";
 
 const cardDetailSelect = {
   id: true,
@@ -17,6 +18,7 @@ const cardDetailSelect = {
   limit: true,
   effect: true,
   price: true,
+  status: true,
   product: {
     select: {
       name: true,
@@ -69,6 +71,9 @@ const getLegacySlugParts = (slug: string) => {
   };
 };
 
+const isDeletedCard = (card: { status?: "active" | "deleted" | null } | null) =>
+  card?.status === "deleted";
+
 export async function getBovedaCardDetailAction(input: CardSlugInput) {
   const { slug } = CardSlugSchema.parse(input);
   const decodedSlug = safeDecodeURIComponent(slug).trim();
@@ -78,12 +83,14 @@ export async function getBovedaCardDetailAction(input: CardSlugInput) {
     where: { slug },
     select: cardDetailSelect,
   });
+  if (isDeletedCard(card)) card = null;
 
   if (!card && decodedSlug !== slug) {
     card = await prisma.card.findUnique({
       where: { slug: decodedSlug },
       select: cardDetailSelect,
     });
+    if (isDeletedCard(card)) card = null;
   }
 
   if (!card && normalizedSlug !== slug) {
@@ -91,20 +98,25 @@ export async function getBovedaCardDetailAction(input: CardSlugInput) {
       where: { slug: normalizedSlug },
       select: cardDetailSelect,
     });
+    if (isDeletedCard(card)) card = null;
   }
 
   if (!card) {
     const legacyParts = getLegacySlugParts(normalizedSlug);
 
     if (legacyParts) {
-      // Compatibilidad con URLs antiguas o mal codificadas que conservan nombre + producto.
       card = await prisma.card.findFirst({
         where: {
-          code: legacyParts.cardCode,
-          ...(legacyParts.idd ? { idd: legacyParts.idd } : {}),
-          product: {
-            code: legacyParts.productCode,
-          },
+          AND: [
+            activeCardWhere(),
+            {
+              code: legacyParts.cardCode,
+              ...(legacyParts.idd ? { idd: legacyParts.idd } : {}),
+              product: {
+                code: legacyParts.productCode,
+              },
+            },
+          ],
         },
         select: cardDetailSelect,
         orderBy: {
@@ -120,9 +132,14 @@ export async function getBovedaCardDetailAction(input: CardSlugInput) {
     if (legacyParts) {
       card = await prisma.card.findFirst({
         where: {
-          slug: {
-            startsWith: `${legacyParts.nameSlug}-`,
-          },
+          AND: [
+            activeCardWhere(),
+            {
+              slug: {
+                startsWith: `${legacyParts.nameSlug}-`,
+              },
+            },
+          ],
         },
         select: cardDetailSelect,
         orderBy: {
@@ -137,13 +154,19 @@ export async function getBovedaCardDetailAction(input: CardSlugInput) {
       where: { slug: normalizedSlug },
       select: cardDetailSelect,
     });
+    if (isDeletedCard(card)) card = null;
   }
 
   if (!card) return null;
 
   const relatedProducts = await prisma.card.findMany({
     where: {
-      idd: card.idd,
+      AND: [
+        activeCardWhere(),
+        {
+          idd: card.idd,
+        },
+      ],
     },
     select: {
       product: {
@@ -157,7 +180,6 @@ export async function getBovedaCardDetailAction(input: CardSlugInput) {
     },
   });
 
-  // Prioriza el producto principal y elimina duplicados por codigo.
   const uniqueProducts = new Map(
     relatedProducts.map((item) => [item.product.code, item.product]),
   );

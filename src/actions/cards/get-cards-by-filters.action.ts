@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+import { activeCardWhere } from "./card-status";
 
 const CardFiltersSchema = z
   .object({
@@ -20,23 +22,6 @@ const CardFiltersSchema = z
 
 type CardFiltersInput = z.infer<typeof CardFiltersSchema>;
 
-interface WhereClause {
-  product?: { code: { in: string[] } };
-  typeIds?: { hasEvery: string[] };
-  archetypesIds?: { hasEvery: string[] };
-  keywordsIds?: { hasEvery: string[] };
-  cost?: { in: number[] };
-  force?: { in: string[] };
-  defense?: { in: string[] };
-  raritiesIds?: { hasEvery: string[] };
-  limit?: { in: string[] };
-  OR?: Array<{
-    effect?: { contains: string; mode: "insensitive" };
-    idd?: { equals: string; mode: "insensitive" };
-    name?: { contains: string; mode: "insensitive" };
-  }>;
-}
-
 export const getCardsByFiltersAction = async (input: CardFiltersInput = {}) => {
   const {
     text,
@@ -53,7 +38,7 @@ export const getCardsByFiltersAction = async (input: CardFiltersInput = {}) => {
 
   try {
     const whereConstruction = () => {
-      const where: WhereClause = {};
+      const where: Prisma.CardWhereInput = {};
 
       if (products) {
         where.product = {
@@ -104,7 +89,7 @@ export const getCardsByFiltersAction = async (input: CardFiltersInput = {}) => {
         where.limit = { in: limit.split(",").map((item) => item.trim()) };
       }
 
-      return where;
+      return { AND: [activeCardWhere(), where] };
     };
 
     // Se trae la lista completa para agregar todas las cartas filtradas al mazo admin.

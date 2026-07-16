@@ -15,8 +15,8 @@ interface Props {
 }
 
 export const ProductsByCard = ({product}: Props) => {
-  const imageSrc = toBlobUrl(`souls/products/${product.code}.webp`);
-  const fallbackSrc = toBlobUrl(`souls/products/${product}LOGO.webp`);
+  const imageSrc = toBlobUrl(`products/${product.code}.webp`);
+  const fallbackSrc = toBlobUrl(`products/${product}LOGO.webp`);
 
   return (
     <div className="grid grid-cols-2 gap-1 ml-2 h-[300px] mb-6">

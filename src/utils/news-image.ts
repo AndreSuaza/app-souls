@@ -17,6 +17,9 @@ export const resolveNewsImageUrl = (
     return value;
   }
   if (value.startsWith("souls/")) {
+    return toBlobUrl(value.slice("souls/".length));
+  }
+  if (value.includes("/")) {
     return toBlobUrl(value);
   }
   // Compatibilidad con registros antiguos: evita romper la UI si llega un nombre local.

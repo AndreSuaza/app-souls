@@ -11,7 +11,7 @@ export async function getProductImagesAction(): Promise<string[]> {
       return [];
     }
 
-    const list = await listBlob("souls/products/");
+    const list = await listBlob("products/");
     return list
       .sort((a, b) => a.pathname.localeCompare(b.pathname))
       .map((item) => item.pathname);

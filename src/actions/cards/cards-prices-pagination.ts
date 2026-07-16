@@ -1,16 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-
-interface WhereClause {
-  product?: { code: { in: string[] } };
-  raritiesIds?: { hasEvery: string[] };
-  OR?: Array<{
-    effect?: { contains: string; mode: "insensitive" };
-    idd?: { equals: string; mode: "insensitive" };
-    name?: { contains: string; mode: "insensitive" };
-  }>;
-}
+import type { Prisma } from "@prisma/client";
+import { activeCardWhere } from "./card-status";
 
 interface PaginationOptions {
   page?: number;
@@ -34,7 +26,7 @@ export const getPaginatedPricesCards = async ({
 
   try {
     const whereConstruction = () => {
-      const where: WhereClause = {};
+      const where: Prisma.CardWhereInput = {};
       if (products) {
         where.product = {
           code: {
@@ -54,7 +46,7 @@ export const getPaginatedPricesCards = async ({
           { name: { contains: text, mode: "insensitive" } },
         ];
       }
-      return where;
+      return { AND: [activeCardWhere(), where] };
     };
 
     const resolvedOrder = order === "asc" || order === "desc" ? order : null;

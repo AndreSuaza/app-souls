@@ -6,32 +6,32 @@ type AvatarMap = Record<string, string>;
 
 const AVATAR_MAP: AvatarMap = {
   bostaurus:
-    "souls/profile/avatars/bostaurus-ecadd2b6-542e-46ab-b800-04903e4d9391.webp",
+    "profile/avatars/bostaurus-ecadd2b6-542e-46ab-b800-04903e4d9391.webp",
   dracula:
-    "souls/profile/avatars/dracula-4f8850fe-295d-4af6-be4d-a4ac7d088064.webp",
+    "profile/avatars/dracula-4f8850fe-295d-4af6-be4d-a4ac7d088064.webp",
   ekoar:
-    "souls/profile/avatars/ekoar-01d310c6-9034-4747-b295-a2f1b8a9d236.webp",
+    "profile/avatars/ekoar-01d310c6-9034-4747-b295-a2f1b8a9d236.webp",
   eliathor:
-    "souls/profile/avatars/eliathor-8c5fd1a9-03a6-463e-83df-88adb938e795.webp",
-  erik: "souls/profile/avatars/erik-e9e3861b-6c2b-478d-b057-abf8f3ba01c5.webp",
+    "profile/avatars/eliathor-8c5fd1a9-03a6-463e-83df-88adb938e795.webp",
+  erik: "profile/avatars/erik-e9e3861b-6c2b-478d-b057-abf8f3ba01c5.webp",
   estraker:
-    "souls/profile/avatars/estraker-6bc1dd43-4040-4937-a20c-215a4832a1fe.webp",
+    "profile/avatars/estraker-6bc1dd43-4040-4937-a20c-215a4832a1fe.webp",
   fungido:
-    "souls/profile/avatars/fungido-bdb66691-58df-49d9-b5ab-edf08a62d37b.webp",
+    "profile/avatars/fungido-bdb66691-58df-49d9-b5ab-edf08a62d37b.webp",
   "guardia-raton":
-    "souls/profile/avatars/guardia-raton-22a311df-94f9-4eb2-ac94-ee418c5f06a3.webp",
+    "profile/avatars/guardia-raton-22a311df-94f9-4eb2-ac94-ee418c5f06a3.webp",
   kaerros:
-    "souls/profile/avatars/kaerros-7560fa59-3508-487a-bf32-36afe00d6c71.webp",
+    "profile/avatars/kaerros-7560fa59-3508-487a-bf32-36afe00d6c71.webp",
   player:
-    "souls/profile/avatars/player-f2fea397-2187-4000-b3da-55ef33376457.webp",
+    "profile/avatars/player-f2fea397-2187-4000-b3da-55ef33376457.webp",
   satiro:
-    "souls/profile/avatars/satiro-69fc7f39-d337-4503-adff-b54b945c6d3b.webp",
-  toro: "souls/profile/avatars/toro-797cceb4-0222-4c11-91a0-e5c4875c2cc3.webp",
+    "profile/avatars/satiro-69fc7f39-d337-4503-adff-b54b945c6d3b.webp",
+  toro: "profile/avatars/toro-797cceb4-0222-4c11-91a0-e5c4875c2cc3.webp",
   voluntad:
-    "souls/profile/avatars/voluntad-42dd3f84-8cf3-4138-a8c1-c2c8103a9954.webp",
+    "profile/avatars/voluntad-42dd3f84-8cf3-4138-a8c1-c2c8103a9954.webp",
 };
 const DEFAULT_BANNER =
-  "souls/profile/banners/angel-82ca9604-cf1a-41a4-8240-7f9092720280.webp";
+  "profile/banners/angel-82ca9604-cf1a-41a4-8240-7f9092720280.webp";
 
 async function main() {
   // Actualiza usuarios y jugadores de torneo que aun tengan avatares legacy.

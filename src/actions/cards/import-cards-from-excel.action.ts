@@ -347,18 +347,18 @@ export async function importCardsFromExcelAction(
 
     const iddParsed = parseInteger(iddRaw);
     if (iddParsed === null) {
-      reasons.push("El campo Codigo (IDD) debe ser numerico.");
+      reasons.push("El campo Código (IDD) debe ser numérico.");
     }
 
     const costParsed = parseInteger(costRaw);
     if (costParsed === null) {
-      reasons.push("El campo Coste debe ser numerico.");
+      reasons.push("El campo Coste debe ser numérico.");
     }
 
     const priceParsed =
       toPlainString(priceRaw) === "" ? null : parseFloatNumber(priceRaw);
     if (toPlainString(priceRaw) !== "" && priceParsed === null) {
-      reasons.push("El campo Precios debe ser numerico.");
+      reasons.push("El campo Precios debe ser numérico.");
     }
     if (priceParsed !== null && priceParsed < 0) {
       reasons.push("El campo Precios no puede ser negativo.");
@@ -367,7 +367,7 @@ export async function importCardsFromExcelAction(
     const isRotationEmpty = toPlainString(rotationRaw) === "";
     const rotationParsed = isRotationEmpty ? 0 : parseInteger(rotationRaw);
     if (!isRotationEmpty && rotationParsed === null) {
-      reasons.push("El campo Rotation debe ser numerico entero.");
+      reasons.push("El campo Rotation debe ser numérico entero.");
     }
     if (rotationParsed !== null && rotationParsed < 0) {
       reasons.push("El campo Rotation no puede ser negativo.");

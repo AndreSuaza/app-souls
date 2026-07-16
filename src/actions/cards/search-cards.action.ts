@@ -3,6 +3,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { CardSearchSchema, type CardSearchInput } from "@/schemas";
+import { activeCardWhere } from "./card-status";
 
 export async function searchCardsAction(input: CardSearchInput = {}) {
   const { text, take = 30, page = 1 } = CardSearchSchema.parse(input);
@@ -13,7 +14,7 @@ export async function searchCardsAction(input: CardSearchInput = {}) {
     ? /^[0-9a-fA-F]{24}$/.test(searchText)
     : false;
 
-  const where: Prisma.CardWhereInput = searchText
+  const searchWhere: Prisma.CardWhereInput = searchText
     ? {
         OR: [
           {
@@ -52,6 +53,7 @@ export async function searchCardsAction(input: CardSearchInput = {}) {
         ],
       }
     : {};
+  const where: Prisma.CardWhereInput = { AND: [activeCardWhere(), searchWhere] };
 
   const totalCount = await prisma.card.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalCount / take));
