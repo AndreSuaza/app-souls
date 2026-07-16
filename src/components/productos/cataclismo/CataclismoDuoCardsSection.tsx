@@ -1,5 +1,6 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
+import { toAssetUrl } from "@/utils/blob-path";
 
 export function CataclismoDuoCardsSection() {
   return (
@@ -18,7 +19,7 @@ export function CataclismoDuoCardsSection() {
           <div className="flex justify-center">
             <TiltCard className="w-full max-w-[300px]">
               <Image
-                src="/cards/CAT-091-4685.webp"
+                src={toAssetUrl("/cards/CAT-091-4685.webp")}
                 alt="Carta Cataclismo 091"
                 title="Carta Cataclismo 091"
                 width={360}
@@ -30,7 +31,7 @@ export function CataclismoDuoCardsSection() {
           <div className="flex justify-center">
             <TiltCard className="w-full max-w-[300px]">
               <Image
-                src="/cards/CAT-092-1158.webp"
+                src={toAssetUrl("/cards/CAT-092-1158.webp")}
                 alt="Carta Cataclismo 092"
                 title="Carta Cataclismo 092"
                 width={360}

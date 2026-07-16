@@ -7,12 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "r2:inventory": "ts-node --project scripts/r2/tsconfig.json scripts/r2/inventory.ts",
+    "r2:upload-assets": "ts-node --project scripts/r2/tsconfig.json scripts/r2/upload-assets.ts",
+    "r2:validate-assets": "ts-node --project scripts/r2/tsconfig.json scripts/r2/validate-assets.ts",
+    "r2:update-card-image-urls": "ts-node --project scripts/r2/tsconfig.json scripts/r2/update-card-image-urls.ts"
   },
   "dependencies": {
     "@auth/core": "0.41.0",
     "@auth/mongodb-adapter": "3.11.0",
     "@auth/prisma-adapter": "2.11.0",
+    "@aws-sdk/client-s3": "^3.1088.0",
     "@googlemaps/js-api-loader": "^1.16.8",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
@@ -29,7 +34,6 @@
     "@tiptap/starter-kit": "^3.19.0",
     "@types/google.maps": "^3.58.1",
     "@types/mdx": "^2.0.13",
-    "@vercel/blob": "^2.3.1",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
     "formik": "^2.4.6",

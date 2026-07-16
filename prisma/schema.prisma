@@ -107,6 +107,7 @@ model Card {
   name       String
   slug       String   @unique
   effect     String
+  imageUrl   String?
   createDate DateTime @default(now())
 
   price Float?

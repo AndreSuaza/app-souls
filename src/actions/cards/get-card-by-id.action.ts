@@ -16,6 +16,7 @@ export async function getCardByIdAction(input: CardIdInput) {
       code: true,
       name: true,
       slug: true,
+      imageUrl: true,
       rarities: {
         select: {
           name: true,
@@ -32,6 +33,7 @@ export async function getCardByIdAction(input: CardIdInput) {
     code: card.code,
     name: card.name,
     slug: card.slug,
+    imageUrl: card.imageUrl ?? null,
     rarityName: card.rarities[0]?.name ?? null,
   };
 }

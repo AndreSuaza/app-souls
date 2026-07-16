@@ -18,6 +18,7 @@ import {
 import { CardDetailStatCard } from "./CardDetailStatCard";
 import { CardDetailProductCard } from "./CardDetailProductCard";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 interface Props {
   cards: Card[];
@@ -199,6 +200,7 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
       );
   }, [typeText, archetypeText, rarityText, card]);
   const bovedaHref = card?.slug ? `/boveda/${card.slug}` : "";
+  const imageSrc = resolveCardImageUrl(card);
 
   if (!isDetailOpen || !isMounted) return null;
 
@@ -248,7 +250,7 @@ export const CardDetail = ({ cards, indexList, isOpen, onClose }: Props) => {
               <TiltCard className="w-full">
                 <div className="overflow-hidden rounded-lg bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
                   <Image
-                    src={`/cards/${card.code}-${card.idd}.webp`}
+                    src={imageSrc}
                     alt={card.name}
                     title={card.name}
                     placeholder="blur"

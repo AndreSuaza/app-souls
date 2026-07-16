@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { CardExcelImportSchema } from "@/schemas";
+import { resolveCardImageUrl } from "@/utils/card-image";
 import { buildCardSlug } from "@/utils/card-slug";
 import type { Prisma } from "@prisma/client";
 import { read, utils } from "xlsx";
@@ -437,6 +438,10 @@ export async function importCardsFromExcelAction(
       name: nameRaw,
       slug: buildCardSlug(nameRaw, generatedCode),
       effect: effectRaw || "",
+      imageUrl: resolveCardImageUrl({
+        code: generatedCode,
+        idd: String(iddParsed),
+      }),
       typeIds: typeResolved.ids,
       archetypesIds: archetypeResolved.ids,
       keywordsIds: keywordResolved.ids,

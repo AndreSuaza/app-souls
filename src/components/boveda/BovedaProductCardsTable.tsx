@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
 import Link from "next/link";
+import { resolveCardImageUrl } from "@/utils/card-image";
 import { IoChevronForwardOutline } from "react-icons/io5";
 
 interface ProductCard {
@@ -11,6 +12,7 @@ interface ProductCard {
   code: string;
   name: string;
   slug: string;
+  imageUrl: string | null;
   price: number | null;
   rarities: { name: string }[];
 }
@@ -32,6 +34,7 @@ export function BovedaProductCardsTable({ cards }: Props) {
           card.price != null
             ? `$${priceFormatter.format(card.price)}`
             : "Sin precio";
+        const imageSrc = resolveCardImageUrl(card);
 
         return (
           <Link
@@ -43,7 +46,7 @@ export function BovedaProductCardsTable({ cards }: Props) {
             <div className="flex items-center gap-4">
               <div className="h-20 w-14 overflow-hidden rounded-lg border border-slate-200 dark:border-tournament-dark-border">
                 <Image
-                  src={`/cards/${card.code}-${card.idd}.webp`}
+                  src={imageSrc}
                   alt={card.name}
                   title={card.name}
                   placeholder="blur"

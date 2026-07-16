@@ -1,4 +1,5 @@
-﻿import { CataclismoCardStack } from "@/components/productos/cataclismo/CataclismoCardStack";
+import { CataclismoCardStack } from "@/components/productos/cataclismo/CataclismoCardStack";
+import { toAssetUrl } from "@/utils/blob-path";
 
 const showcaseItems = [
   {
@@ -8,17 +9,17 @@ const showcaseItems = [
     cards: [
       {
         id: "cat-026",
-        src: "/cards/CAT-026-7266.webp",
+        src: toAssetUrl("/cards/CAT-026-7266.webp"),
         alt: "Carta Cataclismo 026",
       },
       {
         id: "cat-027",
-        src: "/cards/CAT-027-8418.webp",
+        src: toAssetUrl("/cards/CAT-027-8418.webp"),
         alt: "Carta Cataclismo 027",
       },
       {
         id: "cat-028",
-        src: "/cards/CAT-028-8745.webp",
+        src: toAssetUrl("/cards/CAT-028-8745.webp"),
         alt: "Carta Cataclismo 028",
       },
     ],
@@ -30,17 +31,17 @@ const showcaseItems = [
     cards: [
       {
         id: "cat-029",
-        src: "/cards/CAT-029-4685.webp",
+        src: toAssetUrl("/cards/CAT-029-4685.webp"),
         alt: "Carta Cataclismo 029",
       },
       {
         id: "cat-030",
-        src: "/cards/CAT-030-5757.webp",
+        src: toAssetUrl("/cards/CAT-030-5757.webp"),
         alt: "Carta Cataclismo 030",
       },
       {
         id: "cat-034",
-        src: "/cards/CAT-034-1158.webp",
+        src: toAssetUrl("/cards/CAT-034-1158.webp"),
         alt: "Carta Cataclismo 034",
       },
     ],
@@ -52,17 +53,17 @@ const showcaseItems = [
     cards: [
       {
         id: "cat-038",
-        src: "/cards/CAT-038-6314.webp",
+        src: toAssetUrl("/cards/CAT-038-6314.webp"),
         alt: "Carta Cataclismo 038",
       },
       {
         id: "cat-039",
-        src: "/cards/CAT-039-6756.webp",
+        src: toAssetUrl("/cards/CAT-039-6756.webp"),
         alt: "Carta Cataclismo 039",
       },
       {
         id: "cat-058",
-        src: "/cards/CAT-058-6391.webp",
+        src: toAssetUrl("/cards/CAT-058-6391.webp"),
         alt: "Carta Cataclismo 058",
       },
     ],

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
 import { getCardByIdAction } from "@/actions";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 type Props = {
   src?: string;
@@ -69,7 +70,7 @@ export const MarkdownCardImage = ({ src, alt }: Props) => {
             const card = await getCardByIdAction({ cardId });
             if (!card) return null;
             return {
-              src: `/cards/${card.code}-${card.idd}.webp`,
+              src: resolveCardImageUrl(card),
               alt: card.name ?? "Carta",
             };
           })();

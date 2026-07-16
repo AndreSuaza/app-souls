@@ -1,25 +1,26 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
+import { toAssetUrl } from "@/utils/blob-path";
 
 const cards = [
   {
     id: "cat-045",
-    src: "/cards/CAT-045-6334.webp",
+    src: toAssetUrl("/cards/CAT-045-6334.webp"),
     alt: "Carta Cataclismo 045",
   },
   {
     id: "cat-056",
-    src: "/cards/CAT-056-1306.webp",
+    src: toAssetUrl("/cards/CAT-056-1306.webp"),
     alt: "Carta Cataclismo 056",
   },
   {
     id: "cat-057",
-    src: "/cards/CAT-057-8077.webp",
+    src: toAssetUrl("/cards/CAT-057-8077.webp"),
     alt: "Carta Cataclismo 057",
   },
   {
     id: "cat-048",
-    src: "/cards/CAT-048-2536.webp",
+    src: toAssetUrl("/cards/CAT-048-2536.webp"),
     alt: "Carta Cataclismo 048",
   },
 ];

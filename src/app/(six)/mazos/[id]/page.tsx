@@ -9,6 +9,7 @@ import {
 } from "@/actions";
 import { DeckDetailView } from "@/components/mazos/deck-detail/DeckDetailView";
 import type { Metadata } from "next";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 export const revalidate = 300;
 
@@ -29,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description = `Explora el mazo ${deck.name} en Souls In Xtinction TCG. Revisa su arquetipo, cartas principales y estrategia, y descubre si esta asociado a un torneo o creado por la comunidad.`;
   const canonical = `https://soulsinxtinction.com/mazos/${deck.id}`;
+  const imageUrl = resolveCardImageUrl({ imageKey: deck.imagen });
 
   return {
     title: `${deck.name} | Mazos`,
@@ -50,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: "Mazos - Souls In Xtinction TCG",
       images: [
         {
-          url: `https://soulsinxtinction.com/cards/${deck.imagen}.webp`,
+          url: imageUrl,
           width: 800,
           height: 600,
           alt: deck.name,

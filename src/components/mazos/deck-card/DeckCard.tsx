@@ -23,6 +23,7 @@ import { toggleDeckLikeAction } from "@/actions";
 import type { Deck } from "@/interfaces";
 import { deckCardImageFallback } from "@/models/media-fallbacks.models";
 import { FallbackImage } from "@/components/ui/image/FallbackImage";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 interface Props {
   mazo: Deck;
@@ -77,6 +78,7 @@ export const DeckCard = ({
   }, [mazo.likesCount]);
 
   const displayLiked = liked;
+  const imageSrc = resolveCardImageUrl({ imageKey: mazo.imagen });
 
   const handleLikeClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -214,7 +216,7 @@ export const DeckCard = ({
       >
         <div className="relative h-56 w-full shrink-0 overflow-hidden">
           <FallbackImage
-            src={`/cards/${mazo.imagen}.webp`}
+            src={imageSrc}
             fallbackSrc={deckCardImageFallback}
             alt={mazo.name}
             title={mazo.name}

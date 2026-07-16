@@ -201,6 +201,7 @@ const getCardsByIds = async (ids: string) => {
                 keywords: card.keywords,
                 name: card.name,
                 effect: card.effect,
+                imageUrl: card.imageUrl ?? null,
                 product: card.product,
                 price: card.price ?? null,
               }

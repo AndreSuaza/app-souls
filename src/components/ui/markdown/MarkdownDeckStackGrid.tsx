@@ -7,6 +7,7 @@ import type { Decklist } from "@/interfaces";
 import { useState } from "react";
 import { CardDetail } from "@/components/cartas/card-detail/CardDetail";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 type Props = {
   decklist: Decklist[];
@@ -108,6 +109,7 @@ export const MarkdownDeckStackGrid = ({
             variant === "product"
               ? (productStackPadding[stackLayers - 1] ?? "pb-0")
               : "";
+          const imageSrc = resolveCardImageUrl(item.card);
 
           const content = (
             <button
@@ -132,7 +134,7 @@ export const MarkdownDeckStackGrid = ({
                   return (
                     <Image
                       key={`${item.card.id}-${index}`}
-                      src={`/cards/${item.card.code}-${item.card.idd}.webp`}
+                      src={imageSrc}
                       alt={item.card.name}
                       title={item.card.name}
                       placeholder="blur"

@@ -1,5 +1,6 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
+import { toAssetUrl } from "@/utils/blob-path";
 
 export function CataclismoSplitSection() {
   return (
@@ -8,7 +9,7 @@ export function CataclismoSplitSection() {
         <div className="flex justify-center">
           <TiltCard className="w-full max-w-[260px]">
             <Image
-              src="/cards/CAT-069-1567.webp"
+              src={toAssetUrl("/cards/CAT-069-1567.webp")}
               alt="Carta Cataclismo 069"
               title="Carta Cataclismo 069"
               width={360}

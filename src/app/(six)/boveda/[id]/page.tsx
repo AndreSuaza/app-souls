@@ -7,6 +7,7 @@ import { BovedaCardDetail } from "@/components/boveda/BovedaCardDetail";
 import { BovedaProductCardsTable } from "@/components/boveda/BovedaProductCardsTable";
 import { Pagination } from "@/components/ui/pagination/pagination";
 import { PaginationStats } from "@/components/ui/pagination/PaginationStats";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -47,6 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     detail.code,
   ];
   const canonical = `https://soulsinxtinction.com/boveda/${detail.slug}`;
+  const imageUrl = resolveCardImageUrl(detail);
 
   return {
     title: `${detail.name} | Bóveda`,
@@ -66,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: "Boveda - Souls In Xtinction",
       images: [
         {
-          url: `https://soulsinxtinction.com/cards/${detail.code}-${detail.idd}.webp`,
+          url: imageUrl,
           width: 800,
           height: 600,
           alt: detail.name,

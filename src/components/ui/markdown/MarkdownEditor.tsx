@@ -37,6 +37,7 @@ import { MarkdownDeckModal } from "./MarkdownDeckModal";
 import { MarkdownProductModal } from "./MarkdownProductModal";
 import { MarkdownImageUrlModal } from "./MarkdownImageUrlModal";
 import { toBlobUrl } from "@/utils/blob-path";
+import { resolveCardImageUrl } from "@/utils/card-image";
 import { CardBlock, IndentBlock } from "./markdown-custom-blocks";
 
 type Props = {
@@ -98,6 +99,7 @@ type CardSearchResult = {
   idd: string;
   code: string;
   name: string;
+  imageUrl?: string | null;
   rarityName?: string | null;
 };
 
@@ -345,7 +347,7 @@ export const MarkdownEditor = ({
         try {
           const card = await getCardByIdAction({ cardId: id });
           if (!card) continue;
-          const preview = `/cards/${card.code}-${card.idd}.webp`;
+          const preview = resolveCardImageUrl(card);
           previewCacheRef.current.set(id, preview);
           updateCardPreview(id, preview);
         } catch {
@@ -570,17 +572,14 @@ export const MarkdownEditor = ({
       attrs: {
         src: card.id,
         alt: card.name ?? "Carta",
-        preview: `/cards/${card.code}-${card.idd}.webp`,
+        preview: resolveCardImageUrl(card),
       },
     }));
 
     // Insertamos todas las cartas como bloques consecutivos para mantener el flujo visual.
     editor.chain().focus().insertContent(nodes).run();
     selectedCards.forEach((card) => {
-      previewCacheRef.current.set(
-        card.id,
-        `/cards/${card.code}-${card.idd}.webp`,
-      );
+      previewCacheRef.current.set(card.id, resolveCardImageUrl(card));
     });
     setSelectedCards([]);
     setIsCardModalOpen(false);

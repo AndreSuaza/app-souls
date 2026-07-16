@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { cardImageBlurDataURL } from "@/models/images.models";
+import { toAssetUrl } from "@/utils/blob-path";
 
 export const metadata: Metadata = {
   title: "Forja tu Legión de Almas Torneo Souls In Xticition",
@@ -94,7 +95,7 @@ export default function Tournaments() {
               promocional exclusiva.
             </p>
             <Image
-              src={`/cards/IMP-PC-011-6072.webp`}
+              src={toAssetUrl("/cards/IMP-PC-011-6072.webp")}
               alt={"Imagen Cartas Escudos Gemelos Arte Alterno"}
               title="Imagen Cartas Escudos Gemelos Arte Alterno"
               placeholder="blur"

@@ -51,6 +51,7 @@ export async function getBovedaProductCardsAction(
         code: true,
         name: true,
         slug: true,
+        imageUrl: true,
         price: true,
         rarities: {
           select: {

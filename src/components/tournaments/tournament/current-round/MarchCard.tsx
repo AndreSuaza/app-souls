@@ -7,6 +7,7 @@ import { MatchInterface, TournamentPlayerInterface } from "@/interfaces";
 import { PlayerCell } from "../players/PlayerCell";
 import { MatchResultSelector } from "./MatchResultSelector";
 import { MatchStatusIcon } from "./MatchStatusIcon";
+import { getAvatarUrl } from "@/utils/avatar-image";
 
 interface MatchCardProps {
   match: MatchInterface;
@@ -39,6 +40,7 @@ export const MatchCard = ({
 }: MatchCardProps) => {
   const player1 = players.find((p) => p.id === match.player1Id);
   const player2 = players.find((p) => p.id === match.player2Id);
+  const byeAvatarSrc = getAvatarUrl();
 
   if (!player1) return null;
 
@@ -122,7 +124,7 @@ export const MatchCard = ({
                 BYE
               </p>
               <Image
-                src="/profile/player.webp"
+                src={byeAvatarSrc}
                 alt="BYE"
                 title="BYE"
                 width={36}
@@ -182,7 +184,7 @@ export const MatchCard = ({
 
             {/* Avatar por defecto */}
             <Image
-              src="/profile/player.webp"
+              src={byeAvatarSrc}
               alt="BYE"
               title="BYE"
               width={36}

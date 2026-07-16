@@ -7,6 +7,7 @@ import type { ReadonlyURLSearchParams } from "next/navigation";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { Modal } from "../modal/modal";
 import { cardImageBlurDataURL } from "@/models/images.models";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 type DeckSearchResult = {
   id: string;
@@ -101,7 +102,7 @@ export const MarkdownDeckModal = ({
           <div className="relative max-h-[360px] min-h-[360px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {decks.map((deck) => {
-                const src = `/cards/${deck.imagen}.webp`;
+                const src = resolveCardImageUrl({ imageKey: deck.imagen });
                 const isSelected = selectedDeckId === deck.id;
 
                 return (

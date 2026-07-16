@@ -7,6 +7,7 @@ import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
 import { useState } from "react";
 import clsx from "clsx";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 interface Props {
   cards: Card[];
@@ -41,14 +42,17 @@ export const CompleteCollection = ({
               "bg-transparent",
             )}
           >
-            {cards.map((card, index) => (
+            {cards.map((card, index) => {
+              const imageSrc = resolveCardImageUrl(card);
+
+              return (
               <li
                 key={card.id}
                 onClick={() => openDetail(index)}
                 className="cursor-pointer transition-transform duration-200 hover:-translate-y-2"
               >
                 <Image
-                  src={`/cards/${card.code}-${card.idd}.webp`}
+                  src={imageSrc}
                   alt={card.name}
                   title={card.name}
                   placeholder="blur"
@@ -58,7 +62,8 @@ export const CompleteCollection = ({
                   height={718}
                 />
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       ) : (
@@ -68,14 +73,17 @@ export const CompleteCollection = ({
             className,
           )}
         >
-          {cards.map((card, index) => (
+          {cards.map((card, index) => {
+            const imageSrc = resolveCardImageUrl(card);
+
+            return (
           <li
             key={card.id}
             onClick={() => openDetail(index)}
             className="cursor-pointer transition-transform duration-200 hover:-translate-y-2"
           >
               <Image
-                src={`/cards/${card.code}-${card.idd}.webp`}
+                src={imageSrc}
                 alt={card.name}
                 title={card.name}
                 placeholder="blur"
@@ -85,7 +93,8 @@ export const CompleteCollection = ({
                 height={718}
               />
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
       {isCardDetailOpen && <CardDetail cards={cards} indexList={index} />}

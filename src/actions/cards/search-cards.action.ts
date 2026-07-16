@@ -69,6 +69,7 @@ export async function searchCardsAction(input: CardSearchInput = {}) {
       idd: true,
       code: true,
       name: true,
+      imageUrl: true,
       rarities: {
         select: {
           name: true,
@@ -83,6 +84,7 @@ export async function searchCardsAction(input: CardSearchInput = {}) {
       idd: card.idd,
       code: card.code,
       name: card.name,
+      imageUrl: card.imageUrl ?? null,
       rarityName: card.rarities[0]?.name ?? null,
     })),
     totalCount,

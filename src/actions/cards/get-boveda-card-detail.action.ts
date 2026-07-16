@@ -10,6 +10,7 @@ const cardDetailSelect = {
   code: true,
   name: true,
   slug: true,
+  imageUrl: true,
   cost: true,
   force: true,
   defense: true,

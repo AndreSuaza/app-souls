@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
+import { toAssetUrl } from "@/utils/blob-path";
 
 const MotionImage = motion(Image);
 
@@ -152,7 +153,7 @@ export const HomeNational = () => {
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:px-20 mx-auto items-center justify-center mt-10">
           <Image
-            src="/cards/GNC-044-6547.webp"
+            src={toAssetUrl("/cards/GNC-044-6547.webp")}
             alt="Guerrero Caído"
             title="Guerrero Caído"
             placeholder="blur"
@@ -162,7 +163,7 @@ export const HomeNational = () => {
             className="mx-auto w-60 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-400/30 hover:scale-105 transition-transform duration-500"
           />
           <Image
-            src="/cards/ME3-016-3938.webp"
+            src={toAssetUrl("/cards/ME3-016-3938.webp")}
             alt="Esporas Somníferas"
             title="Esporas Somníferas"
             placeholder="blur"
@@ -172,7 +173,7 @@ export const HomeNational = () => {
             className="mx-auto w-60 rounded-xl shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-400/30 hover:scale-105 transition-transform duration-500"
           />
           <Image
-            src="/cards/LP-018-6874.webp"
+            src={toAssetUrl("/cards/LP-018-6874.webp")}
             alt="Aplasta Insectos"
             title="Aplasta Insectos"
             placeholder="blur"
@@ -199,7 +200,7 @@ export const HomeNational = () => {
             transition={{ duration: 0.8 }}
           >
             <Image
-              src="/cards/P-004-8477.webp"
+              src={toAssetUrl("/cards/P-004-8477.webp")}
               alt="Aleksandra"
               title="Aleksandra"
               placeholder="blur"
