@@ -1,4 +1,8 @@
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
+import {
+  isVerificationTokenForPurpose,
+  resolveVerificationTokenEmail,
+} from "@/lib/verification-token";
 import { redirect } from "next/navigation";
 import { type NextRequest } from "next/server";
 
@@ -21,26 +25,48 @@ export async function GET(request: NextRequest) {
     return new Response("Token not found", { status: 400 });
   }
 
+  if (
+    !isVerificationTokenForPurpose(
+      verifyToken.identifier,
+      "email-verification",
+    )
+  ) {
+    return new Response("Token not found", { status: 400 });
+  }
+
   // verificar si el token ya expiró
   if (verifyToken.expires < new Date()) {
+    await prisma.verificationToken.deleteMany({ where: { token } });
     return new Response("Token expired", { status: 400 });
   }
 
+  const email = resolveVerificationTokenEmail(verifyToken.identifier);
+
   // verificar si el email ya esta verificado
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: {
-      email: verifyToken.identifier,
+      email: {
+        equals: email,
+        mode: "insensitive",
+      },
     },
+    select: { id: true, emailVerified: true },
   });
 
+  if (!user) {
+    await prisma.verificationToken.deleteMany({ where: { token } });
+    return new Response("Token not found", { status: 400 });
+  }
+
   if (user?.emailVerified) {
+    await prisma.verificationToken.deleteMany({ where: { token } });
     return new Response("Email already verified", { status: 400 });
   }
 
   // marcar el email como verificado
   await prisma.user.update({
     where: {
-      email: verifyToken.identifier,
+      id: user.id,
     },
     data: {
       emailVerified: new Date(),
@@ -48,11 +74,7 @@ export async function GET(request: NextRequest) {
   });
 
   // eliminar el token
-  await prisma.verificationToken.delete({
-    where: {
-      identifier: verifyToken.identifier,
-    },
-  });
+  await prisma.verificationToken.deleteMany({ where: { token } });
 
   // return Response.json({ token });
   redirect("/auth/login?verified=true");

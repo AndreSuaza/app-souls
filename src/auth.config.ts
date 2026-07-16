@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { sendEmailVerification } from "./lib/mail";
+import {
+  EMAIL_VERIFICATION_TOKEN_TTL_MS,
+  getVerificationTokenIdentifier,
+  getVerificationTokenIdentifiers,
+} from "./lib/verification-token";
 import { normalizeEmail } from "./utils/email";
 
 export const runtime = "nodejs";
@@ -60,33 +65,44 @@ export default {
 
         // verificación de email
         if (!user.emailVerified) {
-          const verifyTokenExits = await prisma.verificationToken.findFirst({
+          const tokenIdentifiers = getVerificationTokenIdentifiers(
+            user.email,
+            "email-verification",
+          );
+
+          // Si existe un token o hay tokens expirados, los eliminamos.
+          await prisma.verificationToken.deleteMany({
             where: {
-              identifier: user.email,
+              OR: [
+                { expires: { lt: new Date() } },
+                { identifier: { in: tokenIdentifiers } },
+              ],
             },
           });
-
-          // si existe un token, lo eliminamos
-          if (verifyTokenExits?.identifier) {
-            await prisma.verificationToken.delete({
-              where: {
-                identifier: user.email,
-              },
-            });
-          }
 
           const token = nanoid();
 
           await prisma.verificationToken.create({
             data: {
-              identifier: user.email,
+              identifier: getVerificationTokenIdentifier(
+                user.email,
+                "email-verification",
+              ),
               token,
-              expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+              expires: new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS),
             },
           });
 
           // enviar email de verificación
-          await sendEmailVerification(user.email, token);
+          const emailResult = await sendEmailVerification(user.email, token);
+          if (!emailResult.success) {
+            await prisma.verificationToken.deleteMany({ where: { token } });
+            throw new Error(
+              emailResult.message
+                ? `No se pudo enviar el correo de verificación: ${emailResult.message}`
+                : "No se pudo enviar el correo de verificación. Intenta nuevamente."
+            );
+          }
 
           throw new Error(
             "Tu cuenta no ha sido verificada. Revisa tu correo electrónico."
