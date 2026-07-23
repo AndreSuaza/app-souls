@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     siteName: "Pikingos",
     images: [
       {
-        url: "https://soulsinxtinction.com/products/pikingos/logo_pik.webp",
+        url: "https://soulsinxtinction.com/product-pages/pikingos/logo_pik.webp",
         width: 500,
         height: 500,
         alt: "Pikingos Souls In Xtinction TCG",
@@ -45,7 +45,7 @@ export default async function Page() {
     <>
       {/* Referencia modo light: text-slate-900 y before:from-slate-50/70 before:via-slate-100/70 before:to-slate-200/70 */}
       <h1 className="sr-only">Productos Pikingos</h1>
-      <main className="relative isolate min-h-screen bg-[url('/products/pikingos/Fondo.webp')] bg-cover bg-center bg-fixed text-white before:absolute before:inset-0 before:z-0 before:bg-gradient-to-br before:from-tournament-dark-bg/75 before:via-tournament-dark-muted/75 before:to-tournament-dark-bg/75 before:content-['']">
+      <main className="relative isolate min-h-screen bg-[url('/product-pages/pikingos/fondo.webp')] bg-cover bg-center bg-fixed text-white before:absolute before:inset-0 before:z-0 before:bg-gradient-to-br before:from-tournament-dark-bg/75 before:via-tournament-dark-muted/75 before:to-tournament-dark-bg/75 before:content-['']">
         <div className="relative z-10">
           <PikingosHeroSection />
           <PikingosShowcaseSection />

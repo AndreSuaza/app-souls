@@ -4,13 +4,13 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ProfileFrameSchema } from "@/schemas";
 import { getProfileFrameValue } from "@/utils/profile-frame";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toAssetStorageUrl } from "@/utils/asset-path";
 import { PLAYER_PROFILE_FRAMES_ENABLED } from "@/config/features";
 
 const buildFrameCandidates = (value: string) => {
   const normalized = getProfileFrameValue(value);
-  const path = toBlobPath(normalized);
-  const url = toBlobUrl(normalized);
+  const path = toAssetPath(normalized);
+  const url = toAssetStorageUrl(normalized);
 
   return Array.from(new Set([normalized, path, url].filter(Boolean)));
 };

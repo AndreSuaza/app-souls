@@ -7,7 +7,7 @@ import { FiX } from "react-icons/fi";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import { Modal } from "@/components/ui/modal/modal";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 
 const PAGE_SIZE = 32;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
@@ -174,7 +174,7 @@ export const NewsImageModal = ({
               {pageImages.map((image) => {
                 const isSelected = image === selectedImage;
                 const label = getLabel(image);
-                const imageSrc = toBlobUrl(image);
+                const imageSrc = toAssetStorageUrl(image);
 
                 return (
                   <button
@@ -206,7 +206,7 @@ export const NewsImageModal = ({
 
               {pageImages.length === 0 && (
                 <div className="col-span-full flex items-center justify-center py-10 text-sm text-slate-500 dark:text-slate-400">
-                  No hay imágenes disponibles en Blob para esta búsqueda.
+                  No hay imÃ¡genes disponibles en R2 para esta bÃºsqueda.
                 </div>
               )}
             </div>

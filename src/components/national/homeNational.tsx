@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
-import { toAssetUrl } from "@/utils/blob-path";
+import { toAssetUrl } from "@/utils/asset-path";
 
 const MotionImage = motion(Image);
 
@@ -15,7 +15,7 @@ export const HomeNational = () => {
         <MotionImage
           src="/souls-in-xtinction-logo-white.webp"
           alt="Souls In Xtinction"
-          width={800} // 👈 ancho real o aproximado
+          width={800} // ðŸ‘ˆ ancho real o aproximado
           height={400}
           className="w-96 md:w-1/2 mb-6"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -38,8 +38,8 @@ export const HomeNational = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.8 }}
         >
-          El evento más grande del año está aquí. Compite con los mejores
-          jugadores de Colombia, gana premios épicos y deja tu alma en el campo
+          El evento mÃ¡s grande del aÃ±o estÃ¡ aquÃ­. Compite con los mejores
+          jugadores de Colombia, gana premios Ã©picos y deja tu alma en el campo
           de batalla.
         </motion.p>
 
@@ -50,49 +50,49 @@ export const HomeNational = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          ¡Inscríbete Ahora!
+          Â¡InscrÃ­bete Ahora!
         </motion.a>
 
         <p className="mt-6 text-gray-200 uppercase text-2xl font-bold">
-          📍 Hidden TCG Store | 30 de Noviembre | 9:00 AM
+          ðŸ“ Hidden TCG Store | 30 de Noviembre | 9:00 AM
         </p>
       </section>
 
       {/* PREMIOS */}
       <section id="premios" className="py-20 bg-black/80 px-6">
         <h2 className="text-4xl font-bold text-center mb-10 text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">
-          🏆 Premiación
+          ðŸ† PremiaciÃ³n
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {[
             {
-              lugar: "1° Lugar",
+              lugar: "1Â° Lugar",
               color: "text-yellow-400",
               premio:
                 "$3.000.000 + Purificador Dorado + Tapete Nacional + Alma Dorada",
             },
             {
-              lugar: "2° Lugar",
+              lugar: "2Â° Lugar",
               color: "text-yellow-300",
               premio:
                 "$1.000.000 + Purificador Dorado + Tapete Nacional + Alma Dorada",
             },
             {
-              lugar: "3° - 4° Lugar",
+              lugar: "3Â° - 4Â° Lugar",
               color: "text-yellow-200",
               premio:
                 "$500.000 + Purificador Secreto + Tapete Nacional + Alma Dorada",
             },
             {
-              lugar: "5° - 8° Lugar",
+              lugar: "5Â° - 8Â° Lugar",
               color: "text-yellow-100",
               premio:
                 "$250.000 + Tapete Nacional + Alma Dorada + Purificador Secreto",
             },
             {
-              lugar: "9° - 16° Lugar",
+              lugar: "9Â° - 16Â° Lugar",
               color: "text-gray-200",
-              premio: "Media caja de la última expansión.",
+              premio: "Media caja de la Ãºltima expansiÃ³n.",
             },
           ].map((item, index) => (
             <motion.div
@@ -114,7 +114,7 @@ export const HomeNational = () => {
       {/* ENTRADAS */}
       <section id="entradas" className="py-20 bg-black/80 px-6">
         <h2 className="text-4xl font-bold text-center mb-10 text-yellow-400">
-          🎟️ Entradas
+          ðŸŽŸï¸ Entradas
         </h2>
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           <motion.div
@@ -122,13 +122,13 @@ export const HomeNational = () => {
             whileHover={{ scale: 1.03 }}
           >
             <h3 className="text-2xl font-semibold text-yellow-300 mb-4">
-              Entrada Normal – $78.000
+              Entrada Normal â€“ $78.000
             </h3>
             <ul className="list-disc ml-5 space-y-2 text-gray-300 text-sm">
               <li>1 sobre con una de 3 promos exclusivas del nacional</li>
-              <li>4 sobres de expansión a elección</li>
+              <li>4 sobres de expansiÃ³n a elecciÃ³n</li>
               <li>1 sobre maestro</li>
-              <li>1 oportunidad en la rifa de la carta gigante “Aleksandra”</li>
+              <li>1 oportunidad en la rifa de la carta gigante â€œAleksandraâ€</li>
             </ul>
           </motion.div>
           <motion.div
@@ -136,14 +136,14 @@ export const HomeNational = () => {
             whileHover={{ scale: 1.03 }}
           >
             <h3 className="text-2xl font-semibold text-yellow-400 mb-4">
-              Entrada Pro – $150.000
+              Entrada Pro â€“ $150.000
             </h3>
             <ul className="list-disc ml-5 space-y-2 text-gray-300 text-sm">
               <li>3 sobres con las 3 promos exclusivas del nacional</li>
-              <li>1 caja de expansión a elección</li>
+              <li>1 caja de expansiÃ³n a elecciÃ³n</li>
               <li>3 sobres maestros</li>
               <li>
-                2 oportunidades en la rifa de la carta gigante “Aleksandra”
+                2 oportunidades en la rifa de la carta gigante â€œAleksandraâ€
               </li>
             </ul>
           </motion.div>
@@ -154,8 +154,8 @@ export const HomeNational = () => {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:px-20 mx-auto items-center justify-center mt-10">
           <Image
             src={toAssetUrl("/cards/GNC-044-6547.webp")}
-            alt="Guerrero Caído"
-            title="Guerrero Caído"
+            alt="Guerrero CaÃ­do"
+            title="Guerrero CaÃ­do"
             placeholder="blur"
             blurDataURL={cardImageBlurDataURL}
             width={240}
@@ -164,8 +164,8 @@ export const HomeNational = () => {
           />
           <Image
             src={toAssetUrl("/cards/ME3-016-3938.webp")}
-            alt="Esporas Somníferas"
-            title="Esporas Somníferas"
+            alt="Esporas SomnÃ­feras"
+            title="Esporas SomnÃ­feras"
             placeholder="blur"
             blurDataURL={cardImageBlurDataURL}
             width={240}
@@ -188,7 +188,7 @@ export const HomeNational = () => {
       {/* RIFAS */}
       <section className="py-24 px-6 bg-black/95 flex flex-col items-center justify-center">
         <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">
-          🎁 Rifas Especiales
+          ðŸŽ Rifas Especiales
         </h2>
 
         <div className="max-w-6xl w-full flex flex-col lg:flex-row items-center justify-center gap-12 text-center lg:text-left">
@@ -220,39 +220,39 @@ export const HomeNational = () => {
           >
             <ul className="space-y-3 text-gray-200 text-lg md:text-xl font-light">
               <li>
-                🎫 <span className="font-semibold text-yellow-400">1 Rifa</span>{" "}
-                – 25 puntos
+                ðŸŽ« <span className="font-semibold text-yellow-400">1 Rifa</span>{" "}
+                â€“ 25 puntos
               </li>
               <li>
-                🎫 <span className="font-semibold text-yellow-400">1 Rifa</span>{" "}
-                – 45 puntos
+                ðŸŽ« <span className="font-semibold text-yellow-400">1 Rifa</span>{" "}
+                â€“ 45 puntos
               </li>
               <li>
-                💥{" "}
-                <span className="font-semibold text-yellow-400">4 Rifas</span> –
-                5 sobres (1 de cada expansión + maestro)
+                ðŸ’¥{" "}
+                <span className="font-semibold text-yellow-400">4 Rifas</span> â€“
+                5 sobres (1 de cada expansiÃ³n + maestro)
               </li>
               <li>
-                📦{" "}
+                ðŸ“¦{" "}
                 <span className="font-semibold text-yellow-400">
-                  1 Caja de expansión
+                  1 Caja de expansiÃ³n
                 </span>
               </li>
               <li>
-                🧙‍♂️{" "}
+                ðŸ§™â€â™‚ï¸{" "}
                 <span className="font-semibold text-yellow-400">
                   1 Tapete exclusivo
                 </span>
               </li>
               <li>
-                🔥{" "}
+                ðŸ”¥{" "}
                 <span className="font-semibold text-yellow-400">
                   1 Carta Dorada
                 </span>{" "}
-                “Alma del Dragón”
+                â€œAlma del DragÃ³nâ€
               </li>
               <li>
-                ✨{" "}
+                âœ¨{" "}
                 <span className="font-semibold text-yellow-400">
                   1 Carta gigante especial
                 </span>

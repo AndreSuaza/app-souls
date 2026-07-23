@@ -78,7 +78,7 @@ async function main() {
       0,
     );
   } else {
-    console.log("[seed-user-avatars-blob] No hay avatares para actualizar.");
+    console.log("[seed-user-avatars-assets] No hay avatares para actualizar.");
   }
   const bannerResult = await prisma.user.updateMany({
     where: {
@@ -93,13 +93,13 @@ async function main() {
     },
   });
   console.log(
-    `[seed-user-avatars-blob] Avatares actualizados: ${updatedUsers} usuarios.`,
+    `[seed-user-avatars-assets] Avatares actualizados: ${updatedUsers} usuarios.`,
   );
   console.log(
-    `[seed-user-avatars-blob] Avatares actualizados en torneos: ${updatedTournamentPlayers} jugadores.`,
+    `[seed-user-avatars-assets] Avatares actualizados en torneos: ${updatedTournamentPlayers} jugadores.`,
   );
   console.log(
-    `[seed-user-avatars-blob] Banners por defecto asignados: ${bannerResult.count} usuarios.`,
+    `[seed-user-avatars-assets] Banners por defecto asignados: ${bannerResult.count} usuarios.`,
   );
 }
 
@@ -107,7 +107,7 @@ const run = async () => {
   try {
     await main();
   } catch (error) {
-    console.error("[seed-user-avatars-blob] Error:", error);
+    console.error("[seed-user-avatars-assets] Error:", error);
   } finally {
     await prisma.$disconnect();
   }

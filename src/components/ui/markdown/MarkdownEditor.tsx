@@ -36,7 +36,7 @@ import { MarkdownCardModal } from "./MarkdownCardModal";
 import { MarkdownDeckModal } from "./MarkdownDeckModal";
 import { MarkdownProductModal } from "./MarkdownProductModal";
 import { MarkdownImageUrlModal } from "./MarkdownImageUrlModal";
-import { toBlobUrl } from "@/utils/blob-path";
+import { toProductImageUrl } from "@/utils/asset-path";
 import { resolveCardImageUrl } from "@/utils/card-image";
 import { CardBlock, IndentBlock } from "./markdown-custom-blocks";
 
@@ -388,7 +388,7 @@ export const MarkdownEditor = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      // Cierra los menús si el click no ocurre dentro de cada contenedor.
+      // Cierra los menÃºs si el click no ocurre dentro de cada contenedor.
       if (headingMenuRef.current && !headingMenuRef.current.contains(target)) {
         setIsHeadingMenuOpen(false);
       }
@@ -676,7 +676,7 @@ export const MarkdownEditor = ({
       .insertContent({
         type: "image",
         attrs: {
-          src: toBlobUrl(selectedProduct.imageUrl),
+          src: toProductImageUrl(selectedProduct.imageUrl),
           alt: selectedProduct.name ?? "Producto",
         },
       })
@@ -974,7 +974,7 @@ export const MarkdownEditor = ({
                         "bg-purple-600/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-200",
                     )}
                   >
-                    <span>Lista de viñetas</span>
+                    <span>Lista de viÃ±etas</span>
                     <span className="text-xs text-slate-400 dark:text-slate-500">
                       Ctrl+Shift+8
                     </span>
@@ -1057,7 +1057,7 @@ export const MarkdownEditor = ({
               </button>
             )}
 
-            {/* Botón de código desactivado temporalmente.
+            {/* BotÃ³n de cÃ³digo desactivado temporalmente.
             <button
               type="button"
               onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
@@ -1085,7 +1085,7 @@ export const MarkdownEditor = ({
                 readOnly && "cursor-not-allowed opacity-60",
               )}
             >
-              {isPublicPreview ? "Edición" : "Vista pública"}
+              {isPublicPreview ? "EdiciÃ³n" : "Vista pÃºblica"}
             </button>
           )}
         </div>
@@ -1095,7 +1095,7 @@ export const MarkdownEditor = ({
             {isPublicPreview ? (
               isEmpty ? (
                 <div className="text-sm text-slate-400 dark:text-slate-500">
-                  {placeholder ?? "Escribe la descripción del torneo"}
+                  {placeholder ?? "Escribe la descripciÃ³n del torneo"}
                 </div>
               ) : (
                 <MarkdownContent
@@ -1108,7 +1108,7 @@ export const MarkdownEditor = ({
               <>
                 {isEmpty && (
                   <div className="pointer-events-none absolute left-4 top-3 text-sm text-slate-400 dark:text-slate-500">
-                    {placeholder ?? "Escribe la descripción del torneo"}
+                    {placeholder ?? "Escribe la descripciÃ³n del torneo"}
                   </div>
                 )}
                 <EditorContent editor={editor} />
@@ -1197,7 +1197,7 @@ export const MarkdownEditor = ({
                   className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-700 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
                 >
                   <option value="none">Sin sangria</option>
-                  <option value="sm">Pequeña</option>
+                  <option value="sm">PequeÃ±a</option>
                   <option value="md">Media</option>
                   <option value="lg">Grande</option>
                   <option value="xl">Extra grande</option>
@@ -1217,7 +1217,7 @@ export const MarkdownEditor = ({
                   className="w-full rounded-lg border border-tournament-dark-accent bg-white p-2 text-sm text-slate-700 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
                 >
                   <option value="none">Sin sangria</option>
-                  <option value="sm">Pequeña</option>
+                  <option value="sm">PequeÃ±a</option>
                   <option value="md">Media</option>
                   <option value="lg">Grande</option>
                   <option value="xl">Extra grande</option>

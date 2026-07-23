@@ -15,7 +15,7 @@ import {
 } from "@/actions/cards/admin-cards.action";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import { toAssetUrl } from "@/utils/blob-path";
+import { toAssetUrl } from "@/utils/asset-path";
 
 type Properties = Awaited<ReturnType<typeof getAdminCardPropertiesAction>>;
 type AdminCardListItem = Awaited<
@@ -312,11 +312,11 @@ export const AdminCardsManager = ({ properties }: Props) => {
             <thead className="border-b border-tournament-dark-border/60 text-xs uppercase text-slate-500 dark:text-slate-400">
               <tr>
                 <th className="px-4 py-3">Carta</th>
-                <th className="px-4 py-3">Código</th>
+                <th className="px-4 py-3">CÃ³digo</th>
                 <th className="px-4 py-3">Producto</th>
                 <th className="px-4 py-3">Rareza</th>
                 <th className="px-4 py-3">Coste</th>
-                <th className="px-4 py-3">Rotación</th>
+                <th className="px-4 py-3">RotaciÃ³n</th>
                 <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3 text-right">Acciones</th>
               </tr>

@@ -2,7 +2,7 @@
 
 import sharp from "sharp";
 import { auth } from "@/auth";
-import { uploadBlob } from "@/lib/blob";
+import { uploadAsset } from "@/lib/assets-storage";
 import { prisma } from "@/lib/prisma";
 import {
   AdminCardsFiltersSchema,
@@ -16,7 +16,7 @@ import {
   type UpdateAdminCardInput,
 } from "@/schemas";
 import { buildCardImageKey } from "@/utils/card-image";
-import { toAssetUrl } from "@/utils/blob-path";
+import { toAssetUrl } from "@/utils/asset-path";
 import { buildCardSlug } from "@/utils/card-slug";
 import type { Prisma } from "@prisma/client";
 import { activeCardWhere } from "./card-status";
@@ -309,12 +309,12 @@ export async function uploadCardImageAction(formData: FormData) {
   const outputBuffer = await sharp(inputBuffer).webp({ quality: 88 }).toBuffer();
   const path = buildCardImageKey(parsed.code, parsed.idd);
 
-  const blob = await uploadBlob({
+  const asset = await uploadAsset({
     path,
     buffer: outputBuffer,
     contentType: "image/webp",
   });
-  const versionedPathname = addImageCacheVersion(blob.pathname);
+  const versionedPathname = addImageCacheVersion(asset.pathname);
 
   return { pathname: versionedPathname, url: toAssetUrl(versionedPathname) };
 }

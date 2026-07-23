@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
-import { toAssetUrl } from "@/utils/blob-path";
+import { toAssetUrl } from "@/utils/asset-path";
 
 export function CataclismoDuoCardsSection() {
   return (
@@ -11,7 +11,7 @@ export function CataclismoDuoCardsSection() {
             Arte que trasciende el juego
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            Por primera vez, llegan cartas secretas firmadas por el ilustrador Doroh. Estas piezas no solo destacan por su poder en el juego, sino por su valor artístico y exclusividad. Cada firma convierte la carta en una reliquia dentro del universo de Souls In Xtinction.
+            Por primera vez, llegan cartas secretas firmadas por el ilustrador Doroh. Estas piezas no solo destacan por su poder en el juego, sino por su valor artÃ­stico y exclusividad. Cada firma convierte la carta en una reliquia dentro del universo de Souls In Xtinction.
           </p>
         </div>
 

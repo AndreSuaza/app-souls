@@ -3,7 +3,7 @@
 import { basename, extname } from "path";
 import sharp from "sharp";
 import { auth } from "@/auth";
-import { blobExists, deleteBlob, uploadBlob } from "@/lib/blob";
+import { assetExists, deleteAsset, uploadAsset } from "@/lib/assets-storage";
 import { prisma } from "@/lib/prisma";
 import { CardExcelImportSchema } from "@/schemas";
 import { buildCardImageKey } from "@/utils/card-image";
@@ -543,18 +543,18 @@ export async function importCardsFromExcelAction(
 
     const iddParsed = parseIdd(iddRaw);
     if (iddParsed === null) {
-      reasons.push("El campo Código (IDD) debe ser numérico.");
+      reasons.push("El campo CÃ³digo (IDD) debe ser numÃ©rico.");
     }
 
     const costParsed = parseInteger(costRaw);
     if (costParsed === null) {
-      reasons.push("El campo Coste debe ser numérico.");
+      reasons.push("El campo Coste debe ser numÃ©rico.");
     }
 
     const priceParsed =
       toPlainString(priceRaw) === "" ? null : parseFloatNumber(priceRaw);
     if (toPlainString(priceRaw) !== "" && priceParsed === null) {
-      reasons.push("El campo Precios debe ser numérico.");
+      reasons.push("El campo Precios debe ser numÃ©rico.");
     }
     if (priceParsed !== null && priceParsed < 0) {
       reasons.push("El campo Precios no puede ser negativo.");
@@ -804,7 +804,7 @@ export async function importCardsFromExcelAction(
 
     preparedImages.push({
       imageKey: row.imageKey,
-      imageExists: await blobExists(row.imageKey),
+      imageExists: await assetExists(row.imageKey),
       outputBuffer,
     });
   }
@@ -816,7 +816,7 @@ export async function importCardsFromExcelAction(
     for (const preparedImage of preparedImages) {
       if (preparedImage.imageExists) continue;
 
-      await uploadBlob({
+      await uploadAsset({
         path: preparedImage.imageKey,
         buffer: preparedImage.outputBuffer,
         contentType: "image/webp",
@@ -830,7 +830,7 @@ export async function importCardsFromExcelAction(
     );
   } catch (error) {
     await Promise.allSettled(
-      uploadedNewImageKeys.map((imageKey) => deleteBlob(imageKey)),
+      uploadedNewImageKeys.map((imageKey) => deleteAsset(imageKey)),
     );
 
     throw new Error(

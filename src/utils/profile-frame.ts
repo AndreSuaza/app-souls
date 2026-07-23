@@ -1,4 +1,4 @@
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 
 const isHttpUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
@@ -16,7 +16,7 @@ export const getProfileFrameUrl = (value?: string | null) => {
   const normalized = normalizeFrameValue(value);
   if (!normalized) return "";
   if (isHttpUrl(normalized)) return normalized;
-  return toBlobUrl(normalized);
+  return toAssetStorageUrl(normalized);
 };
 
 export const getProfileFrameValue = (value?: string | null) =>

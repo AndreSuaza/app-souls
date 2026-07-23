@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import type { EventImageOptions } from "@/interfaces/events.interface";
-import { listBlob } from "@/lib/blob";
+import { listAssets } from "@/lib/assets-storage";
 
 const mapToPathnames = (items: { pathname: string; url: string }[]) =>
   items
@@ -18,8 +18,8 @@ export async function getEventImagesAction(): Promise<EventImageOptions> {
     }
 
     const [banners, cards] = await Promise.all([
-      listBlob("events/banners/"),
-      listBlob("events/cards/"),
+      listAssets("events/banners/"),
+      listAssets("events/cards/"),
     ]);
 
     return {

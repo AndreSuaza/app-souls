@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -21,7 +21,7 @@ import {
 } from "@/actions";
 import { ProfileMediaManager } from "@/components/media/admin/ProfileMediaManager";
 import { PaginationLine } from "@/components/ui";
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 
 const cosmeticTabs = [
   {
@@ -125,7 +125,7 @@ const renderSaleRows = (sales: AdminStoreSaleLog[]) =>
         <div className="flex min-w-52 items-center gap-3">
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-tournament-dark-muted">
             <Image
-              src={toBlobUrl(sale.cosmetic.imageUrl)}
+              src={toAssetStorageUrl(sale.cosmetic.imageUrl)}
               alt={sale.cosmetic.name}
               width={80}
               height={80}

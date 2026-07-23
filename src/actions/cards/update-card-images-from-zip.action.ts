@@ -4,7 +4,7 @@ import { basename, extname } from "path";
 import JSZip from "jszip";
 import sharp from "sharp";
 import { auth } from "@/auth";
-import { blobExists, copyBlob, deleteBlob, uploadBlob } from "@/lib/blob";
+import { assetExists, copyAsset, deleteAsset, uploadAsset } from "@/lib/assets-storage";
 import { prisma } from "@/lib/prisma";
 import { CardImagesBulkUpdateSchema } from "@/schemas";
 import { buildCardImageKey } from "@/utils/card-image";
@@ -244,7 +244,7 @@ export async function updateCardImagesFromZipAction(
 
   const missingCurrentImages: string[] = [];
   for (const item of targets) {
-    const exists = await blobExists(item.target.imageKey);
+    const exists = await assetExists(item.target.imageKey);
     if (!exists) {
       missingCurrentImages.push(
         `No existe imagen actual en R2 para ${item.target.code}: ${item.target.imageKey}`,
@@ -293,7 +293,7 @@ export async function updateCardImagesFromZipAction(
     for (const image of preparedImages) {
       const fileName = basename(image.target.imageKey);
       const backupKey = `${backupPrefix}/${fileName}`;
-      await copyBlob(image.target.imageKey, backupKey);
+      await copyAsset(image.target.imageKey, backupKey);
       backups.push({
         sourceKey: image.target.imageKey,
         backupKey,
@@ -301,7 +301,7 @@ export async function updateCardImagesFromZipAction(
     }
 
     for (const image of preparedImages) {
-      await uploadBlob({
+      await uploadAsset({
         path: image.target.imageKey,
         buffer: image.outputBuffer,
         contentType: "image/webp",
@@ -321,7 +321,7 @@ export async function updateCardImagesFromZipAction(
     );
   } catch (error) {
     const restoreResults = await Promise.allSettled(
-      backups.map((backup) => copyBlob(backup.backupKey, backup.sourceKey)),
+      backups.map((backup) => copyAsset(backup.backupKey, backup.sourceKey)),
     );
     await Promise.allSettled(
       preparedImages.map((image) =>
@@ -332,7 +332,7 @@ export async function updateCardImagesFromZipAction(
       ),
     );
     await Promise.allSettled(
-      backups.map((backup) => deleteBlob(backup.backupKey)),
+      backups.map((backup) => deleteAsset(backup.backupKey)),
     );
 
     const restoreFailed = restoreResults.some(
@@ -352,7 +352,7 @@ export async function updateCardImagesFromZipAction(
     );
   }
 
-  await Promise.allSettled(backups.map((backup) => deleteBlob(backup.backupKey)));
+  await Promise.allSettled(backups.map((backup) => deleteAsset(backup.backupKey)));
 
   return {
     status: "success",

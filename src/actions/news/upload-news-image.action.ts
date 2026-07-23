@@ -3,7 +3,7 @@
 import { z } from "zod";
 import sharp from "sharp";
 import { auth } from "@/auth";
-import { uploadBlob } from "@/lib/blob";
+import { uploadAsset } from "@/lib/assets-storage";
 
 const FolderSchema = z.enum(["banners", "cards"]);
 
@@ -40,17 +40,17 @@ export async function uploadNewsImageAction(formData: FormData) {
     const folder = FolderSchema.parse(folderValue);
 
     if (!(file instanceof File)) {
-      throw new Error("Archivo inválido");
+      throw new Error("Archivo invÃ¡lido");
     }
 
     if (!file.type.startsWith("image/")) {
-      throw new Error("Solo se permiten imágenes");
+      throw new Error("Solo se permiten imÃ¡genes");
     }
 
     const maxSize = MAX_SIZE_BYTES[folder];
     if (file.size > maxSize) {
       throw new Error(
-        `La imagen supera el límite de ${(maxSize / 1024 / 1024).toFixed(0)}MB`,
+        `La imagen supera el lÃ­mite de ${(maxSize / 1024 / 1024).toFixed(0)}MB`,
       );
     }
 
@@ -65,13 +65,13 @@ export async function uploadNewsImageAction(formData: FormData) {
     const filename = `${safeName}-${uniqueSuffix}.webp`;
 
     const path = `news/${folder}/${filename}`;
-    const blob = await uploadBlob({
+    const asset = await uploadAsset({
       path,
       buffer: outputBuffer,
       contentType: "image/webp",
     });
 
-    return { pathname: blob.pathname };
+    return { pathname: asset.pathname };
   } catch (error) {
     console.error("[uploadNewsImageAction]", error);
     // Propaga el mensaje real para mostrar el motivo exacto en UI.

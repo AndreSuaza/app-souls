@@ -6,7 +6,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toAssetStorageUrl } from "@/utils/asset-path";
 
 type ListItem = {
   pathname: string;
@@ -17,6 +17,7 @@ type UploadParams = {
   path: string;
   buffer: Buffer;
   contentType: string;
+  cacheControl?: string;
 };
 
 const getRequiredEnv = (name: string) => {
@@ -48,27 +49,32 @@ const getR2Client = () => {
   return r2Client;
 };
 
-export const uploadBlob = async ({ path, buffer, contentType }: UploadParams) => {
-  const pathname = toBlobPath(path);
+export const uploadAsset = async ({
+  path,
+  buffer,
+  contentType,
+  cacheControl = "public, max-age=31536000, immutable",
+}: UploadParams) => {
+  const pathname = toAssetPath(path);
   await getR2Client().send(
     new PutObjectCommand({
       Bucket: getBucketName(),
       Key: pathname,
       Body: buffer,
       ContentType: contentType,
-      CacheControl: "public, max-age=31536000, immutable",
+      CacheControl: cacheControl,
     }),
   );
 
   return {
     pathname,
-    url: toBlobUrl(pathname),
+    url: toAssetStorageUrl(pathname),
   };
 };
 
-export const deleteBlob = async (url: string) => {
+export const deleteAsset = async (url: string) => {
   if (!url) return;
-  const pathname = toBlobPath(url);
+  const pathname = toAssetPath(url);
   if (!pathname || pathname.startsWith("http")) return;
 
   await getR2Client().send(
@@ -79,16 +85,16 @@ export const deleteBlob = async (url: string) => {
   );
 };
 
-export const copyBlob = async (source: string, destination: string) => {
-  const sourcePathname = toBlobPath(source);
-  const destinationPathname = toBlobPath(destination);
+export const copyAsset = async (source: string, destination: string) => {
+  const sourcePathname = toAssetPath(source);
+  const destinationPathname = toAssetPath(destination);
   if (
     !sourcePathname ||
     !destinationPathname ||
     sourcePathname.startsWith("http") ||
     destinationPathname.startsWith("http")
   ) {
-    throw new Error("Ruta de Blob invalida para copiar.");
+    throw new Error("Ruta de R2 invalida para copiar.");
   }
 
   const bucket = getBucketName();
@@ -107,13 +113,13 @@ export const copyBlob = async (source: string, destination: string) => {
 
   return {
     pathname: destinationPathname,
-    url: toBlobUrl(destinationPathname),
+    url: toAssetStorageUrl(destinationPathname),
   };
 };
 
-export const blobExists = async (url: string) => {
+export const assetExists = async (url: string) => {
   if (!url) return false;
-  const pathname = toBlobPath(url);
+  const pathname = toAssetPath(url);
   if (!pathname || pathname.startsWith("http")) return false;
 
   try {
@@ -132,7 +138,7 @@ export const blobExists = async (url: string) => {
   }
 };
 
-export const listBlob = async (prefix: string): Promise<ListItem[]> => {
+export const listAssets = async (prefix: string): Promise<ListItem[]> => {
   const items: ListItem[] = [];
   let continuationToken: string | undefined;
 
@@ -148,7 +154,7 @@ export const listBlob = async (prefix: string): Promise<ListItem[]> => {
 
     response.Contents?.forEach((object) => {
       if (!object.Key) return;
-      items.push({ pathname: object.Key, url: toBlobUrl(object.Key) });
+      items.push({ pathname: object.Key, url: toAssetStorageUrl(object.Key) });
     });
     continuationToken = response.NextContinuationToken;
   } while (continuationToken);

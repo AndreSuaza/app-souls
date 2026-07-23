@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPublicNewsDetailAction } from "@/actions/news/get-public-news-detail.action";
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 import { PublicNewsDetailView } from "@/components/news/public/PublicNewsDetail";
 
 type Props = {
@@ -17,12 +17,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!detail) {
     return {
       title: "Noticia no encontrada",
-      description: "La noticia solicitada no está disponible.",
+      description: "La noticia solicitada no estÃ¡ disponible.",
     };
   }
 
   const { news } = detail;
-  const imageUrl = toBlobUrl(news.cardImage);
+  const imageUrl = toAssetStorageUrl(news.cardImage);
 
   return {
     title: news.title,

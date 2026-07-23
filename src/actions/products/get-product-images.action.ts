@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { listBlob } from "@/lib/blob";
+import { listAssets } from "@/lib/assets-storage";
 
 const PRODUCT_IMAGES_PREFIX = "products/";
 const IMAGE_EXTENSION_PATTERN = /\.(webp|png|jpe?g|avif)$/i;
@@ -24,13 +24,13 @@ export async function getProductImagesAction(): Promise<string[]> {
       return [];
     }
 
-    const list = await listBlob(PRODUCT_IMAGES_PREFIX);
+    const list = await listAssets(PRODUCT_IMAGES_PREFIX);
     return list
       .filter((item) => isDirectProductImage(item.pathname))
       .sort((a, b) => a.pathname.localeCompare(b.pathname))
       .map((item) => item.pathname);
   } catch (error) {
     console.error("[getProductImagesAction]", error);
-    throw new Error("Error cargando las imágenes del producto");
+    throw new Error("Error cargando las imÃ¡genes del producto");
   }
 }

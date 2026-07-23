@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Imperium Draconis",
     images: [
       {
-        url: "https://soulsinxtinction.com/products/IMD.webp",
+        url: "https://soulsinxtinction.com/product-pages/imd.webp",
         width: 500,
         height: 500,
         alt: "Imperium Draconis Souls In Xtinction TCG",
@@ -45,11 +45,11 @@ export default async function getProductBySlug() {
   return (
     <>
       <section
-        className={`bg-[url(/products/IMDBG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
+        className={`bg-[url(/product-pages/imdbg.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
       >
         <div className="flex flex-col items-center justify-center w-full p-12">
           <Image
-            src={`/products/${product.code}S.webp`}
+            src={`/product-pages/${product.code.toLowerCase()}s.webp`}
             alt={"Imperio Draconis Caja"}
             title={"Imperio Draconis Caja"}
             className="my-auto"

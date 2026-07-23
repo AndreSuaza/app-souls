@@ -1,4 +1,4 @@
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 
 const DEFAULT_BANNER =
   "profile/banners/angel-82ca9604-cf1a-41a4-8240-7f9092720280.webp";
@@ -18,7 +18,7 @@ const normalizeBannerValue = (value?: string | null) => {
 export const getProfileBannerUrl = (value?: string | null) => {
   const normalized = normalizeBannerValue(value);
   if (isHttpUrl(normalized)) return normalized;
-  return toBlobUrl(normalized);
+  return toAssetStorageUrl(normalized);
 };
 
 export const getProfileBannerValue = (value?: string | null) =>

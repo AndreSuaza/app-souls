@@ -11,7 +11,7 @@ export function PikingosHeroSection() {
               <div>
                 <div className="mx-auto w-full max-w-[135px] sm:max-w-[220px]">
                   <Image
-                    src="/products/pikingos/logo_pik.webp"
+                    src="/product-pages/pikingos/logo_pik.webp"
                     alt="Logo Pikingos"
                     title="Logo Pikingos"
                     width={350}
@@ -38,7 +38,7 @@ export function PikingosHeroSection() {
 
           <div className="order-1 relative z-0 h-[360px] w-full sm:h-[440px] lg:absolute lg:inset-y-0 lg:-right-16 lg:h-full lg:w-[65%]">
             <Image
-              src="/products/pikingos/LokiWeb.webp"
+              src="/product-pages/pikingos/lokiweb.webp"
               alt="Mazo Pikingos Loki"
               title="Mazo Pikingos Loki"
               fill

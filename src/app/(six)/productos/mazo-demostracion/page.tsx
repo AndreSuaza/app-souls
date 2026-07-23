@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Mazo De Demostración Souls In Xtinction",
     images: [
       {
-        url: "https://soulsinxtinction.com/products/MD1.webp",
+        url: "https://soulsinxtinction.com/product-pages/md1.webp",
         width: 500,
         height: 500,
         alt: "Mazo De Demostración Souls In Xtinction TCG",
@@ -45,11 +45,11 @@ export default async function getProductBySlug() {
   return (
     <>
       <section
-        className={`bg-[url(/products/MD1BG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
+        className={`bg-[url(/product-pages/md1bg.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
       >
         <div className="flex flex-col items-center justify-center w-full p-12">
           <Image
-            src={`/products/${product.code}S.webp`}
+            src={`/product-pages/${product.code.toLowerCase()}s.webp`}
             alt={"Mazo De Demostración Primer Estallido"}
             title={"Mazo De Demostración Primer Estallido"}
             className="my-auto"

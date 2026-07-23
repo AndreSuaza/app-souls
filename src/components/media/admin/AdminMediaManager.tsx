@@ -27,7 +27,7 @@ import {
   type MediaSectionKey,
 } from "@/models/media.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toAssetStorageUrl } from "@/utils/asset-path";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { Modal } from "@/components/ui/modal/modal";
 
@@ -35,7 +35,7 @@ const PAGE_SIZE = 16;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
 
 const getFileLabel = (url: string) => {
-  const clean = toBlobPath(url);
+  const clean = toAssetPath(url);
   return clean.split("/").pop() ?? url;
 };
 
@@ -95,7 +95,7 @@ export const AdminMediaManager = () => {
           setError(
             err instanceof Error
               ? err.message
-              : "No se pudieron cargar las imágenes",
+              : "No se pudieron cargar las imÃ¡genes",
           );
         }
       } finally {
@@ -178,12 +178,12 @@ export const AdminMediaManager = () => {
     }
 
     if (files.length > 20) {
-      showToast("Solo puedes subir hasta 20 imágenes por carga.", "error");
+      showToast("Solo puedes subir hasta 20 imÃ¡genes por carga.", "error");
       return;
     }
 
     try {
-      showLoading("Subiendo imágenes...");
+      showLoading("Subiendo imÃ¡genes...");
       const uploaded: string[] = [];
 
       for (const file of files) {
@@ -196,7 +196,7 @@ export const AdminMediaManager = () => {
 
       if (uploaded.length > 0) {
         setImages((prev) => [...uploaded, ...prev]);
-        showToast("Imágenes subidas correctamente", "success");
+        showToast("ImÃ¡genes subidas correctamente", "success");
       }
     } catch (err) {
       showToast(
@@ -211,13 +211,13 @@ export const AdminMediaManager = () => {
   const handleRequestUpload = (files: File[]) => {
     if (files.length === 0) return;
     if (files.length > 20) {
-      showToast("Solo puedes subir hasta 20 imágenes por carga.", "error");
+      showToast("Solo puedes subir hasta 20 imÃ¡genes por carga.", "error");
       return;
     }
 
     openConfirmation({
-      text: "¿Deseas subir estas imágenes?",
-      description: `Se subirán ${files.length} archivo(s) a ${sectionConfig.label}.`,
+      text: "Â¿Deseas subir estas imÃ¡genes?",
+      description: `Se subirÃ¡n ${files.length} archivo(s) a ${sectionConfig.label}.`,
       action: async () => {
         await handleUpload(files);
         return true;
@@ -253,8 +253,8 @@ export const AdminMediaManager = () => {
 
   const handleDelete = (url: string) => {
     openConfirmation({
-      text: "¿Deseas eliminar esta imagen?",
-      description: "Solo se eliminará si no está en uso dentro del sistema.",
+      text: "Â¿Deseas eliminar esta imagen?",
+      description: "Solo se eliminarÃ¡ si no estÃ¡ en uso dentro del sistema.",
       action: async () => {
         showLoading("Eliminando imagen...");
         try {
@@ -286,10 +286,10 @@ export const AdminMediaManager = () => {
     <div className="space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-          Administración de medios
+          AdministraciÃ³n de medios
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Gestiona las imágenes almacenadas en Blob para cada sección del
+          Gestiona las imÃ¡genes almacenadas en R2 para cada secciÃ³n del
           proyecto.
         </p>
       </header>
@@ -382,7 +382,7 @@ export const AdminMediaManager = () => {
 
               {!sectionConfig.allowUpload && !sectionConfig.allowDelete && (
                 <div className="rounded-xl border border-dashed border-tournament-dark-accent bg-slate-50 p-6 text-center text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong dark:text-slate-300">
-                  Esta sección está disponible para futura carga de imágenes.
+                  Esta secciÃ³n estÃ¡ disponible para futura carga de imÃ¡genes.
                 </div>
               )}
 
@@ -412,12 +412,12 @@ export const AdminMediaManager = () => {
                   <div className="relative max-h-[520px] min-h-[280px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
                     {loading ? (
                       <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
-                        Cargando imágenes...
+                        Cargando imÃ¡genes...
                       </div>
                     ) : (
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {pageImages.map((url) => {
-                          const imageSrc = toBlobUrl(url);
+                          const imageSrc = toAssetStorageUrl(url);
                           return (
                             <div
                               key={url}
@@ -458,7 +458,7 @@ export const AdminMediaManager = () => {
 
                         {filteredImages.length === 0 && !loading && (
                           <div className="col-span-full flex items-center justify-center py-12 text-sm text-slate-500 dark:text-slate-400">
-                            No hay imágenes disponibles para esta sección.
+                            No hay imÃ¡genes disponibles para esta secciÃ³n.
                           </div>
                         )}
                       </div>
@@ -525,7 +525,7 @@ export const AdminMediaManager = () => {
               <div className="relative flex flex-col items-center gap-4 py-6">
                 <div className="w-full max-w-3xl overflow-hidden rounded-lg bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
                   <Image
-                    src={toBlobUrl(previewImage)}
+                    src={toAssetStorageUrl(previewImage)}
                     alt={getFileLabel(previewImage)}
                     width={1400}
                     height={900}

@@ -1,4 +1,4 @@
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 
 const DEFAULT_AVATAR_PATH =
   "profile/avatars/player-f2fea397-2187-4000-b3da-55ef33376457.webp";
@@ -19,7 +19,7 @@ const normalizeAvatarValue = (value?: string | null) => {
 export const getAvatarUrl = (value?: string | null) => {
   const normalized = normalizeAvatarValue(value);
   if (isHttpUrl(normalized)) return normalized;
-  return toBlobUrl(normalized);
+  return toAssetStorageUrl(normalized);
 };
 
 export const getAvatarValue = (value?: string | null) =>

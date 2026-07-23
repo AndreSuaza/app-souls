@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Ecos del Abismos",
     images: [
       {
-        url: "https://soulsinxtinction.com/products/EDA.webp",
+        url: "https://soulsinxtinction.com/product-pages/eda.webp",
         width: 500,
         height: 500,
         alt: "Ecos del Abismos Souls In Xtinction TCG",
@@ -45,11 +45,11 @@ export default async function getProductBySlug() {
   return (
     <>
       <section
-        className={`bg-[url(/products/EDABG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
+        className={`bg-[url(/product-pages/edabg.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
       >
         <div className="flex flex-col items-center justify-center w-full p-12">
           <Image
-            src={`/products/${product.code}S.webp`}
+            src={`/product-pages/${product.code.toLowerCase()}s.webp`}
             alt={"logo ecos del abismo"}
             title={"logo ecos del abismo"}
             className="my-auto"

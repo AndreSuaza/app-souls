@@ -1,4 +1,4 @@
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 import { newsImageFallbacks } from "@/models/media-fallbacks.models";
 
 type NewsImageFolder = "banners" | "cards";
@@ -17,10 +17,10 @@ export const resolveNewsImageUrl = (
     return value;
   }
   if (value.startsWith("souls/")) {
-    return toBlobUrl(value.slice("souls/".length));
+    return toAssetStorageUrl(value.slice("souls/".length));
   }
   if (value.includes("/")) {
-    return toBlobUrl(value);
+    return toAssetStorageUrl(value);
   }
   // Compatibilidad con registros antiguos: evita romper la UI si llega un nombre local.
   return `/news/${folder}/${value}`;

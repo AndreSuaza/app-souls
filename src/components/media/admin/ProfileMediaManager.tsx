@@ -30,7 +30,7 @@ import {
   type MediaSectionKey,
 } from "@/models/media.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toAssetStorageUrl } from "@/utils/asset-path";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 
 type ProfileMediaType = "AVATAR" | "BANNER" | "FRAME";
@@ -73,7 +73,7 @@ type Props = {
 };
 
 const getFileLabel = (url: string) => {
-  const clean = toBlobPath(url);
+  const clean = toAssetPath(url);
   return clean.split("/").pop() ?? url;
 };
 
@@ -94,7 +94,7 @@ const resolveRarityLabel = (rarity: string) => resolveAvatarRarityLabel(rarity);
 
 const resolveAvailabilityLabel = (availability: string | null) =>
   AVATAR_AVAILABILITIES.find((item) => item.value === availability)?.label ??
-  "Público";
+  "PÃºblico";
 
 export const ProfileMediaManager = ({ section, type }: Props) => {
   const showToast = useToastStore((state) => state.showToast);
@@ -142,7 +142,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
           setError(
             err instanceof Error
               ? err.message
-              : "No se pudieron cargar las imágenes",
+              : "No se pudieron cargar las imÃ¡genes",
           );
         }
       } finally {
@@ -342,8 +342,8 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
 
   const handleDelete = (item: ProfileMediaItem) => {
     openConfirmation({
-      text: "¿Deseas eliminar esta imagen?",
-      description: "Solo se eliminará si no está en uso dentro del sistema.",
+      text: "Â¿Deseas eliminar esta imagen?",
+      description: "Solo se eliminarÃ¡ si no estÃ¡ en uso dentro del sistema.",
       action: async () => {
         showLoading("Eliminando imagen...");
         try {
@@ -507,7 +507,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
       <div className="relative max-h-[520px] min-h-[280px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
         {loading ? (
           <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
-            Cargando imágenes...
+            Cargando imÃ¡genes...
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -523,7 +523,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
                   title="Ver imagen"
                 >
                   <Image
-                    src={toBlobUrl(item.imageUrl)}
+                    src={toAssetStorageUrl(item.imageUrl)}
                     alt={item.name}
                     width={480}
                     height={240}
@@ -593,7 +593,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
 
             {filteredItems.length === 0 && !loading && (
               <div className="col-span-full flex items-center justify-center py-12 text-sm text-slate-500 dark:text-slate-400">
-                No hay imágenes disponibles para esta sección.
+                No hay imÃ¡genes disponibles para esta secciÃ³n.
               </div>
             )}
           </div>
@@ -952,7 +952,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
               <div className="relative flex flex-col items-center gap-4 py-6">
                 <div className="w-full max-w-3xl overflow-hidden rounded-lg bg-slate-950/80 shadow-lg shadow-gray-300/60 dark:bg-tournament-dark-muted-strong/40 dark:shadow-2xl dark:shadow-white/10">
                   <Image
-                    src={toBlobUrl(previewItem.imageUrl)}
+                    src={toAssetStorageUrl(previewItem.imageUrl)}
                     alt={previewItem.name}
                     width={1400}
                     height={900}

@@ -45,10 +45,6 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "assets.soulsinxtinction.com",
       },
-      {
-        protocol: "https",
-        hostname: "**.vercel-storage.com",
-      },
     ],
   },
   async redirects() {

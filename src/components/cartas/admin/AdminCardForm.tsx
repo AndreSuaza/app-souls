@@ -12,7 +12,7 @@ import {
   type getAdminCardPropertiesAction,
 } from "@/actions/cards/admin-cards.action";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import { toAssetUrl } from "@/utils/blob-path";
+import { toAssetUrl } from "@/utils/asset-path";
 
 type Properties = Awaited<ReturnType<typeof getAdminCardPropertiesAction>>;
 type AdminCard = NonNullable<
@@ -252,25 +252,25 @@ export const AdminCardForm = ({
               required
             />
             <TextInput
-              label="Código"
+              label="CÃ³digo"
               value={values.code}
               onChange={(value) => updateValue("code", value)}
               required
             />
             <TextInput
-              label="Numeración"
+              label="NumeraciÃ³n"
               value={values.idd}
               onChange={(value) => updateValue("idd", value)}
               required
             />
             <TextInput
-              label="ímite"
+              label="Ã­mite"
               value={values.limit}
               onChange={(value) => updateValue("limit", value)}
               required
             />
             <TextInput
-              label="Rotación"
+              label="RotaciÃ³n"
               type="number"
               value={values.rotation}
               onChange={(value) => updateValue("rotation", value)}

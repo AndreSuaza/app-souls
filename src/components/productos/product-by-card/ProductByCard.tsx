@@ -1,7 +1,7 @@
 
 import Image from "next/image";
 import Link from 'next/link';
-import { toBlobUrl } from "@/utils/blob-path";
+import { toProductImageUrl } from "@/utils/asset-path";
 
 interface Product {
     code: string;
@@ -15,8 +15,8 @@ interface Props {
 }
 
 export const ProductsByCard = ({product}: Props) => {
-  const imageSrc = toBlobUrl(`products/${product.code}.webp`);
-  const fallbackSrc = toBlobUrl(`products/${product}LOGO.webp`);
+  const imageSrc = toProductImageUrl(`products/${product.code}.webp`);
+  const fallbackSrc = toProductImageUrl(`products/${product}LOGO.webp`);
 
   return (
     <div className="grid grid-cols-2 gap-1 ml-2 h-[300px] mb-6">

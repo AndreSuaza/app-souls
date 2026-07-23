@@ -1,4 +1,4 @@
-import { toAssetUrl } from "@/utils/blob-path";
+import { toAssetUrl } from "@/utils/asset-path";
 
 type CardImageInput = {
   imageUrl?: string | null;

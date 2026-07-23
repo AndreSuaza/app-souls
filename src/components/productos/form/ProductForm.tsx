@@ -10,7 +10,7 @@ import { FormField, FormInput, FormSelect } from "@/components/ui/form";
 import type { AdminProductDetail } from "@/interfaces";
 import { MarkdownDeckModal } from "@/components/ui/markdown/MarkdownDeckModal";
 import { ProductImageModal } from "./ProductImageModal";
-import { toBlobPath } from "@/utils/blob-path";
+import { toAssetPath } from "@/utils/asset-path";
 
 type ProductFormValues = {
   name: string;
@@ -75,7 +75,7 @@ const MONTHS = [
 
 const stripExtension = (filename: string) => filename.replace(/\.[^/.]+$/, "");
 const getLabelFromUrl = (url: string) => {
-  const clean = toBlobPath(url);
+  const clean = toAssetPath(url);
   return clean.split("/").pop() ?? url;
 };
 
@@ -192,7 +192,7 @@ export const ProductForm = ({
       setValue("releaseDate", "", { shouldValidate: false });
       return;
     }
-    // Sincroniza el string de lanzamiento con los selects de mes y año.
+    // Sincroniza el string de lanzamiento con los selects de mes y aÃ±o.
     setValue("releaseDate", `${releaseMonth} ${releaseYear}`, {
       shouldValidate: false,
     });
@@ -216,7 +216,7 @@ export const ProductForm = ({
   useEffect(() => {
     if (!initialValues?.imageUrl && !initialValues?.code) return;
     const initialPath = initialValues?.imageUrl
-      ? toBlobPath(initialValues.imageUrl)
+      ? toAssetPath(initialValues.imageUrl)
       : "";
     const match =
       (initialPath
@@ -301,7 +301,7 @@ export const ProductForm = ({
   };
 
   const handleInvalidSubmit = () => {
-    // Fuerza la validación en campos controlados externamente.
+    // Fuerza la validaciÃ³n en campos controlados externamente.
     if (!codeValue) {
       setValue("code", codeValue, { shouldValidate: true });
     }
@@ -412,7 +412,7 @@ export const ProductForm = ({
         </FormField>
 
         <FormField
-          label="Índice"
+          label="Ãndice"
           labelFor="product-index"
           error={errors.index?.message}
         >
@@ -424,14 +424,14 @@ export const ProductForm = ({
               hasError={!!errors.index}
               readOnly
               {...register("index", {
-                required: "El índice es obligatorio",
+                required: "El Ã­ndice es obligatorio",
                 valueAsNumber: true,
               })}
             />
           ) : (
             <FormInput
               id="product-index"
-              placeholder="Se asigna automáticamente"
+              placeholder="Se asigna automÃ¡ticamente"
               readOnly
               disabled
             />
@@ -464,7 +464,7 @@ export const ProductForm = ({
               hasError={!!errors.releaseDate}
               disabled={readOnly}
             >
-              <option value="">Año</option>
+              <option value="">AÃ±o</option>
               {years.map((year) => (
                 <option key={year} value={year}>
                   {year}
@@ -487,7 +487,7 @@ export const ProductForm = ({
                 }
                 disabled={readOnly}
               >
-                <option value="true">Sí</option>
+                <option value="true">SÃ­</option>
                 <option value="false">No</option>
               </FormSelect>
             )}
@@ -514,7 +514,7 @@ export const ProductForm = ({
         </FormField>
 
         <FormField
-          label="Número de cartas"
+          label="NÃºmero de cartas"
           labelFor="product-number-cards"
           error={errors.numberCards?.message}
         >
@@ -528,7 +528,7 @@ export const ProductForm = ({
             type="hidden"
             {...register("numberCards", {
               valueAsNumber: true,
-              required: "El número de cartas es obligatorio",
+              required: "El nÃºmero de cartas es obligatorio",
             })}
           />
         </FormField>
@@ -569,11 +569,11 @@ export const ProductForm = ({
           validate: (value) =>
             value && value.trim().length >= 10
               ? true
-              : "La descripción es obligatoria",
+              : "La descripciÃ³n es obligatoria",
         }}
         render={({ field }) => (
           <MarkdownEditor
-            label="Descripción"
+            label="DescripciÃ³n"
             value={field.value}
             onChange={field.onChange}
             placeholder="Describe el producto..."

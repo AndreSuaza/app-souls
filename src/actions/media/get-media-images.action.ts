@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { listBlob } from "@/lib/blob";
+import { listAssets } from "@/lib/assets-storage";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import { MediaSectionSchema } from "@/schemas";
 
@@ -22,10 +22,10 @@ export async function getMediaImagesAction(section: string): Promise<string[]> {
     const config = MEDIA_SECTION_CONFIG[parsedSection];
     const prefix = `${config.folder}/`;
 
-    const list = await listBlob(prefix);
+    const list = await listAssets(prefix);
     return mapToPathnames(list);
   } catch (error) {
     console.error("[getMediaImagesAction]", error);
-    throw new Error("Error cargando las imágenes");
+    throw new Error("Error cargando las imÃ¡genes");
   }
 }

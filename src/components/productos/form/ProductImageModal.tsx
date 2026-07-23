@@ -9,7 +9,7 @@ import { uploadMediaImageAction } from "@/actions";
 import { Modal } from "@/components/ui/modal/modal";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { useToastStore, useUIStore } from "@/store";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toProductImageUrl } from "@/utils/asset-path";
 
 const PAGE_SIZE = 32;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
@@ -46,7 +46,7 @@ export const ProductImageModal = ({
 
     return images.filter((image) => {
       const normalized = image.toLowerCase();
-      const filename = toBlobPath(image).split("/").pop() ?? image;
+      const filename = toAssetPath(image).split("/").pop() ?? image;
       const code = filename.replace(/\.[^/.]+$/, "").toLowerCase();
       return normalized.includes(query) || code.includes(query);
     });
@@ -120,7 +120,7 @@ export const ProductImageModal = ({
                 Seleccionar imagen del producto
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Elige la imagen base que representará este producto.
+                Elige la imagen base que representarÃ¡ este producto.
               </p>
             </div>
             <button
@@ -141,7 +141,7 @@ export const ProductImageModal = ({
                 type="text"
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
-                placeholder="Buscar por código"
+                placeholder="Buscar por cÃ³digo"
                 className="w-full rounded-lg border border-tournament-dark-accent bg-white py-2 pl-9 pr-3 text-sm text-slate-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
               />
             </label>
@@ -174,8 +174,8 @@ export const ProductImageModal = ({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pageImages.map((image) => {
                 const isSelected = image === selectedImage;
-                const filename = toBlobPath(image).split("/").pop() ?? image;
-                const resolvedSrc = toBlobUrl(image);
+                const filename = toAssetPath(image).split("/").pop() ?? image;
+                const resolvedSrc = toProductImageUrl(image);
 
                 return (
                   <button
@@ -207,7 +207,7 @@ export const ProductImageModal = ({
 
               {pageImages.length === 0 && (
                 <div className="col-span-full flex items-center justify-center py-10 text-sm text-slate-500 dark:text-slate-400">
-                  No hay imágenes disponibles en Blob para esta búsqueda.
+                  No hay imÃ¡genes disponibles en R2 para esta bÃºsqueda.
                 </div>
               )}
             </div>

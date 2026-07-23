@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "../../../interfaces/products.interface";
-import { toBlobUrl } from "@/utils/blob-path";
+import { toProductImageUrl } from "@/utils/asset-path";
 
 interface Props {
   product: Product;
@@ -12,10 +12,10 @@ interface Props {
 const resolveProductImage = (value?: string | null) => {
   if (!value) return null;
   if (value.startsWith("http") || value.startsWith("/")) return value;
-  const blobCandidate = value.includes("/")
+  const assetCandidate = value.includes("/")
     ? value
     : `products/${value}.webp`;
-  const resolved = toBlobUrl(blobCandidate);
+  const resolved = toProductImageUrl(assetCandidate);
   if (resolved.startsWith("http") || resolved.startsWith("/")) return resolved;
   return `/products/${value}.webp`;
 };
@@ -38,15 +38,15 @@ export const ProductItem = ({ product }: Props) => {
       title={`Ver producto ${product.name}`}
     >
       <article className="flex max-w-72 h-full flex-col overflow-hidden rounded-lg border border-tournament-dark-accent bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:border-purple-400 hover:shadow-lg dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-        <div className="flex h-64 items-center justify-center bg-slate-100 dark:bg-tournament-dark-muted">
+        <div className="relative flex h-64 items-center justify-center bg-slate-100 dark:bg-tournament-dark-muted">
           {imageUrl ? (
             <Image
               src={imageUrl}
               alt={product.name}
               title={product.name}
-              className="h-full w-full object-full"
-              width={520}
-              height={420}
+              className="object-contain"
+              fill
+              sizes="(min-width: 1280px) 288px, (min-width: 768px) 30vw, (min-width: 640px) 45vw, 90vw"
             />
           ) : (
             <span className="text-xs text-slate-400 dark:text-slate-500">

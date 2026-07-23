@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Reinos de Luthiria",
     images: [
       {
-        url: "https://soulsinxtinction.com/products/RDL.webp",
+        url: "https://soulsinxtinction.com/product-pages/rdl.webp",
         width: 500,
         height: 500,
         alt: "Génesis del Caos Souls In Xtinction TCG",
@@ -45,11 +45,11 @@ export default async function getProductBySlug() {
   return (
     <>
       <section
-        className={`bg-[url(/products/RDLBG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
+        className={`bg-[url(/product-pages/rdlbg.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
       >
         <div className="flex flex-col items-center justify-center w-full p-12">
           <Image
-            src={`/products/${product.code}S.webp`}
+            src={`/product-pages/${product.code.toLowerCase()}s.webp`}
             alt={"Reinos de Luthiria Expansión Souls"}
             title={"Reinos de Luthiria Expansión Souls"}
             className="my-auto"
