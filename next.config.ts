@@ -19,7 +19,7 @@ const staticAssetFolders = [
 const enableR2PublicAssetRedirects =
   process.env.ENABLE_R2_PUBLIC_ASSET_REDIRECTS === "true";
 const r2PublicAssetRedirectFolders = (
-  process.env.R2_PUBLIC_ASSET_REDIRECT_FOLDERS ?? "cards"
+  process.env.R2_PUBLIC_ASSET_REDIRECT_FOLDERS ?? "cards,products,profile"
 )
   .split(",")
   .map((folder) => folder.trim())

@@ -5,7 +5,15 @@ const normalizeBaseUrl = (value: string) => value.replace(/\/+$/, "");
 export const assetsBaseUrl = normalizeBaseUrl(RAW_ASSETS_BASE_URL);
 export const storageBaseUrl = assetsBaseUrl;
 
-const PUBLIC_ASSET_PREFIXES = ["cards/", "products/", "profile/"] as const;
+const PUBLIC_ASSET_PREFIXES = [
+  "cards/",
+  "decks/",
+  "events/",
+  "news/",
+  "products/",
+  "profile/",
+  "tournaments/",
+] as const;
 
 const isHttpUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");

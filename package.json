@@ -11,7 +11,11 @@
     "r2:inventory": "ts-node --project scripts/r2/tsconfig.json scripts/r2/inventory.ts",
     "r2:upload-assets": "ts-node --project scripts/r2/tsconfig.json scripts/r2/upload-assets.ts",
     "r2:validate-assets": "ts-node --project scripts/r2/tsconfig.json scripts/r2/validate-assets.ts",
-    "r2:update-card-image-urls": "ts-node --project scripts/r2/tsconfig.json scripts/r2/update-card-image-urls.ts"
+    "r2:update-card-image-urls": "ts-node --project scripts/r2/tsconfig.json scripts/r2/update-card-image-urls.ts",
+    "prod:audit-image-refs": "ts-node --project scripts/production/tsconfig.json scripts/production/image-refs.ts audit",
+    "prod:migrate-image-refs": "ts-node --project scripts/production/tsconfig.json scripts/production/image-refs.ts migrate",
+    "prod:rollback-image-refs": "ts-node --project scripts/production/tsconfig.json scripts/production/image-refs.ts rollback",
+    "prod:verify-image-refs": "ts-node --project scripts/production/tsconfig.json scripts/production/image-refs.ts verify"
   },
   "dependencies": {
     "@auth/core": "0.41.0",
