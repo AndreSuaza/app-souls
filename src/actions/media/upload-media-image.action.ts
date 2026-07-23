@@ -86,7 +86,12 @@ export async function uploadMediaImageAction(formData: FormData) {
           : undefined,
     });
 
-    return { pathname: asset.pathname };
+    return {
+      pathname:
+        section === "products"
+          ? `${asset.pathname}?v=${Date.now()}`
+          : asset.pathname,
+    };
   } catch (error) {
     console.error("[uploadMediaImageAction]", error);
     throw new Error(

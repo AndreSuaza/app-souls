@@ -57,6 +57,8 @@ const PRODUCT_ASSET_VERSION =
 
 const withQueryParam = (url: string, key: string, value: string) => {
   if (!url || !value) return url;
+  const existingQuery = url.split("?", 2)[1] ?? "";
+  if (new URLSearchParams(existingQuery).has(key)) return url;
   const separator = url.includes("?") ? "&" : "?";
   return `${url}${separator}${key}=${encodeURIComponent(value)}`;
 };
