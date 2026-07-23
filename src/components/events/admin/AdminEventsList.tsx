@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { IoSearchOutline, IoTrashOutline } from "react-icons/io5";
+import {
+  IoAddCircleOutline,
+  IoSearchOutline,
+  IoTrashOutline,
+} from "react-icons/io5";
 import { deleteEventAction } from "@/actions/events/delete-event.action";
 import type { AdminEventListItem, EventStatus } from "@/interfaces/events.interface";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
@@ -223,9 +228,18 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
             className="w-full rounded-lg border border-tournament-dark-accent bg-white py-2 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
           />
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          {filtered.length} evento{filtered.length === 1 ? "" : "s"}
-        </p>
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {filtered.length} evento{filtered.length === 1 ? "" : "s"}
+          </p>
+          <Link
+            href="/admin/eventos/crear-evento"
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
+          >
+            <IoAddCircleOutline className="h-4 w-4" />
+            Crear evento
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">

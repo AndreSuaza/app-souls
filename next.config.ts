@@ -27,9 +27,9 @@ const r2PublicAssetRedirectFolders = (
 
 const nextConfig: NextConfig = {
   experimental: {
-    // Aumenta el limite para subir banners (8MB) e imagenes de tarjeta (4MB).
+    // Aumenta el limite para imports masivos de cartas con ZIP de imagenes.
     serverActions: {
-      bodySizeLimit: "12mb",
+      bodySizeLimit: "80mb",
     },
   },
   images: {

@@ -3,6 +3,19 @@
 import { auth } from "@/auth";
 import { listBlob } from "@/lib/blob";
 
+const PRODUCT_IMAGES_PREFIX = "products/";
+const IMAGE_EXTENSION_PATTERN = /\.(webp|png|jpe?g|avif)$/i;
+
+const isDirectProductImage = (pathname: string) => {
+  if (!pathname.startsWith(PRODUCT_IMAGES_PREFIX)) return false;
+  const relativePath = pathname.slice(PRODUCT_IMAGES_PREFIX.length);
+  return (
+    relativePath.length > 0 &&
+    !relativePath.includes("/") &&
+    IMAGE_EXTENSION_PATTERN.test(relativePath)
+  );
+};
+
 export async function getProductImagesAction(): Promise<string[]> {
   try {
     const session = await auth();
@@ -11,8 +24,9 @@ export async function getProductImagesAction(): Promise<string[]> {
       return [];
     }
 
-    const list = await listBlob("products/");
+    const list = await listBlob(PRODUCT_IMAGES_PREFIX);
     return list
+      .filter((item) => isDirectProductImage(item.pathname))
       .sort((a, b) => a.pathname.localeCompare(b.pathname))
       .map((item) => item.pathname);
   } catch (error) {

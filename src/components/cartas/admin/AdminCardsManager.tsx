@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { FiEdit, FiPlus, FiSearch, FiUpload } from "react-icons/fi";
+import { FiEdit, FiImage, FiPlus, FiSearch, FiUpload } from "react-icons/fi";
 import { IoTrashOutline } from "react-icons/io5";
 import {
   deleteCardAction,
@@ -174,11 +174,18 @@ export const AdminCardsManager = ({ properties }: Props) => {
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/admin/cartas/importar-excel"
+            href="/admin/cartas/importar-cartas"
             className="inline-flex items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
           >
             <FiUpload className="h-4 w-4" />
-            Importar Excel
+            Importar cartas
+          </Link>
+          <Link
+            href="/admin/cartas/actualizar-imagenes"
+            className="inline-flex items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+          >
+            <FiImage className="h-4 w-4" />
+            Actualizar imagenes
           </Link>
           <Link
             href="/admin/cartas/crear-carta"

@@ -44,6 +44,15 @@ export const UpdateAdminUserRoleStatusSchema = z.object({
   status: AdminUserStatusSchema,
 });
 
+export const SetAdminUserActiveStatusSchema = z.object({
+  userId: AdminUserIdSchema,
+  active: z.boolean(),
+});
+
+export const AdminUserEmailActionSchema = z.object({
+  userId: AdminUserIdSchema,
+});
+
 export const AdjustUserVictoryPointsSchema = z.object({
   userId: AdminUserIdSchema,
   amount: z

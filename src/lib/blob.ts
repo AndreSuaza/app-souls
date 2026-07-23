@@ -1,5 +1,7 @@
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -75,6 +77,59 @@ export const deleteBlob = async (url: string) => {
       Key: pathname,
     }),
   );
+};
+
+export const copyBlob = async (source: string, destination: string) => {
+  const sourcePathname = toBlobPath(source);
+  const destinationPathname = toBlobPath(destination);
+  if (
+    !sourcePathname ||
+    !destinationPathname ||
+    sourcePathname.startsWith("http") ||
+    destinationPathname.startsWith("http")
+  ) {
+    throw new Error("Ruta de Blob invalida para copiar.");
+  }
+
+  const bucket = getBucketName();
+  const encodedSource = `${bucket}/${encodeURIComponent(sourcePathname).replace(
+    /%2F/g,
+    "/",
+  )}`;
+
+  await getR2Client().send(
+    new CopyObjectCommand({
+      Bucket: bucket,
+      Key: destinationPathname,
+      CopySource: encodedSource,
+    }),
+  );
+
+  return {
+    pathname: destinationPathname,
+    url: toBlobUrl(destinationPathname),
+  };
+};
+
+export const blobExists = async (url: string) => {
+  if (!url) return false;
+  const pathname = toBlobPath(url);
+  if (!pathname || pathname.startsWith("http")) return false;
+
+  try {
+    await getR2Client().send(
+      new HeadObjectCommand({
+        Bucket: getBucketName(),
+        Key: pathname,
+      }),
+    );
+    return true;
+  } catch (error) {
+    const statusCode = (error as { $metadata?: { httpStatusCode?: number } })
+      .$metadata?.httpStatusCode;
+    if (statusCode === 404) return false;
+    throw error;
+  }
 };
 
 export const listBlob = async (prefix: string): Promise<ListItem[]> => {

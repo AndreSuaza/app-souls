@@ -153,6 +153,7 @@ export const ProductForm = ({
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [availableImages, setAvailableImages] = useState(images);
 
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [deckSearch, setDeckSearch] = useState("");
@@ -173,6 +174,18 @@ export const ProductForm = ({
     setReleaseMonth(initialRelease.month);
     setReleaseYear(initialRelease.year);
   }, [initialRelease.month, initialRelease.year]);
+
+  useEffect(() => {
+    setAvailableImages((current) => {
+      const merged = [...images];
+      current.forEach((image) => {
+        if (!merged.includes(image)) {
+          merged.unshift(image);
+        }
+      });
+      return merged;
+    });
+  }, [images]);
 
   useEffect(() => {
     if (!releaseMonth || !releaseYear) {
@@ -206,13 +219,15 @@ export const ProductForm = ({
       ? toBlobPath(initialValues.imageUrl)
       : "";
     const match =
-      (initialPath ? images.find((image) => image === initialPath) : null) ??
-      images.find(
+      (initialPath
+        ? availableImages.find((image) => image === initialPath)
+        : null) ??
+      availableImages.find(
         (image) => stripExtension(getLabelFromUrl(image)) === initialValues.code,
       ) ??
       null;
     setSelectedImage(match);
-  }, [images, initialValues?.code, initialValues?.imageUrl]);
+  }, [availableImages, initialValues?.code, initialValues?.imageUrl]);
 
   useEffect(() => {
     if (!isDeckModalOpen) return;
@@ -265,6 +280,14 @@ export const ProductForm = ({
     setValue("imageUrl", pendingImage, { shouldValidate: true });
     setSelectedImage(pendingImage);
     setIsImageModalOpen(false);
+  };
+
+  const handleProductImageUploaded = (image: string) => {
+    setAvailableImages((current) => [
+      image,
+      ...current.filter((item) => item !== image),
+    ]);
+    setPendingImage(image);
   };
 
   const handleSelectDeck = (deckId: string) => {
@@ -596,9 +619,10 @@ export const ProductForm = ({
 
       <ProductImageModal
         isOpen={isImageModalOpen}
-        images={images}
+        images={availableImages}
         selectedImage={pendingImage}
         onSelect={setPendingImage}
+        onImageUploaded={handleProductImageUploaded}
         onClose={() => setIsImageModalOpen(false)}
         onConfirm={handleConfirmImage}
       />

@@ -235,9 +235,14 @@ export const AdminSidebar = () => {
           icon: IoAddCircleOutline,
         },
         {
-          label: "Importar excel",
-          href: "/admin/cartas/importar-excel",
+          label: "Importar cartas",
+          href: "/admin/cartas/importar-cartas",
           icon: TbCards,
+        },
+        {
+          label: "Actualizar imagenes",
+          href: "/admin/cartas/actualizar-imagenes",
+          icon: IoImagesOutline,
         },
         {
           label: "Volver",

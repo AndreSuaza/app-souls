@@ -2,45 +2,32 @@
 
 import { useMemo, useState, useTransition } from "react";
 import {
-  importCardsFromExcelAction,
-  type ImportCardsFromExcelResult,
-} from "@/actions/cards/import-cards-from-excel.action";
+  updateCardImagesFromZipAction,
+  type UpdateCardImagesFromZipResult,
+} from "@/actions";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { AdminCardsOperationProgress } from "./AdminCardsOperationProgress";
 
-const REQUIRED_COLUMNS = [
-  "Producto",
-  "Numeracion",
-  "Codigo",
-  "Coste",
-  "Rareza",
-  "Name",
-  "Tipo",
-  "Rotacion",
+const UPDATE_PROGRESS_STEPS = [
+  { threshold: 20, message: "Preparando ZIP para enviar al servidor..." },
+  { threshold: 42, message: "Validando nombres y archivos del ZIP..." },
+  {
+    threshold: 62,
+    message: "Buscando cartas asociadas en la base de datos...",
+  },
+  { threshold: 78, message: "Creando backups temporales en R2..." },
+  { threshold: 92, message: "Convirtiendo y reemplazando imagenes..." },
+  {
+    threshold: 100,
+    message: "Actualizando versión de imagenes y limpiando backups...",
+  },
 ];
 
-const OPTIONAL_COLUMNS = [
-  "Fuerza",
-  "Defensa",
-  "Arquetipo",
-  "Precios",
-  "Efecto",
-  "Keyword",
-];
-
-const IMPORT_PROGRESS_STEPS = [
-  { threshold: 20, message: "Preparando archivos para enviar al servidor..." },
-  { threshold: 40, message: "Leyendo Excel y validando columnas..." },
-  { threshold: 60, message: "Validando filas, referencias y conflictos..." },
-  { threshold: 78, message: "Revisando ZIP y coincidencias de imagenes..." },
-  { threshold: 92, message: "Convirtiendo y subiendo imagenes a R2..." },
-  { threshold: 100, message: "Creando cartas y cerrando la importacion..." },
-];
-
-export const AdminCardsExcelImport = () => {
-  const [file, setFile] = useState<File | null>(null);
+export const AdminCardImagesBulkUpdate = () => {
   const [imagesZip, setImagesZip] = useState<File | null>(null);
-  const [result, setResult] = useState<ImportCardsFromExcelResult | null>(null);
+  const [result, setResult] = useState<UpdateCardImagesFromZipResult | null>(
+    null,
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const showToast = useToastStore((state) => state.showToast);
@@ -51,36 +38,31 @@ export const AdminCardsExcelImport = () => {
   );
 
   const canSubmit = useMemo(
-    () => !!file && !!imagesZip && !isPending && !isProcessing,
-    [file, imagesZip, isPending, isProcessing],
+    () => !!imagesZip && !isPending && !isProcessing,
+    [imagesZip, isPending, isProcessing],
   );
 
-  const handleImport = () => {
-    if (!file) {
-      showToast("Selecciona un archivo .xlsx para continuar.", "error");
-      return;
-    }
+  const handleUpdate = () => {
     if (!imagesZip) {
       showToast("Selecciona un archivo .zip con las imagenes.", "error");
       return;
     }
 
     openConfirmation({
-      text: "Confirmar importación de cartas",
+      text: "Confirmar actualizacion masiva",
       description:
-        "Se validara el Excel y el ZIP completo. Si algo falla, no se creara ninguna carta ni imagen nueva en R2.",
+        "Se validara el ZIP completo. Si algo falla, no se reemplazara ninguna imagen. Durante el proceso se crea un backup temporal en R2.",
       action: async () => {
         startTransition(async () => {
           try {
             setIsProcessing(true);
             setResult(null);
-            showLoading("Validando Excel e imagenes...");
+            showLoading("Validando y actualizando imagenes...");
 
             const formData = new FormData();
-            formData.append("file", file);
             formData.append("imagesZip", imagesZip);
 
-            const response = await importCardsFromExcelAction(formData);
+            const response = await updateCardImagesFromZipAction(formData);
             setResult(response);
 
             if (response.status === "conflict") {
@@ -93,7 +75,7 @@ export const AdminCardsExcelImport = () => {
             showToast(
               error instanceof Error
                 ? error.message
-                : "No se pudo procesar el archivo Excel.",
+                : "No se pudieron actualizar las imagenes.",
               "error",
             );
           } finally {
@@ -111,69 +93,43 @@ export const AdminCardsExcelImport = () => {
     <section className="space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-          Importar cartas desde Excel
+          Actualizar imagenes de cartas
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Carga un archivo .xlsx para registrar cartas usando la estructura
-          oficial de importación.
+          Reemplaza masivamente imagenes existentes en R2 usando un ZIP. La
+          operacion valida todo antes de reemplazar y restaura desde backup si
+          ocurre un error.
         </p>
       </header>
 
       <article className="space-y-4 rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-        <div className="space-y-2">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-            Estructura esperada
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Se usara solamente la primera hoja del archivo. Las columnas deben
-            mantener el nombre esperado.
-          </p>
-        </div>
-
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-xl border border-slate-200 p-4 dark:border-tournament-dark-border">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Obligatorias
+              ZIP esperado
             </p>
             <ul className="mt-2 space-y-1 text-sm text-slate-700 dark:text-slate-200">
-              {REQUIRED_COLUMNS.map((column) => (
-                <li key={column}>- {column}</li>
-              ))}
+              <li>- Formato: .zip</li>
+              <li>- Imagenes: .webp, .png, .jpg, .jpeg o .avif</li>
+              <li>- Nombre: {"{code}-{idd}"}</li>
+              <li>- Ejemplo: CAT-001-1234.webp</li>
             </ul>
           </div>
 
           <div className="rounded-xl border border-slate-200 p-4 dark:border-tournament-dark-border">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Opcionales
+              Reglas
             </p>
             <ul className="mt-2 space-y-1 text-sm text-slate-700 dark:text-slate-200">
-              {OPTIONAL_COLUMNS.map((column) => (
-                <li key={column}>- {column}</li>
-              ))}
+              <li>- Cada imagen debe existir como carta en la DB.</li>
+              <li>- La imagen actual debe existir en R2.</li>
+              <li>- No se aceptan duplicados ni archivos extra.</li>
+              <li>- Todas se normalizan a WebP en R2.</li>
             </ul>
           </div>
         </div>
 
         <div className="space-y-3 rounded-xl border border-dashed border-slate-300 p-4 dark:border-tournament-dark-border">
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
-            Archivo Excel (.xlsx)
-          </label>
-          <input
-            type="file"
-            accept=".xlsx"
-            onChange={(event) => {
-              const selected = event.target.files?.[0] ?? null;
-              setFile(selected);
-              setResult(null);
-            }}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-100"
-          />
-          {file && (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Archivo seleccionado:{" "}
-              <span className="font-medium">{file.name}</span>
-            </p>
-          )}
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
             ZIP de imagenes (.zip)
           </label>
@@ -195,17 +151,19 @@ export const AdminCardsExcelImport = () => {
           )}
           <button
             type="button"
-            onClick={handleImport}
+            onClick={handleUpdate}
             disabled={!canSubmit}
             className="inline-flex items-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isProcessing || isPending ? "Importando..." : "Importar cartas"}
+            {isProcessing || isPending
+              ? "Actualizando..."
+              : "Actualizar imagenes"}
           </button>
 
           <AdminCardsOperationProgress
             isActive={isProcessing || isPending}
-            title="Importacion en progreso"
-            steps={IMPORT_PROGRESS_STEPS}
+            title="Actualizacion en progreso"
+            steps={UPDATE_PROGRESS_STEPS}
           />
         </div>
       </article>
@@ -214,7 +172,7 @@ export const AdminCardsExcelImport = () => {
         <article className="space-y-4 rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-              Resultado de importación
+              Resultado
             </h2>
             <span
               className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -234,38 +192,6 @@ export const AdminCardsExcelImport = () => {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
               <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Filas leidas
-              </p>
-              <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                {result.summary.rowsRead}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
-              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Filas validas
-              </p>
-              <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                {result.summary.validRows}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
-              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Insertadas
-              </p>
-              <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                {result.summary.insertedRows}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
-              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Invalidas
-              </p>
-              <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                {result.summary.invalidRows}
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
-              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Imagenes leidas
               </p>
               <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
@@ -274,7 +200,7 @@ export const AdminCardsExcelImport = () => {
             </div>
             <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
               <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Imagenes OK
+                Coincidencias
               </p>
               <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                 {result.summary.matchedImages}
@@ -282,24 +208,21 @@ export const AdminCardsExcelImport = () => {
             </div>
             <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
               <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Subidas R2
+                Actualizadas
               </p>
               <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                {result.summary.uploadedImages}
+                {result.summary.updatedImages}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
+              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Backups
+              </p>
+              <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                {result.summary.backupsCreated}
               </p>
             </div>
           </div>
-
-          {result.conflictCodes.length > 0 && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-900/20 dark:text-red-200">
-              <p className="font-semibold">Codes en conflicto</p>
-              <ul className="mt-2 space-y-1">
-                {result.conflictCodes.map((code) => (
-                  <li key={code}>- {code}</li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           {result.imageErrors.length > 0 && (
             <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-900/20 dark:text-red-200">
@@ -312,10 +235,10 @@ export const AdminCardsExcelImport = () => {
             </div>
           )}
 
-          {result.importedCards.length > 0 && (
+          {result.updatedCards.length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                Cartas importadas
+                Cartas actualizadas
               </h3>
 
               <div className="max-h-96 overflow-auto rounded-xl border border-slate-200 dark:border-tournament-dark-border">
@@ -332,15 +255,12 @@ export const AdminCardsExcelImport = () => {
                         Carta
                       </th>
                       <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
-                        Producto
-                      </th>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
                         R2
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-tournament-dark-border">
-                    {result.importedCards.map((card) => (
+                    {result.updatedCards.map((card) => (
                       <tr key={`${card.code}-${card.idd}`}>
                         <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
                           {card.code}
@@ -352,59 +272,7 @@ export const AdminCardsExcelImport = () => {
                           {card.name}
                         </td>
                         <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
-                          {card.product}
-                        </td>
-                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
                           {card.imageKey}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {result.invalidRows.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                Filas invalidas
-              </h3>
-
-              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-tournament-dark-border">
-                <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-tournament-dark-border">
-                  <thead className="bg-slate-50 dark:bg-tournament-dark-muted">
-                    <tr>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
-                        Fila
-                      </th>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
-                        Code generado
-                      </th>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
-                        Carta
-                      </th>
-                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
-                        Motivos
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-tournament-dark-border">
-                    {result.invalidRows.map((invalidRow) => (
-                      <tr
-                        key={`${invalidRow.rowNumber}-${invalidRow.name ?? "row"}`}
-                      >
-                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
-                          {invalidRow.rowNumber}
-                        </td>
-                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
-                          {invalidRow.generatedCode ?? "-"}
-                        </td>
-                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
-                          {invalidRow.name ?? "-"}
-                        </td>
-                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
-                          {invalidRow.reasons.join(" | ")}
                         </td>
                       </tr>
                     ))}

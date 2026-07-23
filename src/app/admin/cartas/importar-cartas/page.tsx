@@ -1,5 +1,5 @@
 import { AdminCardsExcelImport } from "@/components/cartas/admin/AdminCardsExcelImport";
 
-export default function AdminCardsImportExcelPage() {
+export default function AdminCardsImportPage() {
   return <AdminCardsExcelImport />;
 }

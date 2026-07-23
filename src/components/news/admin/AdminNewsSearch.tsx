@@ -1,14 +1,21 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { IoSearchOutline } from "react-icons/io5";
 
 type Props = {
   query: string;
   totalCount: number;
   onChange: (value: string) => void;
+  action?: ReactNode;
 };
 
-export const AdminNewsSearch = ({ query, totalCount, onChange }: Props) => {
+export const AdminNewsSearch = ({
+  query,
+  totalCount,
+  onChange,
+  action,
+}: Props) => {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="relative w-full sm:max-w-sm">
@@ -21,9 +28,12 @@ export const AdminNewsSearch = ({ query, totalCount, onChange }: Props) => {
           className="w-full rounded-lg border border-tournament-dark-accent dark:border-tournament-dark-border bg-white dark:bg-tournament-dark-surface py-2 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
         />
       </div>
-      <p className="text-xs text-slate-500 dark:text-slate-400">
-        {totalCount} noticia{totalCount === 1 ? "" : "s"}
-      </p>
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {totalCount} noticia{totalCount === 1 ? "" : "s"}
+        </p>
+        {action}
+      </div>
     </div>
   );
 };

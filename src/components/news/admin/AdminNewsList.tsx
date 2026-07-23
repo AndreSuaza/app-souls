@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { IoTrashOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoTrashOutline } from "react-icons/io5";
 import { PaginationLine } from "@/components/ui";
 import { deleteNewsAction } from "@/actions";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
@@ -241,6 +242,15 @@ export const AdminNewsList = ({ news, categories, onDeleted }: Props) => {
         query={inputValue}
         totalCount={filtered.length}
         onChange={setInputValue}
+        action={
+          <Link
+            href="/admin/noticias/crear-noticia"
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
+          >
+            <IoAddCircleOutline className="h-4 w-4" />
+            Crear noticia
+          </Link>
+        }
       />
 
       <div className="flex flex-wrap gap-3">
