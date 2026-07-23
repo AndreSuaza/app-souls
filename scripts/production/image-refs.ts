@@ -519,11 +519,20 @@ const applyChanges = async (changes: Change[]) => {
     grouped.set(key, entry);
   }
 
+  const updates = Array.from(grouped.values());
+  console.log(`[prod:migrate-image-refs] applying ${updates.length} documents`);
+
+  let applied = 0;
   for (const update of grouped.values()) {
     await getDelegate(update.delegate).update({
       where: { id: update.id },
       data: update.data,
     });
+
+    applied += 1;
+    if (applied % 50 === 0 || applied === updates.length) {
+      console.log(`[prod:migrate-image-refs] applied ${applied}/${updates.length} documents`);
+    }
   }
 };
 
