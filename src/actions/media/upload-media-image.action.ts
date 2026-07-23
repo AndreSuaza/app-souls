@@ -52,7 +52,12 @@ export async function uploadMediaImageAction(formData: FormData) {
     const outputBuffer =
       section === "products" && isWebp
         ? inputBuffer
-        : await sharp(inputBuffer).webp({ quality: 92 }).toBuffer();
+        : await sharp(inputBuffer)
+            .webp({
+              quality: section === "products" ? 95 : 92,
+              effort: section === "products" ? 6 : 4,
+            })
+            .toBuffer();
 
     const safeName = buildSafeName(file.name);
     let filename = `${safeName}-${crypto.randomUUID()}.webp`;

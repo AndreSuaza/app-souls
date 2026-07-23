@@ -21,6 +21,7 @@ export const MarkdownProductPreview = ({ src, alt }: Props) => {
             width={300}
             height={340}
             className="h-full w-full rounded-md object-cover"
+            unoptimized
           />
         </div>
         <span className="mt-2 block truncate text-xs text-slate-500 dark:text-slate-400">

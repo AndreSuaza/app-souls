@@ -246,6 +246,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
                                   width={72}
                                   height={72}
                                   className="h-full w-full object-cover"
+                                  unoptimized
                                 />
                               ) : (
                                 <span className="flex h-full w-full items-center justify-center text-xs text-slate-400">
@@ -317,6 +318,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
                             width={72}
                             height={72}
                             className="h-full w-full object-cover"
+                            unoptimized
                           />
                         ) : (
                           <span className="flex h-full w-full items-center justify-center text-xs text-slate-400">

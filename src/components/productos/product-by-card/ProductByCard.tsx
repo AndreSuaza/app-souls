@@ -32,6 +32,7 @@ export const ProductsByCard = ({product}: Props) => {
                 className="rounded-md m-auto"
                 blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
                 placeholder="blur"
+                unoptimized
             />
             <h3>{product.name}</h3>
         </Link>
@@ -45,6 +46,7 @@ export const ProductsByCard = ({product}: Props) => {
             className="rounded-t m-auto"
             blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
             placeholder="blur"
+            unoptimized
         />
         <h3>{product.name}</h3>
         </>

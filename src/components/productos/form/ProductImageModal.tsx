@@ -196,6 +196,7 @@ export const ProductImageModal = ({
                         width={520}
                         height={260}
                         className="h-auto w-full rounded-md object-contain"
+                        unoptimized
                       />
                     </div>
                     <span className="mt-auto block truncate pt-2 text-xs text-slate-500 dark:text-slate-400">

@@ -32,6 +32,7 @@ export function CardDetailProductCard({ product }: Props) {
           className="h-full w-full object-cover"
           blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNMTvt4EgAFcwKFsn71ygAAAABJRU5ErkJggg=="
           placeholder="blur"
+          unoptimized
         />
       </div>
       <div className="flex flex-1 items-center justify-between gap-3">

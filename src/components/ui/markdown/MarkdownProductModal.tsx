@@ -109,6 +109,7 @@ export const MarkdownProductModal = ({
                           width={160}
                           height={160}
                           className="h-auto w-full rounded-md object-cover"
+                          unoptimized
                         />
                       ) : (
                         <span className="text-xs text-slate-400 dark:text-slate-500">

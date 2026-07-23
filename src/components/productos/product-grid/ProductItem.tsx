@@ -47,6 +47,7 @@ export const ProductItem = ({ product }: Props) => {
               className="object-contain"
               fill
               sizes="(min-width: 1280px) 288px, (min-width: 768px) 30vw, (min-width: 640px) 45vw, 90vw"
+              unoptimized
             />
           ) : (
             <span className="text-xs text-slate-400 dark:text-slate-500">
