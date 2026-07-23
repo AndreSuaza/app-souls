@@ -150,17 +150,10 @@ export default baseAuth((req) => {
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/boveda",
-    "/boveda/:path*",
-    "/laboratorio/:path*",
-    "/perfil",
-    "/perfil/:path*",
-    "/auth/login",
-    "/auth/register",
-    "/auth/forgot-password",
-    "/auth/reset-password",
-    "/mantenimiento",
-    "/api/auth/:path*",
+    /*
+     * Run middleware for all application routes so MAINTENANCE_MODE can block
+     * public pages, while excluding Next internals and static files.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)",
   ],
 };
