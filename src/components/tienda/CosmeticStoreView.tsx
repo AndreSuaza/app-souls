@@ -126,7 +126,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
 
   const handlePurchase = (item: CosmeticStoreItem) => {
     if (!initialData.isAuthenticated) {
-      showToast("Debes iniciar sesiÃ³n para comprar cosmÃ©ticos.", "info");
+      showToast("Debes iniciar sesión para comprar cosméticos.", "info");
       return;
     }
 
@@ -254,7 +254,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
-            No hay cosmÃ©ticos destacados disponibles.
+            No hay cosméticos destacados disponibles.
           </div>
         )}
       </section>
@@ -391,10 +391,10 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
                     ) : (
                       <Link
                         href="/auth/login"
-                        title="Iniciar sesiÃ³n"
+                        title="Iniciar sesión"
                         className="rounded-lg border border-purple-300 bg-purple-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-purple-800 transition hover:bg-purple-200 dark:border-purple-500/60 dark:bg-purple-500/15 dark:text-purple-100 dark:hover:bg-purple-500/30"
                       >
-                        Iniciar sesiÃ³n
+                        Iniciar sesión
                       </Link>
                     )}
                   </div>
@@ -404,7 +404,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
-            No hay cosmÃ©ticos para los filtros seleccionados.
+            No hay cosméticos para los filtros seleccionados.
           </div>
         )}
       </section>

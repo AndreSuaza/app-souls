@@ -40,17 +40,17 @@ export async function uploadNewsImageAction(formData: FormData) {
     const folder = FolderSchema.parse(folderValue);
 
     if (!(file instanceof File)) {
-      throw new Error("Archivo invÃ¡lido");
+      throw new Error("Archivo inválido");
     }
 
     if (!file.type.startsWith("image/")) {
-      throw new Error("Solo se permiten imÃ¡genes");
+      throw new Error("Solo se permiten imágenes");
     }
 
     const maxSize = MAX_SIZE_BYTES[folder];
     if (file.size > maxSize) {
       throw new Error(
-        `La imagen supera el lÃ­mite de ${(maxSize / 1024 / 1024).toFixed(0)}MB`,
+        `La imagen supera el límite de ${(maxSize / 1024 / 1024).toFixed(0)}MB`,
       );
     }
 

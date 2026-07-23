@@ -94,7 +94,7 @@ const resolveRarityLabel = (rarity: string) => resolveAvatarRarityLabel(rarity);
 
 const resolveAvailabilityLabel = (availability: string | null) =>
   AVATAR_AVAILABILITIES.find((item) => item.value === availability)?.label ??
-  "PÃºblico";
+  "Público";
 
 export const ProfileMediaManager = ({ section, type }: Props) => {
   const showToast = useToastStore((state) => state.showToast);
@@ -142,7 +142,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
           setError(
             err instanceof Error
               ? err.message
-              : "No se pudieron cargar las imÃ¡genes",
+              : "No se pudieron cargar las imágenes",
           );
         }
       } finally {
@@ -342,8 +342,8 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
 
   const handleDelete = (item: ProfileMediaItem) => {
     openConfirmation({
-      text: "Â¿Deseas eliminar esta imagen?",
-      description: "Solo se eliminarÃ¡ si no estÃ¡ en uso dentro del sistema.",
+      text: "¿Deseas eliminar esta imagen?",
+      description: "Solo se eliminará si no está en uso dentro del sistema.",
       action: async () => {
         showLoading("Eliminando imagen...");
         try {
@@ -507,7 +507,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
       <div className="relative max-h-[520px] min-h-[280px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
         {loading ? (
           <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-slate-500 dark:text-slate-400">
-            Cargando imÃ¡genes...
+            Cargando imágenes...
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -593,7 +593,7 @@ export const ProfileMediaManager = ({ section, type }: Props) => {
 
             {filteredItems.length === 0 && !loading && (
               <div className="col-span-full flex items-center justify-center py-12 text-sm text-slate-500 dark:text-slate-400">
-                No hay imÃ¡genes disponibles para esta secciÃ³n.
+                No hay imágenes disponibles para esta sección.
               </div>
             )}
           </div>

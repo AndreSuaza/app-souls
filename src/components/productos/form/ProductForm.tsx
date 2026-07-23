@@ -192,7 +192,7 @@ export const ProductForm = ({
       setValue("releaseDate", "", { shouldValidate: false });
       return;
     }
-    // Sincroniza el string de lanzamiento con los selects de mes y aÃ±o.
+    // Sincroniza el string de lanzamiento con los selects de mes y año.
     setValue("releaseDate", `${releaseMonth} ${releaseYear}`, {
       shouldValidate: false,
     });
@@ -301,7 +301,7 @@ export const ProductForm = ({
   };
 
   const handleInvalidSubmit = () => {
-    // Fuerza la validaciÃ³n en campos controlados externamente.
+    // Fuerza la validación en campos controlados externamente.
     if (!codeValue) {
       setValue("code", codeValue, { shouldValidate: true });
     }
@@ -412,7 +412,7 @@ export const ProductForm = ({
         </FormField>
 
         <FormField
-          label="Ãndice"
+          label="Índice"
           labelFor="product-index"
           error={errors.index?.message}
         >
@@ -424,14 +424,14 @@ export const ProductForm = ({
               hasError={!!errors.index}
               readOnly
               {...register("index", {
-                required: "El Ã­ndice es obligatorio",
+                required: "El índice es obligatorio",
                 valueAsNumber: true,
               })}
             />
           ) : (
             <FormInput
               id="product-index"
-              placeholder="Se asigna automÃ¡ticamente"
+              placeholder="Se asigna automáticamente"
               readOnly
               disabled
             />
@@ -464,7 +464,7 @@ export const ProductForm = ({
               hasError={!!errors.releaseDate}
               disabled={readOnly}
             >
-              <option value="">AÃ±o</option>
+              <option value="">Año</option>
               {years.map((year) => (
                 <option key={year} value={year}>
                   {year}
@@ -487,7 +487,7 @@ export const ProductForm = ({
                 }
                 disabled={readOnly}
               >
-                <option value="true">SÃ­</option>
+                <option value="true">Sí</option>
                 <option value="false">No</option>
               </FormSelect>
             )}
@@ -514,7 +514,7 @@ export const ProductForm = ({
         </FormField>
 
         <FormField
-          label="NÃºmero de cartas"
+          label="Número de cartas"
           labelFor="product-number-cards"
           error={errors.numberCards?.message}
         >
@@ -528,7 +528,7 @@ export const ProductForm = ({
             type="hidden"
             {...register("numberCards", {
               valueAsNumber: true,
-              required: "El nÃºmero de cartas es obligatorio",
+              required: "El número de cartas es obligatorio",
             })}
           />
         </FormField>
@@ -569,11 +569,11 @@ export const ProductForm = ({
           validate: (value) =>
             value && value.trim().length >= 10
               ? true
-              : "La descripciÃ³n es obligatoria",
+              : "La descripción es obligatoria",
         }}
         render={({ field }) => (
           <MarkdownEditor
-            label="DescripciÃ³n"
+            label="Descripción"
             value={field.value}
             onChange={field.onChange}
             placeholder="Describe el producto..."

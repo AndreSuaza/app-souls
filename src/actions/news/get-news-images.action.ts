@@ -32,6 +32,6 @@ export async function getNewsImagesAction(): Promise<NewsImageOptions> {
     };
   } catch (error) {
     console.error("[getNewsImagesAction]", error);
-    throw new Error("Error cargando las imÃ¡genes");
+    throw new Error("Error cargando las imágenes");
   }
 }

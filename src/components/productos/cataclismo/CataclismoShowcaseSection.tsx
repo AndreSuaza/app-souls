@@ -5,7 +5,7 @@ const showcaseItems = [
   {
     title: "Poder descomunal",
     description:
-      "Cada Kaiju representa una amenaza real. Sus habilidades estÃ¡n diseÃ±adas para impactar directamente el estado de la partida, obligando a tu oponente a adaptarse o sucumbir.",
+      "Cada Kaiju representa una amenaza real. Sus habilidades están diseñadas para impactar directamente el estado de la partida, obligando a tu oponente a adaptarse o sucumbir.",
     cards: [
       {
         id: "cat-026",
@@ -25,9 +25,9 @@ const showcaseItems = [
     ],
   },
   {
-    title: "Versatilidad estratÃ©gica",
+    title: "Versatilidad estratégica",
     description:
-      "MÃ¡s allÃ¡ de su fuerza bruta, los Kaijus ofrecen mÃºltiples formas de juego gracias a su interacciÃ³n con los entes, permitiendo construir estrategias Ãºnicas y dinÃ¡micas.",
+      "Más allá de su fuerza bruta, los Kaijus ofrecen múltiples formas de juego gracias a su interacción con los entes, permitiendo construir estrategias únicas y dinámicas.",
     cards: [
       {
         id: "cat-029",
@@ -49,7 +49,7 @@ const showcaseItems = [
   {
     title: "Arte monumental",
     description:
-      "Cada Kaiju estÃ¡ acompaÃ±ado de ilustraciones Ã©picas y detalladas que transmiten su escala y presencia, convirtiÃ©ndolos en piezas centrales tanto en juego como en colecciÃ³n.",
+      "Cada Kaiju está acompañado de ilustraciones épicas y detalladas que transmiten su escala y presencia, convirtiéndolos en piezas centrales tanto en juego como en colección.",
     cards: [
       {
         id: "cat-038",
@@ -79,7 +79,7 @@ export function CataclismoShowcaseSection() {
             Kaijus: colosos que dominan el campo
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            Las criaturas mÃ¡s imponentes jamÃ¡s vistas llegan al juego. Los Kaijus son entidades colosales que interactÃºan con los entes, desatando efectos devastadores y cambiando el ritmo de la partida desde el momento en que entran en juego.
+            Las criaturas más imponentes jamás vistas llegan al juego. Los Kaijus son entidades colosales que interactúan con los entes, desatando efectos devastadores y cambiando el ritmo de la partida desde el momento en que entran en juego.
           </p>
         </div>
 

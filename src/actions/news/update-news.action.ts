@@ -42,7 +42,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     const slug = buildNewsSlug(data.title);
 
     if (!slug) {
-      throw new Error("El tÃ­tulo no es vÃ¡lido");
+      throw new Error("El título no es válido");
     }
 
     const existingSlug = await prisma.new.findFirst({
@@ -55,7 +55,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     });
 
     if (existingSlug) {
-      throw new Error("El tÃ­tulo ya existe");
+      throw new Error("El título ya existe");
     }
 
     const parsedPublishedAt = data.publishedAt
@@ -93,7 +93,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
       isStoredAssetValue(existing.cardImage);
 
     if (shouldDeleteFeatured || shouldDeleteCard) {
-      // Limpiamos imÃ¡genes anteriores para evitar basura en R2.
+      // Limpiamos imágenes anteriores para evitar basura en R2.
       await Promise.all([
         shouldDeleteFeatured ? deleteAsset(existing.featuredImage) : null,
         shouldDeleteCard ? deleteAsset(existing.cardImage) : null,

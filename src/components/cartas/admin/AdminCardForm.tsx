@@ -252,25 +252,25 @@ export const AdminCardForm = ({
               required
             />
             <TextInput
-              label="CÃ³digo"
+              label="Código"
               value={values.code}
               onChange={(value) => updateValue("code", value)}
               required
             />
             <TextInput
-              label="NumeraciÃ³n"
+              label="Numeración"
               value={values.idd}
               onChange={(value) => updateValue("idd", value)}
               required
             />
             <TextInput
-              label="Ã­mite"
+              label="ímite"
               value={values.limit}
               onChange={(value) => updateValue("limit", value)}
               required
             />
             <TextInput
-              label="RotaciÃ³n"
+              label="Rotación"
               type="number"
               value={values.rotation}
               onChange={(value) => updateValue("rotation", value)}

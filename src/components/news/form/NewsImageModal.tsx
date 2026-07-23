@@ -206,7 +206,7 @@ export const NewsImageModal = ({
 
               {pageImages.length === 0 && (
                 <div className="col-span-full flex items-center justify-center py-10 text-sm text-slate-500 dark:text-slate-400">
-                  No hay imÃ¡genes disponibles en R2 para esta bÃºsqueda.
+                  No hay imágenes disponibles en R2 para esta búsqueda.
                 </div>
               )}
             </div>

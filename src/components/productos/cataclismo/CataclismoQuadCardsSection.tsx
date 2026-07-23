@@ -34,7 +34,7 @@ export function CataclismoQuadCardsSection() {
             Pikingos: la furia alza vuelo
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            La raza de palomas vikingas regresa con un refuerzo explosivo. MÃ¡s agresivos, mÃ¡s rÃ¡pidos y con nuevas herramientas, los Pikingos ahora dominan el campo con presiÃ³n constante y generaciÃ³n de recursos que potencia su estilo ofensivo.
+            La raza de palomas vikingas regresa con un refuerzo explosivo. Más agresivos, más rápidos y con nuevas herramientas, los Pikingos ahora dominan el campo con presión constante y generación de recursos que potencia su estilo ofensivo.
           </p>
         </div>
 

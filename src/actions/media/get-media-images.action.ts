@@ -26,6 +26,6 @@ export async function getMediaImagesAction(section: string): Promise<string[]> {
     return mapToPathnames(list);
   } catch (error) {
     console.error("[getMediaImagesAction]", error);
-    throw new Error("Error cargando las imÃ¡genes");
+    throw new Error("Error cargando las imágenes");
   }
 }

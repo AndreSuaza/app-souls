@@ -31,20 +31,20 @@ export async function uploadMediaImageAction(formData: FormData) {
     const config = MEDIA_SECTION_CONFIG[section];
 
     if (!config.allowUpload) {
-      throw new Error("Esta secciÃ³n no admite cargas por ahora");
+      throw new Error("Esta sección no admite cargas por ahora");
     }
 
     if (!(file instanceof File)) {
-      throw new Error("Archivo invÃ¡lido");
+      throw new Error("Archivo inválido");
     }
 
     if (!file.type.startsWith("image/")) {
-      throw new Error("Solo se permiten imÃ¡genes");
+      throw new Error("Solo se permiten imágenes");
     }
 
     const maxBytes = config.maxSizeMb * 1024 * 1024;
     if (file.size > maxBytes) {
-      throw new Error(`La imagen supera el lÃ­mite de ${config.maxSizeMb}MB`);
+      throw new Error(`La imagen supera el límite de ${config.maxSizeMb}MB`);
     }
 
     const inputBuffer = Buffer.from(await file.arrayBuffer());

@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!detail) {
     return {
       title: "Noticia no encontrada",
-      description: "La noticia solicitada no estÃ¡ disponible.",
+      description: "La noticia solicitada no está disponible.",
     };
   }
 

@@ -161,7 +161,7 @@ export const NewsForm = ({
 
   const effectiveMinPublishedAt = useMemo(() => {
     if (readOnly) return undefined;
-    // Si estÃ¡ publicada y no se modificÃ³ la fecha, no imponemos mÃ­nimo.
+    // Si está publicada y no se modificó la fecha, no imponemos mínimo.
     if (initialValues?.status === "published" && !hasPublishedAtChanged) {
       return undefined;
     }
@@ -411,7 +411,7 @@ export const NewsForm = ({
   };
 
   const handleInvalidSubmit = () => {
-    // Forza el estado de error en campos obligatorios aunque no tengan interacciÃ³n previa.
+    // Forza el estado de error en campos obligatorios aunque no tengan interacción previa.
     const currentTitle = watch("title");
     const currentSubtitle = watch("subtitle");
     const currentSummary = watch("shortSummary");
@@ -441,7 +441,7 @@ export const NewsForm = ({
 
   const handleFormSubmit = handleSubmit(async (values) => {
     try {
-      showLoading("Subiendo imÃ¡genes...");
+      showLoading("Subiendo imágenes...");
       setIsUploadingImages(true);
       setUploadError(null);
 
@@ -483,7 +483,7 @@ export const NewsForm = ({
       });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Error subiendo imÃ¡genes";
+        error instanceof Error ? error.message : "Error subiendo imágenes";
       setUploadError(message);
       showToast(message, "error");
     } finally {
@@ -515,7 +515,7 @@ export const NewsForm = ({
     >
       <div className="grid gap-4 lg:grid-cols-2">
         <FormField
-          label="TÃ­tulo"
+          label="Título"
           labelFor="news-title"
           error={errors.title?.message}
         >
@@ -525,13 +525,13 @@ export const NewsForm = ({
             hasError={!!errors.title}
             disabled={readOnly}
             {...register("title", {
-              required: "El tÃ­tulo es obligatorio",
+              required: "El título es obligatorio",
             })}
           />
         </FormField>
 
         <FormField
-          label="SubtÃ­tulo"
+          label="Subtítulo"
           labelFor="news-subtitle"
           error={errors.subtitle?.message}
         >
@@ -541,7 +541,7 @@ export const NewsForm = ({
             hasError={!!errors.subtitle}
             disabled={readOnly}
             {...register("subtitle", {
-              required: "El subtÃ­tulo es obligatorio",
+              required: "El subtítulo es obligatorio",
             })}
           />
         </FormField>
@@ -661,7 +661,7 @@ export const NewsForm = ({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <FormField label="Fecha de publicaciÃ³n" labelFor="news-published-at">
+        <FormField label="Fecha de publicación" labelFor="news-published-at">
           <div className="flex flex-wrap gap-2">
             <FormInput
               id="news-published-at"
@@ -691,7 +691,7 @@ export const NewsForm = ({
         </FormField>
 
         <FormField
-          label="CategorÃ­a"
+          label="Categoría"
           labelFor="news-category"
           error={errors.newCategoryId?.message}
         >
@@ -700,10 +700,10 @@ export const NewsForm = ({
             hasError={!!errors.newCategoryId}
             disabled={readOnly}
             {...register("newCategoryId", {
-              required: "La categorÃ­a es obligatoria",
+              required: "La categoría es obligatoria",
             })}
           >
-            <option value="">Selecciona una categorÃ­a</option>
+            <option value="">Selecciona una categoría</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -716,7 +716,7 @@ export const NewsForm = ({
       <FormField
         label="Etiquetas"
         labelFor="news-tags-input"
-        tooltip="MÃ¡ximo 5 palabras clave por noticia."
+        tooltip="Máximo 5 palabras clave por noticia."
       >
         <div className="space-y-2">
           <FormInput

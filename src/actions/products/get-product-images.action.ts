@@ -31,6 +31,6 @@ export async function getProductImagesAction(): Promise<string[]> {
       .map((item) => item.pathname);
   } catch (error) {
     console.error("[getProductImagesAction]", error);
-    throw new Error("Error cargando las imÃ¡genes del producto");
+    throw new Error("Error cargando las imágenes del producto");
   }
 }

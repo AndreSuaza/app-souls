@@ -74,7 +74,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
       return visibilityFilter === "visible" ? product.show : !product.show;
     });
 
-    // El Ã­ndice define el orden real, por eso lo usamos como criterio de "reciente".
+    // El índice define el orden real, por eso lo usamos como criterio de "reciente".
     const sorted = [...visibilityFiltered].sort((a, b) =>
       orderFilter === "recent" ? b.index - a.index : a.index - b.index,
     );
@@ -133,8 +133,8 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
 
   const handleDelete = (id: string) => {
     openConfirmation({
-      text: "Â¿Deseas eliminar este producto?",
-      description: "Esta acciÃ³n no se puede deshacer.",
+      text: "¿Deseas eliminar este producto?",
+      description: "Esta acción no se puede deshacer.",
       action: async () => {
         showLoading("Eliminando producto...");
         await deleteProductAction(id);
@@ -183,8 +183,8 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
             onChange={(event) => setOrderFilter(event.target.value as OrderFilter)}
             className="mt-1 rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
           >
-            <option value="recent">MÃ¡s recientes</option>
-            <option value="old">MÃ¡s antiguos</option>
+            <option value="recent">Más recientes</option>
+            <option value="old">Más antiguos</option>
           </select>
         </div>
 
@@ -218,9 +218,9 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
                 <thead className="border-b border-tournament-dark-border/60 text-xs uppercase text-slate-500 dark:text-slate-400">
                   <tr>
                     <th className="px-4 py-3">Producto</th>
-                    <th className="px-4 py-3">CÃ³digo</th>
+                    <th className="px-4 py-3">Código</th>
                     <th className="px-4 py-3">Lanzamiento</th>
-                    <th className="px-4 py-3">Ãndice</th>
+                    <th className="px-4 py-3">Índice</th>
                     <th className="px-4 py-3">Visible</th>
                     <th className="px-4 py-3 text-right">Acciones</th>
                   </tr>
@@ -350,7 +350,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
 
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                     <span>{product.releaseDate}</span>
-                    <span>Ãndice: {product.index}</span>
+                    <span>Índice: {product.index}</span>
                     <span>{product.show ? "Visible" : "Oculto"}</span>
                   </div>
                 </div>

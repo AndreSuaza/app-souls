@@ -87,7 +87,7 @@ export async function deleteMediaImageAction(section: string, url: string) {
     const config = MEDIA_SECTION_CONFIG[parsedSection];
 
     if (!config.allowDelete) {
-      throw new Error("Esta secciÃ³n no admite eliminaciones por ahora");
+      throw new Error("Esta sección no admite eliminaciones por ahora");
     }
 
     if (!url) {
@@ -97,7 +97,7 @@ export async function deleteMediaImageAction(section: string, url: string) {
     const isUsed = await validateUsage(parsedSection, url);
 
     if (isUsed) {
-      throw new Error("La imagen estÃ¡ en uso y no se puede eliminar");
+      throw new Error("La imagen está en uso y no se puede eliminar");
     }
 
     await deleteAsset(url);

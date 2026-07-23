@@ -120,7 +120,7 @@ export const ProductImageModal = ({
                 Seleccionar imagen del producto
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Elige la imagen base que representarÃ¡ este producto.
+                Elige la imagen base que representará este producto.
               </p>
             </div>
             <button
@@ -141,7 +141,7 @@ export const ProductImageModal = ({
                 type="text"
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
-                placeholder="Buscar por cÃ³digo"
+                placeholder="Buscar por código"
                 className="w-full rounded-lg border border-tournament-dark-accent bg-white py-2 pl-9 pr-3 text-sm text-slate-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
               />
             </label>
@@ -208,7 +208,7 @@ export const ProductImageModal = ({
 
               {pageImages.length === 0 && (
                 <div className="col-span-full flex items-center justify-center py-10 text-sm text-slate-500 dark:text-slate-400">
-                  No hay imÃ¡genes disponibles en R2 para esta bÃºsqueda.
+                  No hay imágenes disponibles en R2 para esta búsqueda.
                 </div>
               )}
             </div>

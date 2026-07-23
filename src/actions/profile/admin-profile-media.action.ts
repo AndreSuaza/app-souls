@@ -93,7 +93,7 @@ export const createProfileMediaAction = async (formData: FormData) => {
   }
 
   if (!file.type.startsWith("image/")) {
-    throw new Error("Solo se permiten imÃ¡genes");
+    throw new Error("Solo se permiten imágenes");
   }
 
   const parsedResult = AvatarMetadataSchema.safeParse({

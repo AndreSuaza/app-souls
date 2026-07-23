@@ -543,18 +543,18 @@ export async function importCardsFromExcelAction(
 
     const iddParsed = parseIdd(iddRaw);
     if (iddParsed === null) {
-      reasons.push("El campo CÃ³digo (IDD) debe ser numÃ©rico.");
+      reasons.push("El campo Código (IDD) debe ser numérico.");
     }
 
     const costParsed = parseInteger(costRaw);
     if (costParsed === null) {
-      reasons.push("El campo Coste debe ser numÃ©rico.");
+      reasons.push("El campo Coste debe ser numérico.");
     }
 
     const priceParsed =
       toPlainString(priceRaw) === "" ? null : parseFloatNumber(priceRaw);
     if (toPlainString(priceRaw) !== "" && priceParsed === null) {
-      reasons.push("El campo Precios debe ser numÃ©rico.");
+      reasons.push("El campo Precios debe ser numérico.");
     }
     if (priceParsed !== null && priceParsed < 0) {
       reasons.push("El campo Precios no puede ser negativo.");
