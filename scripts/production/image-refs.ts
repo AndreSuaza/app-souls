@@ -1,4 +1,4 @@
-import { HeadObjectCommand } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { PrismaClient } from "@prisma/client";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
@@ -115,7 +115,7 @@ const R2_FOLDERS = [
 ] as const;
 const LOCAL_PROJECT_PREFIXES = ["product-pages/"];
 const SYMBOLIC_VALUES = new Set(["player"]);
-const HTTP_URL_PATTERN = /https?:\/\/[^\s"'<>)]*/g;
+const HTTP_URL_PATTERN = /https?:\/\/(?:(?!\)!\[|&nbsp;?)[^\s"'<>])+/g;
 const LOCAL_ASSET_PATTERN =
   /(["'(=])\/(cards|decks|events|news|products|profile|tournaments)\/([^"'()<>\s]+)/g;
 
@@ -144,18 +144,37 @@ const getDatabaseName = () => {
   return match?.[1] ?? "";
 };
 
-const assertSix2 = () => {
+const assertDatabaseWriteConfirmed = () => {
   const databaseName = getDatabaseName();
-  if (!hasArg("--confirm-six2")) {
-    throw new Error("This production command requires --confirm-six2.");
-  }
-  if (!/^six2$/i.test(databaseName)) {
-    throw new Error(`DATABASE_URL must point to six2/Six2. Current database: ${databaseName || "unknown"}`);
+  if (!hasArg("--confirm-database-write")) {
+    throw new Error(
+      `This command writes to DATABASE_URL (${databaseName || "unknown"}). Pass --confirm-database-write to continue.`,
+    );
   }
 };
 
 const normalizeSlashes = (value: string) => value.replace(/\\/g, "/");
 const stripQueryHash = (value: string) => value.split(/[?#]/, 1)[0] ?? "";
+
+const splitUrlCandidate = (value: string) => {
+  let url = value;
+  let suffix = "";
+
+  while (/[.,;:]$/.test(url)) {
+    suffix = `${url.at(-1)}${suffix}`;
+    url = url.slice(0, -1);
+  }
+
+  const openParens = () => (url.match(/\(/g) ?? []).length;
+  const closeParens = () => (url.match(/\)/g) ?? []).length;
+
+  while (url.endsWith(")") && closeParens() > openParens()) {
+    suffix = `)${suffix}`;
+    url = url.slice(0, -1);
+  }
+
+  return { url, suffix };
+};
 
 const isHttpUrl = (value: string) =>
   value.startsWith("http://") || value.startsWith("https://");
@@ -245,11 +264,12 @@ const normalizeContentValue = (value: string | null | undefined) => {
   const keys = new Set<string>();
   let changed = false;
   let normalized = value.replace(HTTP_URL_PATTERN, (match) => {
-    const result = normalizeSingleValue(match);
-    if (!result || result.value === match) return match;
+    const candidate = splitUrlCandidate(match);
+    const result = normalizeSingleValue(candidate.url);
+    if (!result || result.value === candidate.url) return match;
     result.keys.forEach((key) => keys.add(key));
     changed = true;
-    return result.value;
+    return `${result.value}${candidate.suffix}`;
   });
 
   normalized = normalized.replace(LOCAL_ASSET_PATTERN, (match, prefix, folder, rest) => {
@@ -294,7 +314,9 @@ const extractKeysFromContentValue = (value: unknown): string[] => {
 
   const keys = new Set<string>();
   for (const match of value.matchAll(HTTP_URL_PATTERN)) {
-    extractKeysFromSingleValue(match[0]).forEach((key) => keys.add(key));
+    extractKeysFromSingleValue(splitUrlCandidate(match[0]).url).forEach((key) =>
+      keys.add(key),
+    );
   }
   for (const match of value.matchAll(LOCAL_ASSET_PATTERN)) {
     const [, , folder, rest] = match;
@@ -406,13 +428,35 @@ const verifyKeysExist = async (keys: string[]) => {
   const allowMissing = getAllowMissingKeys();
   const client = createR2Client();
   const bucket = getBucketName();
+  const uniqueKeys = Array.from(new Set(keys)).sort();
+  const folders = Array.from(
+    new Set(uniqueKeys.map((key) => getFolder(key)).filter(Boolean)),
+  ).sort();
+  const availableKeys = new Set<string>();
   const missing: string[] = [];
 
-  for (const key of Array.from(new Set(keys)).sort()) {
+  for (const folder of folders) {
+    let continuationToken: string | undefined;
+    do {
+      const response = await client.send(
+        new ListObjectsV2Command({
+          Bucket: bucket,
+          Prefix: `${folder}/`,
+          ContinuationToken: continuationToken,
+        }),
+      );
+
+      for (const object of response.Contents ?? []) {
+        if (object.Key) availableKeys.add(object.Key);
+      }
+
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+  }
+
+  for (const key of uniqueKeys) {
     if (allowMissing.has(key)) continue;
-    try {
-      await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
-    } catch {
+    if (!availableKeys.has(key)) {
       missing.push(key);
     }
   }
@@ -490,7 +534,7 @@ const runAudit = async () => {
 };
 
 const runMigrate = async () => {
-  assertSix2();
+  assertDatabaseWriteConfirmed();
   const execute = hasArg("--execute");
   const { changes } = await collectChanges();
   const currentKeys = await collectCurrentAssetKeys();
@@ -515,7 +559,7 @@ const runMigrate = async () => {
 };
 
 const runVerify = async () => {
-  assertSix2();
+  assertDatabaseWriteConfirmed();
   const { changes } = await collectChanges();
   const currentKeys = await collectCurrentAssetKeys();
   const keys = [...changes.flatMap((change) => change.keys), ...currentKeys];
@@ -531,7 +575,7 @@ const runVerify = async () => {
 };
 
 const runRollback = async () => {
-  assertSix2();
+  assertDatabaseWriteConfirmed();
   if (!hasArg("--execute")) throw new Error("Rollback requires --execute.");
 
   const backupPath = getArgValue("--backup");
@@ -542,8 +586,13 @@ const runRollback = async () => {
     entries: BackupEntry[];
   };
 
-  if (!/^six2$/i.test(backup.database ?? "")) {
-    throw new Error(`Backup database must be six2/Six2. Backup database: ${backup.database ?? "unknown"}`);
+  if (
+    !hasArg("--allow-cross-database-rollback") &&
+    (backup.database ?? "") !== getDatabaseName()
+  ) {
+    throw new Error(
+      `Backup database (${backup.database ?? "unknown"}) does not match DATABASE_URL (${getDatabaseName() || "unknown"}).`,
+    );
   }
 
   for (const entry of backup.entries) {
