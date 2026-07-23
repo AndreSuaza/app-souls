@@ -39,7 +39,7 @@ const stripQueryAndHash = (value: string) => value.split(/[?#]/, 1)[0] ?? "";
 
 const toStorageUrl = (path: string) => {
   const normalized = path.replace(/^\/+/, "");
-  if (!storageBaseUrl) return path.startsWith("/") ? path : normalized;
+  if (!storageBaseUrl) return `/${normalized}`;
   return `${storageBaseUrl}/${normalized}`;
 };
 
