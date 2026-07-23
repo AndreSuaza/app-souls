@@ -122,6 +122,9 @@ const LOCAL_ASSET_PATTERN =
 const command = (process.argv[2] ?? "audit") as Command;
 const hasArg = (name: string) => process.argv.includes(name);
 const getArgValue = (name: string) => {
+  const inline = process.argv.find((arg) => arg.startsWith(`${name}=`));
+  if (inline) return inline.slice(name.length + 1);
+
   const index = process.argv.indexOf(name);
   return index === -1 ? undefined : process.argv[index + 1];
 };
