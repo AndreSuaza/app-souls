@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { isVerificationTokenForPurpose } from "@/lib/verification-token";
 import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 
@@ -19,7 +20,14 @@ export async function GET(request: NextRequest) {
     return new Response("Token not found", { status: 400 });
   }
 
+  if (
+    !isVerificationTokenForPurpose(verifyToken.identifier, "password-reset")
+  ) {
+    return new Response("Token not found", { status: 400 });
+  }
+
   if (verifyToken.expires < new Date()) {
+    await prisma.verificationToken.deleteMany({ where: { token } });
     return new Response("Token expired", { status: 400 });
   }
 

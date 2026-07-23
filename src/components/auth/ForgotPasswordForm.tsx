@@ -1,34 +1,66 @@
-﻿"use client";
+"use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import clsx from "clsx";
 import Link from "next/link";
 import { requestPasswordReset } from "@/actions";
 
+type ForgotPasswordFormValues = {
+  email: string;
+};
+
 export const ForgotPasswordForm = () => {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
-  } = useForm<{ email: string }>();
+  } = useForm<ForgotPasswordFormValues>();
 
   const [success, setSuccess] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const onSubmit = ({ email }: { email: string }) => {
+  useEffect(() => {
+    if (!success || cooldownSeconds <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setCooldownSeconds((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [cooldownSeconds, success]);
+
+  const sendResetRequest = (email: string) => {
     setErrorMsg(null);
 
     startTransition(async () => {
       const resp = await requestPasswordReset(email);
 
       if (!resp.success) {
-        setErrorMsg("Hubo un error enviando el correo. Intenta nuevamente.");
-      } else {
-        setSuccess(true);
+        setErrorMsg(
+          resp.message ?? "Hubo un error enviando el correo. Intenta nuevamente.",
+        );
+        if (resp.retryAfterSeconds) {
+          setCooldownSeconds(resp.retryAfterSeconds);
+        }
+        return;
       }
+
+      setSuccess(true);
+      setCooldownSeconds(resp.retryAfterSeconds ?? 60);
     });
+  };
+
+  const onSubmit = ({ email }: ForgotPasswordFormValues) => {
+    sendResetRequest(email);
+  };
+
+  const onResend = () => {
+    if (cooldownSeconds > 0) return;
+    sendResetRequest(getValues("email"));
   };
 
   return (
@@ -63,11 +95,11 @@ export const ForgotPasswordForm = () => {
           {
             "border-red-500": errors.email,
             "border-slate-200": !errors.email,
-          }
+          },
         )}
         type="email"
         placeholder="Ingresa tu correo electrónico"
-        disabled={isPending}
+        disabled={isPending || success}
         {...register("email", {
           required: "es requerido.",
           pattern: {
@@ -86,7 +118,7 @@ export const ForgotPasswordForm = () => {
               !success && !isPending,
             "bg-gray-300 cursor-not-allowed text-gray-500":
               success || isPending,
-          }
+          },
         )}
         aria-busy={isPending}
       >
@@ -95,6 +127,24 @@ export const ForgotPasswordForm = () => {
         )}
         {isPending ? "Enviando..." : "Enviar enlace"}
       </button>
+
+      {success && (
+        <button
+          type="button"
+          onClick={onResend}
+          disabled={isPending || cooldownSeconds > 0}
+          className={clsx(
+            "py-2 text-sm font-semibold transition",
+            cooldownSeconds > 0 || isPending
+              ? "text-slate-400 cursor-not-allowed"
+              : "text-indigo-600 hover:text-indigo-700",
+          )}
+        >
+          {cooldownSeconds > 0
+            ? `Reenviar enlace en ${cooldownSeconds}s`
+            : "Reenviar enlace"}
+        </button>
+      )}
 
       <Link
         href="/auth/login"
