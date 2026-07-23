@@ -1,5 +1,6 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
+import { toAssetUrl } from "@/utils/asset-path";
 
 export function CataclismoDuoCardsSection() {
   return (
@@ -10,7 +11,7 @@ export function CataclismoDuoCardsSection() {
             Arte que trasciende el juego
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            Por primera vez, llegan cartas secretas firmadas por el ilustrador Doroh. Estas piezas no solo destacan por su poder en el juego, sino por su valor artístico y exclusividad. Cada firma convierte la carta en una reliquia dentro del universo de Souls In Xtinction.
+            Por primera vez, llegan cartas secretas firmadas por el ilustrador Doroh. Estas piezas no solo destacan por su poder en el juego, sino por su valor artÃ­stico y exclusividad. Cada firma convierte la carta en una reliquia dentro del universo de Souls In Xtinction.
           </p>
         </div>
 
@@ -18,7 +19,7 @@ export function CataclismoDuoCardsSection() {
           <div className="flex justify-center">
             <TiltCard className="w-full max-w-[300px]">
               <Image
-                src="/cards/CAT-091-4685.webp"
+                src={toAssetUrl("/cards/CAT-091-4685.webp")}
                 alt="Carta Cataclismo 091"
                 title="Carta Cataclismo 091"
                 width={360}
@@ -30,7 +31,7 @@ export function CataclismoDuoCardsSection() {
           <div className="flex justify-center">
             <TiltCard className="w-full max-w-[300px]">
               <Image
-                src="/cards/CAT-092-1158.webp"
+                src={toAssetUrl("/cards/CAT-092-1158.webp")}
                 alt="Carta Cataclismo 092"
                 title="Carta Cataclismo 092"
                 width={360}

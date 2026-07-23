@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { listBlob, uploadBlob } from "@/lib/blob";
+import { listAssets, uploadAsset } from "@/lib/assets-storage";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import { MediaSectionSchema } from "@/schemas";
 import sharp from "sharp";
@@ -31,27 +31,28 @@ export async function uploadMediaImageAction(formData: FormData) {
     const config = MEDIA_SECTION_CONFIG[section];
 
     if (!config.allowUpload) {
-      throw new Error("Esta sección no admite cargas por ahora");
+      throw new Error("Esta secciÃ³n no admite cargas por ahora");
     }
 
     if (!(file instanceof File)) {
-      throw new Error("Archivo inválido");
+      throw new Error("Archivo invÃ¡lido");
     }
 
     if (!file.type.startsWith("image/")) {
-      throw new Error("Solo se permiten imágenes");
+      throw new Error("Solo se permiten imÃ¡genes");
     }
 
     const maxBytes = config.maxSizeMb * 1024 * 1024;
     if (file.size > maxBytes) {
-      throw new Error(`La imagen supera el límite de ${config.maxSizeMb}MB`);
+      throw new Error(`La imagen supera el lÃ­mite de ${config.maxSizeMb}MB`);
     }
 
     const inputBuffer = Buffer.from(await file.arrayBuffer());
-    // Convertimos siempre a WebP para estandarizar peso y formato.
-    const outputBuffer = await sharp(inputBuffer)
-      .webp({ quality: 85 })
-      .toBuffer();
+    const isWebp = file.type === "image/webp";
+    const outputBuffer =
+      section === "products" && isWebp
+        ? inputBuffer
+        : await sharp(inputBuffer).webp({ quality: 92 }).toBuffer();
 
     const safeName = buildSafeName(file.name);
     let filename = `${safeName}-${crypto.randomUUID()}.webp`;
@@ -59,7 +60,7 @@ export async function uploadMediaImageAction(formData: FormData) {
     if (section === "products") {
       // Para productos usamos el nombre base sin UUID y evitamos sobrescrituras.
       filename = `${safeName}.webp`;
-      const existing = await listBlob(`${config.folder}/`);
+      const existing = await listAssets(`${config.folder}/`);
       const exists = existing.some((item) => item.pathname.endsWith(filename));
       if (exists) {
         throw new Error(
@@ -70,13 +71,17 @@ export async function uploadMediaImageAction(formData: FormData) {
 
     const path = `${config.folder}/${filename}`;
 
-    const blob = await uploadBlob({
+    const asset = await uploadAsset({
       path,
       buffer: outputBuffer,
       contentType: "image/webp",
+      cacheControl:
+        section === "products"
+          ? "public, max-age=300, must-revalidate"
+          : undefined,
     });
 
-    return { pathname: blob.pathname };
+    return { pathname: asset.pathname };
   } catch (error) {
     console.error("[uploadMediaImageAction]", error);
     throw new Error(

@@ -1,25 +1,26 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
+import { toAssetUrl } from "@/utils/asset-path";
 
 const cards = [
   {
     id: "cat-045",
-    src: "/cards/CAT-045-6334.webp",
+    src: toAssetUrl("/cards/CAT-045-6334.webp"),
     alt: "Carta Cataclismo 045",
   },
   {
     id: "cat-056",
-    src: "/cards/CAT-056-1306.webp",
+    src: toAssetUrl("/cards/CAT-056-1306.webp"),
     alt: "Carta Cataclismo 056",
   },
   {
     id: "cat-057",
-    src: "/cards/CAT-057-8077.webp",
+    src: toAssetUrl("/cards/CAT-057-8077.webp"),
     alt: "Carta Cataclismo 057",
   },
   {
     id: "cat-048",
-    src: "/cards/CAT-048-2536.webp",
+    src: toAssetUrl("/cards/CAT-048-2536.webp"),
     alt: "Carta Cataclismo 048",
   },
 ];
@@ -33,7 +34,7 @@ export function CataclismoQuadCardsSection() {
             Pikingos: la furia alza vuelo
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            La raza de palomas vikingas regresa con un refuerzo explosivo. Más agresivos, más rápidos y con nuevas herramientas, los Pikingos ahora dominan el campo con presión constante y generación de recursos que potencia su estilo ofensivo.
+            La raza de palomas vikingas regresa con un refuerzo explosivo. MÃ¡s agresivos, mÃ¡s rÃ¡pidos y con nuevas herramientas, los Pikingos ahora dominan el campo con presiÃ³n constante y generaciÃ³n de recursos que potencia su estilo ofensivo.
           </p>
         </div>
 

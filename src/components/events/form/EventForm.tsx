@@ -17,7 +17,7 @@ import {
   type CreateEventInput,
 } from "@/schemas/events/event.schema";
 import { useToastStore, useUIStore } from "@/store";
-import { toBlobPath } from "@/utils/blob-path";
+import { toAssetPath } from "@/utils/asset-path";
 
 export type EventSubmitValues = CreateEventInput;
 
@@ -212,13 +212,13 @@ export const EventForm = ({
     if (folder === "banners") {
       const currentFeatured = String(values.featuredImage).startsWith("local:")
         ? null
-        : toBlobPath(String(values.featuredImage));
+        : toAssetPath(String(values.featuredImage));
       clearStagedFeatured();
       setPendingImage(pendingFeaturedPreview ?? currentFeatured ?? null);
     } else {
       const currentCard = String(values.cardImage).startsWith("local:")
         ? null
-        : toBlobPath(String(values.cardImage));
+        : toAssetPath(String(values.cardImage));
       clearStagedCard();
       setPendingImage(pendingCardPreview ?? currentCard ?? null);
     }

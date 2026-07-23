@@ -6,12 +6,14 @@ import { CardDetailStatCard } from "@/components/cartas/card-detail/CardDetailSt
 import { CardDetailProductCard } from "@/components/cartas/card-detail/CardDetailProductCard";
 import { BovedaPriceCard } from "./BovedaPriceCard";
 import { TiltCard } from "@/components/ui/tilt/TiltCard";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 interface DetailCard {
   id: string;
   idd: string;
   code: string;
   name: string;
+  imageUrl: string | null;
   cost: number;
   force: string;
   defense: string;
@@ -62,6 +64,7 @@ export function BovedaCardDetail({ card }: Props) {
   const priceFormatter = new Intl.NumberFormat("es-CO");
   const priceText =
     card.price != null ? `$${priceFormatter.format(card.price)}` : "Sin precio";
+  const imageSrc = resolveCardImageUrl(card);
 
   return (
     <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
@@ -74,7 +77,7 @@ export function BovedaCardDetail({ card }: Props) {
           <TiltCard className="w-full">
             <div className="relative w-full aspect-[500/718] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
               <Image
-                src={`/cards/${card.code}-${card.idd}.webp`}
+                src={imageSrc}
                 alt={card.name}
                 title={card.name}
                 placeholder="blur"

@@ -43,6 +43,7 @@ export interface Card {
   name: string;
   slug?: string;
   effect: string;
+  imageUrl?: string | null;
   product: Product;
   price?: number | null;
 }

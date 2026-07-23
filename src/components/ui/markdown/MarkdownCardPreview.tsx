@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCardByIdAction } from "@/actions";
 import { cardImageBlurDataURL } from "@/models/images.models";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 type Props = {
   src?: string;
@@ -85,7 +86,7 @@ export const MarkdownCardPreview = ({ src, alt }: Props) => {
             const card = await getCardByIdAction({ cardId });
             if (!card) return null;
             return {
-              src: `/cards/${card.code}-${card.idd}.webp`,
+              src: resolveCardImageUrl(card),
               name: card.name ?? "Carta",
               rarityName: card.rarityName ?? null,
               slug: card.slug,

@@ -3,6 +3,7 @@
 import { Card } from "@/interfaces";
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
+import { resolveCardImageUrl } from "@/utils/card-image";
 import { IoAddCircleOutline } from "react-icons/io5";
 import clsx from 'clsx';
 
@@ -23,6 +24,8 @@ export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
   //     openCardDetail();
   //     detailCard(index);
   // }
+
+  const imageSrc = resolveCardImageUrl(card);
 
   return (
     <div 
@@ -51,7 +54,7 @@ export const CardItemDeckList = ({card, count, dropCard, addCard}:Props) => {
             <div className="relative overflow-hidden bg-[url('/howtoplay/mazo-principal.webp')] bg-cover bg-center">
                 {/* El fondo actúa como placeholder para evitar duplicar altura en el grid. */}
                 <Image
-                    src={`/cards/${card.code}-${card.idd}.webp`}
+                    src={imageSrc}
                     alt={card.name}
                     title={card.name}
                     placeholder="blur"

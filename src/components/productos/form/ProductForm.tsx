@@ -10,7 +10,7 @@ import { FormField, FormInput, FormSelect } from "@/components/ui/form";
 import type { AdminProductDetail } from "@/interfaces";
 import { MarkdownDeckModal } from "@/components/ui/markdown/MarkdownDeckModal";
 import { ProductImageModal } from "./ProductImageModal";
-import { toBlobPath } from "@/utils/blob-path";
+import { toAssetPath } from "@/utils/asset-path";
 
 type ProductFormValues = {
   name: string;
@@ -75,7 +75,7 @@ const MONTHS = [
 
 const stripExtension = (filename: string) => filename.replace(/\.[^/.]+$/, "");
 const getLabelFromUrl = (url: string) => {
-  const clean = toBlobPath(url);
+  const clean = toAssetPath(url);
   return clean.split("/").pop() ?? url;
 };
 
@@ -153,6 +153,7 @@ export const ProductForm = ({
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [availableImages, setAvailableImages] = useState(images);
 
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [deckSearch, setDeckSearch] = useState("");
@@ -175,11 +176,23 @@ export const ProductForm = ({
   }, [initialRelease.month, initialRelease.year]);
 
   useEffect(() => {
+    setAvailableImages((current) => {
+      const merged = [...images];
+      current.forEach((image) => {
+        if (!merged.includes(image)) {
+          merged.unshift(image);
+        }
+      });
+      return merged;
+    });
+  }, [images]);
+
+  useEffect(() => {
     if (!releaseMonth || !releaseYear) {
       setValue("releaseDate", "", { shouldValidate: false });
       return;
     }
-    // Sincroniza el string de lanzamiento con los selects de mes y año.
+    // Sincroniza el string de lanzamiento con los selects de mes y aÃ±o.
     setValue("releaseDate", `${releaseMonth} ${releaseYear}`, {
       shouldValidate: false,
     });
@@ -203,16 +216,18 @@ export const ProductForm = ({
   useEffect(() => {
     if (!initialValues?.imageUrl && !initialValues?.code) return;
     const initialPath = initialValues?.imageUrl
-      ? toBlobPath(initialValues.imageUrl)
+      ? toAssetPath(initialValues.imageUrl)
       : "";
     const match =
-      (initialPath ? images.find((image) => image === initialPath) : null) ??
-      images.find(
+      (initialPath
+        ? availableImages.find((image) => image === initialPath)
+        : null) ??
+      availableImages.find(
         (image) => stripExtension(getLabelFromUrl(image)) === initialValues.code,
       ) ??
       null;
     setSelectedImage(match);
-  }, [images, initialValues?.code, initialValues?.imageUrl]);
+  }, [availableImages, initialValues?.code, initialValues?.imageUrl]);
 
   useEffect(() => {
     if (!isDeckModalOpen) return;
@@ -267,6 +282,14 @@ export const ProductForm = ({
     setIsImageModalOpen(false);
   };
 
+  const handleProductImageUploaded = (image: string) => {
+    setAvailableImages((current) => [
+      image,
+      ...current.filter((item) => item !== image),
+    ]);
+    setPendingImage(image);
+  };
+
   const handleSelectDeck = (deckId: string) => {
     setSelectedDeckId(deckId);
     setValue("deckId", deckId, { shouldValidate: true });
@@ -278,7 +301,7 @@ export const ProductForm = ({
   };
 
   const handleInvalidSubmit = () => {
-    // Fuerza la validación en campos controlados externamente.
+    // Fuerza la validaciÃ³n en campos controlados externamente.
     if (!codeValue) {
       setValue("code", codeValue, { shouldValidate: true });
     }
@@ -389,7 +412,7 @@ export const ProductForm = ({
         </FormField>
 
         <FormField
-          label="Índice"
+          label="Ãndice"
           labelFor="product-index"
           error={errors.index?.message}
         >
@@ -401,14 +424,14 @@ export const ProductForm = ({
               hasError={!!errors.index}
               readOnly
               {...register("index", {
-                required: "El índice es obligatorio",
+                required: "El Ã­ndice es obligatorio",
                 valueAsNumber: true,
               })}
             />
           ) : (
             <FormInput
               id="product-index"
-              placeholder="Se asigna automáticamente"
+              placeholder="Se asigna automÃ¡ticamente"
               readOnly
               disabled
             />
@@ -441,7 +464,7 @@ export const ProductForm = ({
               hasError={!!errors.releaseDate}
               disabled={readOnly}
             >
-              <option value="">Año</option>
+              <option value="">AÃ±o</option>
               {years.map((year) => (
                 <option key={year} value={year}>
                   {year}
@@ -464,7 +487,7 @@ export const ProductForm = ({
                 }
                 disabled={readOnly}
               >
-                <option value="true">Sí</option>
+                <option value="true">SÃ­</option>
                 <option value="false">No</option>
               </FormSelect>
             )}
@@ -491,7 +514,7 @@ export const ProductForm = ({
         </FormField>
 
         <FormField
-          label="Número de cartas"
+          label="NÃºmero de cartas"
           labelFor="product-number-cards"
           error={errors.numberCards?.message}
         >
@@ -505,7 +528,7 @@ export const ProductForm = ({
             type="hidden"
             {...register("numberCards", {
               valueAsNumber: true,
-              required: "El número de cartas es obligatorio",
+              required: "El nÃºmero de cartas es obligatorio",
             })}
           />
         </FormField>
@@ -546,11 +569,11 @@ export const ProductForm = ({
           validate: (value) =>
             value && value.trim().length >= 10
               ? true
-              : "La descripción es obligatoria",
+              : "La descripciÃ³n es obligatoria",
         }}
         render={({ field }) => (
           <MarkdownEditor
-            label="Descripción"
+            label="DescripciÃ³n"
             value={field.value}
             onChange={field.onChange}
             placeholder="Describe el producto..."
@@ -596,9 +619,10 @@ export const ProductForm = ({
 
       <ProductImageModal
         isOpen={isImageModalOpen}
-        images={images}
+        images={availableImages}
         selectedImage={pendingImage}
         onSelect={setPendingImage}
+        onImageUploaded={handleProductImageUploaded}
         onClose={() => setIsImageModalOpen(false)}
         onConfirm={handleConfirmImage}
       />

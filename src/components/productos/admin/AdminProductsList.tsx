@@ -2,15 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { IoTrashOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoTrashOutline } from "react-icons/io5";
 import clsx from "clsx";
 import { deleteProductAction } from "@/actions";
 import { PaginationLine } from "@/components/ui";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import type { AdminProductListItem } from "@/interfaces";
 import { AdminProductsSearch } from "./AdminProductsSearch";
-import { toBlobUrl } from "@/utils/blob-path";
+import { toProductImageUrl } from "@/utils/asset-path";
 
 type Props = {
   products: AdminProductListItem[];
@@ -25,10 +26,10 @@ const PAGE_SIZE = 10;
 const resolveProductImage = (value?: string | null) => {
   if (!value) return null;
   if (value.startsWith("http") || value.startsWith("/")) return value;
-  const blobCandidate = value.includes("/")
+  const assetCandidate = value.includes("/")
     ? value
-    : `souls/products/${value}.webp`;
-  const resolved = toBlobUrl(blobCandidate);
+    : `products/${value}.webp`;
+  const resolved = toProductImageUrl(assetCandidate);
   if (resolved.startsWith("http") || resolved.startsWith("/")) return resolved;
   return `/products/${value}.webp`;
 };
@@ -73,7 +74,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
       return visibilityFilter === "visible" ? product.show : !product.show;
     });
 
-    // El índice define el orden real, por eso lo usamos como criterio de "reciente".
+    // El Ã­ndice define el orden real, por eso lo usamos como criterio de "reciente".
     const sorted = [...visibilityFiltered].sort((a, b) =>
       orderFilter === "recent" ? b.index - a.index : a.index - b.index,
     );
@@ -132,8 +133,8 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
 
   const handleDelete = (id: string) => {
     openConfirmation({
-      text: "¿Deseas eliminar este producto?",
-      description: "Esta acción no se puede deshacer.",
+      text: "Â¿Deseas eliminar este producto?",
+      description: "Esta acciÃ³n no se puede deshacer.",
       action: async () => {
         showLoading("Eliminando producto...");
         await deleteProductAction(id);
@@ -161,6 +162,15 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
         query={inputValue}
         totalCount={filtered.length}
         onChange={setInputValue}
+        action={
+          <Link
+            href="/admin/productos/crear-producto"
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
+          >
+            <IoAddCircleOutline className="h-4 w-4" />
+            Crear producto
+          </Link>
+        }
       />
 
       <div className="flex flex-wrap gap-3">
@@ -173,8 +183,8 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
             onChange={(event) => setOrderFilter(event.target.value as OrderFilter)}
             className="mt-1 rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30"
           >
-            <option value="recent">Más recientes</option>
-            <option value="old">Más antiguos</option>
+            <option value="recent">MÃ¡s recientes</option>
+            <option value="old">MÃ¡s antiguos</option>
           </select>
         </div>
 
@@ -208,9 +218,9 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
                 <thead className="border-b border-tournament-dark-border/60 text-xs uppercase text-slate-500 dark:text-slate-400">
                   <tr>
                     <th className="px-4 py-3">Producto</th>
-                    <th className="px-4 py-3">Código</th>
+                    <th className="px-4 py-3">CÃ³digo</th>
                     <th className="px-4 py-3">Lanzamiento</th>
-                    <th className="px-4 py-3">Índice</th>
+                    <th className="px-4 py-3">Ãndice</th>
                     <th className="px-4 py-3">Visible</th>
                     <th className="px-4 py-3 text-right">Acciones</th>
                   </tr>
@@ -338,7 +348,7 @@ export const AdminProductsList = ({ products, onDeleted }: Props) => {
 
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                     <span>{product.releaseDate}</span>
-                    <span>Índice: {product.index}</span>
+                    <span>Ãndice: {product.index}</span>
                     <span>{product.show ? "Visible" : "Oculto"}</span>
                   </div>
                 </div>

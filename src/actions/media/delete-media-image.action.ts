@@ -1,15 +1,15 @@
 "use server";
 
 import { auth } from "@/auth";
-import { deleteBlob } from "@/lib/blob";
+import { deleteAsset } from "@/lib/assets-storage";
 import { prisma } from "@/lib/prisma";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import { MediaSectionSchema } from "@/schemas";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toAssetStorageUrl } from "@/utils/asset-path";
 
 const validateUsage = async (section: string, url: string) => {
-  const pathname = toBlobPath(url);
-  const fullUrl = toBlobUrl(url);
+  const pathname = toAssetPath(url);
+  const fullUrl = toAssetStorageUrl(url);
   const candidates = [url, pathname, fullUrl].filter(Boolean);
 
   if (section === "news-banners") {
@@ -87,7 +87,7 @@ export async function deleteMediaImageAction(section: string, url: string) {
     const config = MEDIA_SECTION_CONFIG[parsedSection];
 
     if (!config.allowDelete) {
-      throw new Error("Esta sección no admite eliminaciones por ahora");
+      throw new Error("Esta secciÃ³n no admite eliminaciones por ahora");
     }
 
     if (!url) {
@@ -97,10 +97,10 @@ export async function deleteMediaImageAction(section: string, url: string) {
     const isUsed = await validateUsage(parsedSection, url);
 
     if (isUsed) {
-      throw new Error("La imagen está en uso y no se puede eliminar");
+      throw new Error("La imagen estÃ¡ en uso y no se puede eliminar");
     }
 
-    await deleteBlob(url);
+    await deleteAsset(url);
     return { ok: true };
   } catch (error) {
     console.error("[deleteMediaImageAction]", error);

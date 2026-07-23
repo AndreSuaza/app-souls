@@ -1,10 +1,15 @@
 "use server";
 
+import { basename, extname } from "path";
+import sharp from "sharp";
 import { auth } from "@/auth";
+import { assetExists, deleteAsset, uploadAsset } from "@/lib/assets-storage";
 import { prisma } from "@/lib/prisma";
 import { CardExcelImportSchema } from "@/schemas";
+import { buildCardImageKey } from "@/utils/card-image";
 import { buildCardSlug } from "@/utils/card-slug";
 import type { Prisma } from "@prisma/client";
+import JSZip from "jszip";
 import { read, utils } from "xlsx";
 
 type ImportInvalidRow = {
@@ -19,6 +24,9 @@ type ImportSummary = {
   validRows: number;
   invalidRows: number;
   insertedRows: number;
+  imagesRead: number;
+  matchedImages: number;
+  uploadedImages: number;
 };
 
 export type ImportCardsFromExcelResult = {
@@ -27,6 +35,14 @@ export type ImportCardsFromExcelResult = {
   summary: ImportSummary;
   invalidRows: ImportInvalidRow[];
   conflictCodes: string[];
+  imageErrors: string[];
+  importedCards: Array<{
+    code: string;
+    idd: string;
+    name: string;
+    product: string;
+    imageKey: string;
+  }>;
 };
 
 type ProductReference = {
@@ -38,6 +54,11 @@ type ProductReference = {
 type ParsedValidRow = {
   rowNumber: number;
   code: string;
+  idd: string;
+  name: string;
+  productName: string;
+  imageKey: string;
+  imageBaseName: string;
   createData: Prisma.CardUncheckedCreateInput;
 };
 
@@ -55,19 +76,33 @@ const HEADER_KEYS = {
   type: "tipo",
   effect: "efecto",
   keyword: "keyword",
-  rotation: "rotation",
+  rotation: "rotacion",
 } as const;
 
 const REQUIRED_HEADERS = [
-  HEADER_KEYS.product,
-  HEADER_KEYS.numeration,
-  HEADER_KEYS.code,
-  HEADER_KEYS.cost,
-  HEADER_KEYS.rarity,
-  HEADER_KEYS.name,
-  HEADER_KEYS.type,
-  HEADER_KEYS.rotation,
+  { key: HEADER_KEYS.product, label: "Producto" },
+  { key: HEADER_KEYS.numeration, label: "Numeracion" },
+  { key: HEADER_KEYS.code, label: "Codigo" },
+  { key: HEADER_KEYS.cost, label: "Coste" },
+  { key: HEADER_KEYS.rarity, label: "Rareza" },
+  { key: HEADER_KEYS.name, label: "Name" },
+  { key: HEADER_KEYS.type, label: "Tipo" },
+  { key: HEADER_KEYS.rotation, label: "Rotacion" },
 ] as const;
+
+const HEADER_ALIASES = {
+  [HEADER_KEYS.rotation]: ["rotation"],
+} as const;
+
+const ACCEPTED_IMAGE_EXTENSIONS = new Set([
+  ".avif",
+  ".jpeg",
+  ".jpg",
+  ".png",
+  ".webp",
+]);
+const MAX_IMAGE_SIZE_MB = 6;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 const normalizeLookupKey = (value: string) =>
   value
@@ -103,12 +138,35 @@ const parseInteger = (value: unknown) => {
   return parsed;
 };
 
+const parseIdd = (value: unknown) => {
+  const raw = toPlainString(value).replace(/\s+/g, "");
+  if (!raw) return null;
+  if (typeof value === "number") {
+    if (!Number.isInteger(value) || value < 0) return null;
+    return String(value);
+  }
+
+  const normalized = raw.replace(/\.0+$/, "");
+  if (!/^\d+$/.test(normalized)) return null;
+  return normalized;
+};
+
 const parseFloatNumber = (value: unknown) => {
   const raw = toPlainString(value).replace(",", ".");
   if (!raw) return null;
   const parsed = Number.parseFloat(raw);
   if (Number.isNaN(parsed)) return null;
   return parsed;
+};
+
+const parseBooleanRotation = (value: unknown) => {
+  const raw = toPlainString(value);
+  if (!raw) return null;
+
+  const normalized = normalizeLookupKey(raw);
+  if (["1", "true", "si", "s", "yes"].includes(normalized)) return 1;
+  if (["0", "false", "no", "n"].includes(normalized)) return 0;
+  return null;
 };
 
 const normalizeNumeration = (value: unknown) => {
@@ -207,6 +265,22 @@ const buildHeaderIndex = (headerRow: unknown[]) => {
   return map;
 };
 
+const getHeaderColumnIndex = (
+  headerIndex: Map<string, number>,
+  key: string,
+) => {
+  const direct = headerIndex.get(key);
+  if (direct !== undefined) return direct;
+
+  const aliases = HEADER_ALIASES[key as keyof typeof HEADER_ALIASES] ?? [];
+  for (const alias of aliases) {
+    const index = headerIndex.get(alias);
+    if (index !== undefined) return index;
+  }
+
+  return undefined;
+};
+
 const findConflictingCodesInPayload = (codes: string[]) => {
   const map = new Map<string, number>();
   codes.forEach((code) => {
@@ -216,6 +290,125 @@ const findConflictingCodesInPayload = (codes: string[]) => {
     .filter(([, count]) => count > 1)
     .map(([code]) => code);
 };
+
+type ParsedZipImage = {
+  fileName: string;
+  buffer: Buffer;
+};
+
+type ParsedImagesZip = {
+  imagesRead: number;
+  imagesByBaseName: Map<string, ParsedZipImage>;
+  errors: string[];
+};
+
+const isSystemZipEntry = (entryName: string) => {
+  const normalized = entryName.replace(/\\/g, "/");
+  const name = basename(normalized);
+  return (
+    normalized.startsWith("__MACOSX/") ||
+    name === ".DS_Store" ||
+    name.startsWith("._")
+  );
+};
+
+const getZipEntryUncompressedSize = (file: JSZip.JSZipObject) =>
+  (file as { _data?: { uncompressedSize?: number } })._data
+    ?.uncompressedSize ?? null;
+
+const parseImagesZip = async (
+  zipFile: File,
+  expectedImageBaseNames: Set<string>,
+): Promise<ParsedImagesZip> => {
+  const zipBuffer = Buffer.from(await zipFile.arrayBuffer());
+  const zip = await JSZip.loadAsync(zipBuffer);
+  const imagesByBaseName = new Map<string, ParsedZipImage>();
+  const errors: string[] = [];
+  let imagesRead = 0;
+
+  for (const file of Object.values(zip.files)) {
+    const normalizedEntryName = file.name.replace(/\\/g, "/");
+    if (file.dir || isSystemZipEntry(normalizedEntryName)) continue;
+
+    const fileName = basename(normalizedEntryName);
+    const extension = extname(fileName).toLowerCase();
+    if (!ACCEPTED_IMAGE_EXTENSIONS.has(extension)) {
+      errors.push(`Archivo no permitido en ZIP: ${normalizedEntryName}`);
+      continue;
+    }
+
+    imagesRead += 1;
+    const imageBaseName = fileName.slice(0, fileName.length - extension.length);
+    if (!expectedImageBaseNames.has(imageBaseName)) {
+      errors.push(`Imagen no usada por el Excel: ${fileName}`);
+      continue;
+    }
+
+    if (imagesByBaseName.has(imageBaseName)) {
+      errors.push(`Imagen duplicada para ${imageBaseName}.`);
+      continue;
+    }
+
+    const declaredSize = getZipEntryUncompressedSize(file);
+    if (declaredSize !== null && declaredSize > MAX_IMAGE_SIZE_BYTES) {
+      errors.push(
+        `${fileName} supera el limite de ${MAX_IMAGE_SIZE_MB}MB por imagen.`,
+      );
+      continue;
+    }
+
+    const buffer = await file.async("nodebuffer");
+    if (buffer.length > MAX_IMAGE_SIZE_BYTES) {
+      errors.push(
+        `${fileName} supera el limite de ${MAX_IMAGE_SIZE_MB}MB por imagen.`,
+      );
+      continue;
+    }
+
+    imagesByBaseName.set(imageBaseName, {
+      fileName,
+      buffer,
+    });
+  }
+
+  expectedImageBaseNames.forEach((expectedImageBaseName) => {
+    if (!imagesByBaseName.has(expectedImageBaseName)) {
+      errors.push(`Falta imagen: ${expectedImageBaseName}.webp`);
+    }
+  });
+
+  return {
+    imagesRead,
+    imagesByBaseName,
+    errors,
+  };
+};
+
+const buildSummary = ({
+  rowsRead,
+  validRows,
+  invalidRows,
+  insertedRows,
+  imagesRead = 0,
+  matchedImages = 0,
+  uploadedImages = 0,
+}: {
+  rowsRead: number;
+  validRows: number;
+  invalidRows: number;
+  insertedRows: number;
+  imagesRead?: number;
+  matchedImages?: number;
+  uploadedImages?: number;
+}): ImportSummary => ({
+  rowsRead,
+  validRows,
+  invalidRows,
+  insertedRows,
+  imagesRead,
+  matchedImages,
+  uploadedImages,
+});
 
 export async function importCardsFromExcelAction(
   formData: FormData,
@@ -227,6 +420,7 @@ export async function importCardsFromExcelAction(
 
   const parsedInput = CardExcelImportSchema.safeParse({
     file: formData.get("file"),
+    imagesZip: formData.get("imagesZip"),
   });
 
   if (!parsedInput.success) {
@@ -236,6 +430,7 @@ export async function importCardsFromExcelAction(
   }
 
   const excelFile = parsedInput.data.file;
+  const imagesZipFile = parsedInput.data.imagesZip;
   const buffer = Buffer.from(await excelFile.arrayBuffer());
   const workbook = read(buffer, { type: "buffer", cellDates: false });
   const firstSheetName = workbook.SheetNames[0];
@@ -257,12 +452,14 @@ export async function importCardsFromExcelAction(
 
   const headerIndex = buildHeaderIndex(matrixRows[0] ?? []);
   const missingHeaders = REQUIRED_HEADERS.filter(
-    (header) => !headerIndex.has(header),
+    (header) => getHeaderColumnIndex(headerIndex, header.key) === undefined,
   );
 
   if (missingHeaders.length > 0) {
     throw new Error(
-      `Faltan columnas obligatorias en el Excel: ${missingHeaders.join(", ")}`,
+      `Faltan columnas obligatorias en el Excel: ${missingHeaders
+        .map((header) => header.label)
+        .join(", ")}`,
     );
   }
 
@@ -296,7 +493,7 @@ export async function importCardsFromExcelAction(
   let rowsRead = 0;
 
   const getCellValue = (row: unknown[], key: string) => {
-    const idx = headerIndex.get(key);
+    const idx = getHeaderColumnIndex(headerIndex, key);
     if (idx === undefined) return null;
     return row[idx] ?? null;
   };
@@ -344,32 +541,34 @@ export async function importCardsFromExcelAction(
     if (!rarityRaw) reasons.push("El campo Rareza es obligatorio.");
     if (!typeRaw) reasons.push("El campo Tipo es obligatorio.");
 
-    const iddParsed = parseInteger(iddRaw);
+    const iddParsed = parseIdd(iddRaw);
     if (iddParsed === null) {
-      reasons.push("El campo Codigo (IDD) debe ser numerico.");
+      reasons.push("El campo CÃ³digo (IDD) debe ser numÃ©rico.");
     }
 
     const costParsed = parseInteger(costRaw);
     if (costParsed === null) {
-      reasons.push("El campo Coste debe ser numerico.");
+      reasons.push("El campo Coste debe ser numÃ©rico.");
     }
 
     const priceParsed =
       toPlainString(priceRaw) === "" ? null : parseFloatNumber(priceRaw);
     if (toPlainString(priceRaw) !== "" && priceParsed === null) {
-      reasons.push("El campo Precios debe ser numerico.");
+      reasons.push("El campo Precios debe ser numÃ©rico.");
     }
     if (priceParsed !== null && priceParsed < 0) {
       reasons.push("El campo Precios no puede ser negativo.");
     }
 
     const isRotationEmpty = toPlainString(rotationRaw) === "";
-    const rotationParsed = isRotationEmpty ? 0 : parseInteger(rotationRaw);
-    if (!isRotationEmpty && rotationParsed === null) {
-      reasons.push("El campo Rotation debe ser numerico entero.");
+    const rotationParsed = parseBooleanRotation(rotationRaw);
+    if (isRotationEmpty) {
+      reasons.push("El campo Rotacion es obligatorio.");
     }
-    if (rotationParsed !== null && rotationParsed < 0) {
-      reasons.push("El campo Rotation no puede ser negativo.");
+    if (!isRotationEmpty && rotationParsed === null) {
+      reasons.push(
+        'El campo Rotacion debe ser booleano: true/false, si/no o 1/0.',
+      );
     }
 
     const productReference = productLookup.get(normalizeLookupKey(productRaw));
@@ -426,8 +625,12 @@ export async function importCardsFromExcelAction(
       continue;
     }
 
+    const idd = String(iddParsed);
+    const imageKey = buildCardImageKey(generatedCode, idd);
+    const imageBaseName = `${generatedCode}-${idd}`;
+
     const createData: Prisma.CardUncheckedCreateInput = {
-      idd: String(iddParsed),
+      idd,
       code: generatedCode,
       limit: "",
       rotation: rotationParsed ?? 0,
@@ -437,6 +640,7 @@ export async function importCardsFromExcelAction(
       name: nameRaw,
       slug: buildCardSlug(nameRaw, generatedCode),
       effect: effectRaw || "",
+      imageUrl: imageKey,
       typeIds: typeResolved.ids,
       archetypesIds: archetypeResolved.ids,
       keywordsIds: keywordResolved.ids,
@@ -448,6 +652,11 @@ export async function importCardsFromExcelAction(
     validRows.push({
       rowNumber,
       code: generatedCode,
+      idd,
+      name: nameRaw,
+      productName: productReference.name,
+      imageKey,
+      imageBaseName,
       createData,
     });
   }
@@ -460,14 +669,32 @@ export async function importCardsFromExcelAction(
 
   if (validRows.length === 0) {
     return {
-      status: "success",
+      status: "conflict",
       message: "No se encontraron filas validas para insertar.",
-      summary: {
+      summary: buildSummary({
         ...summaryBase,
         insertedRows: 0,
-      },
+      }),
       invalidRows,
       conflictCodes: [],
+      imageErrors: [],
+      importedCards: [],
+    };
+  }
+
+  if (invalidRows.length > 0) {
+    return {
+      status: "conflict",
+      message:
+        "Importacion detenida: corrige todas las filas invalidas antes de subir.",
+      summary: buildSummary({
+        ...summaryBase,
+        insertedRows: 0,
+      }),
+      invalidRows,
+      conflictCodes: [],
+      imageErrors: [],
+      importedCards: [],
     };
   }
 
@@ -479,12 +706,14 @@ export async function importCardsFromExcelAction(
       status: "conflict",
       message:
         "Se detectaron codes repetidos dentro del archivo. Insercion detenida.",
-      summary: {
+      summary: buildSummary({
         ...summaryBase,
         insertedRows: 0,
-      },
+      }),
       invalidRows,
       conflictCodes: duplicateCodesInFile,
+      imageErrors: [],
+      importedCards: [],
     };
   }
 
@@ -505,30 +734,132 @@ export async function importCardsFromExcelAction(
       status: "conflict",
       message:
         "Se detectaron codes ya existentes en la base de datos. Insercion detenida.",
-      summary: {
+      summary: buildSummary({
         ...summaryBase,
         insertedRows: 0,
-      },
+      }),
       invalidRows,
       conflictCodes: existingConflictCodes,
+      imageErrors: [],
+      importedCards: [],
     };
   }
 
-  await prisma.$transaction(
-    validRows.map((row) => prisma.card.create({ data: row.createData })),
+  const imagesZip = await parseImagesZip(
+    imagesZipFile,
+    new Set(validRows.map((row) => row.imageBaseName)),
   );
+  const matchedImages = imagesZip.imagesByBaseName.size;
 
-  return {
+  if (imagesZip.errors.length > 0) {
+    return {
+      status: "conflict",
+      message: "Importacion detenida: corrige el ZIP de imagenes.",
+      summary: buildSummary({
+        ...summaryBase,
+        insertedRows: 0,
+        imagesRead: imagesZip.imagesRead,
+        matchedImages,
+      }),
+      invalidRows,
+      conflictCodes: [],
+      imageErrors: imagesZip.errors,
+      importedCards: [],
+    };
+  }
+
+  const preparedImages: Array<{
+    imageKey: string;
+    imageExists: boolean;
+    outputBuffer: Buffer;
+  }> = [];
+
+  for (const row of validRows) {
+    const zipImage = imagesZip.imagesByBaseName.get(row.imageBaseName);
+    if (!zipImage) {
+      throw new Error(`Falta imagen: ${row.imageBaseName}.webp`);
+    }
+
+    let outputBuffer: Buffer;
+    try {
+      outputBuffer = await sharp(zipImage.buffer)
+        .webp({ quality: 88 })
+        .toBuffer();
+    } catch {
+      return {
+        status: "conflict",
+        message: "Importacion detenida: hay imagenes invalidas.",
+        summary: buildSummary({
+          ...summaryBase,
+          insertedRows: 0,
+          imagesRead: imagesZip.imagesRead,
+          matchedImages,
+        }),
+        invalidRows,
+        conflictCodes: [],
+        imageErrors: [`${zipImage.fileName} no es una imagen valida.`],
+        importedCards: [],
+      };
+    }
+
+    preparedImages.push({
+      imageKey: row.imageKey,
+      imageExists: await assetExists(row.imageKey),
+      outputBuffer,
+    });
+  }
+
+  const uploadedNewImageKeys: string[] = [];
+  let uploadedImages = 0;
+
+  try {
+    for (const preparedImage of preparedImages) {
+      if (preparedImage.imageExists) continue;
+
+      await uploadAsset({
+        path: preparedImage.imageKey,
+        buffer: preparedImage.outputBuffer,
+        contentType: "image/webp",
+      });
+      uploadedNewImageKeys.push(preparedImage.imageKey);
+      uploadedImages += 1;
+    }
+
+    await prisma.$transaction(
+      validRows.map((row) => prisma.card.create({ data: row.createData })),
+    );
+  } catch (error) {
+    await Promise.allSettled(
+      uploadedNewImageKeys.map((imageKey) => deleteAsset(imageKey)),
+    );
+
+    throw new Error(
+      error instanceof Error
+        ? `No se pudo completar la importacion. Se limpiaron las imagenes nuevas subidas. Detalle: ${error.message}`
+        : "No se pudo completar la importacion. Se limpiaron las imagenes nuevas subidas.",
+    );
+  }
+
+  const successResult: ImportCardsFromExcelResult = {
     status: "success",
-    message:
-      invalidRows.length > 0
-        ? "Importación completada con filas invalidas reportadas."
-        : "Importación completada correctamente.",
-    summary: {
+    message: "Importacion completada correctamente.",
+    summary: buildSummary({
       ...summaryBase,
       insertedRows: validRows.length,
-    },
+      imagesRead: imagesZip.imagesRead,
+      matchedImages,
+      uploadedImages,
+    }),
     invalidRows,
     conflictCodes: [],
+    imageErrors: [],
+    importedCards: validRows.map((row) => ({
+      code: row.code,
+      idd: row.idd,
+      name: row.name,
+      product: row.productName,
+      imageKey: row.imageKey,
+    })),
   };
+  return successResult;
 }

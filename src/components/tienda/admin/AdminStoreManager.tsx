@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import clsx from "clsx";
 import {
@@ -11,6 +12,7 @@ import {
   IoReceiptOutline,
   IoSearchOutline,
   IoSettingsOutline,
+  IoStorefrontOutline,
 } from "react-icons/io5";
 import {
   getAdminStoreSalesAction,
@@ -19,7 +21,7 @@ import {
 } from "@/actions";
 import { ProfileMediaManager } from "@/components/media/admin/ProfileMediaManager";
 import { PaginationLine } from "@/components/ui";
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 
 const cosmeticTabs = [
   {
@@ -123,7 +125,7 @@ const renderSaleRows = (sales: AdminStoreSaleLog[]) =>
         <div className="flex min-w-52 items-center gap-3">
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-tournament-dark-muted">
             <Image
-              src={toBlobUrl(sale.cosmetic.imageUrl)}
+              src={toAssetStorageUrl(sale.cosmetic.imageUrl)}
               alt={sale.cosmetic.name}
               width={80}
               height={80}
@@ -254,14 +256,39 @@ export const AdminStoreManager = ({ section = "cosmetics" }: Props) => {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-          Administracion de tienda
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Centraliza cosméticos, historial de ventas y configuracion operativa
-          de la tienda.
-        </p>
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+            Administracion de tienda
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Centraliza cosméticos, historial de ventas y configuracion operativa
+            de la tienda.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/tienda"
+            className="inline-flex items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+          >
+            <IoStorefrontOutline className="h-4 w-4" />
+            Cosméticos
+          </Link>
+          <Link
+            href="/admin/tienda/ventas"
+            className="inline-flex items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+          >
+            <IoReceiptOutline className="h-4 w-4" />
+            Ventas
+          </Link>
+          <Link
+            href="/admin/tienda/configuracion"
+            className="inline-flex items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+          >
+            <IoSettingsOutline className="h-4 w-4" />
+            Configuracion
+          </Link>
+        </div>
       </header>
 
       <section className="space-y-5 rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">

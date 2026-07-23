@@ -7,6 +7,7 @@ import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { cardImageBlurDataURL } from "@/models/images.models";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 export const revalidate = 300;
 
@@ -100,6 +101,7 @@ export default async function BovedaPage({ searchParams }: Props) {
               const rarityText = card.rarities
                 .map((rarity) => rarity.name)
                 .join(", ");
+              const imageSrc = resolveCardImageUrl(card);
 
               return (
                 <li key={card.id}>
@@ -109,7 +111,7 @@ export default async function BovedaPage({ searchParams }: Props) {
                     className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:border-purple-300 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:border-purple-400/40"
                   >
                     <Image
-                      src={`/cards/${card.code}-${card.idd}.webp`}
+                      src={imageSrc}
                       alt={card.name}
                       title={card.name}
                       placeholder="blur"

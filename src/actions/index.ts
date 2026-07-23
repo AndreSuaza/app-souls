@@ -12,6 +12,8 @@ export * from "./cards/get-cards-by-filters.action";
 export * from "./cards/get-card-by-id.action";
 export * from "./cards/get-card-products-by-idd.action";
 export * from "./cards/import-cards-from-excel.action";
+export * from "./cards/update-card-images-from-zip.action";
+export * from "./cards/admin-cards.action";
 
 export * from "./products/products-pagination";
 export * from "./products/product-url";

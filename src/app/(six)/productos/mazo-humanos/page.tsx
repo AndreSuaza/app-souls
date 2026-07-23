@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Depliegue de la Armada Souls In Xtinction",
     images: [
       {
-        url: "https://soulsinxtinction.com/products/ME4.webp",
+        url: "https://soulsinxtinction.com/product-pages/me4.webp",
         width: 500,
         height: 500,
         alt: "Mazo Depliegue de la Armada Souls In Xtinction TCG",
@@ -45,11 +45,11 @@ export default async function getProductBySlug() {
   return (
     <>
       <section
-        className={`bg-[url(/products/ME4BG.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
+        className={`bg-[url(/product-pages/me4bg.webp)] bg-cover bg-fixed w-full bg-left-top grid grid-cols-1 lg:grid-cols-2`}
       >
         <div className="flex flex-col items-center justify-center w-full p-12">
           <Image
-            src={`/products/${product.code}S.webp`}
+            src={`/product-pages/${product.code.toLowerCase()}s.webp`}
             alt={"Mazo Humanos Depliegue de la Armada"}
             title={"Mazo Humanos Depliegue de la Armada"}
             className="my-auto"

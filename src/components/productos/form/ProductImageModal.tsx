@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import Image from "next/image";
-import { FiSearch, FiX } from "react-icons/fi";
+import { FiSearch, FiUpload, FiX } from "react-icons/fi";
 import type { ReadonlyURLSearchParams } from "next/navigation";
+import { uploadMediaImageAction } from "@/actions";
 import { Modal } from "@/components/ui/modal/modal";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { useToastStore, useUIStore } from "@/store";
+import { toAssetPath, toProductImageUrl } from "@/utils/asset-path";
 
 const PAGE_SIZE = 32;
 const EMPTY_SEARCH_PARAMS = new URLSearchParams() as ReadonlyURLSearchParams;
@@ -17,6 +19,7 @@ type Props = {
   images: string[];
   selectedImage: string | null;
   onSelect: (image: string) => void;
+  onImageUploaded?: (image: string) => void;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -26,11 +29,16 @@ export const ProductImageModal = ({
   images,
   selectedImage,
   onSelect,
+  onImageUploaded,
   onClose,
   onConfirm,
 }: Props) => {
+  const showToast = useToastStore((state) => state.showToast);
+  const showLoading = useUIStore((state) => state.showLoading);
+  const hideLoading = useUIStore((state) => state.hideLoading);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchValue, setSearchValue] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const filteredImages = useMemo(() => {
     const query = searchValue.trim().toLowerCase();
@@ -38,7 +46,7 @@ export const ProductImageModal = ({
 
     return images.filter((image) => {
       const normalized = image.toLowerCase();
-      const filename = toBlobPath(image).split("/").pop() ?? image;
+      const filename = toAssetPath(image).split("/").pop() ?? image;
       const code = filename.replace(/\.[^/.]+$/, "").toLowerCase();
       return normalized.includes(query) || code.includes(query);
     });
@@ -68,6 +76,34 @@ export const ProductImageModal = ({
     setCurrentPage(1);
   }, [searchValue, isOpen]);
 
+  const handleUploadImage = async (file?: File) => {
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      showLoading("Subiendo imagen del producto...");
+
+      const formData = new FormData();
+      formData.append("section", "products");
+      formData.append("file", file);
+
+      const response = await uploadMediaImageAction(formData);
+      onImageUploaded?.(response.pathname);
+      onSelect(response.pathname);
+      setSearchValue("");
+      setCurrentPage(1);
+      showToast("Imagen subida correctamente", "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "No se pudo subir la imagen",
+        "error",
+      );
+    } finally {
+      setIsUploading(false);
+      hideLoading();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -84,7 +120,7 @@ export const ProductImageModal = ({
                 Seleccionar imagen del producto
               </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Elige la imagen base que representará este producto.
+                Elige la imagen base que representarÃ¡ este producto.
               </p>
             </div>
             <button
@@ -98,15 +134,35 @@ export const ProductImageModal = ({
             </button>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
             <label className="relative">
               <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={searchValue}
                 onChange={(event) => setSearchValue(event.target.value)}
-                placeholder="Buscar por código"
+                placeholder="Buscar por cÃ³digo"
                 className="w-full rounded-lg border border-tournament-dark-accent bg-white py-2 pl-9 pr-3 text-sm text-slate-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+              />
+            </label>
+            <label
+              className={clsx(
+                "inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-purple-500 bg-purple-600 px-4 text-sm font-semibold text-white transition hover:bg-purple-700",
+                isUploading && "cursor-not-allowed opacity-70",
+              )}
+            >
+              <FiUpload className="h-4 w-4" />
+              {isUploading ? "Subiendo..." : "Subir nueva"}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={isUploading}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  void handleUploadImage(file);
+                }}
               />
             </label>
             <span className="text-xs text-slate-400 dark:text-slate-500">
@@ -118,8 +174,8 @@ export const ProductImageModal = ({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pageImages.map((image) => {
                 const isSelected = image === selectedImage;
-                const filename = toBlobPath(image).split("/").pop() ?? image;
-                const resolvedSrc = toBlobUrl(image);
+                const filename = toAssetPath(image).split("/").pop() ?? image;
+                const resolvedSrc = toProductImageUrl(image);
 
                 return (
                   <button
@@ -151,7 +207,7 @@ export const ProductImageModal = ({
 
               {pageImages.length === 0 && (
                 <div className="col-span-full flex items-center justify-center py-10 text-sm text-slate-500 dark:text-slate-400">
-                  No hay imágenes disponibles en Blob para esta búsqueda.
+                  No hay imÃ¡genes disponibles en R2 para esta bÃºsqueda.
                 </div>
               )}
             </div>

@@ -7,12 +7,14 @@ import type { ReadonlyURLSearchParams } from "next/navigation";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { Modal } from "../modal/modal";
 import { cardImageBlurDataURL } from "@/models/images.models";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 type CardSearchResult = {
   id: string;
   name: string;
   code: string;
   idd: string;
+  imageUrl?: string | null;
   rarityName?: string | null;
 };
 
@@ -99,7 +101,7 @@ export const MarkdownCardModal = ({
           <div className="relative max-h-[360px] min-h-[360px] overflow-y-auto rounded-lg border border-dashed border-tournament-dark-accent bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted-strong">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {cards.map((card) => {
-                const src = `/cards/${card.code}-${card.idd}.webp`;
+                const src = resolveCardImageUrl(card);
                 const isSelected = selectedCardIds.has(card.id);
 
                 return (

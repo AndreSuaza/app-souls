@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { IoAddCircleOutline } from "react-icons/io5";
 import { PublicTournamentsMobileList } from "@/components/tournaments/public/PublicTournamentsMobileList";
 import { PublicTournamentsTable } from "@/components/tournaments/public/PublicTournamentsTable";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
@@ -203,6 +205,15 @@ export const AdminTournamentsList = ({
         query={inputValue}
         totalCount={filtered.length}
         onChange={setInputValue}
+        action={
+          <Link
+            href="/admin/torneos/crear-torneo"
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
+          >
+            <IoAddCircleOutline className="h-4 w-4" />
+            Crear torneo
+          </Link>
+        }
       />
       <div className="flex flex-wrap gap-3">
         {isAdmin && (

@@ -4,12 +4,12 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ProfileBannerSchema } from "@/schemas";
 import { getProfileBannerValue } from "@/utils/profile-banner";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toAssetStorageUrl } from "@/utils/asset-path";
 
 const buildBannerCandidates = (value: string) => {
   const normalized = getProfileBannerValue(value);
-  const path = toBlobPath(normalized);
-  const url = toBlobUrl(normalized);
+  const path = toAssetPath(normalized);
+  const url = toAssetStorageUrl(normalized);
 
   return Array.from(new Set([normalized, path, url].filter(Boolean)));
 };

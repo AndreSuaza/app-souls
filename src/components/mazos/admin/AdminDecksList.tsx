@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { IoTrashOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoTrashOutline } from "react-icons/io5";
 import { PaginationLine } from "@/components/ui";
 import { deleteDeckAction } from "@/actions";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
@@ -109,6 +110,15 @@ export const AdminDecksList = ({ decks, onDeleted }: Props) => {
         query={inputValue}
         totalCount={filtered.length}
         onChange={setInputValue}
+        action={
+          <Link
+            href="/admin/mazos/laboratorio"
+            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition hover:bg-purple-700"
+          >
+            <IoAddCircleOutline className="h-4 w-4" />
+            Crear mazo
+          </Link>
+        }
       />
 
       {filtered.length === 0 ? (

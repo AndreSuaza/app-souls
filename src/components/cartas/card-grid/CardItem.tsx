@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
 import { Card } from "@/interfaces/cards.interface";
+import { resolveCardImageUrl } from "@/utils/card-image";
 import {
   IoAddCircleOutline,
   IoMedkitOutline,
@@ -50,6 +51,7 @@ export const CardItem = ({
     highlightLegendaryCount && card.limit === "1";
   const legendaryBadgeValue =
     typeof count === "number" ? count : shouldHighlightLegendary ? 1 : null;
+  const imageSrc = resolveCardImageUrl(card);
 
   return (
     <div
@@ -65,7 +67,7 @@ export const CardItem = ({
           >
             <div className="relative aspect-[500/718] w-full bg-[url('/howtoplay/mazo-principal.webp')] bg-cover bg-center">
               <Image
-                src={`/cards/${card.code}-${card.idd}.webp`}
+                src={imageSrc}
                 alt={card.name}
                 title={card.name}
                 placeholder="blur"

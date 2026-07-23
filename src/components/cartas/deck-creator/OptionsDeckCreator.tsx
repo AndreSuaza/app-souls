@@ -34,6 +34,7 @@ import {
   encodeDecklistForQueryParam,
   serializeEncodedDecklist,
 } from "@/utils/decklist";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 interface Decklist {
   count: number;
@@ -654,12 +655,15 @@ export const OptionsDeckCreator = ({
                 </div>
               ) : (
                 <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
-                  {mazoTest.slice(0, 6).map((card) => (
+                  {mazoTest.slice(0, 6).map((card) => {
+                    const imageSrc = resolveCardImageUrl(card);
+
+                    return (
                     <div key={card.id}>
                       <Image
                         width={500}
                         height={718}
-                        src={`/cards/${card.code}-${card.idd}.webp`}
+                        src={imageSrc}
                         alt={card.name}
                         title={card.name}
                         blurDataURL={cardImageBlurDataURL}
@@ -667,7 +671,8 @@ export const OptionsDeckCreator = ({
                         className="rounded-lg drop-shadow-md"
                       />
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

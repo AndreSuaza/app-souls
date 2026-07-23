@@ -25,7 +25,7 @@ export function CataclismoInfoSection() {
 
         <div className="flex justify-center lg:justify-center">
           <Image
-            src="/products/cataclismo/caja.png"
+            src="/product-pages/cataclismo/caja.webp"
             alt="Caja Cataclismo"
             title="Caja Cataclismo"
             width={360}

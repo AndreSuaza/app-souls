@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { resolveNewsStatus } from "@/logic";
 import { UpdateNewsSchema, type UpdateNewsInput } from "@/schemas";
 import { buildNewsSlug } from "@/utils/news-slug";
-import { deleteBlob } from "@/lib/blob";
-import { isBlobValue } from "@/utils/blob-path";
+import { deleteAsset } from "@/lib/assets-storage";
+import { isStoredAssetValue } from "@/utils/asset-path";
 
 export async function updateNewsAction(input: UpdateNewsInput) {
   try {
@@ -42,7 +42,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     const slug = buildNewsSlug(data.title);
 
     if (!slug) {
-      throw new Error("El título no es válido");
+      throw new Error("El tÃ­tulo no es vÃ¡lido");
     }
 
     const existingSlug = await prisma.new.findFirst({
@@ -55,7 +55,7 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     });
 
     if (existingSlug) {
-      throw new Error("El título ya existe");
+      throw new Error("El tÃ­tulo ya existe");
     }
 
     const parsedPublishedAt = data.publishedAt
@@ -86,17 +86,17 @@ export async function updateNewsAction(input: UpdateNewsInput) {
     const shouldDeleteFeatured =
       existing.featuredImage &&
       existing.featuredImage !== data.featuredImage &&
-      isBlobValue(existing.featuredImage);
+      isStoredAssetValue(existing.featuredImage);
     const shouldDeleteCard =
       existing.cardImage &&
       existing.cardImage !== data.cardImage &&
-      isBlobValue(existing.cardImage);
+      isStoredAssetValue(existing.cardImage);
 
     if (shouldDeleteFeatured || shouldDeleteCard) {
-      // Limpiamos imágenes anteriores para evitar basura en Blob.
+      // Limpiamos imÃ¡genes anteriores para evitar basura en R2.
       await Promise.all([
-        shouldDeleteFeatured ? deleteBlob(existing.featuredImage) : null,
-        shouldDeleteCard ? deleteBlob(existing.cardImage) : null,
+        shouldDeleteFeatured ? deleteAsset(existing.featuredImage) : null,
+        shouldDeleteCard ? deleteAsset(existing.cardImage) : null,
       ]);
     }
 

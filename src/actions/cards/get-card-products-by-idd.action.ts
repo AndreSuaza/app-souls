@@ -2,13 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { CardIdSchema, type CardIdInput } from "@/schemas";
+import { activeCardWhere } from "./card-status";
 
 export async function getCardProductsByIddAction(input: CardIdInput) {
   const { cardId } = CardIdSchema.parse(input);
 
   const card = await prisma.card.findFirst({
     where: {
-      OR: [{ id: cardId }, { idd: cardId }],
+      AND: [activeCardWhere(), { OR: [{ id: cardId }, { idd: cardId }] }],
     },
     select: {
       idd: true,
@@ -30,7 +31,7 @@ export async function getCardProductsByIddAction(input: CardIdInput) {
 
   const cards = await prisma.card.findMany({
     where: {
-      idd: card.idd,
+      AND: [activeCardWhere(), { idd: card.idd }],
     },
     select: {
       product: {

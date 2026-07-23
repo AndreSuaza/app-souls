@@ -6,6 +6,7 @@ import {
   type ImportCardsFromExcelResult,
 } from "@/actions/cards/import-cards-from-excel.action";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { AdminCardsOperationProgress } from "./AdminCardsOperationProgress";
 
 const REQUIRED_COLUMNS = [
   "Producto",
@@ -15,7 +16,7 @@ const REQUIRED_COLUMNS = [
   "Rareza",
   "Name",
   "Tipo",
-  "Rotation",
+  "Rotacion",
 ];
 
 const OPTIONAL_COLUMNS = [
@@ -27,9 +28,20 @@ const OPTIONAL_COLUMNS = [
   "Keyword",
 ];
 
+const IMPORT_PROGRESS_STEPS = [
+  { threshold: 20, message: "Preparando archivos para enviar al servidor..." },
+  { threshold: 40, message: "Leyendo Excel y validando columnas..." },
+  { threshold: 60, message: "Validando filas, referencias y conflictos..." },
+  { threshold: 78, message: "Revisando ZIP y coincidencias de imagenes..." },
+  { threshold: 92, message: "Convirtiendo y subiendo imagenes a R2..." },
+  { threshold: 100, message: "Creando cartas y cerrando la importacion..." },
+];
+
 export const AdminCardsExcelImport = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [imagesZip, setImagesZip] = useState<File | null>(null);
   const [result, setResult] = useState<ImportCardsFromExcelResult | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [isPending, startTransition] = useTransition();
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
@@ -38,25 +50,35 @@ export const AdminCardsExcelImport = () => {
     (state) => state.openAlertConfirmation,
   );
 
-  const canSubmit = useMemo(() => !!file && !isPending, [file, isPending]);
+  const canSubmit = useMemo(
+    () => !!file && !!imagesZip && !isPending && !isProcessing,
+    [file, imagesZip, isPending, isProcessing],
+  );
 
   const handleImport = () => {
     if (!file) {
       showToast("Selecciona un archivo .xlsx para continuar.", "error");
       return;
     }
+    if (!imagesZip) {
+      showToast("Selecciona un archivo .zip con las imagenes.", "error");
+      return;
+    }
 
     openConfirmation({
       text: "Confirmar importación de cartas",
       description:
-        "Se procesara la primera hoja del archivo y se insertaran solo filas validas sin conflictos de code.",
+        "Se validara el Excel y el ZIP completo. Si algo falla, no se creara ninguna carta ni imagen nueva en R2.",
       action: async () => {
         startTransition(async () => {
           try {
-            showLoading("Importando cartas desde Excel...");
+            setIsProcessing(true);
+            setResult(null);
+            showLoading("Validando Excel e imagenes...");
 
             const formData = new FormData();
             formData.append("file", file);
+            formData.append("imagesZip", imagesZip);
 
             const response = await importCardsFromExcelAction(formData);
             setResult(response);
@@ -75,6 +97,7 @@ export const AdminCardsExcelImport = () => {
               "error",
             );
           } finally {
+            setIsProcessing(false);
             hideLoading();
           }
         });
@@ -151,14 +174,39 @@ export const AdminCardsExcelImport = () => {
               <span className="font-medium">{file.name}</span>
             </p>
           )}
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+            ZIP de imagenes (.zip)
+          </label>
+          <input
+            type="file"
+            accept=".zip"
+            onChange={(event) => {
+              const selected = event.target.files?.[0] ?? null;
+              setImagesZip(selected);
+              setResult(null);
+            }}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-100"
+          />
+          {imagesZip && (
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              ZIP seleccionado:{" "}
+              <span className="font-medium">{imagesZip.name}</span>
+            </p>
+          )}
           <button
             type="button"
             onClick={handleImport}
             disabled={!canSubmit}
             className="inline-flex items-center rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isPending ? "Importando..." : "Importar cartas"}
+            {isProcessing || isPending ? "Importando..." : "Importar cartas"}
           </button>
+
+          <AdminCardsOperationProgress
+            isActive={isProcessing || isPending}
+            title="Importacion en progreso"
+            steps={IMPORT_PROGRESS_STEPS}
+          />
         </div>
       </article>
 
@@ -216,6 +264,30 @@ export const AdminCardsExcelImport = () => {
                 {result.summary.invalidRows}
               </p>
             </div>
+            <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
+              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Imagenes leidas
+              </p>
+              <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                {result.summary.imagesRead}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
+              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Imagenes OK
+              </p>
+              <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                {result.summary.matchedImages}
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border">
+              <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Subidas R2
+              </p>
+              <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                {result.summary.uploadedImages}
+              </p>
+            </div>
           </div>
 
           {result.conflictCodes.length > 0 && (
@@ -226,6 +298,70 @@ export const AdminCardsExcelImport = () => {
                   <li key={code}>- {code}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {result.imageErrors.length > 0 && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-900/20 dark:text-red-200">
+              <p className="font-semibold">Errores de imagenes</p>
+              <ul className="mt-2 space-y-1">
+                {result.imageErrors.map((error) => (
+                  <li key={error}>- {error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {result.importedCards.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                Cartas importadas
+              </h3>
+
+              <div className="max-h-96 overflow-auto rounded-xl border border-slate-200 dark:border-tournament-dark-border">
+                <table className="min-w-full divide-y divide-slate-200 text-sm dark:divide-tournament-dark-border">
+                  <thead className="bg-slate-50 dark:bg-tournament-dark-muted">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
+                        Code
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
+                        IDD
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
+                        Carta
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
+                        Producto
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold text-slate-600 dark:text-slate-200">
+                        R2
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-tournament-dark-border">
+                    {result.importedCards.map((card) => (
+                      <tr key={`${card.code}-${card.idd}`}>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
+                          {card.code}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
+                          {card.idd}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
+                          {card.name}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
+                          {card.product}
+                        </td>
+                        <td className="px-3 py-2 text-slate-700 dark:text-slate-200">
+                          {card.imageKey}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 

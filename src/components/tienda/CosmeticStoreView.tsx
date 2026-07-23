@@ -11,7 +11,7 @@ import {
 } from "@/actions";
 import { resolveAvatarRarityLabel } from "@/models/avatar.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 
 type Props = {
   initialData: CosmeticStoreData;
@@ -126,7 +126,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
 
   const handlePurchase = (item: CosmeticStoreItem) => {
     if (!initialData.isAuthenticated) {
-      showToast("Debes iniciar sesión para comprar cosméticos.", "info");
+      showToast("Debes iniciar sesiÃ³n para comprar cosmÃ©ticos.", "info");
       return;
     }
 
@@ -206,7 +206,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
                 }`}
               >
                 <Image
-                  src={toBlobUrl(item.imageUrl)}
+                  src={toAssetStorageUrl(item.imageUrl)}
                   alt={item.name}
                   width={1200}
                   height={640}
@@ -254,7 +254,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
-            No hay cosméticos destacados disponibles.
+            No hay cosmÃ©ticos destacados disponibles.
           </div>
         )}
       </section>
@@ -321,7 +321,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
               >
                 <div className="relative bg-slate-950">
                   <Image
-                    src={toBlobUrl(item.imageUrl)}
+                    src={toAssetStorageUrl(item.imageUrl)}
                     alt={item.name}
                     width={640}
                     height={640}
@@ -391,10 +391,10 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
                     ) : (
                       <Link
                         href="/auth/login"
-                        title="Iniciar sesión"
+                        title="Iniciar sesiÃ³n"
                         className="rounded-lg border border-purple-300 bg-purple-100 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-purple-800 transition hover:bg-purple-200 dark:border-purple-500/60 dark:bg-purple-500/15 dark:text-purple-100 dark:hover:bg-purple-500/30"
                       >
-                        Iniciar sesión
+                        Iniciar sesiÃ³n
                       </Link>
                     )}
                   </div>
@@ -404,7 +404,7 @@ export const CosmeticStoreView = ({ initialData, onPurchase }: Props) => {
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
-            No hay cosméticos para los filtros seleccionados.
+            No hay cosmÃ©ticos para los filtros seleccionados.
           </div>
         )}
       </section>

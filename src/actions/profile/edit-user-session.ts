@@ -4,12 +4,12 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ProfileAvatarSchema } from "@/schemas";
 import { getAvatarValue } from "@/utils/avatar-image";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toAssetStorageUrl } from "@/utils/asset-path";
 
 const buildAvatarCandidates = (value: string) => {
   const normalized = getAvatarValue(value);
-  const path = toBlobPath(normalized);
-  const url = toBlobUrl(normalized);
+  const path = toAssetPath(normalized);
+  const url = toAssetStorageUrl(normalized);
 
   return Array.from(new Set([normalized, path, url].filter(Boolean)));
 };

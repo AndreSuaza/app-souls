@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { listBlob } from "@/lib/blob";
+import { listAssets } from "@/lib/assets-storage";
 import type { NewsImageOptions } from "@/interfaces";
 
 const mapToPathnames = (items: { pathname: string; url: string }[]) =>
@@ -22,8 +22,8 @@ export async function getNewsImagesAction(): Promise<NewsImageOptions> {
     }
 
     const [banners, cards] = await Promise.all([
-      listBlob("souls/news/banners/"),
-      listBlob("souls/news/cards/"),
+      listAssets("news/banners/"),
+      listAssets("news/cards/"),
     ]);
 
     return {
@@ -32,6 +32,6 @@ export async function getNewsImagesAction(): Promise<NewsImageOptions> {
     };
   } catch (error) {
     console.error("[getNewsImagesAction]", error);
-    throw new Error("Error cargando las imágenes");
+    throw new Error("Error cargando las imÃ¡genes");
   }
 }

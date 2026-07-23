@@ -1,11 +1,11 @@
 "use server";
 
 import { auth } from "@/auth";
-import { uploadBlob, deleteBlob } from "@/lib/blob";
+import { uploadAsset, deleteAsset } from "@/lib/assets-storage";
 import { prisma } from "@/lib/prisma";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import { AvatarSchema, AvatarTypeSchema, AvatarUpdateSchema } from "@/schemas";
-import { toBlobPath, toBlobUrl } from "@/utils/blob-path";
+import { toAssetPath, toAssetStorageUrl } from "@/utils/asset-path";
 import { Prisma } from "@prisma/client";
 import sharp from "sharp";
 
@@ -93,7 +93,7 @@ export const createProfileMediaAction = async (formData: FormData) => {
   }
 
   if (!file.type.startsWith("image/")) {
-    throw new Error("Solo se permiten imágenes");
+    throw new Error("Solo se permiten imÃ¡genes");
   }
 
   const parsedResult = AvatarMetadataSchema.safeParse({
@@ -138,7 +138,7 @@ export const createProfileMediaAction = async (formData: FormData) => {
   const filename = `${safeName}-${crypto.randomUUID()}.webp`;
   const path = `${config.folder}/${filename}`;
 
-  const blob = await uploadBlob({
+  const asset = await uploadAsset({
     path,
     buffer: outputBuffer,
     contentType: "image/webp",
@@ -147,7 +147,7 @@ export const createProfileMediaAction = async (formData: FormData) => {
   const created = await prisma.avatar.create({
     data: {
       name: parsed.name,
-      imageUrl: blob.pathname,
+      imageUrl: asset.pathname,
       rarity: parsed.rarity,
       availability: parsed.availability,
       price: parsed.price,
@@ -214,8 +214,8 @@ export const deleteProfileMediaAction = async (avatarId: string) => {
     throw new Error("El avatar ya no existe");
   }
 
-  const pathname = toBlobPath(avatar.imageUrl);
-  const fullUrl = toBlobUrl(avatar.imageUrl);
+  const pathname = toAssetPath(avatar.imageUrl);
+  const fullUrl = toAssetStorageUrl(avatar.imageUrl);
   const candidates = [avatar.imageUrl, pathname, fullUrl].filter(Boolean);
 
   // Evitamos borrar recursos que siguen ligados a usuarios o inventarios.
@@ -268,7 +268,7 @@ export const deleteProfileMediaAction = async (avatarId: string) => {
     throw new Error("No se pudo eliminar la imagen");
   }
 
-  await deleteBlob(avatar.imageUrl);
+  await deleteAsset(avatar.imageUrl);
 
   return { ok: true };
 };

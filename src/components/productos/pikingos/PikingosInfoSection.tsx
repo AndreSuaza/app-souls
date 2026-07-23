@@ -33,7 +33,7 @@ export function PikingosInfoSection() {
 
           <div className="flex justify-center lg:justify-center lg:-ml-4">
             <Image
-              src="/products/pikingos/Mokut-cajas-Pikingos.webp"
+              src="/product-pages/pikingos/mokut-cajas-pikingos.webp"
               alt="Cajas Pikingos"
               title="Cajas Pikingos"
               width={340}

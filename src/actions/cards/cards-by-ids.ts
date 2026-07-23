@@ -11,6 +11,7 @@ import {
   normalizeEncodedDecklist,
   parseEncodedDeckSegment,
 } from "@/utils/decklist";
+import { activeCardWhere } from "./card-status";
 
 export interface Decklist {
   count: number;
@@ -154,16 +155,21 @@ const getCardsByIds = async (ids: string) => {
         },
       },
       where: {
-        OR: [
+        AND: [
+          activeCardWhere(),
           {
-            idd: {
-              in: uniqueKeys,
-            },
-          },
-          {
-            code: {
-              in: uniqueKeys,
-            },
+            OR: [
+              {
+                idd: {
+                  in: uniqueKeys,
+                },
+              },
+              {
+                code: {
+                  in: uniqueKeys,
+                },
+              },
+            ],
           },
         ],
       },
@@ -201,6 +207,7 @@ const getCardsByIds = async (ids: string) => {
                 keywords: card.keywords,
                 name: card.name,
                 effect: card.effect,
+                imageUrl: card.imageUrl ?? null,
                 product: card.product,
                 price: card.price ?? null,
               }

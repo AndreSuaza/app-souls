@@ -1,15 +1,19 @@
 "use server";
 
 import { auth } from "@/auth";
+import { sendEmailVerification, sendPasswordResetEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import {
   AdjustUserVictoryPointsSchema,
+  AdminUserEmailActionSchema,
   AdminUsersFiltersSchema,
   BULK_ADJUST_USER_PV_MAX_USERS,
   BulkAdjustUserVictoryPointsSchema,
+  SetAdminUserActiveStatusSchema,
   UpdateAdminUserRoleStatusSchema,
   UserPvAdjustmentsSchema,
 } from "@/schemas";
+import { nanoid } from "nanoid";
 import type { Prisma } from "@prisma/client";
 
 type ParsedAdminUsersFilters = ReturnType<typeof AdminUsersFiltersSchema.parse>;
@@ -22,6 +26,7 @@ export type AdminUserListItem = {
   nickname: string;
   role: string;
   status: string;
+  emailVerified: string | null;
   victoryPoints: number;
   eloPoints: number;
   tournamentsPlayed: number;
@@ -144,6 +149,7 @@ export const getAdminUsersAction = async (
       nickname: true,
       role: true,
       status: true,
+      emailVerified: true,
       victoryPoints: true,
       eloPoints: true,
       tournamentsPlayed: true,
@@ -158,6 +164,7 @@ export const getAdminUsersAction = async (
       ...user,
       role: user.role,
       status: user.status,
+      emailVerified: user.emailVerified?.toISOString() ?? null,
       victoryPoints: user.victoryPoints ?? 0,
       eloPoints: user.eloPoints ?? 0,
       tournamentsPlayed: user.tournamentsPlayed ?? 0,
@@ -217,6 +224,138 @@ export const updateAdminUserRoleStatusAction = async (input: unknown) => {
       updatedAt: updated.updatedAt.toISOString(),
     },
   };
+};
+
+export const setAdminUserActiveStatusAction = async (input: unknown) => {
+  const { adminId } = await requireAdminSession();
+  const parsed = SetAdminUserActiveStatusSchema.parse(input);
+  const nextStatus = parsed.active ? "active" : "inactive";
+
+  if (parsed.userId === adminId && !parsed.active) {
+    throw new Error("No puedes desactivar tu propia cuenta admin.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: parsed.userId },
+    select: { id: true },
+  });
+
+  if (!user) {
+    throw new Error("El usuario seleccionado no existe.");
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: parsed.userId },
+    data: { status: nextStatus },
+    select: {
+      id: true,
+      status: true,
+      updatedAt: true,
+    },
+  });
+
+  return {
+    ok: true,
+    user: {
+      id: updated.id,
+      status: updated.status,
+      updatedAt: updated.updatedAt.toISOString(),
+    },
+  };
+};
+
+export const sendAdminPasswordResetEmailAction = async (input: unknown) => {
+  await requireAdminSession();
+  const parsed = AdminUserEmailActionSchema.parse(input);
+
+  const user = await prisma.user.findUnique({
+    where: { id: parsed.userId },
+    select: {
+      id: true,
+      email: true,
+      status: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("El usuario seleccionado no existe.");
+  }
+
+  if (!user.email) {
+    throw new Error("El usuario no tiene correo registrado.");
+  }
+
+  if (user.status !== "active") {
+    throw new Error("Solo puedes enviar recuperación a usuarios activos.");
+  }
+
+  const token = nanoid();
+
+  await prisma.verificationToken.deleteMany({
+    where: { identifier: user.email },
+  });
+
+  await prisma.verificationToken.create({
+    data: {
+      identifier: user.email,
+      token,
+      expires: new Date(Date.now() + 1000 * 60 * 30),
+    },
+  });
+
+  const sent = await sendPasswordResetEmail(user.email, token);
+  if ("error" in sent && sent.error) {
+    throw new Error("No se pudo enviar el correo de recuperación.");
+  }
+
+  return { ok: true };
+};
+
+export const resendAdminVerificationEmailAction = async (input: unknown) => {
+  await requireAdminSession();
+  const parsed = AdminUserEmailActionSchema.parse(input);
+
+  const user = await prisma.user.findUnique({
+    where: { id: parsed.userId },
+    select: {
+      id: true,
+      email: true,
+      emailVerified: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("El usuario seleccionado no existe.");
+  }
+
+  if (!user.email) {
+    throw new Error("El usuario no tiene correo registrado.");
+  }
+
+  if (user.emailVerified) {
+    throw new Error("El correo de este usuario ya esta verificado.");
+  }
+
+  const token = nanoid();
+
+  await prisma.verificationToken.deleteMany({
+    where: { identifier: user.email },
+  });
+
+  await prisma.verificationToken.create({
+    data: {
+      identifier: user.email,
+      token,
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
+    },
+  });
+
+  const sent = await sendEmailVerification(user.email, token);
+  if ("error" in sent && sent.error) {
+    throw new Error("No se pudo enviar el correo de verificacion.");
+  }
+
+  return { ok: true };
 };
 
 export const adjustUserVictoryPointsAction = async (input: unknown) => {

@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { activeCardWhere } from "./card-status";
 
 export const getCardsAndPrices = async () => {
   try {
@@ -37,6 +38,7 @@ export const getCardsAndPrices = async () => {
           id: "desc",
         },
       ],
+      where: activeCardWhere(),
     });
 
     return cards.map((card) => [

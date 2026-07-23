@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { cardImageBlurDataURL } from "@/models/images.models";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode, Pagination } from "swiper/modules";
@@ -32,13 +33,16 @@ export const ProductMobileSlideshow = ({ images, title, className }: Props) => {
         modules={[FreeMode, Pagination]}
         className=""
       >
-        {images.map((image) => (
+        {images.map((image) => {
+          const imageSrc = resolveCardImageUrl({ imageKey: image });
+
+          return (
           <SwiperSlide key={image}>
             <div className="m-4">
               <Image
                 width={300}
                 height={718}
-                src={`/cards/${image}`}
+                src={imageSrc}
                 alt={title}
                 title={title}
                 placeholder="blur"
@@ -47,7 +51,8 @@ export const ProductMobileSlideshow = ({ images, title, className }: Props) => {
               />
             </div>
           </SwiperSlide>
-        ))}
+          );
+        })}
       </Swiper>
     </div>
   );

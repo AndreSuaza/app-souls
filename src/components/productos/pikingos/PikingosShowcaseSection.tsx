@@ -9,17 +9,17 @@ export function PikingosShowcaseSection() {
     () => [
       {
         id: "pikingos-1",
-        src: "/products/pikingos/1Pikingo.webp",
+        src: "/product-pages/pikingos/1pikingo.webp",
         alt: "Carta Pikingos principal",
       },
       {
         id: "pikingos-2",
-        src: "/products/pikingos/2Pikingo.webp",
+        src: "/product-pages/pikingos/2pikingo.webp",
         alt: "Carta Pikingos secundaria",
       },
       {
         id: "pikingos-3",
-        src: "/products/pikingos/3Pikingo.webp",
+        src: "/product-pages/pikingos/3pikingo.webp",
         alt: "Carta Pikingos terciaria",
       },
     ],

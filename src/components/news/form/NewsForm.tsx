@@ -27,7 +27,7 @@ import { NewsImageModal } from "./NewsImageModal";
 import { uploadNewsImageAction } from "@/actions/news/upload-news-image.action";
 import { useToastStore } from "@/store";
 import { useUIStore } from "@/store";
-import { toBlobPath } from "@/utils/blob-path";
+import { toAssetPath } from "@/utils/asset-path";
 
 type NewsFormValues = {
   title: string;
@@ -161,7 +161,7 @@ export const NewsForm = ({
 
   const effectiveMinPublishedAt = useMemo(() => {
     if (readOnly) return undefined;
-    // Si está publicada y no se modificó la fecha, no imponemos mínimo.
+    // Si estÃ¡ publicada y no se modificÃ³ la fecha, no imponemos mÃ­nimo.
     if (initialValues?.status === "published" && !hasPublishedAtChanged) {
       return undefined;
     }
@@ -258,14 +258,14 @@ export const NewsForm = ({
       const currentFeatured =
         featuredImageValue.startsWith("local:")
           ? null
-          : toBlobPath(featuredImageValue);
+          : toAssetPath(featuredImageValue);
       clearStagedFeatured();
       setPendingImage(pendingFeaturedPreview ?? currentFeatured ?? null);
     } else {
       const currentCard =
         cardImageValue.startsWith("local:")
           ? null
-          : toBlobPath(cardImageValue);
+          : toAssetPath(cardImageValue);
       clearStagedCard();
       setPendingImage(pendingCardPreview ?? currentCard ?? null);
     }
@@ -411,7 +411,7 @@ export const NewsForm = ({
   };
 
   const handleInvalidSubmit = () => {
-    // Forza el estado de error en campos obligatorios aunque no tengan interacción previa.
+    // Forza el estado de error en campos obligatorios aunque no tengan interacciÃ³n previa.
     const currentTitle = watch("title");
     const currentSubtitle = watch("subtitle");
     const currentSummary = watch("shortSummary");
@@ -441,14 +441,14 @@ export const NewsForm = ({
 
   const handleFormSubmit = handleSubmit(async (values) => {
     try {
-      showLoading("Subiendo imágenes...");
+      showLoading("Subiendo imÃ¡genes...");
       setIsUploadingImages(true);
       setUploadError(null);
 
       let featuredImage = values.featuredImage;
       let cardImage = values.cardImage;
 
-      // Subimos a Blob solo cuando el usuario confirma el guardado.
+      // Subimos a R2 solo cuando el usuario confirma el guardado.
       if (pendingFeaturedFile) {
         const formData = new FormData();
         formData.append("file", pendingFeaturedFile);
@@ -483,7 +483,7 @@ export const NewsForm = ({
       });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Error subiendo imágenes";
+        error instanceof Error ? error.message : "Error subiendo imÃ¡genes";
       setUploadError(message);
       showToast(message, "error");
     } finally {
@@ -515,7 +515,7 @@ export const NewsForm = ({
     >
       <div className="grid gap-4 lg:grid-cols-2">
         <FormField
-          label="Título"
+          label="TÃ­tulo"
           labelFor="news-title"
           error={errors.title?.message}
         >
@@ -525,13 +525,13 @@ export const NewsForm = ({
             hasError={!!errors.title}
             disabled={readOnly}
             {...register("title", {
-              required: "El título es obligatorio",
+              required: "El tÃ­tulo es obligatorio",
             })}
           />
         </FormField>
 
         <FormField
-          label="Subtítulo"
+          label="SubtÃ­tulo"
           labelFor="news-subtitle"
           error={errors.subtitle?.message}
         >
@@ -541,7 +541,7 @@ export const NewsForm = ({
             hasError={!!errors.subtitle}
             disabled={readOnly}
             {...register("subtitle", {
-              required: "El subtítulo es obligatorio",
+              required: "El subtÃ­tulo es obligatorio",
             })}
           />
         </FormField>
@@ -661,7 +661,7 @@ export const NewsForm = ({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <FormField label="Fecha de publicación" labelFor="news-published-at">
+        <FormField label="Fecha de publicaciÃ³n" labelFor="news-published-at">
           <div className="flex flex-wrap gap-2">
             <FormInput
               id="news-published-at"
@@ -691,7 +691,7 @@ export const NewsForm = ({
         </FormField>
 
         <FormField
-          label="Categoría"
+          label="CategorÃ­a"
           labelFor="news-category"
           error={errors.newCategoryId?.message}
         >
@@ -700,10 +700,10 @@ export const NewsForm = ({
             hasError={!!errors.newCategoryId}
             disabled={readOnly}
             {...register("newCategoryId", {
-              required: "La categoría es obligatoria",
+              required: "La categorÃ­a es obligatoria",
             })}
           >
-            <option value="">Selecciona una categoría</option>
+            <option value="">Selecciona una categorÃ­a</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -716,7 +716,7 @@ export const NewsForm = ({
       <FormField
         label="Etiquetas"
         labelFor="news-tags-input"
-        tooltip="Máximo 5 palabras clave por noticia."
+        tooltip="MÃ¡ximo 5 palabras clave por noticia."
       >
         <div className="space-y-2">
           <FormInput

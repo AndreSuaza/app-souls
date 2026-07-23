@@ -1,4 +1,4 @@
-import { toBlobUrl } from "@/utils/blob-path";
+import { toAssetStorageUrl } from "@/utils/asset-path";
 import { eventImageFallbacks } from "@/models/media-fallbacks.models";
 
 type EventImageFolder = "banners" | "cards";
@@ -17,7 +17,10 @@ export const resolveEventImageUrl = (
     return value;
   }
   if (value.startsWith("souls/")) {
-    return toBlobUrl(value);
+    return toAssetStorageUrl(value.slice("souls/".length));
+  }
+  if (value.includes("/")) {
+    return toAssetStorageUrl(value);
   }
   // Compatibilidad con nombres locales mientras se define media propia de eventos.
   return `/events/${folder}/${value}`;

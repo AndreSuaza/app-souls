@@ -1,7 +1,20 @@
 "use server";
 
 import { auth } from "@/auth";
-import { listBlob } from "@/lib/blob";
+import { listAssets } from "@/lib/assets-storage";
+
+const PRODUCT_IMAGES_PREFIX = "products/";
+const IMAGE_EXTENSION_PATTERN = /\.(webp|png|jpe?g|avif)$/i;
+
+const isDirectProductImage = (pathname: string) => {
+  if (!pathname.startsWith(PRODUCT_IMAGES_PREFIX)) return false;
+  const relativePath = pathname.slice(PRODUCT_IMAGES_PREFIX.length);
+  return (
+    relativePath.length > 0 &&
+    !relativePath.includes("/") &&
+    IMAGE_EXTENSION_PATTERN.test(relativePath)
+  );
+};
 
 export async function getProductImagesAction(): Promise<string[]> {
   try {
@@ -11,12 +24,13 @@ export async function getProductImagesAction(): Promise<string[]> {
       return [];
     }
 
-    const list = await listBlob("souls/products/");
+    const list = await listAssets(PRODUCT_IMAGES_PREFIX);
     return list
+      .filter((item) => isDirectProductImage(item.pathname))
       .sort((a, b) => a.pathname.localeCompare(b.pathname))
       .map((item) => item.pathname);
   } catch (error) {
     console.error("[getProductImagesAction]", error);
-    throw new Error("Error cargando las imágenes del producto");
+    throw new Error("Error cargando las imÃ¡genes del producto");
   }
 }

@@ -1,10 +1,35 @@
 import type { NextConfig } from "next";
 
+const assetsBaseUrl = (process.env.NEXT_PUBLIC_ASSETS_BASE_URL ?? "").replace(
+  /\/+$/,
+  "",
+);
+const staticAssetFolders = [
+  "cards",
+  "decks",
+  "global",
+  "home",
+  "howtoplay",
+  "national",
+  "news",
+  "products",
+  "profile",
+  "tournaments",
+];
+const enableR2PublicAssetRedirects =
+  process.env.ENABLE_R2_PUBLIC_ASSET_REDIRECTS === "true";
+const r2PublicAssetRedirectFolders = (
+  process.env.R2_PUBLIC_ASSET_REDIRECT_FOLDERS ?? "cards,products,profile"
+)
+  .split(",")
+  .map((folder) => folder.trim())
+  .filter((folder) => staticAssetFolders.includes(folder));
+
 const nextConfig: NextConfig = {
   experimental: {
-    // Aumenta el limite para subir banners (8MB) e imagenes de tarjeta (4MB).
+    // Aumenta el limite para imports masivos de cartas con ZIP de imagenes.
     serverActions: {
-      bodySizeLimit: "12mb",
+      bodySizeLimit: "80mb",
     },
   },
   images: {
@@ -18,24 +43,20 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "**.vercel-storage.com",
+        hostname: "assets.soulsinxtinction.com",
       },
     ],
   },
-  async headers() {
-    const staticAssetFolders = [
-      "cards",
-      "decks",
-      "global",
-      "home",
-      "howtoplay",
-      "national",
-      "news",
-      "products",
-      "profile",
-      "tournaments",
-    ];
+  async redirects() {
+    if (!assetsBaseUrl || !enableR2PublicAssetRedirects) return [];
 
+    return r2PublicAssetRedirectFolders.map((folder) => ({
+      source: `/${folder}/:path*`,
+      destination: `${assetsBaseUrl}/${folder}/:path*`,
+      permanent: false,
+    }));
+  },
+  async headers() {
     return [
       ...staticAssetFolders.map((folder) => ({
         source: `/${folder}/:path*`,
