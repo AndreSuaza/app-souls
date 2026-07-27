@@ -12,7 +12,7 @@ import {
   type getAdminCardPropertiesAction,
 } from "@/actions/cards/admin-cards.action";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
-import { toAssetUrl } from "@/utils/asset-path";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 type Properties = Awaited<ReturnType<typeof getAdminCardPropertiesAction>>;
 type AdminCard = NonNullable<
@@ -107,7 +107,12 @@ export const AdminCardForm = ({
 
   const isCreate = mode === "create";
   const previewUrl =
-    localPreviewUrl || (values.imageUrl ? toAssetUrl(values.imageUrl) : "");
+    localPreviewUrl ||
+    resolveCardImageUrl({
+      imageUrl: values.imageUrl,
+      code: values.code,
+      idd: values.idd,
+    });
 
   useEffect(() => {
     if (!file) {

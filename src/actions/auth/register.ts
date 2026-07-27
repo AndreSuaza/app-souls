@@ -14,6 +14,7 @@ import { RegisterSchema } from "@/schemas";
 import { getAvatarValue } from "@/utils/avatar-image";
 import { normalizeEmail } from "@/utils/email";
 import { getProfileBannerValue } from "@/utils/profile-banner";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 import { AuthError } from "next-auth";
@@ -55,6 +56,13 @@ function validarNickname(nickname: string): string | null {
     return "El nickname contiene palabras restringidas.";
 
   return null;
+}
+
+function isUniqueConstraintError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  );
 }
 
 async function createAndSendEmailVerificationToken(
@@ -160,8 +168,14 @@ export async function userRegistration(
       return { success: false, message: nicknameError };
     }
 
-    const existsNick = await prisma.user.findUnique({
-      where: { nickname: normalizedNickname },
+    const existsNick = await prisma.user.findFirst({
+      where: {
+        nickname: {
+          equals: normalizedNickname,
+          mode: "insensitive",
+        },
+      },
+      select: { id: true },
     });
 
     if (existsNick) {
@@ -198,6 +212,13 @@ export async function userRegistration(
 
     return { success: true, retryAfterSeconds: RESEND_COOLDOWN_SECONDS };
   } catch (error) {
+    if (isUniqueConstraintError(error)) {
+      return {
+        success: false,
+        message: "Este correo electronico o nickname ya esta en uso.",
+      };
+    }
+
     if (error instanceof AuthError) {
       return {
         success: false,

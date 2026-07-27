@@ -159,16 +159,6 @@ const parseFloatNumber = (value: unknown) => {
   return parsed;
 };
 
-const parseBooleanRotation = (value: unknown) => {
-  const raw = toPlainString(value);
-  if (!raw) return null;
-
-  const normalized = normalizeLookupKey(raw);
-  if (["1", "true", "si", "s", "yes"].includes(normalized)) return 1;
-  if (["0", "false", "no", "n"].includes(normalized)) return 0;
-  return null;
-};
-
 const normalizeNumeration = (value: unknown) => {
   const raw = toPlainString(value);
   if (!raw) return "";
@@ -561,13 +551,13 @@ export async function importCardsFromExcelAction(
     }
 
     const isRotationEmpty = toPlainString(rotationRaw) === "";
-    const rotationParsed = parseBooleanRotation(rotationRaw);
+    const rotationParsed = parseInteger(rotationRaw);
     if (isRotationEmpty) {
       reasons.push("El campo Rotacion es obligatorio.");
     }
-    if (!isRotationEmpty && rotationParsed === null) {
+    if (!isRotationEmpty && (rotationParsed === null || rotationParsed < 0)) {
       reasons.push(
-        'El campo Rotacion debe ser booleano: true/false, si/no o 1/0.',
+        "El campo Rotacion debe ser un entero mayor o igual a 0.",
       );
     }
 
