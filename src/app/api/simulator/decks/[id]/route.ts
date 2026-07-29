@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { simulatorCorsHeaders, simulatorOptionsResponse } from "@/lib/simulator-cors";
 import { toSimulatorDeckDto } from "@/lib/simulator-deck";
 import { verifySimulatorToken } from "@/lib/simulator-token";
+import { resolveCardImageUrl } from "@/utils/card-image";
 
 export const runtime = "nodejs";
 
@@ -30,5 +31,62 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   if (!deck) return NextResponse.json({ error: "Mazo no encontrado." }, { status: 404, headers });
 
-  return NextResponse.json({ deck: toSimulatorDeckDto(deck) }, { headers });
+  const parsedDeck = toSimulatorDeckDto(deck);
+  const cardCodes = Array.from(
+    new Set(
+      [...parsedDeck.mainDeck, ...parsedDeck.limboDeck].map(
+        (entry) => entry.cardId,
+      ),
+    ),
+  );
+  const cards =
+    cardCodes.length > 0
+      ? await prisma.card.findMany({
+          where: { code: { in: cardCodes } },
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            typeIds: true,
+            cost: true,
+            force: true,
+            defense: true,
+            effect: true,
+            imageUrl: true,
+            idd: true,
+          },
+        })
+      : [];
+  const typeIds = Array.from(new Set(cards.flatMap((card) => card.typeIds)));
+  const types =
+    typeIds.length > 0
+      ? await prisma.type.findMany({
+          where: { id: { in: typeIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+  const typeById = new Map(types.map((type) => [type.id, type]));
+
+  return NextResponse.json(
+    {
+      deck: toSimulatorDeckDto(
+        deck,
+        cards.map((card) => ({
+          id: card.id,
+          code: card.code,
+          name: card.name,
+          types: card.typeIds.flatMap((typeId) => {
+            const type = typeById.get(typeId);
+            return type ? [{ name: type.name }] : [];
+          }),
+          cost: card.cost,
+          force: card.force,
+          defense: card.defense,
+          effect: card.effect,
+          imageUrl: resolveCardImageUrl(card),
+        })),
+      ),
+    },
+    { headers },
+  );
 }

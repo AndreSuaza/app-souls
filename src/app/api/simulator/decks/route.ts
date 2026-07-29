@@ -27,5 +27,8 @@ export async function GET(request: Request) {
     orderBy: { updatedAt: "desc" },
   });
 
-  return NextResponse.json({ decks: decks.map(toSimulatorDeckDto) }, { headers });
+  return NextResponse.json(
+    { decks: decks.map((deck) => toSimulatorDeckDto(deck)) },
+    { headers },
+  );
 }
