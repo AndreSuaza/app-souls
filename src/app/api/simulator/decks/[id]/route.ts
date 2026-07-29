@@ -32,7 +32,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!deck) return NextResponse.json({ error: "Mazo no encontrado." }, { status: 404, headers });
 
   const parsedDeck = toSimulatorDeckDto(deck);
-  const cardCodes = Array.from(
+  const cardKeys = Array.from(
     new Set(
       [...parsedDeck.mainDeck, ...parsedDeck.limboDeck].map(
         (entry) => entry.cardId,
@@ -40,9 +40,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     ),
   );
   const cards =
-    cardCodes.length > 0
+    cardKeys.length > 0
       ? await prisma.card.findMany({
-          where: { code: { in: cardCodes } },
+          where: {
+            OR: [{ code: { in: cardKeys } }, { id: { in: cardKeys } }],
+          },
           select: {
             id: true,
             code: true,

@@ -26,10 +26,10 @@ const countDeckEntries = (entries: { count: number }[]) =>
 
 const mapDeckEntriesToCardIds = (
   entries: { cardId: string; count: number }[],
-  cardByCode: Map<string, SimulatorCardSource>,
+  cardByDeckKey: Map<string, SimulatorCardSource>,
 ) =>
   entries.map((entry) => ({
-    cardId: cardByCode.get(entry.cardId)?.id ?? entry.cardId,
+    cardId: cardByDeckKey.get(entry.cardId)?.id ?? entry.cardId,
     count: entry.count,
   }));
 
@@ -80,15 +80,19 @@ export const toSimulatorDeckDto = (
     ({ key, count }) => ({ cardId: key, count }),
   );
   const soulDeck: { cardId: string; count: number }[] = [];
-  const cardByCode = new Map(cards.map((card) => [card.code, card]));
+  const cardByDeckKey = new Map<string, SimulatorCardSource>();
+  cards.forEach((card) => {
+    cardByDeckKey.set(card.id, card);
+    cardByDeckKey.set(card.code, card);
+  });
 
   return {
     id: deck.id,
     name: deck.name,
     ownerUserId: deck.userId,
-    mainDeck: mapDeckEntriesToCardIds(mainDeck, cardByCode),
+    mainDeck: mapDeckEntriesToCardIds(mainDeck, cardByDeckKey),
     soulDeck,
-    limboDeck: mapDeckEntriesToCardIds(limboDeck, cardByCode),
+    limboDeck: mapDeckEntriesToCardIds(limboDeck, cardByDeckKey),
     cards: cards.map((card) => ({
       id: card.id,
       code: card.code,
