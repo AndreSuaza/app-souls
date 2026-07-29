@@ -47,7 +47,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             id: true,
             code: true,
             name: true,
-            types: { select: { name: true } },
+            typeIds: true,
             cost: true,
             force: true,
             defense: true,
@@ -57,6 +57,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           },
         })
       : [];
+  const typeIds = Array.from(new Set(cards.flatMap((card) => card.typeIds)));
+  const types =
+    typeIds.length > 0
+      ? await prisma.type.findMany({
+          where: { id: { in: typeIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+  const typeById = new Map(types.map((type) => [type.id, type]));
 
   return NextResponse.json(
     {
@@ -66,7 +75,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           id: card.id,
           code: card.code,
           name: card.name,
-          types: card.types,
+          types: card.typeIds.flatMap((typeId) => {
+            const type = typeById.get(typeId);
+            return type ? [{ name: type.name }] : [];
+          }),
           cost: card.cost,
           force: card.force,
           defense: card.defense,
