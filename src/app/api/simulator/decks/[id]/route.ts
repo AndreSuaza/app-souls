@@ -8,6 +8,7 @@ import { resolveCardImageUrl } from "@/utils/card-image";
 export const runtime = "nodejs";
 
 const getToken = (request: Request) => request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
+const mongoObjectIdPattern = /^[a-f\d]{24}$/i;
 
 export async function OPTIONS(request: Request) {
   return simulatorOptionsResponse(request, "GET, OPTIONS");
@@ -39,11 +40,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       ),
     ),
   );
+  const cardObjectIds = cardKeys.filter((key) =>
+    mongoObjectIdPattern.test(key),
+  );
   const cards =
     cardKeys.length > 0
       ? await prisma.card.findMany({
           where: {
-            OR: [{ code: { in: cardKeys } }, { id: { in: cardKeys } }],
+            OR: [
+              { code: { in: cardKeys } },
+              ...(cardObjectIds.length > 0
+                ? [{ id: { in: cardObjectIds } }]
+                : []),
+            ],
           },
           select: {
             id: true,
