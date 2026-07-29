@@ -49,6 +49,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           where: {
             OR: [
               { code: { in: cardKeys } },
+              { idd: { in: cardKeys } },
               ...(cardObjectIds.length > 0
                 ? [{ id: { in: cardObjectIds } }]
                 : []),
@@ -84,6 +85,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         deck,
         cards.map((card) => ({
           id: card.id,
+          idd: card.idd,
           code: card.code,
           name: card.name,
           types: card.typeIds.flatMap((typeId) => {

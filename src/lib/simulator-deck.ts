@@ -4,6 +4,7 @@ type SimulatorCardType = "unit" | "conjure" | "weapon" | "entity";
 
 type SimulatorCardSource = {
   id: string;
+  idd?: string | null;
   code: string;
   name: string;
   types: { name: string }[];
@@ -23,6 +24,15 @@ type SimulatorDeckSource = {
 
 const countDeckEntries = (entries: { count: number }[]) =>
   entries.reduce((total, entry) => total + entry.count, 0);
+
+const cardDeckKeys = (card: SimulatorCardSource) =>
+  Array.from(
+    new Set(
+      [card.id, card.code, card.idd]
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value)),
+    ),
+  );
 
 const mapDeckEntriesToCardIds = (
   entries: { cardId: string; count: number }[],
@@ -82,8 +92,7 @@ export const toSimulatorDeckDto = (
   const soulDeck: { cardId: string; count: number }[] = [];
   const cardByDeckKey = new Map<string, SimulatorCardSource>();
   cards.forEach((card) => {
-    cardByDeckKey.set(card.id, card);
-    cardByDeckKey.set(card.code, card);
+    cardDeckKeys(card).forEach((key) => cardByDeckKey.set(key, card));
   });
 
   return {
@@ -96,6 +105,7 @@ export const toSimulatorDeckDto = (
     cards: cards.map((card) => ({
       id: card.id,
       code: card.code,
+      aliases: cardDeckKeys(card),
       name: card.name,
       types: toSimulatorCardTypes(card.types),
       cost: card.cost,
