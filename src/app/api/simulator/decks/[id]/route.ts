@@ -27,7 +27,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       cardsNumber: { gte: 40 },
       AND: [{ OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }] }],
     },
-    select: { id: true, name: true, cards: true, userId: true },
+    select: { id: true, name: true, cards: true, cardsNumber: true, userId: true },
   });
 
   if (!deck) return NextResponse.json({ error: "Mazo no encontrado." }, { status: 404, headers });

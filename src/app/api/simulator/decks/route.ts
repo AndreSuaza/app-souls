@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       cardsNumber: { gte: 40 },
       AND: [{ OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }] }],
     },
-    select: { id: true, name: true, cards: true, userId: true },
+    select: { id: true, name: true, cards: true, cardsNumber: true, userId: true },
     orderBy: { updatedAt: "desc" },
   });
 

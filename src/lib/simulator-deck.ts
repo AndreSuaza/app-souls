@@ -17,6 +17,7 @@ type SimulatorCardSource = {
 
 type SimulatorDeckSource = {
   cards: string;
+  cardsNumber?: number | null;
   id: string;
   name: string;
   userId: string;
@@ -33,15 +34,6 @@ const cardDeckKeys = (card: SimulatorCardSource) =>
         .filter((value): value is string => Boolean(value)),
     ),
   );
-
-const mapDeckEntriesToCardIds = (
-  entries: { cardId: string; count: number }[],
-  cardByDeckKey: Map<string, SimulatorCardSource>,
-) =>
-  entries.map((entry) => ({
-    cardId: cardByDeckKey.get(entry.cardId)?.id ?? entry.cardId,
-    count: entry.count,
-  }));
 
 const normalizeTypeName = (value: string) =>
   value
@@ -76,17 +68,86 @@ const toSimulatorCardTypes = (
   return mappedTypes.length > 0 ? mappedTypes : ["entity"];
 };
 
+const isLimboCard = (card: SimulatorCardSource | undefined) =>
+  card?.types.some((type) => normalizeTypeName(type.name) === "limbo") ?? false;
+
+const countEntries = (entries: { count: number }[]) =>
+  entries.reduce((total, entry) => total + entry.count, 0);
+
+const splitMainAndLimboEntries = (
+  entries: { cardId: string; count: number }[],
+  cardByDeckKey: Map<string, SimulatorCardSource>,
+  expectedMainCount?: number | null,
+) => {
+  const normalizedMainCount = Number.isFinite(expectedMainCount)
+    ? Math.max(0, Math.trunc(expectedMainCount as number))
+    : 0;
+  const mappedEntries = entries.map((entry) => ({
+    cardId: cardByDeckKey.get(entry.cardId)?.id ?? entry.cardId,
+    count: entry.count,
+    sourceCard: cardByDeckKey.get(entry.cardId),
+  }));
+  const splitByExpectedCount = () => {
+    const mainDeck: { cardId: string; count: number }[] = [];
+    const limboDeck: { cardId: string; count: number }[] = [];
+    let mainCount = 0;
+
+    mappedEntries.forEach((entry) => {
+      const deckEntry = { cardId: entry.cardId, count: entry.count };
+      if (
+        mainCount < normalizedMainCount &&
+        mainCount + entry.count <= normalizedMainCount
+      ) {
+        mainDeck.push(deckEntry);
+        mainCount += entry.count;
+        return;
+      }
+      limboDeck.push(deckEntry);
+    });
+
+    return { mainDeck, limboDeck };
+  };
+
+  const mainByType: { cardId: string; count: number }[] = [];
+  const limboByType: { cardId: string; count: number }[] = [];
+
+  mappedEntries.forEach((entry) => {
+    const deckEntry = { cardId: entry.cardId, count: entry.count };
+    if (isLimboCard(entry.sourceCard)) {
+      limboByType.push(deckEntry);
+      return;
+    }
+    mainByType.push(deckEntry);
+  });
+
+  if (limboByType.length > 0) {
+    if (normalizedMainCount > 0 && countEntries(mainByType) !== normalizedMainCount) {
+      return splitByExpectedCount();
+    }
+    return { mainDeck: mainByType, limboDeck: limboByType };
+  }
+
+  if (normalizedMainCount <= 0) {
+    return {
+      mainDeck: mappedEntries.map((entry) => ({
+        cardId: entry.cardId,
+        count: entry.count,
+      })),
+      limboDeck: [] as { cardId: string; count: number }[],
+    };
+  }
+
+  return splitByExpectedCount();
+};
+
 export const toSimulatorDeckDto = (
   deck: SimulatorDeckSource,
   cards: SimulatorCardSource[] = [],
 ) => {
-  const [mainSegment = "", limboSegment = ""] = deck.cards.split(
+  const [playSegment = ""] = deck.cards.split(
     ENCODED_SECTION_SEPARATOR,
   );
-  const mainDeck = parseEncodedDeckSegment(mainSegment).map(
-    ({ key, count }) => ({ cardId: key, count }),
-  );
-  const limboDeck = parseEncodedDeckSegment(limboSegment).map(
+  const playDeck = parseEncodedDeckSegment(playSegment).map(
     ({ key, count }) => ({ cardId: key, count }),
   );
   const soulDeck: { cardId: string; count: number }[] = [];
@@ -94,14 +155,19 @@ export const toSimulatorDeckDto = (
   cards.forEach((card) => {
     cardDeckKeys(card).forEach((key) => cardByDeckKey.set(key, card));
   });
+  const { mainDeck, limboDeck } = splitMainAndLimboEntries(
+    playDeck,
+    cardByDeckKey,
+    deck.cardsNumber,
+  );
 
   return {
     id: deck.id,
     name: deck.name,
     ownerUserId: deck.userId,
-    mainDeck: mapDeckEntriesToCardIds(mainDeck, cardByDeckKey),
+    mainDeck,
     soulDeck,
-    limboDeck: mapDeckEntriesToCardIds(limboDeck, cardByDeckKey),
+    limboDeck,
     cards: cards.map((card) => ({
       id: card.id,
       code: card.code,
