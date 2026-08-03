@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-const TOKEN_TTL_SECONDS = 60 * 15;
+export const SIMULATOR_TOKEN_TTL_SECONDS = 60 * 60 * 2;
 
 export interface SimulatorTokenPayload {
   expiresAt: number;
@@ -20,7 +20,7 @@ const secret = () => {
 const signature = (body: string) => createHmac("sha256", secret()).update(body).digest("base64url");
 
 export const createSimulatorToken = (payload: Omit<SimulatorTokenPayload, "expiresAt">) => {
-  const body = encode({ ...payload, expiresAt: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS });
+  const body = encode({ ...payload, expiresAt: Math.floor(Date.now() / 1000) + SIMULATOR_TOKEN_TTL_SECONDS });
   return `${body}.${signature(body)}`;
 };
 

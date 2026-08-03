@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { simulatorCorsHeaders, simulatorOptionsResponse } from "@/lib/simulator-cors";
-import { createSimulatorToken } from "@/lib/simulator-token";
+import { createSimulatorToken, SIMULATOR_TOKEN_TTL_SECONDS } from "@/lib/simulator-token";
 import { normalizeEmail } from "@/utils/email";
 
 export const runtime = "nodejs";
@@ -29,7 +29,10 @@ export async function POST(request: Request) {
     }
 
     const token = createSimulatorToken({ userId: user.id, nickname: user.nickname, role: user.role });
-    return NextResponse.json({ token, expiresIn: 900, user: { id: user.id, nickname: user.nickname, role: user.role } }, { headers });
+    return NextResponse.json(
+      { token, expiresIn: SIMULATOR_TOKEN_TTL_SECONDS, user: { id: user.id, nickname: user.nickname, role: user.role } },
+      { headers },
+    );
   } catch (error) {
     console.error("[simulator-auth-login]", error);
     return NextResponse.json(
