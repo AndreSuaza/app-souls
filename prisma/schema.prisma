@@ -449,7 +449,9 @@ model Deck {
   description String?
   imagen      String
   cards       String
+  tokenCards  String?
   cardsNumber Int      @default(0) // Solo visible al publico si tiene las 40 cartas
+  tokenCardsNumber Int  @default(0)
   visible     Boolean
   // Marca los mazos estructurados creados desde el panel admin.
   isAdminDeck Boolean? @default(false)

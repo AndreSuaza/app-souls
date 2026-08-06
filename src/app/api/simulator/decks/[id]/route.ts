@@ -27,7 +27,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       cardsNumber: { gte: 40 },
       AND: [{ OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }] }],
     },
-    select: { id: true, name: true, cards: true, cardsNumber: true, userId: true },
+    select: {
+      id: true,
+      name: true,
+      cards: true,
+      cardsNumber: true,
+      tokenCards: true,
+      tokenCardsNumber: true,
+      userId: true,
+    },
   });
 
   if (!deck) return NextResponse.json({ error: "Mazo no encontrado." }, { status: 404, headers });
@@ -35,7 +43,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const parsedDeck = toSimulatorDeckDto(deck);
   const cardKeys = Array.from(
     new Set(
-      [...parsedDeck.mainDeck, ...parsedDeck.limboDeck].map(
+      [...parsedDeck.mainDeck, ...parsedDeck.limboDeck, ...parsedDeck.tokenDeck].map(
         (entry) => entry.cardId,
       ),
     ),

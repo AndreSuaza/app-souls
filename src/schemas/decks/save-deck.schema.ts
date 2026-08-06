@@ -14,6 +14,8 @@ export const SaveDeckSchema = z.object({
   visible: z.boolean(),
   cardsNumber: z.number().min(0),
   deckList: z.string().min(1),
+  tokenCardsNumber: z.number().min(0).max(10).optional(),
+  tokenDeckList: z.string().optional(),
   imgDeck: z.string().min(1),
   deckId: z.string().optional(),
   isAdminDeck: z.boolean().optional(),

@@ -4,6 +4,7 @@ import {
   getDeckById,
   getDecksByIds,
   getDeckFiltersAction,
+  getTokenDeckByIds,
   getTournamentSummaryAction,
   getDeckLikeStatusAction,
 } from "@/actions";
@@ -103,8 +104,9 @@ export default async function Page({ params }: Props) {
   }
 
   const decklistCards = deck.cards ?? "";
-  const [deckLists, tournamentSummary, likeStatus] = await Promise.all([
+  const [deckLists, tokenDeck, tournamentSummary, likeStatus] = await Promise.all([
     getDecksByIds(decklistCards),
+    getTokenDeckByIds(deck.tokenCards),
     deck.tournamentId
       ? getTournamentSummaryAction(deck.tournamentId)
       : Promise.resolve(null),
@@ -120,6 +122,7 @@ export default async function Page({ params }: Props) {
           deck={deck}
           mainDeck={mainDeck}
           sideDeck={sideDeck}
+          tokenDeck={tokenDeck}
           hasSession={Boolean(session?.user)}
           archetypes={filters.archetypes}
           isOwner={Boolean(userId && deck.userId === userId)}

@@ -1,6 +1,6 @@
 import { ENCODED_SECTION_SEPARATOR, parseEncodedDeckSegment } from "@/utils/decklist";
 
-type SimulatorCardType = "unit" | "conjure" | "weapon" | "entity";
+type SimulatorCardType = "unit" | "conjure" | "weapon" | "entity" | "token";
 
 type SimulatorCardSource = {
   id: string;
@@ -20,6 +20,8 @@ type SimulatorDeckSource = {
   cardsNumber?: number | null;
   id: string;
   name: string;
+  tokenCards?: string | null;
+  tokenCardsNumber?: number | null;
   userId: string;
 };
 
@@ -47,6 +49,7 @@ const toSimulatorCardType = (typeName: string): SimulatorCardType | null => {
   if (normalized === "unidad" || normalized === "unit") return "unit";
   if (normalized === "conjuro" || normalized === "conjure") return "conjure";
   if (normalized === "arma" || normalized === "weapon") return "weapon";
+  if (normalized === "ficha" || normalized === "token") return "token";
   if (
     normalized === "entidad" ||
     normalized === "ente" ||
@@ -150,6 +153,9 @@ export const toSimulatorDeckDto = (
   const playDeck = parseEncodedDeckSegment(playSegment).map(
     ({ key, count }) => ({ cardId: key, count }),
   );
+  const tokenDeck = parseEncodedDeckSegment(deck.tokenCards ?? "").map(
+    ({ key, count }) => ({ cardId: key, count }),
+  );
   const soulDeck: { cardId: string; count: number }[] = [];
   const cardByDeckKey = new Map<string, SimulatorCardSource>();
   cards.forEach((card) => {
@@ -168,6 +174,7 @@ export const toSimulatorDeckDto = (
     mainDeck,
     soulDeck,
     limboDeck,
+    tokenDeck,
     cards: cards.map((card) => ({
       id: card.id,
       code: card.code,
@@ -183,5 +190,6 @@ export const toSimulatorDeckDto = (
     mainDeckCount: countDeckEntries(mainDeck),
     soulDeckCount: 0,
     limboDeckCount: countDeckEntries(limboDeck),
+    tokenDeckCount: countDeckEntries(tokenDeck),
   };
 };

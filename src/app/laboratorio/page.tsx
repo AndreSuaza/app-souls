@@ -2,6 +2,7 @@
   getDeckById,
   getDecksByIds,
   getDeckFiltersAction,
+  getTokenDeckByIds,
   getPaginatedCards,
   getPropertiesCards,
 } from "@/actions";
@@ -121,7 +122,10 @@ export default async function Cards({ searchParams }: Props) {
     }
   }
 
-  const { mainDeck, sideDeck } = await getDecksByIds(decklistCards);
+  const [{ mainDeck, sideDeck }, tokenDeck] = await Promise.all([
+    getDecksByIds(decklistCards),
+    getTokenDeckByIds(deckUser?.tokenCards),
+  ]);
   const isOwnerDeck =
     Boolean(session?.user?.idd) && deckUser?.userId === session?.user?.idd;
   const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
@@ -161,6 +165,7 @@ export default async function Cards({ searchParams }: Props) {
         propertiesCards={propertiesCards}
         mainDeck={mainDeck}
         sideDeck={sideDeck}
+        tokenDeck={tokenDeck}
         totalPages={totalPage}
         totalCards={totalCount}
         perPage={perPage}

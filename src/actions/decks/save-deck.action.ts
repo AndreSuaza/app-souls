@@ -4,10 +4,84 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { AuthError } from "next-auth";
 import { SaveDeckSchema, type SaveDeckInput } from "@/schemas";
-import { isEncodedDecklist, normalizeEncodedDecklist } from "@/utils/decklist";
+import {
+  hasRawDecklistSeparators,
+  isEncodedDecklist,
+  normalizeEncodedDecklist,
+  parseEncodedDeckSegment,
+} from "@/utils/decklist";
 import { ZodError } from "zod";
 
 const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
+const MAX_TOKEN_DECK_CARDS = 10;
+
+const normalizeTypeName = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const isTokenTypeName = (value: string) => {
+  const normalized = normalizeTypeName(value);
+  return normalized === "ficha" || normalized === "token";
+};
+
+async function validateTokenDeck(rawDecklist?: string | null) {
+  const normalized = normalizeEncodedDecklist(rawDecklist ?? "");
+  if (!normalized) return { normalized: "", count: 0 };
+  if (hasRawDecklistSeparators(normalized)) {
+    return {
+      error: "El formato del mazo de fichas no es valido.",
+      normalized: "",
+      count: 0,
+    };
+  }
+
+  const entries = parseEncodedDeckSegment(normalized);
+  const tokenCardsNumber = entries.reduce((acc, entry) => acc + entry.count, 0);
+
+  if (tokenCardsNumber > MAX_TOKEN_DECK_CARDS) {
+    return {
+      error: "El mazo de fichas no puede superar 10 cartas.",
+      normalized: "",
+      count: tokenCardsNumber,
+    };
+  }
+
+  if (entries.length === 0) return { normalized: "", count: 0 };
+
+  const keys = Array.from(new Set(entries.map((entry) => entry.key)));
+  const cards = await prisma.card.findMany({
+    where: {
+      OR: [{ code: { in: keys } }, { idd: { in: keys } }],
+    },
+    include: {
+      types: { select: { name: true } },
+    },
+  });
+  const cardByKey = new Map<string, (typeof cards)[number]>();
+  cards.forEach((card) => {
+    cardByKey.set(card.code, card);
+    cardByKey.set(card.idd, card);
+  });
+
+  const invalidEntry = entries.find((entry) => {
+    const card = cardByKey.get(entry.key);
+    if (!card) return true;
+    return !card.types.some((type) => isTokenTypeName(type.name));
+  });
+
+  if (invalidEntry) {
+    return {
+      error: "El mazo de fichas solo acepta cartas de tipo Ficha o Token.",
+      normalized: "",
+      count: tokenCardsNumber,
+    };
+  }
+
+  return { normalized, count: tokenCardsNumber };
+}
 
 export async function saveDeck(input: SaveDeckInput) {
   try {
@@ -29,6 +103,15 @@ export async function saveDeck(input: SaveDeckInput) {
         success: false,
         message:
           "Error en la sesi\u00f3n activa. Por favor, vuelva a iniciar sesi\u00f3n para continuar",
+      };
+    }
+
+    const tokenDeckValidation = await validateTokenDeck(data.tokenDeckList);
+
+    if (tokenDeckValidation.error) {
+      return {
+        success: false,
+        message: tokenDeckValidation.error,
       };
     }
 
@@ -159,8 +242,10 @@ export async function saveDeck(input: SaveDeckInput) {
             archetypeId: data.archetypesId,
             imagen: data.imgDeck,
             cards: normalizedDeckList,
+            tokenCards: tokenDeckValidation.normalized || null,
             visible: resolvedVisible,
             cardsNumber: data.cardsNumber,
+            tokenCardsNumber: tokenDeckValidation.count,
             isAdminDeck: nextIsAdminDeck,
           },
         });
@@ -198,8 +283,10 @@ export async function saveDeck(input: SaveDeckInput) {
         archetypeId: data.archetypesId,
         imagen: data.imgDeck,
         cards: normalizedDeckList,
+        tokenCards: tokenDeckValidation.normalized || null,
         visible: isAdminDeck ? false : data.visible,
         cardsNumber: data.cardsNumber,
+        tokenCardsNumber: tokenDeckValidation.count,
         isAdminDeck,
       },
     });

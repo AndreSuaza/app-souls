@@ -12,6 +12,7 @@ interface Props {
   deck: Deck;
   mainDeck: Decklist[];
   sideDeck: Decklist[];
+  tokenDeck?: Decklist[];
   hasSession: boolean;
   archetypes: ArchetypeOption[];
   isOwner: boolean;
@@ -61,6 +62,7 @@ export const DeckDetailView = ({
   deck,
   mainDeck,
   sideDeck,
+  tokenDeck = [],
   hasSession,
   archetypes,
   isOwner,
@@ -78,6 +80,9 @@ export const DeckDetailView = ({
   );
   const [deckListSide, setDeckListSide] = useState<Decklist[]>(() => [
     ...sideDeck,
+  ]);
+  const [deckListToken, setDeckListToken] = useState<Decklist[]>(() => [
+    ...tokenDeck,
   ]);
   const [isFinderCollapsed, setIsFinderCollapsed] = useState(false);
   const pathname = usePathname();
@@ -167,6 +172,7 @@ export const DeckDetailView = ({
     setDeckListMain([]);
     setDeckListLimbo([]);
     setDeckListSide([]);
+    setDeckListToken([]);
   };
 
   const query = searchParams?.toString();
@@ -178,6 +184,7 @@ export const DeckDetailView = ({
         deckListMain={deckListMain}
         deckListLimbo={deckListLimbo}
         deckListSide={deckListSide}
+        deckListToken={deckListToken}
         clearDecklist={clearDecklist}
         isFinderCollapsed={isFinderCollapsed}
         onToggleFinderCollapse={() => setIsFinderCollapsed((prev) => !prev)}
@@ -206,6 +213,7 @@ export const DeckDetailView = ({
           deckListMain={deckListMain}
           deckListLimbo={deckListLimbo}
           deckListSide={deckListSide}
+          deckListToken={deckListToken}
           addCard={addCard}
           dropCard={dropCard}
           addCardSide={addCardSideDeck}

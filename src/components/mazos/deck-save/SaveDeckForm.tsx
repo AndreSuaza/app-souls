@@ -25,8 +25,10 @@ interface InitialValues {
 
 interface Props {
   deck: string;
+  tokenDeck?: string;
   imgDeck: string;
   mainDeckCount?: number;
+  tokenDeckCount?: number;
   onClose?: () => void;
   deckId?: string;
   initialValues?: InitialValues;
@@ -43,8 +45,10 @@ const SIN_ARQUETIPO_ID = "67c5d1595d56151173f8f23b";
 
 export const SaveDeckForm = ({
   deck,
+  tokenDeck = "",
   imgDeck,
   mainDeckCount = 0,
+  tokenDeckCount = 0,
   onClose,
   deckId,
   initialValues,
@@ -134,8 +138,10 @@ export const SaveDeckForm = ({
           ...data,
           archetypesId: resolvedArchetypeId,
           deckList: deck,
+          tokenDeckList: tokenDeck,
           imgDeck,
           cardsNumber: mainDeckCount,
+          tokenCardsNumber: tokenDeckCount,
           visible: resolvedVisible,
           deckId: resolvedDeckId,
           isAdminDeck,

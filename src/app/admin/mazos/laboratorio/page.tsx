@@ -2,6 +2,7 @@ import {
   getDeckById,
   getDeckFiltersAction,
   getDecksByIds,
+  getTokenDeckByIds,
   getPaginatedCards,
   getPropertiesCards,
 } from "@/actions";
@@ -83,13 +84,17 @@ export default async function Page({ searchParams }: Props) {
     decklistCards = deckUser.cards ?? decklist;
   }
 
-  const { mainDeck } = await getDecksByIds(decklistCards);
+  const [{ mainDeck }, tokenDeck] = await Promise.all([
+    getDecksByIds(decklistCards),
+    getTokenDeckByIds(deckUser?.tokenCards),
+  ]);
 
   return (
     <DeckCreator
       cards={cards}
       propertiesCards={propertiesCards}
       mainDeck={mainDeck}
+      tokenDeck={tokenDeck}
       sideDeck={[]}
       totalPages={totalPage}
       totalCards={totalCount}

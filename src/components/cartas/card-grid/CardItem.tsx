@@ -52,6 +52,14 @@ export const CardItem = ({
   const legendaryBadgeValue =
     typeof count === "number" ? count : shouldHighlightLegendary ? 1 : null;
   const imageSrc = resolveCardImageUrl(card);
+  const isTokenCard = card.types.some((type) => {
+    const normalized = type.name
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    return normalized === "ficha" || normalized === "token";
+  });
 
   return (
     <div
@@ -133,7 +141,7 @@ export const CardItem = ({
                   >
                     <IoAddCircleOutline className="h-5 w-5" />
                   </button>
-                  {addCardSidedeck && (
+                  {addCardSidedeck && !isTokenCard && (
                     <button
                       type="button"
                       className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white/40 text-sky-600 shadow-sm backdrop-blur transition hover:border-purple-400 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80 dark:text-sky-200"

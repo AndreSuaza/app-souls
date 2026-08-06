@@ -44,7 +44,7 @@ export const safeDecodeDeckToken = (value: string) => {
   }
 };
 
-const serializeDeckSegment = (entries: DecklistCodeEntry[]) =>
+export const serializeEncodedDeckSegment = (entries: DecklistCodeEntry[]) =>
   entries
     .filter((entry) => entry.code.trim().length > 0 && entry.count > 0)
     .map(
@@ -57,7 +57,7 @@ export const serializeEncodedDecklist = (
   mainEntries: DecklistCodeEntry[],
   sideEntries: DecklistCodeEntry[],
 ) =>
-  `${serializeDeckSegment(mainEntries)}${ENCODED_SECTION_SEPARATOR}${serializeDeckSegment(sideEntries)}`;
+  `${serializeEncodedDeckSegment(mainEntries)}${ENCODED_SECTION_SEPARATOR}${serializeEncodedDeckSegment(sideEntries)}`;
 
 export const encodeDecklistForQueryParam = (decklist: string) =>
   encodeURIComponent(decklist);

@@ -32,6 +32,7 @@ import {
 } from "@/actions";
 import {
   encodeDecklistForQueryParam,
+  serializeEncodedDeckSegment,
   serializeEncodedDecklist,
 } from "@/utils/decklist";
 import { resolveCardImageUrl } from "@/utils/card-image";
@@ -45,6 +46,7 @@ interface Props {
   deckListMain: Decklist[];
   deckListLimbo: Decklist[];
   deckListSide: Decklist[];
+  deckListToken: Decklist[];
   clearDecklist: () => void;
   isFinderCollapsed: boolean;
   onToggleFinderCollapse: () => void;
@@ -76,6 +78,7 @@ export const OptionsDeckCreator = ({
   deckListMain,
   deckListLimbo,
   deckListSide,
+  deckListToken,
   clearDecklist,
   isFinderCollapsed,
   onToggleFinderCollapse,
@@ -229,6 +232,15 @@ export const OptionsDeckCreator = ({
     return serializeEncodedDecklist(mainEntries, sideEntries);
   };
 
+  const tokenDeckListText = () => {
+    const tokenEntries = deckListToken.map((deck) => ({
+      code: deck.card.code,
+      count: deck.count,
+    }));
+
+    return serializeEncodedDeckSegment(tokenEntries);
+  };
+
   const deckShareUrl = () => {
     const deckCode = deckListText();
     // El query param se codifica otra vez para que searchParams entregue `%3A/%3B/%7C`.
@@ -245,6 +257,7 @@ export const OptionsDeckCreator = ({
   };
 
   const mainDeckCount = deckListMain.reduce((acc, deck) => acc + deck.count, 0);
+  const tokenDeckCount = deckListToken.reduce((acc, deck) => acc + deck.count, 0);
 
   const createCodeDeck = () => {
     // Actualizar estados
@@ -385,6 +398,8 @@ export const OptionsDeckCreator = ({
           visible: forcePrivateSave ? false : (deckData.visible ?? false),
           cardsNumber: mainDeckCount,
           deckList: deckListText(),
+          tokenCardsNumber: tokenDeckCount,
+          tokenDeckList: tokenDeckListText(),
           imgDeck: deckImage(),
           deckId: deckData.id,
           isAdminDeck,
@@ -706,8 +721,10 @@ export const OptionsDeckCreator = ({
             <div className="overflow-auto">
               <SaveDeckForm
                 deck={deckListText()}
+                tokenDeck={tokenDeckListText()}
                 imgDeck={deckImage()}
                 mainDeckCount={mainDeckCount}
+                tokenDeckCount={tokenDeckCount}
                 onClose={() => setShowSaveDeck(false)}
                 deckId={resolvedDeckId}
                 initialValues={saveInitialValues ?? undefined}

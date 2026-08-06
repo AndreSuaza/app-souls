@@ -224,12 +224,12 @@ const getCardsByIds = async (ids: string) => {
 };
 
 export const getDecksByIds = async (ids?: string) => {
-  if (!ids) return { mainDeck: [], sideDeck: [] };
+  if (!ids) return { mainDeck: [], sideDeck: [], tokenDeck: [] };
 
   const normalizedIds = normalizeEncodedDecklist(ids);
   if (!normalizedIds || hasRawDecklistSeparators(normalizedIds)) {
     // Aceptamos exclusivamente separadores ASCII codificados (%3A/%3B/%7C).
-    return { mainDeck: [], sideDeck: [] };
+    return { mainDeck: [], sideDeck: [], tokenDeck: [] };
   }
 
   // Dividimos en [main, side] con el separador codificado.
@@ -243,5 +243,16 @@ export const getDecksByIds = async (ids?: string) => {
     getCardsByIds(sideIds),
   ]);
 
-  return { mainDeck, sideDeck };
+  return { mainDeck, sideDeck, tokenDeck: [] };
+};
+
+export const getTokenDeckByIds = async (ids?: string | null) => {
+  if (!ids) return [];
+
+  const normalizedIds = normalizeEncodedDecklist(ids);
+  if (!normalizedIds || hasRawDecklistSeparators(normalizedIds)) {
+    return [];
+  }
+
+  return getCardsByIds(normalizedIds);
 };

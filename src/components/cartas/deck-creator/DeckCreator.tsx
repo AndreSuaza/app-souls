@@ -39,6 +39,7 @@ interface Props {
   perPage?: number;
   mainDeck?: Decklist[];
   sideDeck?: Decklist[];
+  tokenDeck?: Decklist[];
   className?: string;
   initialFilters?: PaginationFilters;
   initialPage?: number;
@@ -171,6 +172,19 @@ const dropCardDecklistUnlimited = (
   return dropCardLogicUnlimited(deckListSelected, cardfound, cardSeleted);
 };
 
+const normalizeTypeName = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const isTokenCard = (card: Card) =>
+  card.types.some((type) => {
+    const normalized = normalizeTypeName(type.name);
+    return normalized === "ficha" || normalized === "token";
+  });
+
 export const DeckCreator = ({
   cards,
   propertiesCards,
@@ -179,6 +193,7 @@ export const DeckCreator = ({
   perPage,
   mainDeck,
   sideDeck,
+  tokenDeck,
   initialFilters,
   initialPage = 1,
   className,
@@ -215,6 +230,7 @@ export const DeckCreator = ({
   const [deckListMain, setDeckListMain] = useState<Decklist[]>([]);
   const [deckListLimbo, setDeckListLimbo] = useState<Decklist[]>([]);
   const [deckListSide, setDeckListSide] = useState<Decklist[]>([]);
+  const [deckListToken, setDeckListToken] = useState<Decklist[]>([]);
   // Controla el colapso del panel de busqueda para pantallas grandes.
   const [isFinderCollapsed, setIsFinderCollapsed] = useState(false);
   // Evita transiciones costosas mientras se alterna la vista de pantalla completa.
@@ -249,13 +265,19 @@ export const DeckCreator = ({
       manualRefreshRef.current = manualRefreshKey;
     }
     const hasIncomingDeck =
-      (mainDeck?.length ?? 0) > 0 || (sideDeck?.length ?? 0) > 0;
+      (mainDeck?.length ?? 0) > 0 ||
+      (sideDeck?.length ?? 0) > 0 ||
+      (tokenDeck?.length ?? 0) > 0;
     const nextSignature = JSON.stringify({
       main: (mainDeck ?? []).map((item) => ({
         id: item.card.id,
         count: item.count,
       })),
       side: (sideDeck ?? []).map((item) => ({
+        id: item.card.id,
+        count: item.count,
+      })),
+      token: (tokenDeck ?? []).map((item) => ({
         id: item.card.id,
         count: item.count,
       })),
@@ -292,6 +314,7 @@ export const DeckCreator = ({
         setDeckListMain(sortDecklistByTypeOrder(Array.from(combinedMap.values())));
         setDeckListLimbo([]);
         setDeckListSide([]);
+        setDeckListToken(sortDecklistByTypeOrder(tokenDeck ?? []));
         hasImportedRef.current = true;
         hideLoading();
         return;
@@ -300,6 +323,7 @@ export const DeckCreator = ({
       setDeckListMain(sortDecklistByTypeOrder(mainDeck ?? []));
       setDeckListLimbo([]);
       setDeckListSide(sortDecklistByTypeOrder(sideDeck ?? []));
+      setDeckListToken(sortDecklistByTypeOrder(tokenDeck ?? []));
       hasImportedRef.current = true;
       hideLoading();
       return;
@@ -329,6 +353,13 @@ export const DeckCreator = ({
       if (sideCount <= 40) setDeckListSide(sortedSide);
     }
 
+    if (tokenDeck) {
+      const sortedToken = sortDecklistByTypeOrder([...tokenDeck]);
+      const tokenCount = sortedToken.reduce((acc, deck) => acc + deck.count, 0);
+
+      if (tokenCount <= 10) setDeckListToken(sortedToken);
+    }
+
     hasImportedRef.current = true;
     // Oculta el overlay cuando el mazo seleccionado ya fue importado.
     hideLoading();
@@ -336,6 +367,7 @@ export const DeckCreator = ({
     deckData?.cardsNumber,
     mainDeck,
     sideDeck,
+    tokenDeck,
     hideLoading,
     manualRefreshKey,
     disableDeckRules,
@@ -419,12 +451,18 @@ export const DeckCreator = ({
         main: countIn(deckListMain),
         limbo: countIn(deckListLimbo),
         side: countIn(deckListSide),
+        token: countIn(deckListToken),
       };
     },
-    [deckListMain, deckListLimbo, deckListSide],
+    [deckListMain, deckListLimbo, deckListSide, deckListToken],
   );
 
   const addCard = (cardSeleted: Card) => {
+    if (!singleDeck && isTokenCard(cardSeleted)) {
+      addCardTokenDeck(cardSeleted);
+      return;
+    }
+
     const isLimboByType = cardSeleted.types.some((type) => type.name === "Limbo");
     const existsInMain = deckListMain.some(
       (cardDeck) => cardDeck.card.name === cardSeleted.name,
@@ -601,10 +639,30 @@ export const DeckCreator = ({
     }
   };
 
+  const addCardTokenDeck = (cardSeleted: Card) => {
+    if (singleDeck || !isTokenCard(cardSeleted)) return;
+    const tokenCount = deckListToken.reduce((acc, deck) => acc + deck.count, 0);
+    if (tokenCount >= 10) return;
+
+    const result = addCardDecklistUnlimited(deckListToken, cardSeleted);
+    if (result) {
+      setDeckListToken(result);
+    }
+  };
+
+  const dropCardTokenDeck = (cardSeleted: Card) => {
+    if (singleDeck) return;
+    const result = dropCardDecklistUnlimited(deckListToken, cardSeleted);
+    if (result) {
+      setDeckListToken(result);
+    }
+  };
+
   const clearDecklist = () => {
     setDeckListMain([]);
     setDeckListLimbo([]);
     setDeckListSide([]);
+    setDeckListToken([]);
   };
 
   const sortMainDeck = useCallback(() => {
@@ -617,6 +675,10 @@ export const DeckCreator = ({
 
   const sortSideDeck = useCallback(() => {
     setDeckListSide((prev) => sortDecklistByTypeOrder(prev));
+  }, []);
+
+  const sortTokenDeck = useCallback(() => {
+    setDeckListToken((prev) => sortDecklistByTypeOrder(prev));
   }, []);
 
   const openDetail = useCallback((cardsList: Card[], index: number) => {
@@ -632,7 +694,8 @@ export const DeckCreator = ({
   const totalCardsInDecks =
     deckListMain.reduce((acc, deck) => acc + deck.count, 0) +
     deckListLimbo.reduce((acc, deck) => acc + deck.count, 0) +
-    deckListSide.reduce((acc, deck) => acc + deck.count, 0);
+    deckListSide.reduce((acc, deck) => acc + deck.count, 0) +
+    deckListToken.reduce((acc, deck) => acc + deck.count, 0);
   // El guardado para dueños depende de la ventana de edición de torneo,
   // pero para no dueños debe permitirse clonar/guardar siempre que el mazo sea público.
   const canSaveAsOwnDeck = isOwnerDeck
@@ -651,8 +714,9 @@ export const DeckCreator = ({
     addCounts(deckListMain);
     addCounts(deckListLimbo);
     addCounts(deckListSide);
+    addCounts(deckListToken);
     return totals;
-  }, [deckListMain, deckListLimbo, deckListSide]);
+  }, [deckListMain, deckListLimbo, deckListSide, deckListToken]);
 
   const hasBulkFilters = useMemo(
     () =>
@@ -766,6 +830,7 @@ export const DeckCreator = ({
               deckListMain={deckListMain}
               deckListLimbo={deckListLimbo}
               deckListSide={deckListSide}
+              deckListToken={deckListToken}
               clearDecklist={clearDecklist}
               isFinderCollapsed={isFinderCollapsed}
               onToggleFinderCollapse={handleToggleFinderCollapse}
@@ -794,10 +859,13 @@ export const DeckCreator = ({
             deckListMain={deckListMain}
             deckListLimbo={deckListLimbo}
             deckListSide={deckListSide}
+            deckListToken={deckListToken}
             addCard={addCard}
             dropCard={dropCard}
             addCardSide={singleDeck ? undefined : addCardSideDeck}
             dropCardSide={singleDeck ? undefined : dropCardSideDeck}
+            addCardToken={singleDeck ? undefined : addCardTokenDeck}
+            dropCardToken={singleDeck ? undefined : dropCardTokenDeck}
             columnsLg={isFinderCollapsed ? 6 : 4}
             columnsXl={isFinderCollapsed ? 8 : 4}
             onOpenDetail={openDetail}
@@ -809,6 +877,7 @@ export const DeckCreator = ({
             onSortMainDeck={sortMainDeck}
             onSortLimboDeck={sortLimboDeck}
             onSortSideDeck={sortSideDeck}
+            onSortTokenDeck={sortTokenDeck}
           />
           <div className="h-6" aria-hidden />
         </div>

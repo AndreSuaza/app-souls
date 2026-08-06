@@ -12,10 +12,13 @@ interface Props {
   deckListMain: Decklist[];
   deckListLimbo: Decklist[];
   deckListSide: Decklist[];
+  deckListToken?: Decklist[];
   dropCard?: (c: Card) => void;
   addCard?: (c: Card) => void;
   dropCardSide?: (c: Card) => void;
   addCardSide?: (c: Card) => void;
+  dropCardToken?: (c: Card) => void;
+  addCardToken?: (c: Card) => void;
   columnsLg?: number;
   columnsXl?: number;
   onOpenDetail?: (cards: Card[], index: number) => void;
@@ -28,6 +31,7 @@ interface Props {
   onSortMainDeck?: () => void;
   onSortLimboDeck?: () => void;
   onSortSideDeck?: () => void;
+  onSortTokenDeck?: () => void;
 }
 
 const GRID_CARD_MIN_WIDTH = 150;
@@ -37,10 +41,13 @@ export const ShowDeck = ({
   deckListMain,
   deckListLimbo,
   deckListSide,
+  deckListToken = [],
   dropCard,
   addCard,
   dropCardSide,
   addCardSide,
+  dropCardToken,
+  addCardToken,
   columnsLg = 4,
   columnsXl = 6,
   onOpenDetail,
@@ -53,6 +60,7 @@ export const ShowDeck = ({
   onSortMainDeck,
   onSortLimboDeck,
   onSortSideDeck,
+  onSortTokenDeck,
 }: Props) => {
   const gridWrapperRef = useRef<HTMLDivElement | null>(null);
   const [autoColumns, setAutoColumns] = useState<number | null>(null);
@@ -61,6 +69,7 @@ export const ShowDeck = ({
     limbo: true,
     main: true,
     side: true,
+    token: true,
   });
 
   // Calcula estadisticas por seccion para mostrar los contadores.
@@ -143,12 +152,21 @@ export const ShowDeck = ({
       autoSortByType ? sortDecklistByTypeOrder(deckListSide) : [...deckListSide],
     [autoSortByType, deckListSide],
   );
+  const tokenDeck = useMemo(
+    () =>
+      autoSortByType
+        ? sortDecklistByTypeOrder(deckListToken)
+        : [...deckListToken],
+    [autoSortByType, deckListToken],
+  );
   const limboCards = limboDeck.map((deck) => deck.card);
   const mainCards = mainDeck.map((deck) => deck.card);
   const sideCards = sideDeck.map((deck) => deck.card);
+  const tokenCards = tokenDeck.map((deck) => deck.card);
   const limboCount = deckListLimbo.reduce((acc, deck) => acc + deck.count, 0);
   const mainCount = deckListMain.reduce((acc, deck) => acc + deck.count, 0);
   const sideCount = deckListSide.reduce((acc, deck) => acc + deck.count, 0);
+  const tokenCount = deckListToken.reduce((acc, deck) => acc + deck.count, 0);
   // Mapa de conteos para renderizar los badges del mazo en CardGrid.
   const limboCounts = limboDeck.reduce<Record<string, number>>((acc, deck) => {
     acc[deck.card.id] = deck.count;
@@ -159,6 +177,10 @@ export const ShowDeck = ({
     return acc;
   }, {});
   const sideCounts = sideDeck.reduce<Record<string, number>>((acc, deck) => {
+    acc[deck.card.id] = deck.count;
+    return acc;
+  }, {});
+  const tokenCounts = tokenDeck.reduce<Record<string, number>>((acc, deck) => {
     acc[deck.card.id] = deck.count;
     return acc;
   }, {});
@@ -188,6 +210,13 @@ export const ShowDeck = ({
       header: "border-b-sky-200/80 dark:border-b-sky-500/30",
       title: "text-sky-600 dark:text-sky-300",
       chevron: "text-sky-500 dark:text-sky-300",
+    },
+    token: {
+      container:
+        "border-emerald-200/80 border-l-emerald-500 shadow-[inset_4px_0_10px_rgba(16,185,129,0.18)] dark:border-emerald-500/30 dark:border-l-emerald-400 dark:shadow-[inset_4px_0_12px_rgba(16,185,129,0.28)]",
+      header: "border-b-emerald-200/80 dark:border-b-emerald-500/30",
+      title: "text-emerald-600 dark:text-emerald-300",
+      chevron: "text-emerald-500 dark:text-emerald-300",
     },
   };
   // const statsWrapperClass = "flex flex-wrap items-center gap-2 min-w-0";
@@ -401,6 +430,52 @@ export const ShowDeck = ({
             dropCard={allowEdit ? dropCardSide : undefined}
             showDeckActions
             cardCounts={sideCounts}
+            showEmptyState={false}
+            onOpenDetail={onOpenDetail}
+            highlightLegendaryCount={highlightLegendaryCount}
+          />
+        )}
+      </DeckSection>
+
+      <DeckSection
+        title="Mazo de fichas"
+        count={tokenCount}
+        isOpen={sectionsOpen.token}
+        ariaLabel="Mostrar u ocultar mazo de fichas"
+        onToggle={() => toggleSection("token")}
+        containerClassName={clsx(
+          sectionBaseContainerClass,
+          sectionStyles.token.container,
+        )}
+        headerClassName={clsx(
+          sectionBaseHeaderClass,
+          sectionStyles.token.header,
+        )}
+        titleClassName={sectionStyles.token.title}
+        chevronClassName={sectionStyles.token.chevron}
+        countClassName={clsx(
+          "rounded-md border bg-transparent px-2 py-0.5 text-[10px] font-semibold shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-muted/80",
+          sectionStyles.token.title,
+          "border-emerald-300/70 dark:border-tournament-dark-border",
+        )}
+        headerActions={renderSortAction(
+          "Ordenar mazo de fichas por tipo",
+          onSortTokenDeck,
+          tokenDeck.length === 0,
+        )}
+        titleWrapperClassName="flex flex-1 flex-wrap items-center gap-2 min-w-0"
+        bodyClassName={sectionBodyClass}
+      >
+        {sectionsOpen.token && autoColumns !== null && (
+          <CardGrid
+            cards={tokenCards}
+            autoColumns={autoColumns ?? undefined}
+            lgColumns={columnsLg}
+            xlColumns={columnsXl}
+            addCard={allowEdit ? addCardToken : undefined}
+            dropCard={allowEdit ? dropCardToken : undefined}
+            showDeckActions
+            cardCounts={tokenCounts}
             showEmptyState={false}
             onOpenDetail={onOpenDetail}
             highlightLegendaryCount={highlightLegendaryCount}
