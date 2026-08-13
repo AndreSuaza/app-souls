@@ -9,6 +9,22 @@ export const runtime = "nodejs";
 
 const getToken = (request: Request) => request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
 const mongoObjectIdPattern = /^[a-f\d]{24}$/i;
+const trailingMongoObjectIdPattern = /-([a-f\d]{24})$/i;
+
+const expandCardLookupKeys = (keys: string[]) =>
+  Array.from(
+    new Set(
+      keys.flatMap((key) => {
+        const trimmedKey = key.trim();
+        if (!trimmedKey) return [];
+        const trailingObjectId = trailingMongoObjectIdPattern.exec(trimmedKey)?.[1];
+        return [
+          trimmedKey,
+          ...(trailingObjectId ? [trailingObjectId, trimmedKey.slice(0, -trailingObjectId.length - 1)] : []),
+        ].filter(Boolean);
+      }),
+    ),
+  );
 
 export async function OPTIONS(request: Request) {
   return simulatorOptionsResponse(request, "GET, OPTIONS");
@@ -41,13 +57,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!deck) return NextResponse.json({ error: "Mazo no encontrado." }, { status: 404, headers });
 
   const parsedDeck = toSimulatorDeckDto(deck);
-  const cardKeys = Array.from(
+  const cardKeys = expandCardLookupKeys(Array.from(
     new Set(
-      [...parsedDeck.mainDeck, ...parsedDeck.limboDeck, ...parsedDeck.tokenDeck].map(
+      [...parsedDeck.mainDeck, ...parsedDeck.soulDeck, ...parsedDeck.limboDeck, ...parsedDeck.tokenDeck].map(
         (entry) => entry.cardId,
       ),
     ),
-  );
+  ));
   const cardObjectIds = cardKeys.filter((key) =>
     mongoObjectIdPattern.test(key),
   );

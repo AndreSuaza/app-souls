@@ -31,7 +31,12 @@ const countDeckEntries = (entries: { count: number }[]) =>
 const cardDeckKeys = (card: SimulatorCardSource) =>
   Array.from(
     new Set(
-      [card.id, card.code, card.idd]
+      [
+        card.id,
+        card.code,
+        card.idd,
+        card.code && card.idd ? `${card.code}-${card.idd}` : undefined,
+      ]
         .map((value) => value?.trim())
         .filter((value): value is string => Boolean(value)),
     ),
@@ -86,9 +91,14 @@ const splitMainAndLimboEntries = (
     ? Math.max(0, Math.trunc(expectedMainCount as number))
     : 0;
   const mappedEntries = entries.map((entry) => ({
-    cardId: cardByDeckKey.get(entry.cardId)?.id ?? entry.cardId,
+    cardId:
+      cardByDeckKey.get(entry.cardId)?.id ??
+      cardByDeckKey.get(entry.cardId.toLowerCase())?.id ??
+      entry.cardId,
     count: entry.count,
-    sourceCard: cardByDeckKey.get(entry.cardId),
+    sourceCard:
+      cardByDeckKey.get(entry.cardId) ??
+      cardByDeckKey.get(entry.cardId.toLowerCase()),
   }));
   const splitByExpectedCount = () => {
     const mainDeck: { cardId: string; count: number }[] = [];
@@ -159,7 +169,10 @@ export const toSimulatorDeckDto = (
   const soulDeck: { cardId: string; count: number }[] = [];
   const cardByDeckKey = new Map<string, SimulatorCardSource>();
   cards.forEach((card) => {
-    cardDeckKeys(card).forEach((key) => cardByDeckKey.set(key, card));
+    cardDeckKeys(card).forEach((key) => {
+      cardByDeckKey.set(key, card);
+      cardByDeckKey.set(key.toLowerCase(), card);
+    });
   });
   const { mainDeck, limboDeck } = splitMainAndLimboEntries(
     playDeck,
