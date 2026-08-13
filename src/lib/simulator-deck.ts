@@ -42,6 +42,19 @@ const cardDeckKeys = (card: SimulatorCardSource) =>
     ),
   );
 
+export const toSimulatorCardDto = (card: SimulatorCardSource) => ({
+  id: card.id,
+  code: card.code,
+  aliases: cardDeckKeys(card),
+  name: card.name,
+  types: toSimulatorCardTypes(card.types),
+  cost: card.cost,
+  ...(card.force ? { force: card.force } : {}),
+  ...(card.defense ? { defense: card.defense } : {}),
+  effect: card.effect,
+  ...(card.imageUrl ? { imageUrl: card.imageUrl } : {}),
+});
+
 const normalizeTypeName = (value: string) =>
   value
     .trim()
@@ -188,18 +201,7 @@ export const toSimulatorDeckDto = (
     soulDeck,
     limboDeck,
     tokenDeck,
-    cards: cards.map((card) => ({
-      id: card.id,
-      code: card.code,
-      aliases: cardDeckKeys(card),
-      name: card.name,
-      types: toSimulatorCardTypes(card.types),
-      cost: card.cost,
-      ...(card.force ? { force: card.force } : {}),
-      ...(card.defense ? { defense: card.defense } : {}),
-      effect: card.effect,
-      ...(card.imageUrl ? { imageUrl: card.imageUrl } : {}),
-    })),
+    cards: cards.map(toSimulatorCardDto),
     mainDeckCount: countDeckEntries(mainDeck),
     soulDeckCount: 0,
     limboDeckCount: countDeckEntries(limboDeck),
