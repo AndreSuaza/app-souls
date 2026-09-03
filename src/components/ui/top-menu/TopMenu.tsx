@@ -22,6 +22,13 @@ import { getAvatarUrl } from "@/utils/avatar-image";
 
 const visibleRoutes = Routes.filter((route) => route.name !== "");
 
+const routeItemClassName = (route: Route) =>
+  `relative flex h-full items-center px-3 text-sm font-black uppercase tracking-wide transition xl:px-4 ${
+    route.navTone === "gold"
+      ? "text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.18)] hover:text-yellow-200 hover:drop-shadow-[0_0_14px_rgba(253,224,71,0.32)]"
+      : "hover:text-yellow-400"
+  }`;
+
 export const TopMenu = () => {
   const isSideMenuOpen = useUIStore((state) => state.isSideMenuOpen);
   const openMenu = useUIStore((state) => state.openSideMenu);
@@ -181,7 +188,7 @@ export const TopMenu = () => {
                       onClick={(event) =>
                         handleRouteClick(route, event.currentTarget)
                       }
-                      className="relative flex h-full items-center px-3 text-sm font-black uppercase tracking-wide transition hover:text-yellow-400 xl:px-4"
+                      className={routeItemClassName(route)}
                     >
                       {route.name}
                     </button>
@@ -189,7 +196,7 @@ export const TopMenu = () => {
                     <Link
                       href={route.path ?? "/"}
                       title={`Ir a ${route.name}`}
-                      className="relative flex h-full items-center px-3 text-sm font-black uppercase tracking-wide transition hover:text-yellow-400 xl:px-4"
+                      className={routeItemClassName(route)}
                       onMouseEnter={() => closeRouteMenu()}
                     >
                       {route.name}

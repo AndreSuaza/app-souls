@@ -6,7 +6,9 @@ import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 
 export const Footer = () => {
   const navigationLinks = Routes.filter((route) =>
-    ["Juega Souls", "Noticias", "Productos", "Tiendas"].includes(route.name),
+    ["Juega Souls", "Noticias", "Productos", "Tiendas", "Eventos"].includes(
+      route.name,
+    ),
   );
   const resourceLinks = Routes.filter((route) =>
     ["Cartas", "Productos", "Tiendas"].includes(route.name),

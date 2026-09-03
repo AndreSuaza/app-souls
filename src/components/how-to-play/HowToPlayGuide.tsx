@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   FiBookOpen,
   FiCircle,
   FiClock,
+  FiFileText,
   FiHeart,
   FiLayers,
   FiRefreshCw,
@@ -811,6 +813,35 @@ export const HowToPlayGuide = () => {
             <p className="mt-3 text-lg text-teal-700 dark:text-teal-200">
               Souls In Xtinction — Que el alma más fuerte gane.
             </p>
+            <div className="mx-auto mt-8 flex max-w-xl flex-col items-center justify-center gap-3 sm:flex-row">
+              {[
+                {
+                  href: "/manuales/manual-basico-six.pdf",
+                  label: "Manual básico",
+                },
+                {
+                  href: "/manuales/manual-avanzado-six.pdf",
+                  label: "Manual avanzado",
+                },
+              ].map((manual) => (
+                <Link
+                  key={manual.href}
+                  href={manual.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={`Abrir ${manual.label}`}
+                  className="group inline-flex w-full items-center justify-center gap-3 rounded-md border border-amber-400/55 bg-amber-300/10 px-5 py-3 text-sm font-black uppercase tracking-wide text-amber-700 transition hover:-translate-y-0.5 hover:border-amber-300 hover:bg-amber-300/20 hover:text-amber-600 dark:text-amber-200 dark:hover:text-amber-100 sm:w-auto"
+                >
+                  <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded border border-current">
+                    <FiFileText className="h-5 w-5" />
+                    <span className="absolute -bottom-1.5 rounded-sm bg-red-600 px-1 text-[8px] font-black leading-3 tracking-normal text-white">
+                      PDF
+                    </span>
+                  </span>
+                  {manual.label}
+                </Link>
+              ))}
+            </div>
           </section>
         </main>
       </div>

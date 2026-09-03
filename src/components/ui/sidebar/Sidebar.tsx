@@ -8,6 +8,7 @@ import clsx from "clsx";
 import {
   IoBagRemoveOutline,
   IoBookOutline,
+  IoCalendarOutline,
   IoChevronBackOutline,
   IoChevronForwardOutline,
   IoColorWandOutline,
@@ -65,9 +66,18 @@ export const Sidebar = () => {
     Mazos: IoLayers,
     Torneos: IoTrophyOutline,
     Productos: IoBagRemoveOutline,
+    Eventos: IoCalendarOutline,
     Tienda: IoColorWandOutline,
     Tiendas: IoStorefrontOutline,
   };
+
+  const routeLinkClassName = (route: (typeof visibleRoutes)[number]) =>
+    clsx(
+      "flex items-center gap-3 px-7 py-3 text-sm font-black uppercase tracking-wide transition",
+      route.navTone === "gold"
+        ? "text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.18)] hover:text-yellow-200 hover:drop-shadow-[0_0_14px_rgba(253,224,71,0.32)]"
+        : "hover:text-yellow-400",
+    );
 
   const activeRoute = useMemo(
     () =>
@@ -191,7 +201,7 @@ export const Sidebar = () => {
                       href={route.path ?? "/"}
                       title={`Ir a ${route.name}`}
                       onClick={handleClose}
-                      className="flex items-center gap-3 px-7 py-3 text-sm font-black uppercase tracking-wide transition hover:text-yellow-400"
+                      className={routeLinkClassName(route)}
                     >
                       {Icon && <Icon className="h-5 w-5 shrink-0" />}
                       {route.name}

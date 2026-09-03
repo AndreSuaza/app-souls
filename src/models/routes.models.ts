@@ -2,6 +2,7 @@ export interface Route {
   name: string;
   path?: string;
   menu?: Route[];
+  navTone?: "gold";
 }
 
 export const Routes: Route[] = [
@@ -19,10 +20,6 @@ export const Routes: Route[] = [
       {
         path: "/torneos",
         name: "Torneos",
-      },
-      {
-        path: "/eventos",
-        name: "Eventos",
       },
       {
         path: "/jugadores",
@@ -58,5 +55,10 @@ export const Routes: Route[] = [
   {
     path: "/noticias",
     name: "Noticias",
+  },
+  {
+    path: "/eventos",
+    name: "Eventos",
+    navTone: "gold",
   },
 ];
