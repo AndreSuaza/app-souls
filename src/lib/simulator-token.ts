@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 export const SIMULATOR_TOKEN_TTL_SECONDS = 60 * 60 * 2;
 
 export interface SimulatorTokenPayload {
+  avatarUrl?: string;
   expiresAt: number;
   nickname: string;
   role: string;

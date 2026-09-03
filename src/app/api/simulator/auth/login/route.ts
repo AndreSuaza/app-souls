@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { simulatorCorsHeaders, simulatorOptionsResponse } from "@/lib/simulator-cors";
 import { createSimulatorToken, SIMULATOR_TOKEN_TTL_SECONDS } from "@/lib/simulator-token";
+import { getAvatarUrl } from "@/utils/avatar-image";
 import { normalizeEmail } from "@/utils/email";
 
 export const runtime = "nodejs";
@@ -22,15 +23,16 @@ export async function POST(request: Request) {
   try {
     const user = await prisma.user.findFirst({
       where: { email: { equals: normalizeEmail(parsed.data.email), mode: "insensitive" } },
-      select: { id: true, nickname: true, password: true, role: true, status: true },
+      select: { id: true, image: true, nickname: true, password: true, role: true, status: true },
     });
     if (!user || !user.password || user.status !== "active" || !(await bcrypt.compare(parsed.data.password, user.password))) {
       return NextResponse.json({ error: "Correo o contrasena incorrectos." }, { status: 401, headers });
     }
 
-    const token = createSimulatorToken({ userId: user.id, nickname: user.nickname, role: user.role });
+    const avatarUrl = getAvatarUrl(user.image);
+    const token = createSimulatorToken({ userId: user.id, nickname: user.nickname, role: user.role, avatarUrl });
     return NextResponse.json(
-      { token, expiresIn: SIMULATOR_TOKEN_TTL_SECONDS, user: { id: user.id, nickname: user.nickname, role: user.role } },
+      { token, expiresIn: SIMULATOR_TOKEN_TTL_SECONDS, user: { avatarUrl, id: user.id, nickname: user.nickname, role: user.role } },
       { headers },
     );
   } catch (error) {

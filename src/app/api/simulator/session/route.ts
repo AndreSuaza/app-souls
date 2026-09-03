@@ -16,7 +16,15 @@ export async function GET(request: Request) {
   if (!session) return NextResponse.json({ error: "Token de simulador invalido." }, { status: 401, headers });
 
   return NextResponse.json(
-    { user: { id: session.userId, nickname: session.nickname, role: session.role }, expiresAt: session.expiresAt },
+    {
+      user: {
+        avatarUrl: session.avatarUrl,
+        id: session.userId,
+        nickname: session.nickname,
+        role: session.role,
+      },
+      expiresAt: session.expiresAt,
+    },
     { headers },
   );
 }
