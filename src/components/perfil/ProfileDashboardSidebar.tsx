@@ -9,6 +9,7 @@ import {
   IoCloseOutline,
   IoHomeOutline,
   IoImagesOutline,
+  IoGiftOutline,
   IoLayersOutline,
   IoLockClosedOutline,
   IoPersonCircleOutline,
@@ -21,6 +22,7 @@ import { ButtonLogOut } from "../login/ButtonLogOut";
 
 export type ProfileDashboardSection =
   | "general"
+  | "battle-pass"
   | "avatar"
   | "banner"
   | "store"
@@ -41,6 +43,12 @@ const sidebarItems: SidebarItem[] = [
     label: "General",
     description: "Resumen",
     icon: IoHomeOutline,
+  },
+  {
+    id: "battle-pass",
+    label: "Pase",
+    description: "Recompensas",
+    icon: IoGiftOutline,
   },
   {
     id: "avatar",

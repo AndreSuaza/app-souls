@@ -6,6 +6,7 @@ export type MediaSectionKey =
   | "profile-avatars"
   | "profile-banners"
   | "profile-frames"
+  | "battle-pass-rewards"
   | "products"
   | "cards";
 
@@ -65,6 +66,13 @@ export const MEDIA_SECTION_CONFIG: Record<MediaSectionKey, MediaSectionConfig> =
       label: "Marcos de perfil",
       folder: "profile/frames",
       maxSizeMb: 2,
+      allowUpload: true,
+      allowDelete: true,
+    },
+    "battle-pass-rewards": {
+      label: "Recompensas de pase",
+      folder: "battle-pass/rewards",
+      maxSizeMb: 4,
       allowUpload: true,
       allowDelete: true,
     },

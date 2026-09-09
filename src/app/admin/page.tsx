@@ -61,6 +61,12 @@ export default function Page() {
                 Tienda
               </Link>
               <Link
+                href="/admin/pase-batalla"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
+              >
+                Pase de batalla
+              </Link>
+              <Link
                 href="/admin/usuarios"
                 className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
               >

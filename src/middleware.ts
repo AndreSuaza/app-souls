@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 
 const adminRoutes = ["/admin"];
 // rutas a las que el usuario con role store puede acceder
-const storeAllowedAdminRoutes = ["/admin/torneos"];
+const storeAllowedAdminRoutes = [
+  "/admin/torneos",
+  "/admin/pase-batalla/entregas-tienda",
+];
 // rutas a las que el usuario con role news puede acceder
 const newsAllowedAdminRoutes = ["/admin/noticias"];
 const protectedRoutes = ["/perfil"];

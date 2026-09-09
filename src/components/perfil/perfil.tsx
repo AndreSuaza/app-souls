@@ -36,9 +36,14 @@ import { ProfileGeneralSection } from "./ProfileGeneralSection";
 import { ProfileAvatarSection } from "./ProfileAvatarSection";
 import { ProfileActiveTournamentHeader } from "./ProfileActiveTournamentHeader";
 import { ProfileBannerSection } from "./ProfileBannerSection";
+import { ProfileBattlePassSection } from "./ProfileBattlePassSection";
 import { ProfileSectionHeader } from "./ProfileSectionHeader";
 import { ProfileSecuritySection } from "./ProfileSecuritySection";
 import { ProfileTournamentsSection } from "./ProfileTournamentsSection";
+import type {
+  ClaimBattlePassRewardResult,
+  PlayerBattlePassData,
+} from "@/actions/battle-pass/player-battle-pass.action";
 import type {
   DeckCounts,
   ProfileCosmeticItem,
@@ -56,7 +61,7 @@ const ProfileStoreSection = dynamic(() =>
 
 const addProfileCosmetic = (
   items: ProfileCosmeticItem[],
-  cosmetic: CosmeticStoreItem,
+  cosmetic: ProfileCosmeticItem,
 ) => {
   if (items.some((item) => item.id === cosmetic.id)) return items;
 
@@ -106,10 +111,12 @@ interface Props {
   tournaments: TournamentHistoryItem[];
   deckCounts: DeckCounts;
   cosmeticStoreData: CosmeticStoreData | null;
+  battlePassData: PlayerBattlePassData | null;
 }
 
 const sectionTitles: Record<ProfileDashboardSection, string> = {
   general: "Vista general",
+  "battle-pass": "Pase de batalla",
   avatar: "Avatar",
   banner: "Fondo del perfil",
   store: "Tienda",
@@ -119,6 +126,7 @@ const sectionTitles: Record<ProfileDashboardSection, string> = {
 };
 const sectionDescriptions: Record<ProfileDashboardSection, string> = {
   general: "Resumen público y estadísticas principales del jugador.",
+  "battle-pass": "Avanza jugando torneos y reclama recompensas gratuitas.",
   avatar: "Gestiona el avatar visible en tu perfil.",
   banner: "Selecciona el fondo principal que acompana tu perfil.",
   store: "Consulta tu saldo y accede a cosméticos canjeables.",
@@ -150,6 +158,7 @@ export const Pefil = ({
   tournaments,
   deckCounts,
   cosmeticStoreData,
+  battlePassData,
 }: Props) => {
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
@@ -185,6 +194,7 @@ export const Pefil = ({
   const [bannerItems, setBannerItems] = useState(banners);
   const [frameItems, setFrameItems] = useState(frames);
   const [storeData, setStoreData] = useState(initialStoreData);
+  const [battlePassState, setBattlePassState] = useState(battlePassData);
   const [victoryPoints, setVictoryPoints] = useState(
     user.victoryPoints ?? initialStoreData.victoryPoints,
   );
@@ -266,6 +276,10 @@ export const Pefil = ({
   useEffect(() => {
     setVictoryPoints(user.victoryPoints ?? initialStoreData.victoryPoints);
   }, [initialStoreData.victoryPoints, user.victoryPoints]);
+
+  useEffect(() => {
+    setBattlePassState(battlePassData);
+  }, [battlePassData]);
 
   const handleSelectAvatar = (avatar: ProfileCosmeticItem) => {
     setSelectedAvatar(getAvatarValue(avatar.imageUrl));
@@ -384,6 +398,19 @@ export const Pefil = ({
     setFrameItems((current) => addProfileCosmetic(current, cosmetic));
   };
 
+  const handleBattlePassClaim = (result: ClaimBattlePassRewardResult) => {
+    setVictoryPoints(result.victoryPoints);
+    const rewardAvatar = result.rewardAvatar;
+
+    if (rewardAvatar?.type === "AVATAR") {
+      setAvatarItems((current) => addProfileCosmetic(current, rewardAvatar));
+    }
+
+    if (rewardAvatar?.type === "BANNER") {
+      setBannerItems((current) => addProfileCosmetic(current, rewardAvatar));
+    }
+  };
+
   const matchesPlayed = user.matchesPlayed ?? 0;
   const eloPoints = user.eloPoints ?? 0;
   // Mantiene la misma formula de winrate usada en el ranking de /torneos.
@@ -397,7 +424,8 @@ export const Pefil = ({
   const hasTournamentTab =
     isPlayer &&
     Boolean(
-      activeTournamentState?.currentTournament || activeTournamentState?.lastTournament,
+      activeTournamentState?.currentTournament ||
+      activeTournamentState?.lastTournament,
     );
   const tournamentTabLabel = activeTournamentState?.currentTournament
     ? "Torneo actual"
@@ -537,6 +565,13 @@ export const Pefil = ({
               victoryPoints={victoryPoints}
               onSectionChange={handleSectionChange}
               onTabShortcut={handleTabShortcut}
+            />
+          )}
+
+          {activeSection === "battle-pass" && (
+            <ProfileBattlePassSection
+              initialData={battlePassState}
+              onClaim={handleBattlePassClaim}
             />
           )}
 
