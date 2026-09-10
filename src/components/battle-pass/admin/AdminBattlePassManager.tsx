@@ -22,7 +22,6 @@ import {
 } from "react-icons/io5";
 import { createProfileMediaAction } from "@/actions/profile/admin-profile-media.action";
 import {
-  createBattlePassAction,
   deleteBattlePassAction,
   deleteBattlePassLevelAction,
   fulfillBattlePassClaimAction,
@@ -31,7 +30,7 @@ import {
   getAdminBattlePassesAction,
   getBattlePassRewardOptionsAction,
   reorderBattlePassLevelsAction,
-  updateBattlePassAction,
+  upsertBattlePassWithBackgroundAction,
   upsertBattlePassLevelWithImageAction,
   type AdminBattlePassClaim,
   type AdminBattlePassDetail,
@@ -53,6 +52,7 @@ type PassFormState = {
   startsAt: string;
   endsAt: string;
   status: "DRAFT" | "ACTIVE" | "ARCHIVED";
+  backgroundImageUrl: string;
 };
 
 type LevelFormState = {
@@ -133,6 +133,7 @@ const EMPTY_PASS_FORM: PassFormState = {
   startsAt: "",
   endsAt: "",
   status: "DRAFT",
+  backgroundImageUrl: "",
 };
 
 const EMPTY_LEVEL_FORM: LevelFormState = {
@@ -904,9 +905,18 @@ export const AdminBattlePassManager = () => {
     [],
   );
   const [manualRewardImages, setManualRewardImages] = useState<string[]>([]);
+  const [passBackgroundImages, setPassBackgroundImages] = useState<string[]>(
+    [],
+  );
   const [manualClaims, setManualClaims] = useState<AdminBattlePassClaim[]>([]);
   const [levelItems, setLevelItems] = useState<AdminBattlePassLevel[]>([]);
   const [passForm, setPassForm] = useState<PassFormState>(EMPTY_PASS_FORM);
+  const [passBackgroundFile, setPassBackgroundFile] = useState<File | null>(
+    null,
+  );
+  const [passBackgroundPreviewUrl, setPassBackgroundPreviewUrl] = useState<
+    string | null
+  >(null);
   const [levelForm, setLevelForm] = useState<LevelFormState>(EMPTY_LEVEL_FORM);
   const [levelImageFile, setLevelImageFile] = useState<File | null>(null);
   const [levelImagePreviewUrl, setLevelImagePreviewUrl] = useState<
@@ -973,6 +983,12 @@ export const AdminBattlePassManager = () => {
       : levelForm.rewardType === "MANUAL"
         ? levelForm.manualRewardLabel || "Entrega en tienda"
         : selectedRewardOption?.name || "Selecciona un cosmetico";
+
+  const passBackgroundPreviewSrc = passBackgroundPreviewUrl
+    ? passBackgroundPreviewUrl
+    : passForm.backgroundImageUrl
+      ? toAssetStorageUrl(passForm.backgroundImageUrl)
+      : "";
 
   const selectedManualClaims = useMemo(
     () =>
@@ -1046,6 +1062,21 @@ export const AdminBattlePassManager = () => {
     }
   }, [showToast]);
 
+  const loadPassBackgroundImages = useCallback(async () => {
+    try {
+      const images = await getMediaImagesAction("battle-pass-backgrounds");
+      setPassBackgroundImages(images);
+    } catch (err) {
+      setPassBackgroundImages([]);
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "No se pudieron cargar los fondos del pase.",
+        "error",
+      );
+    }
+  }, [showToast]);
+
   const loadInitialData = useCallback(async () => {
     try {
       setError(null);
@@ -1078,6 +1109,22 @@ export const AdminBattlePassManager = () => {
   useEffect(() => {
     loadManualRewardImages();
   }, [loadManualRewardImages]);
+
+  useEffect(() => {
+    loadPassBackgroundImages();
+  }, [loadPassBackgroundImages]);
+
+  useEffect(() => {
+    if (!passBackgroundFile) {
+      setPassBackgroundPreviewUrl(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(passBackgroundFile);
+    setPassBackgroundPreviewUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [passBackgroundFile]);
 
   useEffect(() => {
     if (!levelImageFile) {
@@ -1203,6 +1250,7 @@ export const AdminBattlePassManager = () => {
 
   const resetPassForm = () => {
     setPassForm(EMPTY_PASS_FORM);
+    setPassBackgroundFile(null);
     setIsPassDrawerOpen(true);
   };
 
@@ -1235,7 +1283,9 @@ export const AdminBattlePassManager = () => {
       startsAt: toDateInput(pass.startsAt),
       endsAt: toDateInput(pass.endsAt),
       status: pass.status,
+      backgroundImageUrl: pass.backgroundImageUrl ?? "",
     });
+    setPassBackgroundFile(null);
     setIsPassDrawerOpen(true);
   };
 
@@ -1263,21 +1313,25 @@ export const AdminBattlePassManager = () => {
   const submitPass = async () => {
     try {
       showLoading(passForm.id ? "Actualizando pase..." : "Creando pase...");
-      const payload = {
-        title: passForm.title,
-        description: passForm.description,
-        seasonNumber: Number(passForm.seasonNumber),
-        startsAt: passForm.startsAt,
-        endsAt: passForm.endsAt,
-        status: passForm.status,
-      };
+      const payload = new FormData();
+      payload.append("id", passForm.id);
+      payload.append("title", passForm.title);
+      payload.append("description", passForm.description);
+      payload.append("seasonNumber", passForm.seasonNumber);
+      payload.append("startsAt", passForm.startsAt);
+      payload.append("endsAt", passForm.endsAt);
+      payload.append("status", passForm.status);
+      payload.append("backgroundImageUrl", passForm.backgroundImageUrl);
 
-      const saved = passForm.id
-        ? await updateBattlePassAction({ ...payload, id: passForm.id })
-        : await createBattlePassAction(payload);
+      if (passBackgroundFile) {
+        payload.append("backgroundImageFile", passBackgroundFile);
+      }
+
+      const saved = await upsertBattlePassWithBackgroundAction(payload);
 
       setIsPassDrawerOpen(false);
       setPassForm(EMPTY_PASS_FORM);
+      setPassBackgroundFile(null);
       const [passList, nextDetail] = await Promise.all([
         getAdminBattlePassesAction(),
         getAdminBattlePassDetailAction({ battlePassId: saved.id }),
@@ -1289,6 +1343,7 @@ export const AdminBattlePassManager = () => {
       latestOrderRef.current = nextDetail.levels;
       savedOrderRef.current = orderedIds(nextDetail.levels);
       setIsOrderDirty(false);
+      await loadPassBackgroundImages();
       showToast("Pase guardado correctamente.", "success");
     } catch (err) {
       showToast(
@@ -1807,6 +1862,67 @@ export const AdminBattlePassManager = () => {
                   }))
                 }
                 className={inputClassName}
+              />
+            </Field>
+          </div>
+          <div className="grid gap-3 rounded-xl border border-[#4d4354] bg-[#130a1c] p-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold text-[#cfc2d6]">
+                Fondo del pase
+              </span>
+              <span className="truncate text-xs text-[#988d9f]">
+                Vista jugador
+              </span>
+            </div>
+            <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-xl border border-[#4d4354] bg-[#21182a]">
+              {passBackgroundPreviewSrc ? (
+                <Image
+                  src={passBackgroundPreviewSrc}
+                  alt="Fondo del pase"
+                  fill
+                  sizes="448px"
+                  unoptimized={passBackgroundPreviewSrc.startsWith("blob:")}
+                  className="object-cover"
+                />
+              ) : (
+                <IoImagesOutline className="h-10 w-10 text-[#988d9f]" />
+              )}
+            </div>
+            <Field label="Fondo existente">
+              <select
+                value={passBackgroundFile ? "" : passForm.backgroundImageUrl}
+                onChange={(event) => {
+                  setPassBackgroundFile(null);
+                  setPassForm((prev) => ({
+                    ...prev,
+                    backgroundImageUrl: event.target.value,
+                  }));
+                }}
+                className={inputClassName}
+              >
+                <option value="">Usar fondo por defecto</option>
+                {passBackgroundImages.map((image) => (
+                  <option key={image} value={image}>
+                    {image.split("/").pop() ?? image}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Subir fondo al guardar">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => {
+                  const file = event.target.files?.[0] ?? null;
+                  setPassBackgroundFile(file);
+                  if (file) {
+                    setPassForm((prev) => ({
+                      ...prev,
+                      backgroundImageUrl: "",
+                    }));
+                  }
+                }}
+                className="w-full rounded-lg border border-[#4d4354] bg-[#130a1c] px-3 py-2 text-sm text-[#edddf7] file:mr-3 file:rounded-md file:border-0 file:bg-[#302639] file:px-3 file:py-1.5 file:text-xs file:font-bold file:uppercase file:text-[#ddb7ff] hover:file:bg-[#3b3144]"
               />
             </Field>
           </div>

@@ -36,14 +36,10 @@ import { ProfileGeneralSection } from "./ProfileGeneralSection";
 import { ProfileAvatarSection } from "./ProfileAvatarSection";
 import { ProfileActiveTournamentHeader } from "./ProfileActiveTournamentHeader";
 import { ProfileBannerSection } from "./ProfileBannerSection";
-import { ProfileBattlePassSection } from "./ProfileBattlePassSection";
 import { ProfileSectionHeader } from "./ProfileSectionHeader";
 import { ProfileSecuritySection } from "./ProfileSecuritySection";
 import { ProfileTournamentsSection } from "./ProfileTournamentsSection";
-import type {
-  ClaimBattlePassRewardResult,
-  PlayerBattlePassData,
-} from "@/actions/battle-pass/player-battle-pass.action";
+import type { PlayerBattlePassData } from "@/actions/battle-pass/player-battle-pass.action";
 import type {
   DeckCounts,
   ProfileCosmeticItem,
@@ -112,6 +108,7 @@ interface Props {
   deckCounts: DeckCounts;
   cosmeticStoreData: CosmeticStoreData | null;
   battlePassData: PlayerBattlePassData | null;
+  initialSection?: ProfileDashboardSection;
 }
 
 const sectionTitles: Record<ProfileDashboardSection, string> = {
@@ -158,7 +155,7 @@ export const Pefil = ({
   tournaments,
   deckCounts,
   cosmeticStoreData,
-  battlePassData,
+  initialSection = "general",
 }: Props) => {
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
@@ -178,8 +175,9 @@ export const Pefil = ({
     [hasSession, user.victoryPoints],
   );
   const initialStoreData = cosmeticStoreData ?? fallbackStoreData;
-  const [activeSection, setActiveSection] =
-    useState<ProfileDashboardSection>("general");
+  const [activeSection, setActiveSection] = useState<ProfileDashboardSection>(
+    initialSection === "battle-pass" ? "general" : initialSection,
+  );
   const [baseAvatar, setBaseAvatar] = useState(getAvatarValue(user.image));
   const [selectedAvatar, setSelectedAvatar] = useState(baseAvatar);
   const [baseBanner, setBaseBanner] = useState(
@@ -194,7 +192,6 @@ export const Pefil = ({
   const [bannerItems, setBannerItems] = useState(banners);
   const [frameItems, setFrameItems] = useState(frames);
   const [storeData, setStoreData] = useState(initialStoreData);
-  const [battlePassState, setBattlePassState] = useState(battlePassData);
   const [victoryPoints, setVictoryPoints] = useState(
     user.victoryPoints ?? initialStoreData.victoryPoints,
   );
@@ -276,10 +273,6 @@ export const Pefil = ({
   useEffect(() => {
     setVictoryPoints(user.victoryPoints ?? initialStoreData.victoryPoints);
   }, [initialStoreData.victoryPoints, user.victoryPoints]);
-
-  useEffect(() => {
-    setBattlePassState(battlePassData);
-  }, [battlePassData]);
 
   const handleSelectAvatar = (avatar: ProfileCosmeticItem) => {
     setSelectedAvatar(getAvatarValue(avatar.imageUrl));
@@ -396,19 +389,6 @@ export const Pefil = ({
     }
 
     setFrameItems((current) => addProfileCosmetic(current, cosmetic));
-  };
-
-  const handleBattlePassClaim = (result: ClaimBattlePassRewardResult) => {
-    setVictoryPoints(result.victoryPoints);
-    const rewardAvatar = result.rewardAvatar;
-
-    if (rewardAvatar?.type === "AVATAR") {
-      setAvatarItems((current) => addProfileCosmetic(current, rewardAvatar));
-    }
-
-    if (rewardAvatar?.type === "BANNER") {
-      setBannerItems((current) => addProfileCosmetic(current, rewardAvatar));
-    }
   };
 
   const matchesPlayed = user.matchesPlayed ?? 0;
@@ -565,13 +545,6 @@ export const Pefil = ({
               victoryPoints={victoryPoints}
               onSectionChange={handleSectionChange}
               onTabShortcut={handleTabShortcut}
-            />
-          )}
-
-          {activeSection === "battle-pass" && (
-            <ProfileBattlePassSection
-              initialData={battlePassState}
-              onClaim={handleBattlePassClaim}
             />
           )}
 

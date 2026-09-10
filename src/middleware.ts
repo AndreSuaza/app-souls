@@ -142,7 +142,11 @@ export default baseAuth((req) => {
   }
 
   // Proteger rutas generales (como /perfil)
-  if (protectedRoutes.includes(path)) {
+  if (
+    protectedRoutes.some(
+      (route) => path === route || path.startsWith(`${route}/`),
+    )
+  ) {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/auth/login", nextUrl));
     }

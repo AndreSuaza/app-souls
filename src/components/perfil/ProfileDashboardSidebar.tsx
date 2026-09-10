@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import clsx from "clsx";
 import type { IconType } from "react-icons";
@@ -35,6 +36,7 @@ type SidebarItem = {
   label: string;
   description: string;
   icon: IconType;
+  href?: string;
 };
 
 const sidebarItems: SidebarItem[] = [
@@ -49,6 +51,7 @@ const sidebarItems: SidebarItem[] = [
     label: "Pase",
     description: "Recompensas",
     icon: IoGiftOutline,
+    href: "/perfil/pase-batalla",
   },
   {
     id: "avatar",
@@ -126,19 +129,8 @@ export const ProfileDashboardSidebar = ({
     const Icon = item.icon;
     const isActive = activeSection === item.id;
 
-    return (
-      <button
-        key={item.id}
-        type="button"
-        onClick={() => onSelect(item.id)}
-        className={clsx(
-          "group flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition",
-          isMobile ? "w-full" : "min-w-[180px] lg:min-w-0 lg:w-full",
-          isActive
-            ? "border-purple-300 bg-purple-100 text-purple-800 shadow-sm dark:border-purple-500/60 dark:bg-purple-600/20 dark:text-purple-100"
-            : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 dark:text-slate-300 dark:hover:border-tournament-dark-border dark:hover:bg-tournament-dark-muted/70",
-        )}
-      >
+    const content = (
+      <>
         <span
           className={clsx(
             "flex shrink-0 items-center justify-center rounded-xl border transition",
@@ -158,6 +150,39 @@ export const ProfileDashboardSidebar = ({
             {item.description}
           </span>
         </span>
+      </>
+    );
+    const className = clsx(
+      "group flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition",
+      isMobile ? "w-full" : "min-w-[180px] lg:min-w-0 lg:w-full",
+      isActive
+        ? "border-purple-300 bg-purple-100 text-purple-800 shadow-sm dark:border-purple-500/60 dark:bg-purple-600/20 dark:text-purple-100"
+        : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 dark:text-slate-300 dark:hover:border-tournament-dark-border dark:hover:bg-tournament-dark-muted/70",
+    );
+
+    if (item.href) {
+      return (
+        <Link
+          key={item.id}
+          href={item.href}
+          onClick={() => {
+            if (isMobile) setIsMobileMenuOpen(false);
+          }}
+          className={className}
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        key={item.id}
+        type="button"
+        onClick={() => onSelect(item.id)}
+        className={className}
+      >
+        {content}
       </button>
     );
   };

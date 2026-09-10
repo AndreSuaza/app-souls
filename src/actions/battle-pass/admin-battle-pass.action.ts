@@ -76,6 +76,7 @@ const battlePassSelect = {
   startsAt: true,
   endsAt: true,
   status: true,
+  backgroundImageUrl: true,
   createdAt: true,
   updatedAt: true,
   _count: {
@@ -127,6 +128,7 @@ const mapBattlePass = (
   startsAt: pass.startsAt.toISOString(),
   endsAt: pass.endsAt.toISOString(),
   status: pass.status,
+  backgroundImageUrl: pass.backgroundImageUrl,
   createdAt: pass.createdAt.toISOString(),
   updatedAt: pass.updatedAt.toISOString(),
   levelsCount: pass._count.levels,
@@ -343,6 +345,45 @@ const uploadBattlePassRewardImage = async (file: File, title: string) => {
   });
 };
 
+const uploadBattlePassBackgroundImage = async (file: File, title: string) => {
+  const config = MEDIA_SECTION_CONFIG["battle-pass-backgrounds"];
+
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Solo se permiten imagenes.");
+  }
+
+  const maxBytes = config.maxSizeMb * 1024 * 1024;
+  if (file.size > maxBytes) {
+    throw new Error(`La imagen supera el limite de ${config.maxSizeMb}MB.`);
+  }
+
+  const inputBuffer = Buffer.from(await file.arrayBuffer());
+  const outputBuffer = await sharp(inputBuffer).webp({ quality: 88 }).toBuffer();
+  const safeName = buildSafeName(title || file.name);
+  const path = `${config.folder}/${safeName}-${crypto.randomUUID()}.webp`;
+
+  return uploadAsset({
+    path,
+    buffer: outputBuffer,
+    contentType: "image/webp",
+  });
+};
+
+const parseBattlePassFormData = (formData: FormData) => {
+  const id = String(formData.get("id") ?? "");
+
+  return (id ? UpdateBattlePassSchema : CreateBattlePassSchema).parse({
+    ...(id ? { id } : {}),
+    title: formData.get("title"),
+    description: formData.get("description"),
+    seasonNumber: Number(formData.get("seasonNumber")),
+    startsAt: formData.get("startsAt"),
+    endsAt: formData.get("endsAt"),
+    status: formData.get("status"),
+    backgroundImageUrl: formData.get("backgroundImageUrl"),
+  });
+};
+
 const persistBattlePass = async (
   data: CreateBattlePassInput | UpdateBattlePassInput,
 ) => {
@@ -369,6 +410,7 @@ const persistBattlePass = async (
           startsAt,
           endsAt,
           status: data.status,
+          backgroundImageUrl: data.backgroundImageUrl,
         },
         select: battlePassSelect,
       });
@@ -382,6 +424,7 @@ const persistBattlePass = async (
         startsAt,
         endsAt,
         status: data.status,
+        backgroundImageUrl: data.backgroundImageUrl,
       },
       select: battlePassSelect,
     });
@@ -529,6 +572,43 @@ export const updateBattlePassAction = async (input: unknown) => {
   return persistBattlePass(parsed);
 };
 
+export const upsertBattlePassWithBackgroundAction = async (
+  formData: FormData,
+) => {
+  await requireAdmin();
+
+  const file = formData.get("backgroundImageFile");
+  const hasImageFile = file instanceof File && file.size > 0;
+  let uploadedPathname: string | null = null;
+  const parsed = parseBattlePassFormData(formData);
+
+  try {
+    const backgroundImageUrl = hasImageFile
+      ? (await uploadBattlePassBackgroundImage(file, parsed.title)).pathname
+      : parsed.backgroundImageUrl;
+
+    if (backgroundImageUrl && hasImageFile) {
+      uploadedPathname = backgroundImageUrl;
+    }
+
+    return persistBattlePass({
+      ...parsed,
+      backgroundImageUrl,
+    });
+  } catch (error) {
+    if (uploadedPathname) {
+      await deleteAsset(uploadedPathname).catch((deleteError) => {
+        console.error(
+          "[upsertBattlePassWithBackgroundAction:cleanup]",
+          deleteError,
+        );
+      });
+    }
+
+    throw error;
+  }
+};
+
 export const deleteBattlePassAction = async (input: unknown) => {
   await requireAdmin();
   const parsed = BattlePassIdSchema.parse(input);
@@ -621,62 +701,61 @@ export const reorderBattlePassLevelsAction = async (input: unknown) => {
     throw new Error("El orden enviado contiene niveles repetidos.");
   }
 
-  await prisma.$transaction(async (tx) => {
-    const pass = await tx.battlePass.findUnique({
-      where: { id: parsed.battlePassId },
-      select: {
-        id: true,
-        status: true,
-        levels: {
-          select: { id: true },
-        },
-        _count: {
-          select: {
-            claims: true,
-          },
+  const pass = await prisma.battlePass.findUnique({
+    where: { id: parsed.battlePassId },
+    select: {
+      id: true,
+      status: true,
+      levels: {
+        select: { id: true },
+      },
+      _count: {
+        select: {
+          claims: true,
         },
       },
-    });
+    },
+  });
 
-    if (!pass) {
-      throw new Error("El pase de batalla no existe.");
-    }
+  if (!pass) {
+    throw new Error("El pase de batalla no existe.");
+  }
 
-    if (pass.status !== "DRAFT") {
-      throw new Error("Solo puedes reordenar niveles de pases en borrador.");
-    }
+  if (pass.status !== "DRAFT") {
+    throw new Error("Solo puedes reordenar niveles de pases en borrador.");
+  }
 
-    if (pass._count.claims > 0) {
-      throw new Error("No puedes reordenar un pase con reclamos registrados.");
-    }
+  if (pass._count.claims > 0) {
+    throw new Error("No puedes reordenar un pase con reclamos registrados.");
+  }
 
-    if (pass.levels.length !== parsed.levelIds.length) {
-      throw new Error("El orden debe incluir todos los niveles del pase.");
-    }
+  if (pass.levels.length !== parsed.levelIds.length) {
+    throw new Error("El orden debe incluir todos los niveles del pase.");
+  }
 
-    const passLevelIds = new Set(pass.levels.map((level) => level.id));
-    const everyLevelBelongsToPass = parsed.levelIds.every((levelId) =>
-      passLevelIds.has(levelId),
-    );
+  const passLevelIds = new Set(pass.levels.map((level) => level.id));
+  const everyLevelBelongsToPass = parsed.levelIds.every((levelId) =>
+    passLevelIds.has(levelId),
+  );
 
-    if (!everyLevelBelongsToPass) {
-      throw new Error("El orden contiene niveles que no pertenecen al pase.");
-    }
+  if (!everyLevelBelongsToPass) {
+    throw new Error("El orden contiene niveles que no pertenecen al pase.");
+  }
 
-    for (const [index, levelId] of parsed.levelIds.entries()) {
-      await tx.battlePassLevel.update({
+  await prisma.$transaction([
+    ...parsed.levelIds.map((levelId, index) =>
+      prisma.battlePassLevel.update({
         where: { id: levelId },
         data: { levelNumber: -(index + 1) },
-      });
-    }
-
-    for (const [index, levelId] of parsed.levelIds.entries()) {
-      await tx.battlePassLevel.update({
+      }),
+    ),
+    ...parsed.levelIds.map((levelId, index) =>
+      prisma.battlePassLevel.update({
         where: { id: levelId },
         data: { levelNumber: index + 1 },
-      });
-    }
-  });
+      }),
+    ),
+  ]);
 
   return { ok: true };
 };

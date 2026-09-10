@@ -61,6 +61,7 @@ export type PlayerBattlePassData = {
   id: string;
   title: string;
   description: string | null;
+  backgroundImageUrl: string | null;
   seasonNumber: number;
   startsAt: string;
   endsAt: string;
@@ -192,6 +193,7 @@ const findActiveBattlePass = async (now: Date) =>
       id: true,
       title: true,
       description: true,
+      backgroundImageUrl: true,
       seasonNumber: true,
       startsAt: true,
       endsAt: true,
@@ -247,6 +249,7 @@ export const getActiveBattlePassAction =
       id: pass.id,
       title: pass.title,
       description: pass.description,
+      backgroundImageUrl: pass.backgroundImageUrl,
       seasonNumber: pass.seasonNumber,
       startsAt: pass.startsAt.toISOString(),
       endsAt: pass.endsAt.toISOString(),

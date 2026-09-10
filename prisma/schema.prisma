@@ -558,17 +558,18 @@ model Avatar {
 }
 
 model BattlePass {
-  id           String            @id @default(auto()) @map("_id") @db.ObjectId
-  title        String
-  description  String?
-  seasonNumber Int // Temporada asociada al pase.
-  startsAt     DateTime // Fecha desde la que cuenta el progreso.
-  endsAt       DateTime // Fecha hasta la que cuenta el progreso.
-  status       BattlePassStatus  @default(DRAFT) // Controla si el pase se muestra a jugadores.
-  levels       BattlePassLevel[]
-  claims       BattlePassClaim[]
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String?
+  seasonNumber       Int // Temporada asociada al pase.
+  startsAt           DateTime // Fecha desde la que cuenta el progreso.
+  endsAt             DateTime // Fecha hasta la que cuenta el progreso.
+  status             BattlePassStatus  @default(DRAFT) // Controla si el pase se muestra a jugadores.
+  backgroundImageUrl String? // Fondo atmosférico opcional para la vista del jugador.
+  levels             BattlePassLevel[]
+  claims             BattlePassClaim[]
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
   @@index([status])
   @@index([seasonNumber])

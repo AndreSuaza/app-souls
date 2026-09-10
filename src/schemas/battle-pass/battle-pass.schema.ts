@@ -27,6 +27,13 @@ const BattlePassBaseObjectSchema = z.object({
   startsAt: BattlePassDateSchema,
   endsAt: BattlePassDateSchema,
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]),
+  backgroundImageUrl: z
+    .string()
+    .trim()
+    .max(500, "El fondo no puede superar 500 caracteres.")
+    .optional()
+    .nullable()
+    .transform((value) => value || null),
 });
 
 const refineBattlePassDates = <T extends z.ZodTypeAny>(schema: T) =>
