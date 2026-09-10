@@ -557,6 +557,38 @@ const MobileSummaryPanel = ({
 }: PassSummaryPanelProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const stats = detail?.stats;
+  const mobileMetrics = [
+    {
+      label: "Niveles totales",
+      value: formatNumber(levelItems.length),
+      caption: `Max. nivel ${stats?.maxLevelNumber ?? 0}`,
+      icon: <IoMedalOutline className="h-5 w-5 shrink-0 text-[#ddb7ff]" />,
+      valueClassName: "text-[#edddf7]",
+    },
+    {
+      label: "Jugadores con progreso",
+      value: formatNumber(stats?.playersWithProgress ?? 0),
+      caption: "Torneos en rango",
+      icon: <IoTrophyOutline className="h-5 w-5 shrink-0 text-[#4edea3]" />,
+      valueClassName: "text-[#edddf7]",
+    },
+    {
+      label: "Recompensas reclamadas",
+      value: formatNumber(detail?.claimsCount ?? 0),
+      caption: `${stats?.claimRatioPercent ?? 0}% ratio real`,
+      icon: <IoGiftOutline className="h-5 w-5 shrink-0 text-[#ddb7ff]" />,
+      valueClassName: "text-[#edddf7]",
+    },
+    {
+      label: "Pendientes tienda",
+      value: formatNumber(
+        stats?.pendingStoreDeliveriesCount ?? selectedManualClaimsCount,
+      ),
+      caption: "Despacho local",
+      icon: <IoStorefrontOutline className="h-5 w-5 shrink-0 text-[#ddb8ff]" />,
+      valueClassName: "text-[#ddb8ff]",
+    },
+  ];
 
   return (
     <section className="relative overflow-hidden rounded-xl bg-[#251c2e] p-4 shadow-lg xl:hidden">
@@ -615,25 +647,63 @@ const MobileSummaryPanel = ({
               </span>
             </div>
             <ProgressBar value={stats?.globalProgressPercent ?? 0} />
+            <div className="mt-1.5 flex items-center justify-between text-[10px] text-[#988d9f]">
+              <span>{detail ? formatDate(detail.startsAt) : "--"}</span>
+              <span>{detail ? formatDate(detail.endsAt) : "--"}</span>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2.5 rounded-lg bg-[#302639]/60 p-2.5">
-              <IoMedalOutline className="h-5 w-5 shrink-0 text-[#ddb7ff]" />
-              <div className="min-w-0">
-                <p className="text-[11px] text-[#cfc2d6]">Niveles creados</p>
-                <p className="truncate text-xs font-semibold text-[#edddf7]">
-                  {levelItems.length} niveles
-                </p>
+            {mobileMetrics.map((metric) => (
+              <div
+                key={metric.label}
+                className="flex min-w-0 items-center gap-2.5 rounded-lg bg-[#302639]/60 p-2.5"
+              >
+                {metric.icon}
+                <div className="min-w-0">
+                  <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-[#988d9f]">
+                    {metric.label}
+                  </p>
+                  <p
+                    className={clsx(
+                      "truncate text-base font-black",
+                      metric.valueClassName,
+                    )}
+                  >
+                    {metric.value}
+                  </p>
+                  <p className="truncate text-[10px] text-[#cfc2d6]">
+                    {metric.caption}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-lg bg-[#130a1c] p-3">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-[#988d9f]">
+              Mix de recompensas
+            </span>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center justify-between gap-2 rounded bg-[#21182a] px-2 py-1.5 text-[#edddf7]">
+                <span>Avatares</span>
+                <strong>{stats?.rewardMix.AVATAR ?? 0}</strong>
+              </div>
+              <div className="flex items-center justify-between gap-2 rounded bg-[#21182a] px-2 py-1.5 text-[#edddf7]">
+                <span>Banners</span>
+                <strong>{stats?.rewardMix.BANNER ?? 0}</strong>
+              </div>
+              <div className="flex items-center justify-between gap-2 rounded bg-[#21182a] px-2 py-1.5 text-[#edddf7]">
+                <span>PV</span>
+                <strong>{stats?.rewardMix.PV ?? 0}</strong>
+              </div>
+              <div className="flex items-center justify-between gap-2 rounded bg-[#21182a] px-2 py-1.5 text-[#edddf7]">
+                <span>Tienda</span>
+                <strong>{stats?.rewardMix.MANUAL ?? 0}</strong>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded-lg bg-[#302639]/60 p-2.5">
-              <IoStorefrontOutline className="h-5 w-5 shrink-0 text-[#ddb8ff]" />
-              <div className="min-w-0">
-                <p className="text-[11px] text-[#cfc2d6]">Entregas fisicas</p>
-                <p className="truncate text-xs font-semibold text-[#ddb8ff]">
-                  {selectedManualClaimsCount} pendientes
-                </p>
-              </div>
+            <div className="mt-2 flex items-center justify-between rounded bg-[#21182a] px-2 py-1.5 text-xs text-[#4edea3]">
+              <span>PV total configurado</span>
+              <strong>{formatNumber(stats?.totalPvReward ?? 0)}</strong>
             </div>
           </div>
         </div>
@@ -1526,37 +1596,48 @@ export const AdminBattlePassManager = () => {
     });
   };
 
-  const fulfillClaim = async (claim: AdminBattlePassClaim) => {
-    try {
-      showLoading("Marcando recompensa...");
-      await fulfillBattlePassClaimAction({ claimId: claim.id });
-      await Promise.all([loadManualClaims(), loadDetail()]);
-      showToast("Recompensa marcada como entregada.", "success");
-    } catch (err) {
-      showToast(
-        err instanceof Error
-          ? err.message
-          : "No se pudo actualizar el reclamo.",
-        "error",
-      );
-    } finally {
-      hideLoading();
-    }
+  const fulfillClaim = (claim: AdminBattlePassClaim) => {
+    openConfirmation({
+      text: "Confirmar entrega",
+      description: `Vas a marcar como entregado "${claim.level.manualRewardLabel || claim.level.title}" para ${claim.user.nickname || claim.user.email || "este jugador"}.`,
+      action: async () => {
+        try {
+          showLoading("Marcando recompensa...");
+          await fulfillBattlePassClaimAction({ claimId: claim.id });
+          await Promise.all([loadManualClaims(), loadDetail()]);
+          showToast("Recompensa marcada como entregada.", "success");
+          return true;
+        } catch (err) {
+          showToast(
+            err instanceof Error
+              ? err.message
+              : "No se pudo actualizar el reclamo.",
+            "error",
+          );
+          return false;
+        } finally {
+          hideLoading();
+        }
+      },
+      onError: () => {
+        hideLoading();
+      },
+    });
   };
 
   return (
-    <div className="min-w-0 overflow-hidden bg-[#180f21] text-[#edddf7]">
+    <div className="bp-admin min-w-0 overflow-hidden rounded-2xl bg-slate-50 text-slate-900 dark:bg-[#180f21] dark:text-[#edddf7]">
       <div className="flex min-w-0 flex-col gap-4 pb-8">
         {error && (
-          <div className="rounded-xl border border-[#93000a] bg-[#93000a]/20 p-4 text-sm text-[#ffb4ab]">
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-[#93000a] dark:bg-[#93000a]/20 dark:text-[#ffb4ab]">
             {error}
           </div>
         )}
 
-        <header className="hidden min-w-0 flex-col gap-3 rounded-xl bg-[#251c2e] p-4 shadow-lg md:flex lg:flex-row lg:items-center lg:justify-between">
+        <header className="hidden min-w-0 flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-transparent dark:bg-[#251c2e] dark:shadow-lg md:flex lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight text-[#edddf7]">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#edddf7]">
                 Pase de Batalla
               </h1>
               {detail && (
@@ -1571,7 +1652,7 @@ export const AdminBattlePassManager = () => {
                 </span>
               )}
             </div>
-            <p className="mt-1 max-w-2xl text-sm text-[#cfc2d6]">
+            <p className="mt-1 max-w-2xl text-sm text-slate-500 dark:text-[#cfc2d6]">
               Administra temporadas, progresion dinamica de niveles y despacho
               de recompensas fisicas y digitales.
             </p>
@@ -1583,7 +1664,7 @@ export const AdminBattlePassManager = () => {
                 <button
                   type="button"
                   onClick={() => editPass(selectedPass)}
-                  className="inline-flex items-center gap-1.5 rounded bg-[#302639] px-3 py-1.5 text-xs font-semibold text-[#edddf7] shadow-sm transition hover:bg-[#3b3144]"
+                  className="inline-flex items-center gap-1.5 rounded bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-200 dark:bg-[#302639] dark:text-[#edddf7] dark:hover:bg-[#3b3144]"
                 >
                   <IoCreateOutline className="h-4 w-4" />
                   Editar pase
@@ -1601,7 +1682,7 @@ export const AdminBattlePassManager = () => {
             <button
               type="button"
               onClick={resetPassForm}
-              className="inline-flex items-center gap-1.5 rounded bg-[#302639] px-3 py-1.5 text-xs font-semibold text-[#edddf7] shadow-sm transition hover:bg-[#3b3144]"
+              className="inline-flex items-center gap-1.5 rounded bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-200 dark:bg-[#302639] dark:text-[#edddf7] dark:hover:bg-[#3b3144]"
             >
               <IoAddCircleOutline className="h-4 w-4" />
               Nuevo pase
@@ -1618,7 +1699,7 @@ export const AdminBattlePassManager = () => {
           </div>
         </header>
 
-        <section className="-mx-4 min-w-0 overflow-x-auto bg-[#21182a] px-4 py-2 shadow-sm sm:-mx-0 sm:rounded-xl">
+        <section className="-mx-4 min-w-0 overflow-x-auto border-y border-slate-200 bg-white px-4 py-2 shadow-sm dark:border-transparent dark:bg-[#21182a] sm:-mx-0 sm:rounded-xl sm:border">
           <div className="flex w-max min-w-full items-center gap-2">
             {passes.map((pass) => (
               <button
@@ -1628,8 +1709,8 @@ export const AdminBattlePassManager = () => {
                 className={clsx(
                   "flex shrink-0 items-center gap-3 rounded-xl px-3 py-2 text-left transition active:scale-[0.98]",
                   selectedPassId === pass.id
-                    ? "bg-[#302639] text-[#edddf7] shadow-md"
-                    : "bg-[#251c2e] text-[#cfc2d6] hover:bg-[#302639]",
+                    ? "bg-purple-100 text-purple-950 shadow-md dark:bg-[#302639] dark:text-[#edddf7]"
+                    : "bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-[#251c2e] dark:text-[#cfc2d6] dark:hover:bg-[#302639]",
                 )}
               >
                 <span
@@ -1660,7 +1741,7 @@ export const AdminBattlePassManager = () => {
                       {statusLabels[pass.status]}
                     </span>
                   </span>
-                  <span className="mt-0.5 block font-mono text-[11px] text-[#988d9f]">
+                  <span className="mt-0.5 block font-mono text-[11px] text-slate-500 dark:text-[#988d9f]">
                     T{pass.seasonNumber} - {pass.levelsCount} niveles -{" "}
                     {pass.claimsCount} reclamos
                   </span>
@@ -1669,7 +1750,7 @@ export const AdminBattlePassManager = () => {
             ))}
 
             {passes.length === 0 && (
-              <div className="rounded-xl border border-dashed border-[#4d4354] px-4 py-3 text-sm text-[#cfc2d6]">
+              <div className="rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm text-slate-500 dark:border-[#4d4354] dark:text-[#cfc2d6]">
                 No hay pases creados.
               </div>
             )}
@@ -1677,7 +1758,7 @@ export const AdminBattlePassManager = () => {
             <button
               type="button"
               onClick={resetPassForm}
-              className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#251c2e] px-3 text-xs font-semibold text-[#ddb7ff] transition hover:bg-[#302639]"
+              className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-purple-50 px-3 text-xs font-semibold text-purple-700 transition hover:bg-purple-100 dark:bg-[#251c2e] dark:text-[#ddb7ff] dark:hover:bg-[#302639]"
             >
               <IoAddCircleOutline className="h-4 w-4" />
               Crear pase
@@ -1692,15 +1773,15 @@ export const AdminBattlePassManager = () => {
           selectedManualClaimsCount={selectedManualClaims.length}
         />
 
-        <div className="flex rounded-xl bg-[#21182a] p-1 xl:hidden">
+        <div className="flex rounded-xl bg-slate-200 p-1 dark:bg-[#21182a] xl:hidden">
           <button
             type="button"
             onClick={() => setMobileView("levels")}
             className={clsx(
               "flex-1 rounded-lg py-2 text-xs font-bold transition",
               mobileView === "levels"
-                ? "bg-[#251c2e] text-[#ddb7ff] shadow-sm"
-                : "text-[#cfc2d6] hover:text-[#edddf7]",
+                ? "bg-white text-purple-700 shadow-sm dark:bg-[#251c2e] dark:text-[#ddb7ff]"
+                : "text-slate-600 hover:text-slate-900 dark:text-[#cfc2d6] dark:hover:text-[#edddf7]",
             )}
           >
             Escalafon de niveles
@@ -1711,8 +1792,8 @@ export const AdminBattlePassManager = () => {
             className={clsx(
               "flex-1 rounded-lg py-2 text-xs font-bold transition",
               mobileView === "deliveries"
-                ? "bg-[#251c2e] text-[#ddb7ff] shadow-sm"
-                : "text-[#cfc2d6] hover:text-[#edddf7]",
+                ? "bg-white text-purple-700 shadow-sm dark:bg-[#251c2e] dark:text-[#ddb7ff]"
+                : "text-slate-600 hover:text-slate-900 dark:text-[#cfc2d6] dark:hover:text-[#edddf7]",
             )}
           >
             Canjes fisicos ({manualClaims.length})

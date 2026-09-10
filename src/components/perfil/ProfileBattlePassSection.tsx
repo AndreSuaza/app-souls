@@ -6,8 +6,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import {
   IoArrowBackOutline,
-  IoChevronBackOutline,
-  IoChevronForwardOutline,
   IoCheckmarkCircleOutline,
   IoGiftOutline,
   IoLockClosedOutline,
@@ -77,16 +75,16 @@ const getStatusIcon = (level: PlayerBattlePassLevel) => {
 
 const getFrameClassName = (level: PlayerBattlePassLevel, selected = false) =>
   clsx(
-    "relative border bg-[#130a1c] transition duration-200",
+    "relative bg-[#130a1c] transition duration-200",
     selected && "scale-[1.03]",
     level.rewardType === "AVATAR" &&
-      "border-[#b76dff] shadow-[0_0_24px_rgba(183,109,255,0.28)]",
+      "border border-[#b76dff] shadow-[0_0_24px_rgba(183,109,255,0.28)]",
     level.rewardType === "BANNER" &&
-      "border-cyan-300 shadow-[0_0_24px_rgba(34,211,238,0.24)]",
+      "border border-cyan-300 shadow-[0_0_24px_rgba(34,211,238,0.24)]",
     level.rewardType === "PV" &&
-      "border-amber-300 shadow-[0_0_24px_rgba(251,191,36,0.24)]",
+      "shadow-[0_0_24px_rgba(251,191,36,0.18)]",
     level.rewardType === "MANUAL" &&
-      "border-[#4edea3] shadow-[0_0_24px_rgba(78,222,163,0.22)]",
+      "shadow-[0_0_24px_rgba(78,222,163,0.16)]",
   );
 
 const getBadgeClassName = (level: PlayerBattlePassLevel) =>
@@ -133,6 +131,14 @@ export const ProfileBattlePassSection = ({
   }, [initialData]);
 
   useEffect(() => {
+    document.body.classList.toggle("has-active-battle-pass-view", Boolean(data));
+
+    return () => {
+      document.body.classList.remove("has-active-battle-pass-view");
+    };
+  }, [data]);
+
+  useEffect(() => {
     const levels = data?.levels ?? [];
     if (levels.length === 0) {
       setFixedLevelId(null);
@@ -167,6 +173,33 @@ export const ProfileBattlePassSection = ({
 
     return () => window.clearTimeout(timeoutId);
   }, [claimedRewardLevel]);
+
+  useEffect(() => {
+    const container = timelineScrollRef.current;
+    if (!container) return;
+
+    const handleWheel = (event: globalThis.WheelEvent) => {
+      const maxScrollLeft = container.scrollWidth - container.clientWidth;
+      if (maxScrollLeft <= 0) return;
+
+      const delta =
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+          ? event.deltaX
+          : event.deltaY;
+
+      if (delta === 0) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      container.scrollLeft = Math.max(
+        0,
+        Math.min(maxScrollLeft, container.scrollLeft + delta),
+      );
+    };
+
+    container.addEventListener("wheel", handleWheel, { passive: false });
+    return () => container.removeEventListener("wheel", handleWheel);
+  }, [data?.levels.length]);
 
   const selectedLevel = useMemo(() => {
     const levels = data?.levels ?? [];
@@ -252,28 +285,20 @@ export const ProfileBattlePassSection = ({
     });
   };
 
-  const scrollTimeline = (direction: -1 | 1) => {
-    const container = timelineScrollRef.current;
-    if (!container) return;
-
-    container.scrollBy({
-      left: direction * Math.max(360, container.clientWidth * 0.72),
-      behavior: "smooth",
-    });
-  };
-
   if (!data) {
     return (
-      <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-        <IoTicketOutline className="mx-auto h-10 w-10 text-purple-500" />
-        <h3 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
-          No hay pase activo
-        </h3>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500 dark:text-slate-400">
-          Cuando el administrador active un pase de batalla, tu progreso por
-          torneos finalizados aparecera aqui.
-        </p>
-      </section>
+      <div className="flex min-h-[calc(100dvh-72px)] items-center justify-center px-4 py-10">
+        <section className="w-full max-w-2xl rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+          <IoTicketOutline className="mx-auto h-10 w-10 text-purple-500" />
+          <h3 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
+            No hay pase activo
+          </h3>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500 dark:text-slate-400">
+            Cuando el administrador active un pase de batalla, tu progreso por
+            torneos finalizados aparecera aqui.
+          </p>
+        </section>
+      </div>
     );
   }
 
@@ -388,10 +413,12 @@ export const ProfileBattlePassSection = ({
             <div className="relative flex min-h-[230px] w-full items-center justify-center sm:min-h-[280px]">
               <div
                 className={clsx(
-                  "relative",
+                  "relative overflow-hidden",
                   selectedLevel.rewardType === "BANNER"
-                    ? "h-44 w-full max-w-[520px] sm:h-56 lg:h-52"
-                    : "h-56 w-56 sm:h-72 sm:w-72 lg:h-64 lg:w-64",
+                    ? "h-44 w-full max-w-[520px] rounded-2xl border border-cyan-200/65 shadow-[0_0_28px_rgba(34,211,238,0.18)] sm:h-56 lg:h-52"
+                    : selectedLevel.rewardType === "AVATAR"
+                      ? "h-56 w-56 rounded-full border border-[#ddb7ff]/70 shadow-[0_0_28px_rgba(183,109,255,0.22)] sm:h-72 sm:w-72 lg:h-64 lg:w-64"
+                      : "h-56 w-56 sm:h-72 sm:w-72 lg:h-64 lg:w-64",
                 )}
               >
                 {selectedImage ? (
@@ -407,9 +434,11 @@ export const ProfileBattlePassSection = ({
                     className={clsx(
                       selectedLevel.rewardType === "BANNER"
                         ? "rounded-2xl object-cover object-center"
-                        : selectedLevel.rewardType === "PV"
-                          ? "object-contain"
-                          : "rounded-2xl object-contain",
+                        : selectedLevel.rewardType === "AVATAR"
+                          ? "rounded-full object-cover object-center"
+                          : selectedLevel.rewardType === "PV"
+                            ? "object-contain"
+                            : "rounded-2xl object-contain",
                     )}
                   />
                 ) : (
@@ -457,31 +486,13 @@ export const ProfileBattlePassSection = ({
 
         <section className="shrink-0 bg-transparent px-0 py-2 lg:px-4">
           <div className="relative hidden md:block">
-            <button
-              type="button"
-              aria-label="Ver niveles anteriores"
-              onClick={() => scrollTimeline(-1)}
-              className="absolute left-0 top-[48px] z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[#ddb7ff]/40 bg-[#130a1c]/85 text-[#ddb7ff] shadow-[0_0_18px_rgba(124,3,211,0.35)] backdrop-blur transition hover:border-[#ddb7ff] hover:bg-[#21182a]"
-            >
-              <IoChevronBackOutline className="h-6 w-6" />
-            </button>
-
-            <button
-              type="button"
-              aria-label="Ver niveles siguientes"
-              onClick={() => scrollTimeline(1)}
-              className="absolute right-0 top-[48px] z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[#ddb7ff]/40 bg-[#130a1c]/85 text-[#ddb7ff] shadow-[0_0_18px_rgba(124,3,211,0.35)] backdrop-blur transition hover:border-[#ddb7ff] hover:bg-[#21182a]"
-            >
-              <IoChevronForwardOutline className="h-6 w-6" />
-            </button>
-
             <div
               ref={timelineScrollRef}
               className="min-w-0 overflow-x-auto overflow-y-hidden pb-3 pt-1 scroll-smooth [&::-webkit-scrollbar]:hidden"
               style={{ scrollbarWidth: "none" }}
             >
-              <div className="relative flex min-w-full w-max items-start justify-center gap-9 px-20">
-                <div className="pointer-events-none absolute left-24 right-24 top-[124px] h-2 overflow-hidden rounded-full border border-[#362348] bg-[#130a1c]/80">
+              <div className="relative flex min-w-full w-max items-start justify-center gap-9 px-8">
+                <div className="pointer-events-none absolute left-12 right-12 top-[124px] h-2 overflow-hidden rounded-full border border-[#362348] bg-[#130a1c]/80">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-[#4edea3] via-[#7c03d3] to-[#b76dff] shadow-[0_0_14px_rgba(124,3,211,0.65)]"
                     style={{ width: `${progressPercent}%` }}
@@ -507,7 +518,10 @@ export const ProfileBattlePassSection = ({
                         className={clsx(
                           getFrameClassName(level, isSelected),
                           "flex h-[100px] w-[100px] items-center justify-center rounded-xl",
-                          isSelected && "ring-2 ring-[#ddb7ff]",
+                          isSelected &&
+                            (level.rewardType === "AVATAR" ||
+                              level.rewardType === "BANNER") &&
+                            "ring-2 ring-[#ddb7ff]",
                         )}
                       >
                         {image ? (

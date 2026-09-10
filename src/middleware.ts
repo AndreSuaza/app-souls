@@ -5,7 +5,6 @@ const adminRoutes = ["/admin"];
 // rutas a las que el usuario con role store puede acceder
 const storeAllowedAdminRoutes = [
   "/admin/torneos",
-  "/admin/pase-batalla/entregas-tienda",
 ];
 // rutas a las que el usuario con role news puede acceder
 const newsAllowedAdminRoutes = ["/admin/noticias"];
@@ -115,6 +114,13 @@ export default baseAuth((req) => {
     const role = req.auth?.user.role;
 
     if (role !== "admin" && role !== "store" && role !== "news") {
+      return NextResponse.redirect(new URL("/", nextUrl));
+    }
+
+    if (
+      path.startsWith("/admin/pase-batalla/entregas-tienda") &&
+      role !== "admin"
+    ) {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
 

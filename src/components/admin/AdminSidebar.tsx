@@ -92,11 +92,6 @@ export const AdminSidebar = () => {
           icon: IoGiftOutline,
         },
         {
-          label: "Entregas tienda",
-          href: "/admin/pase-batalla/entregas-tienda",
-          icon: IoStorefrontOutline,
-        },
-        {
           label: "Usuarios",
           href: "/admin/usuarios",
           icon: IoPeopleOutline,
@@ -127,11 +122,6 @@ export const AdminSidebar = () => {
           label: "Torneos",
           href: "/admin/torneos",
           icon: IoTrophyOutline,
-        },
-        {
-          label: "Entregas tienda",
-          href: "/admin/pase-batalla/entregas-tienda",
-          icon: IoStorefrontOutline,
         },
       );
     }
@@ -337,11 +327,6 @@ export const AdminSidebar = () => {
 
     if (role === "store") {
       menuItems.push(
-        {
-          label: "Entregas tienda",
-          href: "/admin/pase-batalla/entregas-tienda",
-          icon: IoStorefrontOutline,
-        },
         {
           label: "Torneos",
           href: "/admin/torneos",

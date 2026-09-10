@@ -16,7 +16,7 @@ export default async function PerfilBattlePassPage() {
   const battlePassData = await getActiveBattlePassAction();
 
   return (
-    <main className="min-h-[calc(100dvh-72px)] bg-[#130a1c] text-[#edddf7]">
+    <main className="min-h-[calc(100dvh-72px)] bg-slate-50 text-slate-900 dark:bg-[#130a1c] dark:text-[#edddf7]">
       <div className="w-full">
         <ProfileBattlePassSection
           initialData={battlePassData}

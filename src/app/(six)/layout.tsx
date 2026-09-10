@@ -1,5 +1,5 @@
 import { ConfirmationModalHost } from "@/components/ui/modal/ConfirmationModalHost";
-import { Footer } from "@/components/ui/footer/footer";
+import { SiteFooter } from "@/components/ui/footer/SiteFooter";
 import { LoadingOverlay } from "@/components/ui/loading/LoadingOverlay";
 import { Sidebar } from "@/components/ui/sidebar/Sidebar";
 import { TopMenu } from "@/components/ui/top-menu/TopMenu";
@@ -23,7 +23,7 @@ export default function SixLayout({
         <Sidebar />
         <div className="px-0">{children}</div>
       </main>
-      <Footer />
+      <SiteFooter />
     </>
   );
 }

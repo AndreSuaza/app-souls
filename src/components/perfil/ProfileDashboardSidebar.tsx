@@ -91,15 +91,12 @@ const sidebarItems: SidebarItem[] = [
   },
 ];
 
-const visibleSidebarItems = sidebarItems.filter(
-  (item) => PLAYER_COSMETIC_STORE_ENABLED || item.id !== "store",
-);
-
 type Props = {
   activeSection: ProfileDashboardSection;
   onChange: (section: ProfileDashboardSection) => void;
   nickname?: string | null;
   fullName: string;
+  hasActiveBattlePass?: boolean;
 };
 
 export const ProfileDashboardSidebar = ({
@@ -107,9 +104,15 @@ export const ProfileDashboardSidebar = ({
   onChange,
   nickname,
   fullName,
+  hasActiveBattlePass = true,
 }: Props) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   useBodyScrollLock(isMobileMenuOpen);
+  const visibleSidebarItems = sidebarItems.filter((item) => {
+    if (!PLAYER_COSMETIC_STORE_ENABLED && item.id === "store") return false;
+    if (!hasActiveBattlePass && item.id === "battle-pass") return false;
+    return true;
+  });
 
   const activeItem =
     visibleSidebarItems.find((item) => item.id === activeSection) ??

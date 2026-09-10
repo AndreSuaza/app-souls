@@ -3,6 +3,7 @@ import { Routes } from "@/models/routes.models";
 import Image from "next/image";
 import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
+import { ThemeModeToggle } from "@/components/ui/theme/ThemeModeToggle";
 
 export const Footer = () => {
   const navigationLinks = Routes.filter((route) =>
@@ -15,7 +16,7 @@ export const Footer = () => {
   );
 
   return (
-    <footer className="relative overflow-hidden border-t-2 border-tournament-dark-border bg-tournament-dark-surface text-slate-300">
+    <footer className="site-footer relative overflow-hidden border-t-2 border-tournament-dark-border bg-tournament-dark-surface text-slate-300">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(88,76,228,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(88,76,228,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
       <div className="relative mx-auto w-full max-w-7xl px-6 pb-10 pt-16">
         <div className="grid grid-cols-1 gap-6 lg:gap-12 md:grid-cols-12">
@@ -52,6 +53,7 @@ export const Footer = () => {
               escribirnos. Nuestro equipo de soporte está listo para asistirte
               en el campo de batalla.
             </p>
+            <ThemeModeToggle />
           </div>
 
           <div className="md:col-span-3">

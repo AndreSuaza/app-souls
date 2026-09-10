@@ -155,6 +155,7 @@ export const Pefil = ({
   tournaments,
   deckCounts,
   cosmeticStoreData,
+  battlePassData,
   initialSection = "general",
 }: Props) => {
   const showToast = useToastStore((state) => state.showToast);
@@ -493,6 +494,7 @@ export const Pefil = ({
           onChange={handleSectionChange}
           nickname={user.nickname}
           fullName={fullName}
+          hasActiveBattlePass={Boolean(battlePassData)}
         />
 
         <main id="perfil-content" className="min-w-0 space-y-6">

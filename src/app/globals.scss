@@ -621,3 +621,41 @@ h2 {
   top: 50%;
   animation: maintenance-orbit 8s linear infinite;
 }
+
+:root:not(.dark) .bp-admin {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+:root:not(.dark) .bp-admin [class*="bg-[#180f21]"] {
+  background-color: #f8fafc !important;
+}
+
+:root:not(.dark) .bp-admin [class*="bg-[#251c2e]"],
+:root:not(.dark) .bp-admin [class*="bg-[#21182a]"] {
+  background-color: #ffffff !important;
+}
+
+:root:not(.dark) .bp-admin [class*="bg-[#302639]"],
+:root:not(.dark) .bp-admin [class*="bg-[#3b3144]"],
+:root:not(.dark) .bp-admin [class*="bg-[#130a1c]"] {
+  background-color: #f1f5f9 !important;
+}
+
+:root:not(.dark) .bp-admin [class*="text-[#edddf7]"] {
+  color: #0f172a !important;
+}
+
+:root:not(.dark) .bp-admin [class*="text-[#cfc2d6]"],
+:root:not(.dark) .bp-admin [class*="text-[#988d9f]"] {
+  color: #64748b !important;
+}
+
+:root:not(.dark) .bp-admin [class*="border-[#4d4354]"],
+:root:not(.dark) .bp-admin [class*="border-[#362348]"] {
+  border-color: #cbd5e1 !important;
+}
+
+body.has-active-battle-pass-view .site-footer {
+  display: none;
+}
