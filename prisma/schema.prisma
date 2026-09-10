@@ -101,20 +101,20 @@ model ProductImage {
 }
 
 model Card {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
   idd        String
   code       String
   limit      String
-  rotation   Int      @default(0)
+  rotation   Int         @default(0)
   cost       Int
   force      String
   defense    String
   name       String
-  slug       String   @unique
+  slug       String      @unique
   effect     String
   imageUrl   String?
   status     CardStatus? @default(active)
-  createDate DateTime @default(now())
+  createDate DateTime    @default(now())
 
   price Float?
 
@@ -245,12 +245,12 @@ model TournamentPlayer {
 }
 
 model Round {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
   roundNumber  Int
   stage        RoundStage? @default(SWISS)
-  tournamentId String   @db.ObjectId
+  tournamentId String      @db.ObjectId
   matches      Match[]
-  createDate   DateTime @default(now())
+  createDate   DateTime    @default(now())
 
   startedAt  DateTime?
   finishedAt DateTime?
@@ -283,40 +283,41 @@ enum UserStatus {
 }
 
 model User {
-  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
   name              String?
   lastname          String?
-  email             String?          @unique
-  nickname          String           @unique
+  email             String?           @unique
+  nickname          String            @unique
   country           String?
   city              String?
-  tournamentsPlayed Int              @default(0)
-  victoryPoints     Int              @default(0)
-  eloPoints         Int              @default(0)
-  matchesPlayed     Int              @default(0)
+  tournamentsPlayed Int               @default(0)
+  victoryPoints     Int               @default(0)
+  eloPoints         Int               @default(0)
+  matchesPlayed     Int               @default(0)
   password          String?
   emailVerified     DateTime?
-  image             String           @default("player")
+  image             String            @default("player")
   bannerImage       String?
   frameImage        String?
-  role              Role             @default(player)
-  status            UserStatus       @default(active)
+  role              Role              @default(player)
+  status            UserStatus        @default(active)
   accounts          Account[]
   sessions          Session[]
   likes             Like[]
   decks             Deck[]
   userAvatar        UserAvatar[]
   avatarPurchases   AvatarPurchase[]
+  battlePassClaims  BattlePassClaim[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  storeId          String?            @db.ObjectId
-  store            Store?             @relation(fields: [storeId], references: [id])
-  news             New[]
-  EloSeasonHistory EloSeasonHistory[]
-  victoryPointAdjustments      VictoryPointAdjustment[] @relation("VictoryPointAdjustmentUser")
-  victoryPointAdjustmentsMade  VictoryPointAdjustment[] @relation("VictoryPointAdjustmentAdmin")
+  storeId                     String?                  @db.ObjectId
+  store                       Store?                   @relation(fields: [storeId], references: [id])
+  news                        New[]
+  EloSeasonHistory            EloSeasonHistory[]
+  victoryPointAdjustments     VictoryPointAdjustment[] @relation("VictoryPointAdjustmentUser")
+  victoryPointAdjustmentsMade VictoryPointAdjustment[] @relation("VictoryPointAdjustmentAdmin")
 }
 
 enum NewStatus {
@@ -444,17 +445,17 @@ model Like {
 }
 
 model Deck {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  description String?
-  imagen      String
-  cards       String
-  tokenCards  String?
-  cardsNumber Int      @default(0) // Solo visible al publico si tiene las 40 cartas
-  tokenCardsNumber Int  @default(0)
-  visible     Boolean
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  description      String?
+  imagen           String
+  cards            String
+  tokenCards       String?
+  cardsNumber      Int      @default(0) // Solo visible al publico si tiene las 40 cartas
+  tokenCardsNumber Int      @default(0)
+  visible          Boolean
   // Marca los mazos estructurados creados desde el panel admin.
-  isAdminDeck Boolean? @default(false)
+  isAdminDeck      Boolean? @default(false)
 
   likesCount Int @default(0)
 
@@ -493,6 +494,7 @@ enum AvatarAvailability {
   STORE
   EVENT
   TOURNAMENT
+  BATTLE_PASS
   EXCLUSIVE
 }
 
@@ -505,24 +507,120 @@ enum UserAvatarSource {
   PROMO
 }
 
+enum BattlePassStatus {
+  /// Borrador: no visible para jugadores.
+  DRAFT
+  /// Activo: visible y reclamable por jugadores.
+  ACTIVE
+  /// Archivado: cerrado, solo histórico.
+  ARCHIVED
+}
+
+enum BattlePassRewardType {
+  /// Entrega un avatar existente.
+  AVATAR
+  /// Entrega un banner existente.
+  BANNER
+  /// Entrega puntos de victoria.
+  PV
+  /// Reclamo pendiente para entrega manual.
+  MANUAL
+}
+
+enum BattlePassClaimStatus {
+  /// Recompensa automática ya entregada.
+  CLAIMED
+  /// Premio manual pendiente de entrega.
+  PENDING_FULFILLMENT
+  /// Premio manual ya entregado.
+  FULFILLED
+}
+
 model Avatar {
-  id            String              @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
-  imageUrl      String
-  rarity        AvatarRarity        @default(COMMON)
-  availability  AvatarAvailability? @default(PUBLIC)
-  price         Int?                @default(0)
-  type          AvatarType          @default(AVATAR)
-  storeVisible  Boolean?            @default(true)
-  isSeasonal    Boolean?            @default(false)
-  seasonNumber  Int?
-  seasonEndsAt  DateTime?
-  featured      Boolean?            @default(false)
-  featuredOrder Int?                @default(0)
-  userAvatars   UserAvatar[]
-  purchases     AvatarPurchase[]
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  imageUrl         String
+  rarity           AvatarRarity        @default(COMMON)
+  availability     AvatarAvailability? @default(PUBLIC)
+  price            Int?                @default(0)
+  type             AvatarType          @default(AVATAR)
+  storeVisible     Boolean?            @default(true)
+  isSeasonal       Boolean?            @default(false)
+  seasonNumber     Int?
+  seasonEndsAt     DateTime?
+  featured         Boolean?            @default(false)
+  featuredOrder    Int?                @default(0)
+  userAvatars      UserAvatar[]
+  purchases        AvatarPurchase[]
+  battlePassLevels BattlePassLevel[]   @relation("BattlePassLevelRewardAvatar")
+  battlePassClaims BattlePassClaim[]   @relation("BattlePassClaimRewardAvatar")
 
   createdAt DateTime @default(now())
+}
+
+model BattlePass {
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String?
+  seasonNumber       Int // Temporada asociada al pase.
+  startsAt           DateTime // Fecha desde la que cuenta el progreso.
+  endsAt             DateTime // Fecha hasta la que cuenta el progreso.
+  status             BattlePassStatus  @default(DRAFT) // Controla si el pase se muestra a jugadores.
+  backgroundImageUrl String? // Fondo atmosférico opcional para la vista del jugador.
+  levels             BattlePassLevel[]
+  claims             BattlePassClaim[]
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([status])
+  @@index([seasonNumber])
+  @@index([startsAt, endsAt])
+}
+
+model BattlePassLevel {
+  id                  String               @id @default(auto()) @map("_id") @db.ObjectId
+  battlePassId        String               @db.ObjectId // Pase al que pertenece este nivel.
+  battlePass          BattlePass           @relation(fields: [battlePassId], references: [id])
+  levelNumber         Int // Nivel requerido; equivale a torneos finalizados necesarios.
+  title               String
+  description         String?
+  imageUrl            String? // Imagen visible de la recompensa o del nivel.
+  rewardType          BattlePassRewardType // Define cómo se entrega la recompensa.
+  rewardAvatarId      String?              @db.ObjectId // Cosmético entregado cuando la recompensa es avatar o banner.
+  rewardAvatar        Avatar?              @relation("BattlePassLevelRewardAvatar", fields: [rewardAvatarId], references: [id])
+  victoryPointsReward Int? // Cantidad de PV entregados si rewardType es PV.
+  manualRewardLabel   String? // Nombre del premio si requiere entrega manual.
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  claims              BattlePassClaim[]
+
+  @@unique([battlePassId, levelNumber])
+  @@index([battlePassId])
+  @@index([rewardAvatarId])
+}
+
+model BattlePassClaim {
+  id                   String                @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String                @db.ObjectId // Usuario que reclamó la recompensa.
+  user                 User                  @relation(fields: [userId], references: [id])
+  battlePassId         String                @db.ObjectId // Pase donde ocurrió el reclamo.
+  battlePass           BattlePass            @relation(fields: [battlePassId], references: [id])
+  battlePassLevelId    String                @db.ObjectId // Nivel reclamado por el usuario.
+  battlePassLevel      BattlePassLevel       @relation(fields: [battlePassLevelId], references: [id])
+  rewardType           BattlePassRewardType // Tipo de recompensa reclamada.
+  rewardAvatarId       String?               @db.ObjectId // Cosmético entregado, si aplica.
+  rewardAvatar         Avatar?               @relation("BattlePassClaimRewardAvatar", fields: [rewardAvatarId], references: [id])
+  victoryPointsAwarded Int? // PV entregados en este reclamo, si aplica.
+  status               BattlePassClaimStatus @default(CLAIMED) // Estado actual de entrega del reclamo.
+  metadata             String? // Información extra para casos especiales.
+  claimedAt            DateTime              @default(now())
+  fulfilledAt          DateTime? // Fecha de entrega para premios manuales.
+
+  @@unique([userId, battlePassLevelId])
+  @@index([userId, battlePassId])
+  @@index([battlePassId, status])
+  @@index([battlePassLevelId])
+  @@index([rewardAvatarId])
 }
 
 model UserAvatar {

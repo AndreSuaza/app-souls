@@ -97,6 +97,9 @@ export * from "./admin/reset-elo-season.action";
 export * from "./admin/admin-users.action";
 export * from "./profile/get-profile-deck-counts.action";
 
+export * from "./battle-pass/admin-battle-pass.action";
+export * from "./battle-pass/player-battle-pass.action";
+
 export * from "./news/get-admin-news.action";
 export * from "./news/get-news-by-id.action";
 export * from "./news/create-news.action";

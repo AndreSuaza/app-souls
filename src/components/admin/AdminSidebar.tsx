@@ -8,6 +8,7 @@ import {
   IoAddCircleOutline,
   IoArrowBackOutline,
   IoCloseOutline,
+  IoGiftOutline,
   IoHomeOutline,
   IoLayersOutline,
   IoNewspaperOutline,
@@ -40,6 +41,7 @@ export const AdminSidebar = () => {
   const isProductSection = pathname.startsWith("/admin/productos");
   const isMediaSection = pathname.startsWith("/admin/medios");
   const isStoreSection = pathname.startsWith("/admin/tienda");
+  const isBattlePassSection = pathname.startsWith("/admin/pase-batalla");
   const isUsersSection = pathname.startsWith("/admin/usuarios");
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
 
@@ -83,6 +85,11 @@ export const AdminSidebar = () => {
           label: "Tienda",
           href: "/admin/tienda",
           icon: IoStorefrontOutline,
+        },
+        {
+          label: "Pase",
+          href: "/admin/pase-batalla",
+          icon: IoGiftOutline,
         },
         {
           label: "Usuarios",
@@ -292,6 +299,38 @@ export const AdminSidebar = () => {
           label: "Volver",
           href: "/admin",
           icon: IoArrowBackOutline,
+        },
+      );
+    }
+  }
+
+  if (isBattlePassSection) {
+    if (role === "admin") {
+      menuItems.push(
+        {
+          label: "Pase",
+          href: "/admin/pase-batalla",
+          icon: IoGiftOutline,
+        },
+        {
+          label: "Entregas tienda",
+          href: "/admin/pase-batalla/entregas-tienda",
+          icon: IoStorefrontOutline,
+        },
+        {
+          label: "Volver",
+          href: "/admin",
+          icon: IoArrowBackOutline,
+        },
+      );
+    }
+
+    if (role === "store") {
+      menuItems.push(
+        {
+          label: "Torneos",
+          href: "/admin/torneos",
+          icon: IoTrophyOutline,
         },
       );
     }

@@ -1,4 +1,5 @@
 import { YoutubeList } from "@/components/home/YoutubeList";
+import { HomeBattlePassSection } from "@/components/home/HomeBattlePassSection";
 import { getPublicNewsAction } from "@/actions/news/get-public-news.action";
 import { NewsCarousel } from "@/components/news/public/NewsCarousel";
 import type { PublicNewsCard } from "@/interfaces";
@@ -354,6 +355,8 @@ export default async function Home() {
           </Link>
         </div>
       </section>
+
+      <HomeBattlePassSection />
 
       <section className="px-6 md:px-20 bg-gradient-to-b from-[#0e0e10] to-[#1a1a1f] text-white py-10">
         <div className="text-center mb-6">

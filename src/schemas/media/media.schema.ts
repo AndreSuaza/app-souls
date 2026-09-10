@@ -8,6 +8,8 @@ export const MediaSectionSchema = z.enum([
   "profile-avatars",
   "profile-banners",
   "profile-frames",
+  "battle-pass-backgrounds",
+  "battle-pass-rewards",
   "products",
   "cards",
 ]);

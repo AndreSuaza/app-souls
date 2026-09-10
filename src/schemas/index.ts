@@ -16,6 +16,7 @@ export * from "./profile/avatar.schema";
 export * from "./profile/cosmetic-store.schema";
 export * from "./profile/public-profile.schema";
 export * from "./profile/public-user-id.schema";
+export * from "./battle-pass/battle-pass.schema";
 export * from "./admin/reset-elo-season.schema";
 export * from "./admin/user-management.schema";
 

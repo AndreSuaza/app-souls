@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 
 const adminRoutes = ["/admin"];
 // rutas a las que el usuario con role store puede acceder
-const storeAllowedAdminRoutes = ["/admin/torneos"];
+const storeAllowedAdminRoutes = [
+  "/admin/torneos",
+];
 // rutas a las que el usuario con role news puede acceder
 const newsAllowedAdminRoutes = ["/admin/noticias"];
 const protectedRoutes = ["/perfil"];
@@ -115,6 +117,13 @@ export default baseAuth((req) => {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
 
+    if (
+      path.startsWith("/admin/pase-batalla/entregas-tienda") &&
+      role !== "admin"
+    ) {
+      return NextResponse.redirect(new URL("/", nextUrl));
+    }
+
     // Restricción específica para usuarios con role store
     if (role === "store") {
       const isAllowed = storeAllowedAdminRoutes.some((allowedRoute) =>
@@ -139,7 +148,11 @@ export default baseAuth((req) => {
   }
 
   // Proteger rutas generales (como /perfil)
-  if (protectedRoutes.includes(path)) {
+  if (
+    protectedRoutes.some(
+      (route) => path === route || path.startsWith(`${route}/`),
+    )
+  ) {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/auth/login", nextUrl));
     }

@@ -5,6 +5,18 @@ import { LoadingOverlay } from "@/components/ui/loading/LoadingOverlay";
 import { ToastContainer } from "@/components/ui/toast/ToastContainer";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
+const themeInitScript = `
+(() => {
+  try {
+    const mode = localStorage.getItem("souls-theme-mode") || "system";
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const shouldUseDark = mode === "dark" || (mode === "system" && prefersDark);
+    document.documentElement.classList.toggle("dark", shouldUseDark);
+    document.documentElement.dataset.themeMode = mode;
+  } catch (error) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,6 +29,7 @@ export default function RootLayout({
       <body
         className={`${titleFont.variable} ${geistMono.variable} antialiased`}
       >
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <Provider>
           <LoadingOverlay />
           <ToastContainer />

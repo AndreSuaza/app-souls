@@ -8,6 +8,7 @@ import {
   getProfileDeckCountsAction,
 } from "@/actions";
 import { getUserById } from "@/actions/auth/find-user";
+import { getActiveBattlePassAction } from "@/actions/battle-pass/player-battle-pass.action";
 import { Pefil } from "@/components/perfil/perfil";
 import {
   PLAYER_COSMETIC_STORE_ENABLED,
@@ -57,15 +58,14 @@ export default async function PerfilPage() {
   const user = await getUserById();
   const avatars = await getAvatars();
   const banners = await getProfileBanners();
-  const frames = PLAYER_PROFILE_FRAMES_ENABLED
-    ? await getProfileFrames()
-    : [];
+  const frames = PLAYER_PROFILE_FRAMES_ENABLED ? await getProfileFrames() : [];
   const activeTournament = await getActiveTournament();
   const tournaments = await getUserTournaments();
   const deckCounts = await getProfileDeckCountsAction();
   const cosmeticStoreData = PLAYER_COSMETIC_STORE_ENABLED
     ? await getCosmeticStoreDataAction()
     : null;
+  const battlePassData = await getActiveBattlePassAction();
   // const userDecks = await getDecksByUser();
 
   return (
@@ -80,6 +80,7 @@ export default async function PerfilPage() {
           tournaments={tournaments}
           deckCounts={deckCounts}
           cosmeticStoreData={cosmeticStoreData}
+          battlePassData={battlePassData}
         />
       )}
     </>
