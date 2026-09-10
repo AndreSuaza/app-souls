@@ -8,7 +8,6 @@ import clsx from "clsx";
 import {
   IoAddCircleOutline,
   IoArchiveOutline,
-  IoCheckmarkCircleOutline,
   IoChevronDownOutline,
   IoChevronUpOutline,
   IoCloseOutline,
@@ -24,7 +23,7 @@ import { createProfileMediaAction } from "@/actions/profile/admin-profile-media.
 import {
   deleteBattlePassAction,
   deleteBattlePassLevelAction,
-  fulfillBattlePassClaimAction,
+  fulfillStoreBattlePassDeliveriesAction,
   getAdminBattlePassClaimsAction,
   getAdminBattlePassDetailAction,
   getAdminBattlePassesAction,
@@ -39,8 +38,9 @@ import {
   type BattlePassRewardOption,
 } from "@/actions/battle-pass/admin-battle-pass.action";
 import { getMediaImagesAction } from "@/actions/media/get-media-images.action";
+import { BattlePassDeliveryGroups } from "./BattlePassDeliveryGroups";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
-import { AVATAR_RARITIES } from "@/models/avatar.models";
+import { AVATAR_AVAILABILITIES, AVATAR_RARITIES } from "@/models/avatar.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { toAssetStorageUrl } from "@/utils/asset-path";
 
@@ -70,6 +70,7 @@ type LevelFormState = {
 type QuickCosmeticFormState = {
   name: string;
   rarity: string;
+  availability: string;
   type: "AVATAR" | "BANNER";
 };
 
@@ -96,7 +97,7 @@ type PassSummaryPanelProps = {
 
 type DeliveriesPanelProps = {
   claims: AdminBattlePassClaim[];
-  onFulfill: (claim: AdminBattlePassClaim) => void;
+  onDeliverClaims: (userId: string, claimIds: string[]) => Promise<void>;
 };
 
 type LevelsPanelProps = {
@@ -151,6 +152,7 @@ const EMPTY_LEVEL_FORM: LevelFormState = {
 const EMPTY_QUICK_COSMETIC_FORM: QuickCosmeticFormState = {
   name: "",
   rarity: AVATAR_RARITIES[0]?.value ?? "COMMON",
+  availability: "BATTLE_PASS",
   type: "AVATAR",
 };
 
@@ -167,12 +169,6 @@ const rewardTypeLabels: Record<LevelFormState["rewardType"], string> = {
   BANNER: "Banner",
   PV: "Puntos de victoria",
   MANUAL: "Entrega en tienda",
-};
-
-const claimStatusLabels: Record<string, string> = {
-  CLAIMED: "Reclamado",
-  PENDING_FULFILLMENT: "Pendiente",
-  FULFILLED: "Entregado",
 };
 
 const inputClassName =
@@ -712,62 +708,7 @@ const MobileSummaryPanel = ({
   );
 };
 
-const DeliveryCards = ({ claims, onFulfill }: DeliveriesPanelProps) => (
-  <div className="grid gap-3">
-    {claims.map((claim) => (
-      <article
-        key={claim.id}
-        className="rounded-xl border border-[#4d4354]/70 bg-[#251c2e] p-3"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="truncate text-sm font-bold text-[#edddf7]">
-              {claim.user.nickname || claim.user.email || "-"}
-            </h3>
-            <p className="text-xs text-[#cfc2d6]">
-              {[claim.user.name, claim.user.lastname].filter(Boolean).join(" ") ||
-                "-"}
-            </p>
-          </div>
-          <span className="shrink-0 rounded-md bg-[#3b3144] px-2 py-1 text-[11px] font-black uppercase text-[#ddb8ff]">
-            {claimStatusLabels[claim.status] ?? claim.status}
-          </span>
-        </div>
-        <dl className="mt-3 grid gap-2 text-xs text-[#cfc2d6]">
-          <div>
-            <dt className="font-semibold text-[#edddf7]">Pase</dt>
-            <dd className="break-words">
-              {claim.battlePass.title} - T{claim.battlePass.seasonNumber}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-[#edddf7]">Premio</dt>
-            <dd className="break-words">
-              Nivel {claim.level.levelNumber} -{" "}
-              {claim.level.manualRewardLabel || claim.level.title}
-            </dd>
-          </div>
-        </dl>
-        <button
-          type="button"
-          onClick={() => onFulfill(claim)}
-          className="mt-3 inline-flex w-full items-center justify-center gap-1 rounded-lg bg-[#00a572] px-3 py-2 text-xs font-bold uppercase text-[#003824] transition hover:bg-[#4edea3]"
-        >
-          <IoCheckmarkCircleOutline className="h-4 w-4" />
-          Entregado
-        </button>
-      </article>
-    ))}
-
-    {claims.length === 0 && (
-      <div className="rounded-xl border border-dashed border-[#4d4354] p-5 text-center text-sm text-[#cfc2d6]">
-        No hay entregas en tienda pendientes.
-      </div>
-    )}
-  </div>
-);
-
-const DeliveriesPanel = ({ claims, onFulfill }: DeliveriesPanelProps) => (
+const DeliveriesPanel = ({ claims, onDeliverClaims }: DeliveriesPanelProps) => (
   <section className={clsx(panelClassName, "min-w-0 p-4 lg:p-5")}>
     <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
@@ -794,75 +735,10 @@ const DeliveriesPanel = ({ claims, onFulfill }: DeliveriesPanelProps) => (
       </div>
     </div>
 
-    <div className="md:hidden">
-      <DeliveryCards claims={claims} onFulfill={onFulfill} />
-    </div>
-
-    <div className="hidden min-w-0 overflow-hidden rounded-xl border border-[#4d4354]/70 md:block">
-      <table className="w-full table-fixed divide-y divide-[#4d4354]/70 text-sm">
-        <thead className="bg-[#302639] text-left text-xs uppercase text-[#cfc2d6]">
-          <tr>
-            <th className="px-3 py-2">Jugador</th>
-            <th className="px-3 py-2">Pase</th>
-            <th className="w-24 px-3 py-2">Nivel</th>
-            <th className="px-3 py-2">Premio</th>
-            <th className="w-28 px-3 py-2">Estado</th>
-            <th className="w-32 px-3 py-2 text-right">Accion</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[#4d4354]/70">
-          {claims.map((claim) => (
-            <tr key={claim.id} className="transition hover:bg-[#302639]">
-              <td className="px-3 py-3">
-                <div className="truncate font-semibold text-[#edddf7]">
-                  {claim.user.nickname || claim.user.email || "-"}
-                </div>
-                <div className="truncate text-xs text-[#988d9f]">
-                  {[claim.user.name, claim.user.lastname]
-                    .filter(Boolean)
-                    .join(" ") || "-"}
-                </div>
-              </td>
-              <td className="px-3 py-3">
-                <div className="truncate text-[#edddf7]">
-                  {claim.battlePass.title}
-                </div>
-                <div className="text-xs text-[#988d9f]">
-                  T{claim.battlePass.seasonNumber}
-                </div>
-              </td>
-              <td className="px-3 py-3 text-[#cfc2d6]">
-                Nivel {claim.level.levelNumber}
-              </td>
-              <td className="truncate px-3 py-3 text-[#cfc2d6]">
-                {claim.level.manualRewardLabel || claim.level.title}
-              </td>
-              <td className="px-3 py-3 text-[#cfc2d6]">
-                {claimStatusLabels[claim.status] ?? claim.status}
-              </td>
-              <td className="px-3 py-3 text-right">
-                <button
-                  type="button"
-                  onClick={() => onFulfill(claim)}
-                  className="inline-flex items-center gap-1 rounded-lg bg-[#00a572] px-3 py-2 text-xs font-bold uppercase text-[#003824] transition hover:bg-[#4edea3]"
-                >
-                  <IoCheckmarkCircleOutline className="h-4 w-4" />
-                  Entregado
-                </button>
-              </td>
-            </tr>
-          ))}
-
-          {claims.length === 0 && (
-            <tr>
-              <td colSpan={6} className="px-3 py-8 text-center text-[#cfc2d6]">
-                No hay entregas en tienda pendientes.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <BattlePassDeliveryGroups
+      claims={claims}
+      onDeliverClaims={onDeliverClaims}
+    />
   </section>
 );
 
@@ -1502,7 +1378,7 @@ export const AdminBattlePassManager = () => {
       payload.append("file", quickCosmeticFile);
       payload.append("name", quickCosmeticForm.name);
       payload.append("rarity", quickCosmeticForm.rarity);
-      payload.append("availability", "EXCLUSIVE");
+      payload.append("availability", quickCosmeticForm.availability);
       payload.append("price", "0");
       payload.append("type", quickCosmeticForm.type);
       payload.append("storeVisible", "false");
@@ -1596,33 +1472,23 @@ export const AdminBattlePassManager = () => {
     });
   };
 
-  const fulfillClaim = (claim: AdminBattlePassClaim) => {
-    openConfirmation({
-      text: "Confirmar entrega",
-      description: `Vas a marcar como entregado "${claim.level.manualRewardLabel || claim.level.title}" para ${claim.user.nickname || claim.user.email || "este jugador"}.`,
-      action: async () => {
-        try {
-          showLoading("Marcando recompensa...");
-          await fulfillBattlePassClaimAction({ claimId: claim.id });
-          await Promise.all([loadManualClaims(), loadDetail()]);
-          showToast("Recompensa marcada como entregada.", "success");
-          return true;
-        } catch (err) {
-          showToast(
-            err instanceof Error
-              ? err.message
-              : "No se pudo actualizar el reclamo.",
-            "error",
-          );
-          return false;
-        } finally {
-          hideLoading();
-        }
-      },
-      onError: () => {
-        hideLoading();
-      },
-    });
+  const fulfillClaims = async (userId: string, claimIds: string[]) => {
+    try {
+      showLoading("Marcando recompensas...");
+      await fulfillStoreBattlePassDeliveriesAction({ userId, claimIds });
+      await Promise.all([loadManualClaims(), loadDetail()]);
+      showToast("Recompensas marcadas como entregadas.", "success");
+    } catch (err) {
+      showToast(
+        err instanceof Error
+          ? err.message
+          : "No se pudieron actualizar los reclamos.",
+        "error",
+      );
+      throw err;
+    } finally {
+      hideLoading();
+    }
   };
 
   return (
@@ -1844,12 +1710,18 @@ export const AdminBattlePassManager = () => {
               selectedPassId={selectedPassId}
             />
           ) : (
-            <DeliveriesPanel claims={manualClaims} onFulfill={fulfillClaim} />
+            <DeliveriesPanel
+              claims={manualClaims}
+              onDeliverClaims={fulfillClaims}
+            />
           )}
         </div>
 
         <div className="hidden xl:block">
-          <DeliveriesPanel claims={manualClaims} onFulfill={fulfillClaim} />
+          <DeliveriesPanel
+            claims={manualClaims}
+            onDeliverClaims={fulfillClaims}
+          />
         </div>
       </div>
 
@@ -2300,6 +2172,24 @@ export const AdminBattlePassManager = () => {
               {AVATAR_RARITIES.map((rarity) => (
                 <option key={rarity.value} value={rarity.value}>
                   {rarity.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Disponibilidad">
+            <select
+              value={quickCosmeticForm.availability}
+              onChange={(event) =>
+                setQuickCosmeticForm((prev) => ({
+                  ...prev,
+                  availability: event.target.value,
+                }))
+              }
+              className={inputClassName}
+            >
+              {AVATAR_AVAILABILITIES.map((availability) => (
+                <option key={availability.value} value={availability.value}>
+                  {availability.label}
                 </option>
               ))}
             </select>

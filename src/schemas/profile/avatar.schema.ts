@@ -15,7 +15,14 @@ export const AvatarAvailabilitySchema = z.preprocess(
     }
     return value;
   },
-  z.enum(["PUBLIC", "STORE", "EVENT", "TOURNAMENT", "EXCLUSIVE"]),
+  z.enum([
+    "PUBLIC",
+    "STORE",
+    "EVENT",
+    "TOURNAMENT",
+    "BATTLE_PASS",
+    "EXCLUSIVE",
+  ]),
 );
 
 const AvatarPriceSchema = z.preprocess(

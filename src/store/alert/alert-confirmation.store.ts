@@ -1,9 +1,11 @@
 import { create } from "zustand";
+import type { ReactNode } from "react";
 
 interface State {
   isAlertConfirmation: boolean;
   text: string;
   description?: string;
+  content?: ReactNode;
   confirmText?: string;
   confirmPlaceholder?: string;
   action: (() => Promise<boolean>) | null;
@@ -13,6 +15,7 @@ interface State {
   openAlertConfirmation: (params: {
     text: string;
     description?: string;
+    content?: ReactNode;
     confirmText?: string;
     confirmPlaceholder?: string;
     action: () => Promise<boolean>;
@@ -28,6 +31,7 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
   isAlertConfirmation: false,
   text: "",
   description: undefined,
+  content: undefined,
   confirmText: undefined,
   confirmPlaceholder: undefined,
   action: null,
@@ -37,6 +41,7 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
   openAlertConfirmation: ({
     text,
     description,
+    content,
     confirmText,
     confirmPlaceholder,
     action,
@@ -47,6 +52,7 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
       isAlertConfirmation: true,
       text,
       description,
+      content,
       confirmText,
       confirmPlaceholder,
       action,
@@ -60,6 +66,7 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
       action: null,
       text: "",
       description: undefined,
+      content: undefined,
       confirmText: undefined,
       confirmPlaceholder: undefined,
       onSuccess: undefined,
@@ -76,6 +83,7 @@ export const useAlertConfirmationStore = create<State>()((set, get) => ({
       action: null,
       text: "",
       description: undefined,
+      content: undefined,
       confirmText: undefined,
       confirmPlaceholder: undefined,
     });

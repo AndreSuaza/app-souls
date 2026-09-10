@@ -14,11 +14,15 @@ import {
   IoTicketOutline,
 } from "react-icons/io5";
 import {
+  claimAllBattlePassRewardsAction,
   claimBattlePassRewardAction,
+  syncEndedBattlePassRewardsAction,
   type ClaimBattlePassRewardResult,
   type PlayerBattlePassData,
   type PlayerBattlePassLevel,
+  type SyncedBattlePassReward,
 } from "@/actions/battle-pass/player-battle-pass.action";
+import { BattlePassSyncedRewardsOverlay } from "@/components/battle-pass/BattlePassSyncedRewardsOverlay";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { toAssetStorageUrl } from "@/utils/asset-path";
 
@@ -26,6 +30,9 @@ type Props = {
   initialData: PlayerBattlePassData | null;
   onClaim?: (result: ClaimBattlePassRewardResult) => void;
   showBackLink?: boolean;
+  variant?: "dedicated" | "embedded";
+  enableClaims?: boolean;
+  runAutoSync?: boolean;
 };
 
 const BATTLE_PASS_PV_IMAGE = "/battle-pass/victory-points.png";
@@ -55,6 +62,18 @@ const rewardLabel = (level: PlayerBattlePassLevel) => {
 const getRewardImage = (level: PlayerBattlePassLevel) => {
   if (level.rewardType === "PV") return BATTLE_PASS_PV_IMAGE;
   return level.imageUrl || level.rewardAvatar?.imageUrl || "";
+};
+
+const getCappedProgress = (data: PlayerBattlePassData | null) =>
+  data && data.maxLevel > 0
+    ? Math.min(Math.max(0, data.progress), data.maxLevel)
+    : 0;
+
+type RewardOverlayState = {
+  rewards: SyncedBattlePassReward[];
+  eyebrow: string;
+  title: string;
+  description: string;
 };
 
 const getStatusLabel = (level: PlayerBattlePassLevel) => {
@@ -100,16 +119,66 @@ const getBadgeClassName = (level: PlayerBattlePassLevel) =>
       "border-[#4edea3]/50 bg-emerald-500/15 text-[#4edea3]",
   );
 
+const RewardClaimPreview = ({ level }: { level: PlayerBattlePassLevel }) => {
+  const image = getRewardImage(level);
+
+  return (
+    <div className="mx-auto grid max-w-[17rem] justify-items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
+      <div
+        className={clsx(
+          "relative flex items-center justify-center overflow-hidden bg-[#130a1c]",
+          level.rewardType === "BANNER"
+            ? "h-24 w-full rounded-lg"
+            : level.rewardType === "AVATAR"
+              ? "h-24 w-24 rounded-full"
+              : "h-24 w-24 rounded-xl",
+        )}
+      >
+        {image ? (
+          <Image
+            src={toAssetStorageUrl(image)}
+            alt={rewardLabel(level)}
+            fill
+            sizes="272px"
+            className={clsx(
+              level.rewardType === "PV"
+                ? "object-contain p-2"
+                : "object-cover object-center",
+            )}
+          />
+        ) : (
+          <IoGiftOutline className="h-10 w-10 text-[#ddb7ff]" />
+        )}
+      </div>
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-600 dark:text-[#ddb7ff]">
+          Nivel {level.levelNumber}
+        </p>
+        <h4 className="mt-1 text-base font-black text-slate-900 dark:text-white">
+          {rewardLabel(level)}
+        </h4>
+        <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-300">
+          {rewardTypeLabels[level.rewardType]}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 export const ProfileBattlePassSection = ({
   initialData,
   onClaim,
   showBackLink = false,
+  variant = "dedicated",
+  enableClaims = true,
+  runAutoSync = true,
 }: Props) => {
   const [data, setData] = useState(initialData);
   const [fixedLevelId, setFixedLevelId] = useState<string | null>(() => {
     const levels = initialData?.levels ?? [];
+    const initialProgress = getCappedProgress(initialData);
     return (
-      levels.find((level) => level.levelNumber === initialData?.progress)?.id ??
+      levels.find((level) => level.levelNumber === initialProgress)?.id ??
       levels.find((level) => !level.claimed && level.unlocked)?.id ??
       levels[0]?.id ??
       null
@@ -119,6 +188,13 @@ export const ProfileBattlePassSection = ({
   const timelineScrollRef = useRef<HTMLDivElement | null>(null);
   const [claimedRewardLevel, setClaimedRewardLevel] =
     useState<PlayerBattlePassLevel | null>(null);
+  const [rewardOverlay, setRewardOverlay] = useState<RewardOverlayState>({
+    rewards: [],
+    eyebrow: "Recompensas entregadas",
+    title: "Pase finalizado",
+    description:
+      "Se entregaron automaticamente las recompensas pendientes que habias desbloqueado.",
+  });
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const showToast = useToastStore((state) => state.showToast);
@@ -131,12 +207,49 @@ export const ProfileBattlePassSection = ({
   }, [initialData]);
 
   useEffect(() => {
+    if (!runAutoSync) return;
+
+    let isMounted = true;
+
+    syncEndedBattlePassRewardsAction()
+      .then((result) => {
+        if (!isMounted) return;
+        if (result.awardedPv > 0) {
+          setData((current) =>
+            current
+              ? {
+                  ...current,
+                  victoryPoints: current.victoryPoints + result.awardedPv,
+                }
+              : current,
+          );
+        }
+        if (result.rewards.length > 0) {
+          setRewardOverlay({
+            rewards: result.rewards,
+            eyebrow: "Recompensas entregadas",
+            title: "Pase finalizado",
+            description:
+              "Se entregaron automaticamente las recompensas pendientes que habias desbloqueado.",
+          });
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [runAutoSync]);
+
+  useEffect(() => {
+    if (variant !== "dedicated") return;
+
     document.body.classList.toggle("has-active-battle-pass-view", Boolean(data));
 
     return () => {
       document.body.classList.remove("has-active-battle-pass-view");
     };
-  }, [data]);
+  }, [data, variant]);
 
   useEffect(() => {
     const levels = data?.levels ?? [];
@@ -147,9 +260,10 @@ export const ProfileBattlePassSection = ({
 
     const stillExists = levels.some((level) => level.id === fixedLevelId);
     if (stillExists) return;
+    const cappedProgress = getCappedProgress(data);
 
     setFixedLevelId(
-      levels.find((level) => level.levelNumber === data?.progress)?.id ??
+      levels.find((level) => level.levelNumber === cappedProgress)?.id ??
         levels.find((level) => !level.claimed && level.unlocked)?.id ??
         levels[0]?.id ??
         null,
@@ -209,75 +323,145 @@ export const ProfileBattlePassSection = ({
       null
     );
   }, [data, fixedLevelId]);
+  const claimableLevels = useMemo(
+    () => data?.levels.filter((level) => level.unlocked && !level.claimed) ?? [],
+    [data],
+  );
 
+  const cappedProgress = getCappedProgress(data);
   const progressPercent =
     data && data.maxLevel > 0
-      ? Math.min(100, Math.round((data.progress / data.maxLevel) * 100))
+      ? Math.min(100, Math.round((cappedProgress / data.maxLevel) * 100))
       : 0;
   const currentLevelNumber =
     data && data.maxLevel > 0
-      ? Math.min(Math.max(1, data.progress), data.maxLevel)
+      ? Math.min(Math.max(1, cappedProgress), data.maxLevel)
       : 0;
 
   const backgroundImage = data?.backgroundImageUrl
     ? toAssetStorageUrl(data.backgroundImageUrl)
     : "";
 
+  const completeClaim = async (level: PlayerBattlePassLevel) => {
+    try {
+      showLoading("Reclamando recompensa...");
+      const result = await claimBattlePassRewardAction({
+        levelId: level.id,
+      });
+
+      setData((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          victoryPoints: result.victoryPoints,
+          levels: current.levels.map((item) =>
+            item.id === result.levelId
+              ? {
+                  ...item,
+                  claimed: true,
+                  claimStatus: result.claimStatus,
+                }
+              : item,
+          ),
+        };
+      });
+      onClaim?.(result);
+      setFixedLevelId(result.levelId);
+      setClaimedRewardLevel({
+        ...level,
+        claimed: true,
+        claimStatus: result.claimStatus,
+      });
+      showToast(
+        result.claimStatus === "PENDING_FULFILLMENT"
+          ? "Recompensa registrada para entrega en tienda."
+          : "Recompensa reclamada correctamente.",
+        "success",
+      );
+      return true;
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudo reclamar la recompensa.",
+        "error",
+      );
+      return false;
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const handleClaimAll = async () => {
+    if (!enableClaims || claimableLevels.length === 0) return;
+
+    try {
+      showLoading("Reclamando recompensas...");
+      const result = await claimAllBattlePassRewardsAction();
+      const rewardByLevelId = new Map(
+        result.rewards.map((reward) => [reward.id, reward]),
+      );
+
+      setData((current) => {
+        if (!current) return current;
+
+        return {
+          ...current,
+          victoryPoints: result.victoryPoints,
+          levels: current.levels.map((level) => {
+            const claimedReward = rewardByLevelId.get(level.id);
+            if (!claimedReward) return level;
+
+            return {
+              ...level,
+              claimed: true,
+              claimStatus: claimedReward.claimStatus,
+            };
+          }),
+        };
+      });
+
+      const lastReward = result.rewards.at(-1);
+      if (lastReward) {
+        setFixedLevelId(lastReward.id);
+      }
+
+      setRewardOverlay({
+        rewards: result.rewards,
+        eyebrow: "Recompensas obtenidas",
+        title: "Reclamo completado",
+        description:
+          "Estas recompensas ya quedaron registradas en tu cuenta. Las entregas en tienda quedan pendientes para el evento final.",
+      });
+      showToast("Recompensas reclamadas correctamente.", "success");
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "No se pudieron reclamar las recompensas.",
+        "error",
+      );
+    } finally {
+      hideLoading();
+    }
+  };
+
   const handleClaim = (level: PlayerBattlePassLevel) => {
+    if (!enableClaims) return;
     if (!level.unlocked || level.claimed) return;
 
-    // TODO: pedir tienda frecuente en la futura vista dedicada del pase antes de permitir reclamos.
+    if (level.rewardType !== "MANUAL") {
+      void completeClaim(level);
+      return;
+    }
+
     openConfirmation({
       text: "Reclamar recompensa",
-      description: `Vas a reclamar "${rewardLabel(level)}".`,
+      description:
+        "Todas las recompensas se entregarán en el evento de final del pase de batalla.",
+      content: <RewardClaimPreview level={level} />,
       action: async () => {
-        try {
-          showLoading("Reclamando recompensa...");
-          const result = await claimBattlePassRewardAction({
-            levelId: level.id,
-          });
-
-          setData((current) => {
-            if (!current) return current;
-            return {
-              ...current,
-              victoryPoints: result.victoryPoints,
-              levels: current.levels.map((item) =>
-                item.id === result.levelId
-                  ? {
-                      ...item,
-                      claimed: true,
-                      claimStatus: result.claimStatus,
-                    }
-                  : item,
-              ),
-            };
-          });
-          onClaim?.(result);
-          setFixedLevelId(result.levelId);
-          setClaimedRewardLevel({
-            ...level,
-            claimed: true,
-            claimStatus: result.claimStatus,
-          });
-          showToast(
-            result.claimStatus === "PENDING_FULFILLMENT"
-              ? "Recompensa registrada para entrega en tienda."
-              : "Recompensa reclamada correctamente.",
-            "success",
-          );
-          return true;
-        } catch (error) {
-          showToast(
-            error instanceof Error
-              ? error.message
-              : "No se pudo reclamar la recompensa.",
-            "error",
-          );
-          return false;
-        } finally {
-          hideLoading();
-        }
+        return completeClaim(level);
       },
       onError: () => {
         hideLoading();
@@ -287,32 +471,54 @@ export const ProfileBattlePassSection = ({
 
   if (!data) {
     return (
-      <div className="flex min-h-[calc(100dvh-72px)] items-center justify-center px-4 py-10">
-        <section className="w-full max-w-2xl rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-          <IoTicketOutline className="mx-auto h-10 w-10 text-purple-500" />
-          <h3 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
-            No hay pase activo
-          </h3>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500 dark:text-slate-400">
-            Cuando el administrador active un pase de batalla, tu progreso por
-            torneos finalizados aparecera aqui.
-          </p>
-        </section>
-      </div>
+      <>
+        <div className="flex min-h-[calc(100dvh-72px)] items-center justify-center px-4 py-10">
+          <section className="w-full max-w-2xl rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+            <IoTicketOutline className="mx-auto h-10 w-10 text-purple-500" />
+            <h3 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
+              No hay pase activo
+            </h3>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500 dark:text-slate-400">
+              Cuando el administrador active un pase de batalla, tu progreso por
+              torneos finalizados aparecera aqui.
+            </p>
+          </section>
+        </div>
+        <BattlePassSyncedRewardsOverlay
+          rewards={rewardOverlay.rewards}
+          eyebrow={rewardOverlay.eyebrow}
+          title={rewardOverlay.title}
+          description={rewardOverlay.description}
+          onClose={() =>
+            setRewardOverlay((current) => ({ ...current, rewards: [] }))
+          }
+        />
+      </>
     );
   }
 
   if (data.levels.length === 0) {
     return (
-      <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-        <IoSparklesOutline className="mx-auto h-10 w-10 text-purple-500" />
-        <h3 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
-          Pase en preparacion
-        </h3>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500 dark:text-slate-400">
-          El pase ya esta activo, pero aun no tiene niveles configurados.
-        </p>
-      </section>
+      <>
+        <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+          <IoSparklesOutline className="mx-auto h-10 w-10 text-purple-500" />
+          <h3 className="mt-4 text-xl font-semibold text-slate-900 dark:text-white">
+            Pase en preparacion
+          </h3>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500 dark:text-slate-400">
+            El pase ya esta activo, pero aun no tiene niveles configurados.
+          </p>
+        </section>
+        <BattlePassSyncedRewardsOverlay
+          rewards={rewardOverlay.rewards}
+          eyebrow={rewardOverlay.eyebrow}
+          title={rewardOverlay.title}
+          description={rewardOverlay.description}
+          onClose={() =>
+            setRewardOverlay((current) => ({ ...current, rewards: [] }))
+          }
+        />
+      </>
     );
   }
 
@@ -322,7 +528,14 @@ export const ProfileBattlePassSection = ({
     : IoLockClosedOutline;
 
   return (
-    <section className="relative isolate min-h-[calc(100dvh-72px)] overflow-hidden bg-[#180f21] text-[#edddf7] shadow-2xl">
+    <section
+      className={clsx(
+        "relative isolate overflow-hidden bg-[#180f21] text-[#edddf7] shadow-2xl",
+        variant === "dedicated"
+          ? "min-h-[calc(100dvh-72px)]"
+          : "min-h-[calc(100dvh-72px)]",
+      )}
+    >
       {backgroundImage ? (
         <Image
           src={backgroundImage}
@@ -352,27 +565,26 @@ export const ProfileBattlePassSection = ({
             <span aria-hidden="true" />
           )}
 
-          <button
-            type="button"
-            className="group relative inline-flex w-fit items-center gap-2 rounded-lg bg-[#130a1c]/55 px-3 py-2 text-left shadow-lg shadow-purple-950/30 outline-none backdrop-blur transition hover:bg-[#21182a]/75 focus-visible:ring-2 focus-visible:ring-[#b76dff]"
-          >
-            <span className="relative h-[35px] w-[35px]">
-              <Image
-                src={BATTLE_PASS_PV_IMAGE}
-                alt="PV"
-                fill
-                sizes="35px"
-                className="object-contain"
-              />
-            </span>
-            <span className="text-2xl font-black text-white">
-              {formatNumber(data.victoryPoints)}
-            </span>
-            <span className="pointer-events-none absolute right-0 top-full z-20 mt-2 hidden w-72 rounded-xl border border-[#362348] bg-[#130a1c]/95 p-3 text-xs font-semibold leading-5 text-[#cfc2d6] shadow-2xl shadow-purple-950/40 backdrop-blur group-hover:block group-focus:block">
-              Estos puntos serviran para poder reclamar recompensas en futuras
-              actualizaciones.
-            </span>
-          </button>
+          <div className="flex max-w-sm items-center justify-end gap-3">
+            <p className="max-w-[9rem] text-right text-[10px] font-semibold leading-4 text-[#cfc2d6] sm:max-w-[18rem] sm:text-[11px]">
+              Estos puntos servirán para reclamar recomendaciones en el torneo
+              nacional.
+            </p>
+            <div className="inline-flex w-fit items-center gap-2 rounded-lg bg-[#130a1c]/55 px-3 py-2 shadow-lg shadow-purple-950/30 backdrop-blur">
+              <span className="relative h-[35px] w-[35px]">
+                <Image
+                  src={BATTLE_PASS_PV_IMAGE}
+                  alt="PV"
+                  fill
+                  sizes="35px"
+                  className="object-contain"
+                />
+              </span>
+              <span className="text-2xl font-black text-white">
+                {formatNumber(data.victoryPoints)}
+              </span>
+            </div>
+          </div>
         </div>
 
         {selectedLevel && (
@@ -395,7 +607,7 @@ export const ProfileBattlePassSection = ({
                   Nv.{currentLevelNumber}
                 </span>
                 <span className="font-mono text-sm font-bold text-[#4edea3]">
-                  {formatNumber(data.progress)}
+                  {formatNumber(cappedProgress)}
                 </span>
                 <span className="text-sm font-semibold text-[#988d9f]">
                   / {formatNumber(data.maxLevel)}
@@ -407,6 +619,27 @@ export const ProfileBattlePassSection = ({
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
+              {enableClaims && (
+                <button
+                  type="button"
+                  onClick={handleClaimAll}
+                  disabled={claimableLevels.length === 0}
+                  className={clsx(
+                    "mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-black uppercase tracking-[0.12em] transition",
+                    claimableLevels.length > 0
+                      ? "border-[#4edea3]/60 bg-gradient-to-r from-[#00a572] to-[#7c03d3] text-white shadow-[0_0_22px_rgba(78,222,163,0.28)] hover:from-[#13bf86] hover:to-[#8b05ea]"
+                      : "cursor-not-allowed border-[#362348] bg-[#130a1c]/55 text-[#988d9f]",
+                  )}
+                >
+                  <IoSparklesOutline className="h-4 w-4" />
+                  Reclamar todo
+                  {claimableLevels.length > 0 && (
+                    <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px]">
+                      {claimableLevels.length}
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
             </div>
 
@@ -464,22 +697,32 @@ export const ProfileBattlePassSection = ({
                 </p>
               )}
 
-              <button
-                type="button"
-                onClick={() => handleClaim(selectedLevel)}
-                disabled={!selectedLevel.unlocked || selectedLevel.claimed}
-                className={clsx(
-                  "mt-6 inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black uppercase tracking-wide transition",
-                  selectedLevel.claimed
-                    ? "cursor-default border border-[#4edea3]/40 bg-emerald-500/15 text-[#4edea3]"
-                    : selectedLevel.unlocked
-                      ? "border border-[#ddb7ff]/60 bg-gradient-to-r from-[#7c03d3] to-[#b76dff] text-white shadow-[0_0_25px_rgba(124,3,211,0.55)] hover:from-[#8b05ea] hover:to-[#c685ff]"
-                      : "cursor-not-allowed border border-[#362348] bg-[#21182a] text-[#988d9f]",
-                )}
-              >
-                <SelectedStatusIcon className="h-5 w-5" />
-                {selectedLevel.claimed ? "Reclamado" : "Reclamar"}
-              </button>
+              {enableClaims ? (
+                <button
+                  type="button"
+                  onClick={() => handleClaim(selectedLevel)}
+                  disabled={!selectedLevel.unlocked || selectedLevel.claimed}
+                  className={clsx(
+                    "mt-6 inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black uppercase tracking-wide transition",
+                    selectedLevel.claimed
+                      ? "cursor-default border border-[#4edea3]/40 bg-emerald-500/15 text-[#4edea3]"
+                      : selectedLevel.unlocked
+                        ? "border border-[#ddb7ff]/60 bg-gradient-to-r from-[#7c03d3] to-[#b76dff] text-white shadow-[0_0_25px_rgba(124,3,211,0.55)] hover:from-[#8b05ea] hover:to-[#c685ff]"
+                        : "cursor-not-allowed border border-[#362348] bg-[#21182a] text-[#988d9f]",
+                  )}
+                >
+                  <SelectedStatusIcon className="h-5 w-5" />
+                  {selectedLevel.claimed ? "Reclamado" : "Reclamar"}
+                </button>
+              ) : (
+                <Link
+                  href="/perfil/pase-batalla"
+                  className="mt-6 inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-xl border border-[#ddb7ff]/60 bg-gradient-to-r from-[#7c03d3] to-[#b76dff] px-5 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_0_25px_rgba(124,3,211,0.45)] transition hover:from-[#8b05ea] hover:to-[#c685ff]"
+                >
+                  <IoGiftOutline className="h-5 w-5" />
+                  Ver pase
+                </Link>
+              )}
             </div>
           </section>
         )}
@@ -645,7 +888,7 @@ export const ProfileBattlePassSection = ({
                     </span>
                   </button>
 
-                  {level.unlocked && !level.claimed ? (
+                  {level.unlocked && !level.claimed && enableClaims ? (
                     <button
                       type="button"
                       aria-label={`Reclamar ${rewardLabel(level)}`}
@@ -654,6 +897,14 @@ export const ProfileBattlePassSection = ({
                     >
                       <IoGiftOutline className="h-5 w-5" />
                     </button>
+                  ) : level.unlocked && !level.claimed ? (
+                    <Link
+                      href="/perfil/pase-batalla"
+                      aria-label={`Ver ${rewardLabel(level)} en el pase`}
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#ddb7ff]/45 bg-[#7c03d3]/25 text-[#ddb7ff] transition hover:border-[#ddb7ff] hover:bg-[#7c03d3]/40"
+                    >
+                      <IoGiftOutline className="h-5 w-5" />
+                    </Link>
                   ) : (
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl text-[#ddb7ff]">
                       <StatusIcon
@@ -675,7 +926,7 @@ export const ProfileBattlePassSection = ({
         <div
           role="status"
           aria-live="polite"
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 p-6 backdrop-blur-sm md:hidden"
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/65 p-6 backdrop-blur-sm"
         >
           <div className="w-full max-w-xs rounded-3xl border border-[#ddb7ff]/50 bg-[#180f21]/95 p-5 text-center shadow-[0_0_45px_rgba(124,3,211,0.55)]">
             <div className="mx-auto flex h-28 w-28 animate-bounce items-center justify-center">
@@ -711,6 +962,15 @@ export const ProfileBattlePassSection = ({
           </div>
         </div>
       )}
+      <BattlePassSyncedRewardsOverlay
+        rewards={rewardOverlay.rewards}
+        eyebrow={rewardOverlay.eyebrow}
+        title={rewardOverlay.title}
+        description={rewardOverlay.description}
+        onClose={() =>
+          setRewardOverlay((current) => ({ ...current, rewards: [] }))
+        }
+      />
     </section>
   );
 };

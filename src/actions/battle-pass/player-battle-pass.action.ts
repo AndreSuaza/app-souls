@@ -80,6 +80,24 @@ export type ClaimBattlePassRewardResult = {
   rewardAvatar: PlayerBattlePassRewardCosmetic | null;
 };
 
+export type ClaimAllBattlePassRewardsResult = {
+  ok: true;
+  claimedLevelIds: string[];
+  victoryPoints: number;
+  rewards: SyncedBattlePassReward[];
+};
+
+export type SyncEndedBattlePassRewardsResult = {
+  processedClaims: number;
+  awardedPv: number;
+  rewards: SyncedBattlePassReward[];
+};
+
+export type SyncedBattlePassReward = PlayerBattlePassLevel & {
+  battlePassTitle: string;
+  battlePassSeasonNumber: number;
+};
+
 const resolveCurrentUser = async () => {
   const session = await auth();
   if (!session?.user?.email) {
@@ -244,6 +262,8 @@ export const getActiveBattlePassAction =
       0,
       ...pass.levels.map((level) => level.levelNumber),
     );
+    const cappedProgress =
+      maxLevel > 0 ? Math.min(progress, maxLevel) : 0;
 
     return {
       id: pass.id,
@@ -253,13 +273,13 @@ export const getActiveBattlePassAction =
       seasonNumber: pass.seasonNumber,
       startsAt: pass.startsAt.toISOString(),
       endsAt: pass.endsAt.toISOString(),
-      progress,
+      progress: cappedProgress,
       maxLevel,
       victoryPoints: user.victoryPoints ?? 0,
       levels: pass.levels.map((level) =>
         mapLevel({
           level,
-          progress,
+          progress: cappedProgress,
           claim: claimByLevelId.get(level.id),
         }),
       ),
@@ -426,3 +446,342 @@ export const claimBattlePassRewardAction = async (
     rewardAvatar: mapRewardAvatar(level.rewardAvatar),
   };
 };
+
+export const claimAllBattlePassRewardsAction =
+  async (): Promise<ClaimAllBattlePassRewardsResult> => {
+    const user = await resolveCurrentUser();
+    const now = new Date();
+    const pass = await findActiveBattlePass(now);
+
+    if (!pass) {
+      throw new Error("No hay un pase de batalla activo.");
+    }
+
+    const progress = await getBattlePassProgress({
+      userId: user.id,
+      startsAt: pass.startsAt,
+      endsAt: pass.endsAt,
+    });
+    const unlockedLevels = pass.levels.filter(
+      (level) => level.levelNumber <= progress,
+    );
+
+    if (unlockedLevels.length === 0) {
+      throw new Error("No tienes recompensas disponibles para reclamar.");
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      const existingClaims = await tx.battlePassClaim.findMany({
+        where: {
+          userId: user.id,
+          battlePassId: pass.id,
+          battlePassLevelId: {
+            in: unlockedLevels.map((level) => level.id),
+          },
+        },
+        select: {
+          battlePassLevelId: true,
+        },
+      });
+      const existingLevelIds = new Set(
+        existingClaims.map((claim) => claim.battlePassLevelId),
+      );
+      let nextVictoryPoints = user.victoryPoints ?? 0;
+      const rewards: SyncedBattlePassReward[] = [];
+      const claimedLevelIds: string[] = [];
+
+      for (const level of unlockedLevels) {
+        if (existingLevelIds.has(level.id)) continue;
+
+        let status: "CLAIMED" | "PENDING_FULFILLMENT" = "CLAIMED";
+        let pvAwarded: number | null = null;
+
+        if (level.rewardType === "AVATAR" || level.rewardType === "BANNER") {
+          if (!level.rewardAvatarId || !level.rewardAvatar) continue;
+
+          const owned = await tx.userAvatar.findFirst({
+            where: {
+              userId: user.id,
+              avatarId: level.rewardAvatarId,
+            },
+            select: {
+              id: true,
+              unlocked: true,
+            },
+          });
+
+          if (owned) {
+            if (!owned.unlocked) {
+              await tx.userAvatar.update({
+                where: { id: owned.id },
+                data: {
+                  unlocked: true,
+                  source: "REWARD",
+                  note: "Recompensa de pase de batalla",
+                },
+              });
+            }
+          } else {
+            await tx.userAvatar.create({
+              data: {
+                userId: user.id,
+                avatarId: level.rewardAvatarId,
+                unlocked: true,
+                source: "REWARD",
+                note: "Recompensa de pase de batalla",
+              },
+            });
+          }
+        }
+
+        if (level.rewardType === "PV") {
+          const points = level.victoryPointsReward ?? 0;
+          if (points <= 0) continue;
+
+          const updated = await tx.user.update({
+            where: { id: user.id },
+            data: {
+              victoryPoints: {
+                increment: points,
+              },
+            },
+            select: {
+              victoryPoints: true,
+            },
+          });
+          nextVictoryPoints = updated.victoryPoints ?? nextVictoryPoints;
+          pvAwarded = points;
+        }
+
+        if (level.rewardType === "MANUAL") {
+          status = "PENDING_FULFILLMENT";
+        }
+
+        await tx.battlePassClaim.create({
+          data: {
+            userId: user.id,
+            battlePassId: pass.id,
+            battlePassLevelId: level.id,
+            rewardType: level.rewardType,
+            rewardAvatarId: level.rewardAvatarId,
+            victoryPointsAwarded: pvAwarded,
+            status,
+            metadata: JSON.stringify({
+              levelNumber: level.levelNumber,
+              title: level.title,
+              manualRewardLabel: level.manualRewardLabel,
+            }),
+          },
+        });
+
+        claimedLevelIds.push(level.id);
+        rewards.push({
+          ...mapLevel({
+            level,
+            progress,
+            claim: {
+              battlePassLevelId: level.id,
+              status,
+            },
+          }),
+          battlePassTitle: pass.title,
+          battlePassSeasonNumber: pass.seasonNumber,
+        });
+      }
+
+      return {
+        claimedLevelIds,
+        nextVictoryPoints,
+        rewards,
+      };
+    });
+
+    if (result.claimedLevelIds.length === 0) {
+      throw new Error("No tienes recompensas disponibles para reclamar.");
+    }
+
+    return {
+      ok: true,
+      claimedLevelIds: result.claimedLevelIds,
+      victoryPoints: result.nextVictoryPoints,
+      rewards: result.rewards,
+    };
+  };
+
+export const syncEndedBattlePassRewardsAction =
+  async (): Promise<SyncEndedBattlePassRewardsResult> => {
+    const user = await resolveCurrentUser();
+    const now = new Date();
+    let processedClaims = 0;
+    let awardedPv = 0;
+    const rewards: SyncedBattlePassReward[] = [];
+
+    const passes = await prisma.battlePass.findMany({
+      where: {
+        status: { in: ["ACTIVE", "ARCHIVED"] },
+        endsAt: { lt: now },
+      },
+      select: {
+        id: true,
+        title: true,
+        seasonNumber: true,
+        startsAt: true,
+        endsAt: true,
+        levels: {
+          select: playerLevelSelect,
+          orderBy: { levelNumber: "asc" },
+        },
+      },
+      orderBy: { endsAt: "desc" },
+    });
+
+    for (const pass of passes) {
+      const progress = await getBattlePassProgress({
+        userId: user.id,
+        startsAt: pass.startsAt,
+        endsAt: pass.endsAt,
+      });
+      const unlockedLevels = pass.levels.filter(
+        (level) => level.levelNumber <= progress,
+      );
+
+      if (unlockedLevels.length === 0) continue;
+
+      const result = await prisma.$transaction(async (tx) => {
+        const existingClaims = await tx.battlePassClaim.findMany({
+          where: {
+            userId: user.id,
+            battlePassId: pass.id,
+            battlePassLevelId: {
+              in: unlockedLevels.map((level) => level.id),
+            },
+          },
+          select: {
+            battlePassLevelId: true,
+          },
+        });
+        const existingLevelIds = new Set(
+          existingClaims.map((claim) => claim.battlePassLevelId),
+        );
+        let passProcessedClaims = 0;
+        let passAwardedPv = 0;
+        const passRewards: SyncedBattlePassReward[] = [];
+
+        for (const level of unlockedLevels) {
+          if (existingLevelIds.has(level.id)) continue;
+
+          let status: "CLAIMED" | "PENDING_FULFILLMENT" = "CLAIMED";
+          let pvAwarded: number | null = null;
+
+          if (level.rewardType === "AVATAR" || level.rewardType === "BANNER") {
+            if (!level.rewardAvatarId || !level.rewardAvatar) continue;
+
+            const owned = await tx.userAvatar.findFirst({
+              where: {
+                userId: user.id,
+                avatarId: level.rewardAvatarId,
+              },
+              select: {
+                id: true,
+                unlocked: true,
+              },
+            });
+
+            if (owned) {
+              if (!owned.unlocked) {
+                await tx.userAvatar.update({
+                  where: { id: owned.id },
+                  data: {
+                    unlocked: true,
+                    source: "REWARD",
+                    note: "Recompensa de pase de batalla vencido",
+                  },
+                });
+              }
+            } else {
+              await tx.userAvatar.create({
+                data: {
+                  userId: user.id,
+                  avatarId: level.rewardAvatarId,
+                  unlocked: true,
+                  source: "REWARD",
+                  note: "Recompensa de pase de batalla vencido",
+                },
+              });
+            }
+          }
+
+          if (level.rewardType === "PV") {
+            const points = level.victoryPointsReward ?? 0;
+            if (points <= 0) continue;
+
+            await tx.user.update({
+              where: { id: user.id },
+              data: {
+                victoryPoints: {
+                  increment: points,
+                },
+              },
+              select: {
+                id: true,
+              },
+            });
+            pvAwarded = points;
+            passAwardedPv += points;
+          }
+
+          if (level.rewardType === "MANUAL") {
+            status = "PENDING_FULFILLMENT";
+          }
+
+          await tx.battlePassClaim.create({
+            data: {
+              userId: user.id,
+              battlePassId: pass.id,
+              battlePassLevelId: level.id,
+              rewardType: level.rewardType,
+              rewardAvatarId: level.rewardAvatarId,
+              victoryPointsAwarded: pvAwarded,
+              status,
+              metadata: JSON.stringify({
+                levelNumber: level.levelNumber,
+                title: level.title,
+                manualRewardLabel: level.manualRewardLabel,
+                autoClaimedAt: now.toISOString(),
+              }),
+            },
+          });
+
+          passProcessedClaims += 1;
+          passRewards.push({
+            ...mapLevel({
+              level,
+              progress,
+              claim: {
+                battlePassLevelId: level.id,
+                status,
+              },
+            }),
+            battlePassTitle: pass.title,
+            battlePassSeasonNumber: pass.seasonNumber,
+          });
+        }
+
+        return {
+          passProcessedClaims,
+          passAwardedPv,
+          passRewards,
+        };
+      });
+
+      processedClaims += result.passProcessedClaims;
+      awardedPv += result.passAwardedPv;
+      rewards.push(...result.passRewards);
+    }
+
+    return {
+      processedClaims,
+      awardedPv,
+      rewards,
+    };
+  };

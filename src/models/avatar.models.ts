@@ -17,6 +17,7 @@ export const AVATAR_AVAILABILITIES = [
   { value: "STORE", label: "Tienda" },
   { value: "EVENT", label: "Evento" },
   { value: "TOURNAMENT", label: "Torneo" },
+  { value: "BATTLE_PASS", label: "Pase" },
   { value: "EXCLUSIVE", label: "Exclusivo" },
 ] as const;
 

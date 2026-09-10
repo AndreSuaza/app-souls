@@ -14,6 +14,7 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
   const {
     text,
     description,
+    content,
     confirmText,
     confirmPlaceholder,
     closeAlertConfirmation,
@@ -76,6 +77,8 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
               </div>
             </div>
 
+            {content}
+
             <div className="space-y-2">
               <p className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Escribe{" "}
@@ -108,6 +111,8 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
                 {description}
               </p>
             )}
+
+            {content && <div className="mb-6">{content}</div>}
           </>
         )}
 

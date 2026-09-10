@@ -494,6 +494,7 @@ enum AvatarAvailability {
   STORE
   EVENT
   TOURNAMENT
+  BATTLE_PASS
   EXCLUSIVE
 }
 

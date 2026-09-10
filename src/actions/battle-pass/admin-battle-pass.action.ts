@@ -27,21 +27,16 @@ const requireAdmin = async () => {
   }
 };
 
-const requireAdminOrStore = async () => {
-  const session = await auth();
-  if (
-    !session?.user ||
-    (session.user.role !== "admin" && session.user.role !== "store")
-  ) {
-    throw new Error("No tienes permisos para ver entregas de pases.");
-  }
-};
-
 const AdminBattlePassClaimsFiltersSchema = z.object({
   status: z
     .enum(["ALL", "CLAIMED", "PENDING_FULFILLMENT", "FULFILLED"])
     .optional()
     .default("PENDING_FULFILLMENT"),
+});
+
+const FulfillBattlePassClaimsSchema = z.object({
+  userId: z.string().min(1, "El usuario es requerido."),
+  claimIds: z.array(z.string().min(1)).min(1, "Selecciona recompensas."),
 });
 
 const buildSafeName = (name: string) => {
@@ -220,6 +215,7 @@ export type AdminBattlePassClaim = {
     id: string;
     levelNumber: number;
     title: string;
+    imageUrl: string | null;
     manualRewardLabel: string | null;
   };
   rewardAvatar: {
@@ -828,6 +824,7 @@ export const getAdminBattlePassClaimsAction = async (input?: {
           id: true,
           levelNumber: true,
           title: true,
+          imageUrl: true,
           manualRewardLabel: true,
         },
       },
@@ -855,6 +852,7 @@ export const getAdminBattlePassClaimsAction = async (input?: {
       id: claim.battlePassLevel.id,
       levelNumber: claim.battlePassLevel.levelNumber,
       title: claim.battlePassLevel.title,
+      imageUrl: claim.battlePassLevel.imageUrl,
       manualRewardLabel: claim.battlePassLevel.manualRewardLabel,
     },
     rewardAvatar: claim.rewardAvatar,
@@ -864,17 +862,14 @@ export const getAdminBattlePassClaimsAction = async (input?: {
 export const getStoreBattlePassDeliveriesAction = async (): Promise<
   AdminBattlePassClaim[]
 > => {
-  await requireAdminOrStore();
-  const now = new Date();
+  await requireAdmin();
 
   const claims = await prisma.battlePassClaim.findMany({
     where: {
       rewardType: "MANUAL",
       status: "PENDING_FULFILLMENT",
       battlePass: {
-        status: "ACTIVE",
-        startsAt: { lte: now },
-        endsAt: { gte: now },
+        status: { in: ["ACTIVE", "ARCHIVED"] },
       },
     },
     orderBy: { claimedAt: "desc" },
@@ -907,6 +902,7 @@ export const getStoreBattlePassDeliveriesAction = async (): Promise<
           id: true,
           levelNumber: true,
           title: true,
+          imageUrl: true,
           manualRewardLabel: true,
         },
       },
@@ -934,6 +930,82 @@ export const getStoreBattlePassDeliveriesAction = async (): Promise<
       id: claim.battlePassLevel.id,
       levelNumber: claim.battlePassLevel.levelNumber,
       title: claim.battlePassLevel.title,
+      imageUrl: claim.battlePassLevel.imageUrl,
+      manualRewardLabel: claim.battlePassLevel.manualRewardLabel,
+    },
+    rewardAvatar: claim.rewardAvatar,
+  }));
+};
+
+export const getStoreBattlePassDeliveryHistoryAction = async (): Promise<
+  AdminBattlePassClaim[]
+> => {
+  await requireAdmin();
+
+  const claims = await prisma.battlePassClaim.findMany({
+    where: {
+      rewardType: "MANUAL",
+      status: "FULFILLED",
+    },
+    orderBy: { fulfilledAt: "desc" },
+    take: 150,
+    select: {
+      id: true,
+      rewardType: true,
+      status: true,
+      claimedAt: true,
+      fulfilledAt: true,
+      victoryPointsAwarded: true,
+      user: {
+        select: {
+          id: true,
+          nickname: true,
+          email: true,
+          name: true,
+          lastname: true,
+        },
+      },
+      battlePass: {
+        select: {
+          id: true,
+          title: true,
+          seasonNumber: true,
+        },
+      },
+      battlePassLevel: {
+        select: {
+          id: true,
+          levelNumber: true,
+          title: true,
+          imageUrl: true,
+          manualRewardLabel: true,
+        },
+      },
+      rewardAvatar: {
+        select: {
+          id: true,
+          name: true,
+          imageUrl: true,
+          type: true,
+        },
+      },
+    },
+  });
+
+  return claims.map((claim) => ({
+    id: claim.id,
+    rewardType: claim.rewardType,
+    status: claim.status,
+    claimedAt: claim.claimedAt.toISOString(),
+    fulfilledAt: claim.fulfilledAt?.toISOString() ?? null,
+    victoryPointsAwarded: claim.victoryPointsAwarded,
+    user: claim.user,
+    battlePass: claim.battlePass,
+    level: {
+      id: claim.battlePassLevel.id,
+      levelNumber: claim.battlePassLevel.levelNumber,
+      title: claim.battlePassLevel.title,
+      imageUrl: claim.battlePassLevel.imageUrl,
       manualRewardLabel: claim.battlePassLevel.manualRewardLabel,
     },
     rewardAvatar: claim.rewardAvatar,
@@ -965,7 +1037,7 @@ export const fulfillBattlePassClaimAction = async (input: unknown) => {
 };
 
 export const fulfillStoreBattlePassDeliveryAction = async (input: unknown) => {
-  await requireAdminOrStore();
+  await requireAdmin();
   const parsed = BattlePassClaimIdSchema.parse(input);
   const now = new Date();
 
@@ -974,11 +1046,6 @@ export const fulfillStoreBattlePassDeliveryAction = async (input: unknown) => {
       id: parsed.claimId,
       rewardType: "MANUAL",
       status: "PENDING_FULFILLMENT",
-      battlePass: {
-        status: "ACTIVE",
-        startsAt: { lte: now },
-        endsAt: { gte: now },
-      },
     },
     select: { id: true },
   });
@@ -1004,5 +1071,68 @@ export const fulfillStoreBattlePassDeliveryAction = async (input: unknown) => {
     id: updated.id,
     status: updated.status,
     fulfilledAt: updated.fulfilledAt?.toISOString() ?? null,
+  };
+};
+
+export const fulfillStoreBattlePassDeliveriesAction = async (input: unknown) => {
+  await requireAdmin();
+  const parsed = FulfillBattlePassClaimsSchema.parse(input);
+  const claimIds = Array.from(new Set(parsed.claimIds));
+  const now = new Date();
+
+  const count = await prisma.$transaction(async (tx) => {
+    const claims = await tx.battlePassClaim.findMany({
+      where: {
+        id: { in: claimIds },
+      },
+      select: {
+        id: true,
+        userId: true,
+        rewardType: true,
+        status: true,
+      },
+    });
+
+    if (claims.length !== claimIds.length) {
+      throw new Error("Una o mas recompensas seleccionadas no existen.");
+    }
+
+    const invalidClaim = claims.find(
+      (claim) =>
+        claim.userId !== parsed.userId ||
+        claim.rewardType !== "MANUAL" ||
+        claim.status !== "PENDING_FULFILLMENT",
+    );
+
+    if (invalidClaim) {
+      throw new Error(
+        "Solo puedes entregar recompensas pendientes de tienda para este jugador.",
+      );
+    }
+
+    const updated = await tx.battlePassClaim.updateMany({
+      where: {
+        id: { in: claimIds },
+        userId: parsed.userId,
+        rewardType: "MANUAL",
+        status: "PENDING_FULFILLMENT",
+      },
+      data: {
+        status: "FULFILLED",
+        fulfilledAt: now,
+      },
+    });
+
+    if (updated.count !== claimIds.length) {
+      throw new Error("No se pudieron entregar todas las recompensas.");
+    }
+
+    return updated.count;
+  });
+
+  return {
+    count,
+    claimIds,
+    fulfilledAt: now.toISOString(),
   };
 };

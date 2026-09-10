@@ -39,7 +39,12 @@ import { ProfileBannerSection } from "./ProfileBannerSection";
 import { ProfileSectionHeader } from "./ProfileSectionHeader";
 import { ProfileSecuritySection } from "./ProfileSecuritySection";
 import { ProfileTournamentsSection } from "./ProfileTournamentsSection";
-import type { PlayerBattlePassData } from "@/actions/battle-pass/player-battle-pass.action";
+import {
+  syncEndedBattlePassRewardsAction,
+  type PlayerBattlePassData,
+  type SyncedBattlePassReward,
+} from "@/actions/battle-pass/player-battle-pass.action";
+import { BattlePassSyncedRewardsOverlay } from "@/components/battle-pass/BattlePassSyncedRewardsOverlay";
 import type {
   DeckCounts,
   ProfileCosmeticItem,
@@ -196,8 +201,37 @@ export const Pefil = ({
   const [victoryPoints, setVictoryPoints] = useState(
     user.victoryPoints ?? initialStoreData.victoryPoints,
   );
+  const [syncedBattlePassRewards, setSyncedBattlePassRewards] = useState<
+    SyncedBattlePassReward[]
+  >([]);
   const [activeTournamentState, setActiveTournamentState] =
     useState<ActiveTournamentData | null>(activeTournament);
+
+  useEffect(() => {
+    if (!hasSession) return;
+
+    let isMounted = true;
+
+    syncEndedBattlePassRewardsAction()
+      .then((result) => {
+        if (!isMounted) return;
+        if (result.awardedPv > 0) {
+          setVictoryPoints((current) => current + result.awardedPv);
+          setStoreData((current) => ({
+            ...current,
+            victoryPoints: current.victoryPoints + result.awardedPv,
+          }));
+        }
+        if (result.rewards.length > 0) {
+          setSyncedBattlePassRewards(result.rewards);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [hasSession, showToast]);
 
   useEffect(() => {
     if (!shouldShowStore && activeSection === "store") {
@@ -609,6 +643,10 @@ export const Pefil = ({
           )}
         </main>
       </div>
+      <BattlePassSyncedRewardsOverlay
+        rewards={syncedBattlePassRewards}
+        onClose={() => setSyncedBattlePassRewards([])}
+      />
     </div>
   );
 };
