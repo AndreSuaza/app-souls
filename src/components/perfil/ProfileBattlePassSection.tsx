@@ -76,16 +76,6 @@ type RewardOverlayState = {
   description: string;
 };
 
-const getStatusLabel = (level: PlayerBattlePassLevel) => {
-  if (level.claimed && level.claimStatus === "PENDING_FULFILLMENT") {
-    return "En tienda";
-  }
-
-  if (level.claimed) return "Reclamado";
-  if (level.unlocked) return "Disponible";
-  return "Bloqueado";
-};
-
 const getStatusIcon = (level: PlayerBattlePassLevel) => {
   if (level.claimed) return IoCheckmarkCircleOutline;
   if (level.unlocked) return IoGiftOutline;
@@ -100,10 +90,8 @@ const getFrameClassName = (level: PlayerBattlePassLevel, selected = false) =>
       "border border-[#b76dff] shadow-[0_0_24px_rgba(183,109,255,0.28)]",
     level.rewardType === "BANNER" &&
       "border border-cyan-300 shadow-[0_0_24px_rgba(34,211,238,0.24)]",
-    level.rewardType === "PV" &&
-      "shadow-[0_0_24px_rgba(251,191,36,0.18)]",
-    level.rewardType === "MANUAL" &&
-      "shadow-[0_0_24px_rgba(78,222,163,0.16)]",
+    level.rewardType === "PV" && "shadow-[0_0_24px_rgba(251,191,36,0.18)]",
+    level.rewardType === "MANUAL" && "shadow-[0_0_24px_rgba(78,222,163,0.16)]",
   );
 
 const getBadgeClassName = (level: PlayerBattlePassLevel) =>
@@ -244,7 +232,10 @@ export const ProfileBattlePassSection = ({
   useEffect(() => {
     if (variant !== "dedicated") return;
 
-    document.body.classList.toggle("has-active-battle-pass-view", Boolean(data));
+    document.body.classList.toggle(
+      "has-active-battle-pass-view",
+      Boolean(data),
+    );
 
     return () => {
       document.body.classList.remove("has-active-battle-pass-view");
@@ -318,13 +309,12 @@ export const ProfileBattlePassSection = ({
   const selectedLevel = useMemo(() => {
     const levels = data?.levels ?? [];
     return (
-      levels.find((level) => level.id === fixedLevelId) ??
-      levels[0] ??
-      null
+      levels.find((level) => level.id === fixedLevelId) ?? levels[0] ?? null
     );
   }, [data, fixedLevelId]);
   const claimableLevels = useMemo(
-    () => data?.levels.filter((level) => level.unlocked && !level.claimed) ?? [],
+    () =>
+      data?.levels.filter((level) => level.unlocked && !level.claimed) ?? [],
     [data],
   );
 
@@ -567,7 +557,7 @@ export const ProfileBattlePassSection = ({
 
           <div className="flex max-w-sm items-center justify-end gap-3">
             <p className="max-w-[9rem] text-right text-[10px] font-semibold leading-4 text-[#cfc2d6] sm:max-w-[18rem] sm:text-[11px]">
-              Estos puntos servirán para reclamar recomendaciones en el torneo
+              Estos puntos servirán para reclamar recompensas en el torneo
               nacional.
             </p>
             <div className="inline-flex w-fit items-center gap-2 rounded-lg bg-[#130a1c]/55 px-3 py-2 shadow-lg shadow-purple-950/30 backdrop-blur">
@@ -590,57 +580,57 @@ export const ProfileBattlePassSection = ({
         {selectedLevel && (
           <section className="grid flex-1 gap-6 py-6 lg:grid-cols-[minmax(240px,0.9fr)_minmax(320px,1fr)_minmax(260px,0.85fr)] lg:items-center lg:gap-8 lg:py-8">
             <div className="min-w-0 self-center lg:pl-4 xl:pl-8">
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#4edea3]">
-              Temporada {data.seasonNumber}
-            </p>
-            <h2 className="mt-1 font-['Bebas_Neue'] text-4xl leading-none text-white drop-shadow sm:text-5xl lg:text-6xl">
-              {data.title}
-            </h2>
-            {data.description && (
-              <p className="mt-2 max-w-3xl text-sm leading-5 text-[#cfc2d6] lg:line-clamp-2">
-                {data.description}
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#4edea3]">
+                Temporada {data.seasonNumber}
               </p>
-            )}
-            <div className="mt-4 max-w-[14rem]">
-              <div className="flex items-end gap-2">
-                <span className="font-['Bebas_Neue'] text-3xl leading-none text-white">
-                  Nv.{currentLevelNumber}
-                </span>
-                <span className="font-mono text-sm font-bold text-[#4edea3]">
-                  {formatNumber(cappedProgress)}
-                </span>
-                <span className="text-sm font-semibold text-[#988d9f]">
-                  / {formatNumber(data.maxLevel)}
-                </span>
-              </div>
-              <div className="mt-1 h-1.5 overflow-hidden rounded-full border border-[#362348] bg-[#130a1c]/80">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-[#4edea3] via-[#7c03d3] to-[#b76dff]"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-              {enableClaims && (
-                <button
-                  type="button"
-                  onClick={handleClaimAll}
-                  disabled={claimableLevels.length === 0}
-                  className={clsx(
-                    "mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-black uppercase tracking-[0.12em] transition",
-                    claimableLevels.length > 0
-                      ? "border-[#4edea3]/60 bg-gradient-to-r from-[#00a572] to-[#7c03d3] text-white shadow-[0_0_22px_rgba(78,222,163,0.28)] hover:from-[#13bf86] hover:to-[#8b05ea]"
-                      : "cursor-not-allowed border-[#362348] bg-[#130a1c]/55 text-[#988d9f]",
-                  )}
-                >
-                  <IoSparklesOutline className="h-4 w-4" />
-                  Reclamar todo
-                  {claimableLevels.length > 0 && (
-                    <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px]">
-                      {claimableLevels.length}
-                    </span>
-                  )}
-                </button>
+              <h2 className="mt-1 font-['Bebas_Neue'] text-4xl leading-none text-white drop-shadow sm:text-5xl lg:text-6xl">
+                {data.title}
+              </h2>
+              {data.description && (
+                <p className="mt-2 max-w-3xl text-sm leading-5 text-[#cfc2d6] lg:line-clamp-2">
+                  {data.description}
+                </p>
               )}
-            </div>
+              <div className="mt-4 max-w-[14rem]">
+                <div className="flex items-end gap-2">
+                  <span className="font-['Bebas_Neue'] text-3xl leading-none text-white">
+                    Nv.{currentLevelNumber}
+                  </span>
+                  <span className="font-mono text-sm font-bold text-[#4edea3]">
+                    {formatNumber(cappedProgress)}
+                  </span>
+                  <span className="text-sm font-semibold text-[#988d9f]">
+                    / {formatNumber(data.maxLevel)}
+                  </span>
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full border border-[#362348] bg-[#130a1c]/80">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#4edea3] via-[#7c03d3] to-[#b76dff]"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                {enableClaims && (
+                  <button
+                    type="button"
+                    onClick={handleClaimAll}
+                    disabled={claimableLevels.length === 0}
+                    className={clsx(
+                      "mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-black uppercase tracking-[0.12em] transition",
+                      claimableLevels.length > 0
+                        ? "border-[#4edea3]/60 bg-gradient-to-r from-[#00a572] to-[#7c03d3] text-white shadow-[0_0_22px_rgba(78,222,163,0.28)] hover:from-[#13bf86] hover:to-[#8b05ea]"
+                        : "cursor-not-allowed border-[#362348] bg-[#130a1c]/55 text-[#988d9f]",
+                    )}
+                  >
+                    <IoSparklesOutline className="h-4 w-4" />
+                    Reclamar todo
+                    {claimableLevels.length > 0 && (
+                      <span className="rounded-md bg-white/15 px-1.5 py-0.5 text-[10px]">
+                        {claimableLevels.length}
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="relative flex min-h-[230px] w-full items-center justify-center sm:min-h-[280px]">
@@ -660,9 +650,7 @@ export const ProfileBattlePassSection = ({
                     alt={rewardLabel(selectedLevel)}
                     fill
                     sizes={
-                      selectedLevel.rewardType === "BANNER"
-                        ? "520px"
-                        : "288px"
+                      selectedLevel.rewardType === "BANNER" ? "520px" : "288px"
                     }
                     className={clsx(
                       selectedLevel.rewardType === "BANNER"
@@ -728,14 +716,13 @@ export const ProfileBattlePassSection = ({
         )}
 
         <section className="shrink-0 bg-transparent px-0 py-2 lg:px-4">
-          <div className="relative hidden md:block">
+          <div className="relative block">
             <div
               ref={timelineScrollRef}
-              className="min-w-0 overflow-x-auto overflow-y-hidden pb-3 pt-1 scroll-smooth [&::-webkit-scrollbar]:hidden"
-              style={{ scrollbarWidth: "none" }}
+              className="w-full min-w-0 overflow-x-auto overflow-y-hidden pb-3 pt-1 scroll-smooth"
             >
-              <div className="relative flex min-w-full w-max items-start justify-center gap-9 px-8">
-                <div className="pointer-events-none absolute left-12 right-12 top-[124px] h-2 overflow-hidden rounded-full border border-[#362348] bg-[#130a1c]/80">
+              <div className="relative flex min-w-full w-max items-start justify-center gap-6 px-6 sm:gap-8 sm:px-8 md:gap-9">
+                <div className="pointer-events-none absolute left-10 right-10 top-[104px] h-1.5 overflow-hidden rounded-full border border-[#362348] bg-[#130a1c]/80 md:left-12 md:right-12 md:top-[124px] md:h-2">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-[#4edea3] via-[#7c03d3] to-[#b76dff] shadow-[0_0_14px_rgba(124,3,211,0.65)]"
                     style={{ width: `${progressPercent}%` }}
@@ -755,12 +742,12 @@ export const ProfileBattlePassSection = ({
                       type="button"
                       onClick={() => setFixedLevelId(level.id)}
                       onMouseEnter={() => setFixedLevelId(level.id)}
-                      className="group grid w-[125px] shrink-0 justify-items-center pb-4 text-center outline-none"
+                      className="group grid w-[104px] shrink-0 justify-items-center pb-4 text-center outline-none md:w-[125px]"
                     >
                       <span
                         className={clsx(
                           getFrameClassName(level, isSelected),
-                          "flex h-[100px] w-[100px] items-center justify-center rounded-xl",
+                          "flex h-[82px] w-[82px] items-center justify-center rounded-xl md:h-[100px] md:w-[100px]",
                           isSelected &&
                             (level.rewardType === "AVATAR" ||
                               level.rewardType === "BANNER") &&
@@ -785,23 +772,23 @@ export const ProfileBattlePassSection = ({
                         )}
                         {level.claimed && (
                           <span className="absolute right-1 top-1 rounded-full bg-[#130a1c]/85 p-1">
-                            <IoCheckmarkCircleOutline className="h-4 w-4 text-[#4edea3]" />
+                            <IoCheckmarkCircleOutline className="h-3.5 w-3.5 text-[#4edea3] md:h-4 md:w-4" />
                           </span>
                         )}
                         {!level.claimed && level.unlocked && (
                           <span className="absolute right-1 top-1 rounded-full bg-[#130a1c]/85 p-1">
-                            <IoGiftOutline className="h-4 w-4 text-[#ddb7ff]" />
+                            <IoGiftOutline className="h-3.5 w-3.5 text-[#ddb7ff] md:h-4 md:w-4" />
                           </span>
                         )}
                         {!level.claimed && !level.unlocked && (
                           <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-amber-300/70 bg-[#130a1c]/95 p-1.5 text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.35)]">
-                            <StatusIcon className="h-4 w-4" />
+                            <StatusIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
                           </span>
                         )}
                       </span>
                       <span
                         className={clsx(
-                          "mt-9 rounded-md border px-2 py-0.5 text-sm font-black",
+                          "mt-8 rounded-md border px-2 py-0.5 text-xs font-black md:mt-9 md:text-sm",
                           isSelected
                             ? "border-[#ddb7ff] bg-[#7c03d3]/35 text-white"
                             : "border-[#362348] bg-[#130a1c] text-[#988d9f]",
@@ -814,110 +801,6 @@ export const ProfileBattlePassSection = ({
                 })}
               </div>
             </div>
-          </div>
-
-          <div className="relative space-y-3 pl-5 md:hidden">
-            <div className="absolute bottom-4 left-2 top-4 w-1 overflow-hidden rounded-full bg-[#21182a]">
-              <div
-                className="w-full rounded-full bg-gradient-to-b from-[#4edea3] via-[#7c03d3] to-[#b76dff]"
-                style={{ height: `${progressPercent}%` }}
-              />
-            </div>
-            {data.levels.map((level) => {
-              const image = getRewardImage(level);
-              const StatusIcon = getStatusIcon(level);
-              const isSelected = selectedLevel?.id === level.id;
-
-              return (
-                <div
-                  key={level.id}
-                  className={clsx(
-                    "grid w-full grid-cols-[minmax(0,1fr)_40px] items-center gap-3 rounded-2xl border bg-[#21182a]/88 p-3 text-left transition",
-                    isSelected
-                      ? "border-[#ddb7ff] shadow-[0_0_18px_rgba(124,3,211,0.3)]"
-                      : "border-[#362348]",
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setFixedLevelId(level.id)}
-                    className="grid min-w-0 grid-cols-[52px_minmax(0,1fr)] items-center gap-3 text-left"
-                  >
-                    <span
-                      className={clsx(
-                        getFrameClassName(level, isSelected),
-                        "flex h-14 w-14 items-center justify-center rounded-xl",
-                      )}
-                    >
-                      {image ? (
-                        <Image
-                          src={toAssetStorageUrl(image)}
-                          alt={rewardLabel(level)}
-                          width={72}
-                          height={72}
-                          className={clsx(
-                            "h-full w-full",
-                            level.rewardType === "PV"
-                              ? "object-contain p-1"
-                              : "rounded-[inherit] object-cover object-center",
-                          )}
-                        />
-                      ) : (
-                        <IoGiftOutline className="h-6 w-6 text-[#ddb7ff]" />
-                      )}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-[#988d9f]">
-                        Nivel {level.levelNumber}
-                      </span>
-                      <span className="mt-1 block truncate text-sm font-bold text-white">
-                        {rewardLabel(level)}
-                      </span>
-                      <span
-                        className={clsx(
-                          "mt-1 block text-xs font-semibold",
-                          level.claimed
-                            ? "text-[#4edea3]"
-                            : level.unlocked
-                              ? "text-[#ddb7ff]"
-                              : "text-amber-300",
-                        )}
-                      >
-                        {getStatusLabel(level)}
-                      </span>
-                    </span>
-                  </button>
-
-                  {level.unlocked && !level.claimed && enableClaims ? (
-                    <button
-                      type="button"
-                      aria-label={`Reclamar ${rewardLabel(level)}`}
-                      onClick={() => handleClaim(level)}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#ddb7ff]/45 bg-[#7c03d3]/25 text-[#ddb7ff] transition hover:border-[#ddb7ff] hover:bg-[#7c03d3]/40"
-                    >
-                      <IoGiftOutline className="h-5 w-5" />
-                    </button>
-                  ) : level.unlocked && !level.claimed ? (
-                    <Link
-                      href="/perfil/pase-batalla"
-                      aria-label={`Ver ${rewardLabel(level)} en el pase`}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#ddb7ff]/45 bg-[#7c03d3]/25 text-[#ddb7ff] transition hover:border-[#ddb7ff] hover:bg-[#7c03d3]/40"
-                    >
-                      <IoGiftOutline className="h-5 w-5" />
-                    </Link>
-                  ) : (
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl text-[#ddb7ff]">
-                      <StatusIcon
-                        className={clsx(
-                          "h-6 w-6",
-                          level.claimed ? "text-[#4edea3]" : "text-amber-300",
-                        )}
-                      />
-                    </span>
-                  )}
-                </div>
-              );
-            })}
           </div>
         </section>
       </div>
