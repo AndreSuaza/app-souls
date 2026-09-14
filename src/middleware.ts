@@ -9,6 +9,7 @@ const storeAllowedAdminRoutes = [
 // rutas a las que el usuario con role news puede acceder
 const newsAllowedAdminRoutes = ["/admin/noticias"];
 const protectedRoutes = ["/perfil"];
+const battlePassRoute = "/perfil/pase-batalla";
 const authRoutes = [
   "/auth/login",
   "/auth/register",
@@ -42,6 +43,16 @@ const blockedCrawlerUserAgents = [
   "wget",
   "zgrab",
 ];
+const linkPreviewUserAgents = [
+  "discordbot",
+  "facebookexternalhit",
+  "facebot",
+  "linkedinbot",
+  "slackbot",
+  "telegrambot",
+  "twitterbot",
+  "whatsapp",
+];
 
 // Config especial para middleware: NADA de MongoDB, Prisma, bcrypt, etc.
 // Esto debido a que EDGE no soporta esas librerías (solo Node.js).
@@ -74,6 +85,9 @@ export default baseAuth((req) => {
   const path = nextUrl.pathname;
   const isLoggedIn = !!req.auth;
   const userAgent = req.headers.get("user-agent")?.toLowerCase() ?? "";
+  const isBattlePassLinkPreview =
+    path === battlePassRoute &&
+    linkPreviewUserAgents.some((bot) => userAgent.includes(bot));
 
   if (
     crawlerSensitiveRoutes.some((route) => path.startsWith(route)) &&
@@ -154,6 +168,10 @@ export default baseAuth((req) => {
     )
   ) {
     if (!isLoggedIn) {
+      if (isBattlePassLinkPreview) {
+        return NextResponse.next();
+      }
+
       return NextResponse.redirect(new URL("/auth/login", nextUrl));
     }
   }
