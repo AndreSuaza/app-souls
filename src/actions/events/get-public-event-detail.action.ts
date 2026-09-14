@@ -1,8 +1,13 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import type { PublicEventDetail, PublicEventListItem } from "@/interfaces/events.interface";
+import type {
+  EventStoreSummary,
+  PublicEventDetail,
+  PublicEventListItem,
+} from "@/interfaces/events.interface";
 import { EventSlugSchema } from "@/schemas/events/event.schema";
+import { resolveEventStores } from "./event-store-utils";
 import { resolveEventImageUrl } from "@/utils/event-image";
 
 type PublicEventDetailResult = {
@@ -20,17 +25,28 @@ const mapListItem = (event: {
   startsAt: Date;
   endsAt: Date | null;
   badgeLabel: string | null;
-}): PublicEventListItem => ({
-  id: event.id,
-  slug: event.slug,
-  title: event.title,
-  subtitle: event.subtitle,
-  shortSummary: event.shortSummary,
-  cardImage: resolveEventImageUrl(event.cardImage, "cards"),
-  startsAt: event.startsAt.toISOString(),
-  endsAt: event.endsAt ? event.endsAt.toISOString() : null,
-  badgeLabel: event.badgeLabel,
-});
+  stores?: EventStoreSummary[];
+}): PublicEventListItem => {
+  const stores = event.stores ?? [];
+  const storeCities = Array.from(
+    new Set(stores.map((store) => store.city).filter(Boolean)),
+  );
+
+  return {
+    id: event.id,
+    slug: event.slug,
+    title: event.title,
+    subtitle: event.subtitle,
+    shortSummary: event.shortSummary,
+    cardImage: resolveEventImageUrl(event.cardImage, "cards"),
+    startsAt: event.startsAt.toISOString(),
+    endsAt: event.endsAt ? event.endsAt.toISOString() : null,
+    badgeLabel: event.badgeLabel,
+    storeCity: stores.length > 1 ? "Varias sedes" : (stores[0]?.city ?? null),
+    storeCities,
+    stores,
+  };
+};
 
 export async function getPublicEventDetailAction(
   slug: string,
@@ -59,20 +75,19 @@ export async function getPublicEventDetailAction(
         endsAt: true,
         status: true,
         badgeLabel: true,
-        store: {
-          select: {
-            name: true,
-            slug: true,
-            lat: true,
-            lgn: true,
-          },
-        },
+        storeId: true,
+        storeIds: true,
       },
     });
 
     if (!event || event.status !== "published") {
       return null;
     }
+
+    const eventStores = await resolveEventStores({
+      storeIds: event.storeIds,
+      storeId: event.storeId,
+    });
 
     const recommended = await prisma.event.findMany({
       where: {
@@ -92,17 +107,29 @@ export async function getPublicEventDetailAction(
         startsAt: true,
         endsAt: true,
         badgeLabel: true,
+        storeId: true,
+        storeIds: true,
       },
     });
 
+    const recommendedWithStores = await Promise.all(
+      recommended.map(async (item) => ({
+        ...item,
+        stores: await resolveEventStores({
+          storeIds: item.storeIds,
+          storeId: item.storeId,
+        }),
+      })),
+    );
+
     return {
       event: {
-        ...mapListItem(event),
+        ...mapListItem({ ...event, stores: eventStores }),
         content: event.content,
         featuredImage: resolveEventImageUrl(event.featuredImage, "banners"),
-        store: event.store,
+        store: eventStores.length === 1 ? eventStores[0] : null,
       },
-      recommended: recommended.map(mapListItem),
+      recommended: recommendedWithStores.map(mapListItem),
     };
   } catch (error) {
     console.error("[getPublicEventDetailAction]", error);

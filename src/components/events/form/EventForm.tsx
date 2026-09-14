@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { IoCloseOutline, IoSearchOutline } from "react-icons/io5";
 import { uploadMediaImageAction } from "@/actions/media/upload-media-image.action";
 import { NewsImageModal } from "@/components/news/form/NewsImageModal";
 import { MarkdownEditor } from "@/components/ui/markdown/MarkdownEditor";
@@ -49,22 +50,31 @@ const toDateTimeLocal = (value?: string | null) => {
   return localDate.toISOString().slice(0, 16);
 };
 
-const buildInitialValues = (initialValues?: EventDetail): EventSubmitValues => ({
-  title: initialValues?.title ?? "",
-  subtitle: initialValues?.subtitle ?? "",
-  shortSummary: initialValues?.shortSummary ?? "",
-  content: initialValues?.content ?? "",
-  featuredImage: initialValues?.featuredImage ?? "",
-  cardImage: initialValues?.cardImage ?? "",
-  startsAt: toDateTimeLocal(initialValues?.startsAt),
-  endsAt: toDateTimeLocal(initialValues?.endsAt),
-  status:
-    initialValues?.status && initialValues.status !== "deleted"
-      ? initialValues.status
-      : "draft",
-  badgeLabel: initialValues?.badgeLabel ?? "",
-  storeId: initialValues?.storeId ?? null,
-});
+const buildInitialValues = (initialValues?: EventDetail): EventSubmitValues => {
+  const storeIds = initialValues?.storeIds?.length
+    ? initialValues.storeIds
+    : initialValues?.storeId
+      ? [initialValues.storeId]
+      : [];
+
+  return {
+    title: initialValues?.title ?? "",
+    subtitle: initialValues?.subtitle ?? "",
+    shortSummary: initialValues?.shortSummary ?? "",
+    content: initialValues?.content ?? "",
+    featuredImage: initialValues?.featuredImage ?? "",
+    cardImage: initialValues?.cardImage ?? "",
+    startsAt: toDateTimeLocal(initialValues?.startsAt),
+    endsAt: toDateTimeLocal(initialValues?.endsAt),
+    status:
+      initialValues?.status && initialValues.status !== "deleted"
+        ? initialValues.status
+        : "draft",
+    badgeLabel: initialValues?.badgeLabel ?? "",
+    storeId: storeIds[0] ?? null,
+    storeIds,
+  };
+};
 
 const FormField = ({
   label,
@@ -126,6 +136,7 @@ export const EventForm = ({
   const [pendingCardPreview, setPendingCardPreview] = useState<string | null>(
     null,
   );
+  const [storeQuery, setStoreQuery] = useState("");
   const [stagedFeaturedFile, setStagedFeaturedFile] = useState<File | null>(
     null,
   );
@@ -136,7 +147,12 @@ export const EventForm = ({
   const [stagedCardPreview, setStagedCardPreview] = useState<string | null>(
     null,
   );
-  const localPreviewRefs = useRef<Array<string | null>>([null, null, null, null]);
+  const localPreviewRefs = useRef<Array<string | null>>([
+    null,
+    null,
+    null,
+    null,
+  ]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -173,6 +189,52 @@ export const EventForm = ({
   ) => {
     setValues((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
+
+  const updateSelectedStores = (storeIds: string[]) => {
+    const uniqueStoreIds = Array.from(new Set(storeIds));
+    setValues((prev) => ({
+      ...prev,
+      storeIds: uniqueStoreIds,
+      storeId: uniqueStoreIds[0] ?? null,
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      storeId: undefined,
+      storeIds: undefined,
+    }));
+  };
+
+  const selectedStoreIds = useMemo(
+    () => values.storeIds ?? [],
+    [values.storeIds],
+  );
+  const selectedStores = useMemo(() => {
+    const storeMap = new Map(storeOptions.map((store) => [store.id, store]));
+    return selectedStoreIds
+      .map((storeId) => storeMap.get(storeId))
+      .filter((store): store is StoreOption => Boolean(store));
+  }, [selectedStoreIds, storeOptions]);
+
+  const filteredStoreOptions = useMemo(() => {
+    const term = storeQuery.trim().toLowerCase();
+    if (!term) return storeOptions;
+
+    return storeOptions.filter((store) =>
+      [store.name, store.city, store.address]
+        .filter(Boolean)
+        .some((value) => value?.toLowerCase().includes(term)),
+    );
+  }, [storeOptions, storeQuery]);
+
+  const toggleStore = (storeId: string) => {
+    updateSelectedStores(
+      selectedStoreIds.includes(storeId)
+        ? selectedStoreIds.filter(
+            (selectedStoreId) => selectedStoreId !== storeId,
+          )
+        : [...selectedStoreIds, storeId],
+    );
   };
 
   const clearFeaturedLocal = () => {
@@ -479,7 +541,11 @@ export const EventForm = ({
       </div>
 
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
-        <FormField label="Inicio" htmlFor="event-starts-at" error={errors.startsAt}>
+        <FormField
+          label="Inicio"
+          htmlFor="event-starts-at"
+          error={errors.startsAt}
+        >
           <input
             id="event-starts-at"
             type="datetime-local"
@@ -533,23 +599,116 @@ export const EventForm = ({
           />
         </FormField>
 
-        <FormField label="Tienda" htmlFor="event-store" error={errors.storeId}>
-          <select
-            id="event-store"
-            value={values.storeId ?? ""}
-            onChange={(event) =>
-              updateField("storeId", event.target.value || null)
-            }
-            className={inputClassName}
+        <div className="md:col-span-2 xl:col-span-5">
+          <FormField
+            label="Tiendas"
+            htmlFor="event-store-search"
+            error={errors.storeIds ?? errors.storeId}
           >
-            <option value="">Sin tienda asociada</option>
-            {storeOptions.map((store) => (
-              <option key={store.id} value={store.id}>
-                {store.name}
-              </option>
-            ))}
-          </select>
-        </FormField>
+            <div className="rounded-lg border border-tournament-dark-accent bg-white p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                {selectedStores.length === 0 ? (
+                  <span className="rounded-full border border-dashed border-slate-300 px-3 py-1 text-xs font-semibold text-slate-500 dark:border-tournament-dark-border dark:text-slate-400">
+                    Sin tiendas asociadas
+                  </span>
+                ) : (
+                  selectedStores.map((store) => (
+                    <span
+                      key={store.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 dark:border-purple-300/30 dark:bg-purple-400/10 dark:text-purple-100"
+                    >
+                      {store.name}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateSelectedStores(
+                            selectedStoreIds.filter(
+                              (selectedStoreId) => selectedStoreId !== store.id,
+                            ),
+                          )
+                        }
+                        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-purple-700 transition hover:bg-purple-200 dark:text-purple-100 dark:hover:bg-purple-300/20"
+                        title={`Quitar ${store.name}`}
+                      >
+                        <IoCloseOutline className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="relative flex-1">
+                  <IoSearchOutline className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+                  <input
+                    id="event-store-search"
+                    type="search"
+                    value={storeQuery}
+                    onChange={(event) => setStoreQuery(event.target.value)}
+                    className={`${inputClassName} pl-10`}
+                    placeholder="Buscar tienda por nombre, ciudad o dirección"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateSelectedStores(storeOptions.map((store) => store.id))
+                  }
+                  className="rounded-lg border border-tournament-dark-accent px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:bg-tournament-dark-muted"
+                >
+                  Seleccionar todas
+                </button>
+                {selectedStoreIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => updateSelectedStores([])}
+                    className="rounded-lg border border-tournament-dark-accent px-3 py-2 text-xs font-bold text-slate-500 transition hover:bg-slate-50 dark:border-tournament-dark-border dark:text-slate-400 dark:hover:bg-tournament-dark-muted"
+                  >
+                    Limpiar
+                  </button>
+                )}
+              </div>
+
+              <div className="mt-3 max-h-52 space-y-2 overflow-y-auto pr-1">
+                {filteredStoreOptions.length === 0 ? (
+                  <p className="rounded-lg border border-dashed border-slate-300 p-3 text-center text-xs text-slate-500 dark:border-tournament-dark-border dark:text-slate-400">
+                    No hay tiendas para esta búsqueda.
+                  </p>
+                ) : (
+                  filteredStoreOptions.map((store) => {
+                    const isSelected = selectedStoreIds.includes(store.id);
+
+                    return (
+                      <label
+                        key={store.id}
+                        className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 transition hover:border-purple-400 hover:bg-purple-50 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:hover:border-purple-300/50 dark:hover:bg-purple-400/10"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleStore(store.id)}
+                          className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-slate-800 dark:text-white">
+                            {store.name}
+                          </span>
+                          {(store.city || store.address) && (
+                            <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
+                              {[store.city, store.address]
+                                .filter(Boolean)
+                                .join(" - ")}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </FormField>
+        </div>
       </div>
 
       <MarkdownEditor
@@ -595,9 +754,7 @@ export const EventForm = ({
       </div>
 
       {uploadError && (
-        <p className="text-sm text-red-500 dark:text-red-300">
-          {uploadError}
-        </p>
+        <p className="text-sm text-red-500 dark:text-red-300">{uploadError}</p>
       )}
 
       <NewsImageModal
@@ -616,7 +773,10 @@ export const EventForm = ({
             ? stagedFeaturedPreview && stagedFeaturedFile
               ? { url: stagedFeaturedPreview, name: stagedFeaturedFile.name }
               : pendingFeaturedPreview && pendingFeaturedFile
-                ? { url: pendingFeaturedPreview, name: pendingFeaturedFile.name }
+                ? {
+                    url: pendingFeaturedPreview,
+                    name: pendingFeaturedFile.name,
+                  }
                 : null
             : stagedCardPreview && stagedCardFile
               ? { url: stagedCardPreview, name: stagedCardFile.name }

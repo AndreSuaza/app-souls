@@ -381,6 +381,7 @@ model Event {
   status        EventStatus @default(draft)
   badgeLabel    String?
   storeId       String?     @db.ObjectId
+  storeIds      String[]    @default([]) @db.ObjectId
   store         Store?      @relation(fields: [storeId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt

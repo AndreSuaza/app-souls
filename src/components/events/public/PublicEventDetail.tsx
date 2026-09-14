@@ -7,11 +7,13 @@ import {
   IoTimeOutline,
 } from "react-icons/io5";
 import type {
+  EventStoreSummary,
   PublicEventDetail,
   PublicEventListItem,
 } from "@/interfaces/events.interface";
 import { MarkdownContent } from "@/components/ui/markdown/MarkdownContent";
 import { EventDetailTimelineNav } from "./EventDetailTimelineNav";
+import { EventStoresScrollButton } from "./EventStoresScrollButton";
 import { eventImageFallbacks } from "@/models/media-fallbacks.models";
 import { FallbackImage } from "@/components/ui/image/FallbackImage";
 import { Map } from "@/components/map/Map";
@@ -174,21 +176,31 @@ const RecommendedCard = ({
 export const PublicEventDetailView = ({ event, recommended }: Props) => {
   const dateParts = formatEventDateParts(event.startsAt);
   const eventRange = formatEventRange(event.startsAt, event.endsAt);
+  const eventStores = event.stores.length
+    ? event.stores
+    : event.store
+      ? [event.store]
+      : [];
+  const singleStore = eventStores.length === 1 ? eventStores[0] : null;
+  const hasMultipleStores = eventStores.length > 1;
   // Valida coordenadas para evitar inicializar Google Maps con datos invalidos.
   const hasValidCoordinates =
-    event.store !== null &&
-    Number.isFinite(event.store.lat) &&
-    Number.isFinite(event.store.lgn) &&
-    Math.abs(event.store.lat) <= 90 &&
-    Math.abs(event.store.lgn) <= 180;
+    singleStore !== null &&
+    Number.isFinite(singleStore.lat) &&
+    Number.isFinite(singleStore.lgn) &&
+    Math.abs(singleStore.lat) <= 90 &&
+    Math.abs(singleStore.lgn) <= 180;
   const showMobileSubtitle =
-    !event.store ||
+    !singleStore ||
     event.subtitle.trim().toLocaleLowerCase("es") !==
-      event.store.name.trim().toLocaleLowerCase("es");
+      singleStore.name.trim().toLocaleLowerCase("es");
   const timelineItems = [
     { href: "#fecha", label: "Fecha" },
     { href: "#detalles", label: "Detalles" },
-    ...(event.store ? [{ href: "#ubicacion", label: "Ubicación" }] : []),
+    ...(singleStore ? [{ href: "#ubicacion", label: "Ubicación" }] : []),
+    ...(hasMultipleStores
+      ? [{ href: "#tiendas-asociadas-desktop", label: "Sedes" }]
+      : []),
     ...(recommended.length > 0
       ? [{ href: "#proximos-eventos", label: "Otros eventos" }]
       : []),
@@ -216,15 +228,23 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                 <h1 className="mt-5 font-['Bebas_Neue'] text-7xl uppercase leading-[0.9] tracking-wide text-white drop-shadow-xl xl:text-8xl">
                   {event.title}
                 </h1>
-                {event.store && (
+                {singleStore && (
                   <Link
-                    href={`/tiendas/${event.store.slug}`}
+                    href={`/tiendas/${singleStore.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-3 inline-flex text-lg font-semibold tracking-wide text-slate-200 drop-shadow-md transition hover:text-amber-200"
                   >
-                    {event.store.name}
+                    {singleStore.name}
                   </Link>
+                )}
+                {hasMultipleStores && (
+                  <EventStoresScrollButton
+                    targetId="tiendas-asociadas-desktop"
+                    className="mt-3 inline-flex text-lg font-semibold tracking-wide text-slate-200 drop-shadow-md transition hover:text-amber-200"
+                  >
+                    Ver sedes del evento
+                  </EventStoresScrollButton>
                 )}
               </div>
               <Link
@@ -277,10 +297,18 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                     <h2 className="font-['Bebas_Neue'] text-4xl uppercase leading-none tracking-wide text-purple-100">
                       {event.title}
                     </h2>
-                    {event.store && (
+                    {singleStore && (
                       <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber-100">
-                        {event.store.name}
+                        {singleStore.name}
                       </p>
+                    )}
+                    {hasMultipleStores && (
+                      <EventStoresScrollButton
+                        targetId="tiendas-asociadas-mobile"
+                        className="mt-2 text-left text-xs font-semibold uppercase tracking-[0.16em] text-amber-100 transition hover:text-amber-200"
+                      >
+                        Ver tiendas asociadas
+                      </EventStoresScrollButton>
                     )}
                     {showMobileSubtitle && (
                       <p className="mt-1 text-sm text-slate-200">
@@ -308,24 +336,35 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
               />
             </MobileTimelineBlock>
 
-            {event.store && (
+            {singleStore && (
               <div id="ubicacion" className="scroll-mt-28">
                 <MobileTimelineBlock
                   icon={<IoLocationOutline />}
-                  label={event.store.name}
+                  label={singleStore.name}
                 >
                   {hasValidCoordinates ? (
                     <Map
                       className="h-[280px] w-full rounded-lg"
-                      lat={event.store.lat}
-                      lgn={event.store.lgn}
-                      title={event.store.name}
+                      lat={singleStore.lat}
+                      lgn={singleStore.lgn}
+                      title={singleStore.name}
                     />
                   ) : (
                     <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
                       Mapa no disponible.
                     </div>
                   )}
+                </MobileTimelineBlock>
+              </div>
+            )}
+
+            {hasMultipleStores && (
+              <div id="tiendas-asociadas-mobile" className="scroll-mt-28">
+                <MobileTimelineBlock
+                  icon={<IoLocationOutline />}
+                  label="Tiendas asociadas"
+                >
+                  <AssociatedStoresList stores={eventStores} compact />
                 </MobileTimelineBlock>
               </div>
             )}
@@ -415,23 +454,23 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
               </div>
             </section>
 
-            {event.store && (
+            {singleStore && (
               <section id="ubicacion" className="scroll-mt-28 space-y-4">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.24em] text-purple-700 dark:text-purple-200">
                     Ubicación del evento
                   </p>
                   <h2 className="mt-3 font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
-                    {event.store.name}
+                    {singleStore.name}
                   </h2>
                 </div>
                 <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
                   {hasValidCoordinates ? (
                     <Map
                       className="h-[320px] w-full"
-                      lat={event.store.lat}
-                      lgn={event.store.lgn}
-                      title={event.store.name}
+                      lat={singleStore.lat}
+                      lgn={singleStore.lgn}
+                      title={singleStore.name}
                     />
                   ) : (
                     <div className="flex h-[320px] items-center justify-center border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300">
@@ -439,6 +478,23 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
                     </div>
                   )}
                 </div>
+              </section>
+            )}
+
+            {hasMultipleStores && (
+              <section
+                id="tiendas-asociadas-desktop"
+                className="scroll-mt-28 space-y-4"
+              >
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.24em] text-purple-700 dark:text-purple-200">
+                    Tiendas asociadas
+                  </p>
+                  <h2 className="mt-3 font-['Bebas_Neue'] text-5xl uppercase leading-none tracking-wide text-slate-950 dark:text-white">
+                    Sedes del evento
+                  </h2>
+                </div>
+                <AssociatedStoresList stores={eventStores} />
               </section>
             )}
 
@@ -469,6 +525,36 @@ export const PublicEventDetailView = ({ event, recommended }: Props) => {
     </div>
   );
 };
+
+const AssociatedStoresList = ({
+  stores,
+  compact = false,
+}: {
+  stores: EventStoreSummary[];
+  compact?: boolean;
+}) => (
+  <div className={compact ? "space-y-3" : "grid gap-4 md:grid-cols-2"}>
+    {stores.map((store) => (
+      <Link
+        key={store.id}
+        href={`/tiendas/${store.slug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-200/40 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:hover:border-purple-300/60 dark:hover:shadow-purple-950/30"
+      >
+        <p className="font-['Bebas_Neue'] text-3xl uppercase leading-none tracking-wide text-slate-950 transition group-hover:text-purple-700 dark:text-white dark:group-hover:text-purple-200">
+          {store.name}
+        </p>
+        <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+          {[store.city, store.address].filter(Boolean).join(" - ")}
+        </p>
+        <span className="mt-4 inline-flex text-xs font-black uppercase tracking-[0.18em] text-purple-700 transition group-hover:text-amber-600 dark:text-purple-200 dark:group-hover:text-amber-200">
+          Abrir tienda
+        </span>
+      </Link>
+    ))}
+  </div>
+);
 
 const MobileTimelineBlock = ({
   icon,

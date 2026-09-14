@@ -1,5 +1,16 @@
 export type EventStatus = "draft" | "scheduled" | "published" | "deleted";
 
+export type EventStoreSummary = {
+  id: string;
+  name: string;
+  slug: string;
+  city: string;
+  address: string;
+  country: string;
+  lat: number;
+  lgn: number;
+};
+
 export type AdminEventListItem = {
   id: string;
   slug: string;
@@ -10,7 +21,9 @@ export type AdminEventListItem = {
   endsAt?: string | null;
   badgeLabel?: string | null;
   storeId?: string | null;
+  storeIds: string[];
   storeName?: string | null;
+  stores: EventStoreSummary[];
   createdAt: string;
 };
 
@@ -37,15 +50,12 @@ export type PublicEventListItem = {
   endsAt?: string | null;
   badgeLabel?: string | null;
   storeCity?: string | null;
+  storeCities: string[];
+  stores: EventStoreSummary[];
 };
 
 export type PublicEventDetail = PublicEventListItem & {
   content: string;
   featuredImage: string;
-  store: {
-    name: string;
-    slug: string;
-    lat: number;
-    lgn: number;
-  } | null;
+  store: EventStoreSummary | null;
 };

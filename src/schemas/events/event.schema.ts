@@ -6,6 +6,10 @@ export const EventSlugSchema = z
   .min(1, "El slug del evento es obligatorio")
   .max(180, "El slug del evento no puede superar los 180 caracteres");
 
+const StoreIdSchema = z
+  .string()
+  .regex(/^[a-f\d]{24}$/i, "La tienda seleccionada no es válida");
+
 const BaseEventObjectSchema = z.object({
   title: z
     .string()
@@ -28,12 +32,32 @@ const BaseEventObjectSchema = z.object({
     .enum(["draft", "scheduled", "published", "deleted"])
     .default("draft"),
   badgeLabel: z.string().max(40).optional().nullable(),
-  storeId: z
-    .string()
-    .regex(/^[a-f\d]{24}$/i, "La tienda seleccionada no es válida")
-    .optional()
-    .nullable(),
+  storeId: StoreIdSchema.optional().nullable(),
+  storeIds: z.array(StoreIdSchema).optional().default([]),
 });
+
+const normalizeEventStores = <
+  T extends { storeId?: string | null; storeIds?: string[] },
+>(
+  data: T,
+) => {
+  const storeIds = Array.from(
+    new Set(
+      (data.storeIds?.length
+        ? data.storeIds
+        : data.storeId
+          ? [data.storeId]
+          : []
+      ).filter(Boolean),
+    ),
+  );
+
+  return {
+    ...data,
+    storeIds,
+    storeId: storeIds[0] ?? null,
+  };
+};
 
 const validateEventDates = (data: {
   startsAt: string | Date;
@@ -56,17 +80,16 @@ const eventDateRefinement = {
 export const CreateEventSchema = BaseEventObjectSchema.refine(
   validateEventDates,
   eventDateRefinement,
-);
+).transform(normalizeEventStores);
 
 export type CreateEventInput = z.infer<typeof CreateEventSchema>;
 
 export const UpdateEventSchema = BaseEventObjectSchema.extend({
   eventId: z.string().min(1, "El evento es obligatorio"),
-}).refine(
-  (data) => {
+})
+  .refine((data) => {
     return validateEventDates(data);
-  },
-  eventDateRefinement,
-);
+  }, eventDateRefinement)
+  .transform(normalizeEventStores);
 
 export type UpdateEventInput = z.infer<typeof UpdateEventSchema>;

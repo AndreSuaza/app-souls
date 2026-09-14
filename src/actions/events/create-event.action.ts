@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { CreateEventSchema, type CreateEventInput } from "@/schemas";
+import { orderEventStores } from "./event-store-utils";
 import {
   buildEventCompositeSlug,
   EVENT_SLUG_MAX_LENGTH,
@@ -64,16 +65,22 @@ export async function createEventAction(input: CreateEventInput) {
       : null;
 
     let storeName: string | null = null;
-    if (data.storeId) {
-      const store = await prisma.store.findUnique({
-        where: { id: data.storeId },
+    const selectedStoreIds = data.storeIds;
+
+    if (selectedStoreIds.length > 0) {
+      const stores = await prisma.store.findMany({
+        where: { id: { in: selectedStoreIds } },
         select: { id: true, name: true },
       });
 
-      if (!store) {
-        throw new Error("La tienda seleccionada no existe");
+      if (stores.length !== selectedStoreIds.length) {
+        throw new Error("Una o más tiendas seleccionadas no existen");
       }
-      storeName = store.name;
+
+      const orderedStores = orderEventStores(selectedStoreIds, stores);
+      if (orderedStores.length === 1) {
+        storeName = orderedStores[0].name;
+      }
     }
 
     const baseSlug = buildEventCompositeSlug({
@@ -101,7 +108,8 @@ export async function createEventAction(input: CreateEventInput) {
         endsAt,
         status: data.status,
         badgeLabel: data.badgeLabel?.trim() || null,
-        storeId: data.storeId || null,
+        storeId: selectedStoreIds[0] ?? null,
+        storeIds: selectedStoreIds,
       },
       select: { slug: true },
     });

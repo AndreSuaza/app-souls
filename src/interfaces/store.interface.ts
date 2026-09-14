@@ -1,47 +1,47 @@
-
-
 export interface Store {
-    id: string,
-    name: string,     
-    slug?: string,
-    city: string,
-    address: string,
-    country: string,
-    postalCode: string,
-    phone: string,
-    lat: number,
-    lgn: number,
-    url: string,
-    createDate: Date,
+  id: string;
+  name: string;
+  slug?: string;
+  city: string;
+  address: string;
+  country: string;
+  postalCode: string;
+  phone: string;
+  lat: number;
+  lgn: number;
+  url: string;
+  createDate: Date;
 }
 
 export interface StoreOption {
-    id: string,
-    name: string,
+  id: string;
+  name: string;
+  city?: string;
+  address?: string;
 }
 
 export interface StoreDetail {
-    id: string,
-    name: string,
-    slug: string,
-    city: string,
-    address: string,
-    country: string,
-    postalCode: string,
-    phone: string,
-    lat: number,
-    lgn: number,
-    url: string,
+  id: string;
+  name: string;
+  slug: string;
+  city: string;
+  address: string;
+  country: string;
+  postalCode: string;
+  phone: string;
+  lat: number;
+  lgn: number;
+  url: string;
 }
 
 export interface StorePendingTournament {
-    id: string,
-    title: string,
-    description: string,
-    date: string,
+  id: string;
+  title: string;
+  description: string;
+  date: string;
 }
 
 export interface StoreDetailResponse {
-    store: StoreDetail,
-    tournaments: StorePendingTournament[],
+  store: StoreDetail;
+  tournaments: StorePendingTournament[];
 }

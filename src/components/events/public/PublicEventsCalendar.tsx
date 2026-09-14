@@ -133,6 +133,13 @@ const isPastEvent = (event: PublicEventListItem, referenceTime: number) => {
   return endDate ? endDate.getTime() < referenceTime : false;
 };
 
+const getEventCities = (event: PublicEventListItem) =>
+  event.storeCities.length > 0
+    ? event.storeCities
+    : event.storeCity
+      ? [event.storeCity]
+      : [];
+
 const PastEventCard = ({
   event,
   compact = false,
@@ -193,7 +200,9 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
       Array.from(
         new Set(
           upcomingEvents
-            .map((event) => event.storeCity?.trim())
+            .flatMap((event) =>
+              getEventCities(event).map((city) => city.trim()),
+            )
             .filter((city): city is string => Boolean(city)),
         ),
       ).sort((cityA, cityB) => cityA.localeCompare(cityB, "es")),
@@ -203,7 +212,7 @@ export const PublicEventsCalendar = ({ events, referenceDate }: Props) => {
     if (selectedCities.length === 0) return upcomingEvents;
 
     return upcomingEvents.filter((event) =>
-      selectedCities.includes(event.storeCity ?? ""),
+      getEventCities(event).some((city) => selectedCities.includes(city)),
     );
   }, [selectedCities, upcomingEvents]);
   const pastEvents = useMemo(

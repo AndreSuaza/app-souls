@@ -8,6 +8,8 @@ export const getStoreOptionsAction = async () => {
       select: {
         id: true,
         name: true,
+        city: true,
+        address: true,
       },
       orderBy: [
         {

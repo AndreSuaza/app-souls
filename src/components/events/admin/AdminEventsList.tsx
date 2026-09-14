@@ -10,7 +10,10 @@ import {
   IoTrashOutline,
 } from "react-icons/io5";
 import { deleteEventAction } from "@/actions/events/delete-event.action";
-import type { AdminEventListItem, EventStatus } from "@/interfaces/events.interface";
+import type {
+  AdminEventListItem,
+  EventStatus,
+} from "@/interfaces/events.interface";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 
@@ -72,6 +75,12 @@ const formatDate = (value: string) => {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+};
+
+const getEventStoreLabel = (event: AdminEventListItem) => {
+  if (event.stores.length === 0) return "Sin tienda";
+  if (event.stores.length === 1) return event.stores[0].name;
+  return `${event.stores.length} tiendas`;
 };
 
 export const AdminEventsList = ({ events, onDeleted }: Props) => {
@@ -140,6 +149,11 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
         event.subtitle,
         event.badgeLabel,
         event.storeName,
+        ...event.stores.flatMap((store) => [
+          store.name,
+          store.city,
+          store.address,
+        ]),
       ]
         .filter(Boolean)
         .some((value) => value?.toLowerCase().includes(term));
@@ -270,7 +284,9 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
           </span>
           <select
             value={dateFilter}
-            onChange={(event) => setDateFilter(event.target.value as DateFilter)}
+            onChange={(event) =>
+              setDateFilter(event.target.value as DateFilter)
+            }
             className="mt-1 rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white"
           >
             {DATE_OPTIONS.map((option) => (
@@ -331,7 +347,7 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
                         {formatDate(event.startsAt)}
                       </td>
                       <td className="px-4 py-3 text-xs">
-                        {event.storeName ?? "Sin tienda"}
+                        {getEventStoreLabel(event)}
                       </td>
                       <td className="px-4 py-3 text-xs">
                         {event.badgeLabel ?? "Sin etiqueta"}
@@ -401,7 +417,7 @@ export const AdminEventsList = ({ events, onDeleted }: Props) => {
                 </div>
 
                 <div className="mt-3 space-y-1 text-xs text-slate-500 dark:text-slate-400">
-                  <p>Tienda: {event.storeName ?? "Sin tienda"}</p>
+                  <p>Tienda: {getEventStoreLabel(event)}</p>
                   <p>Etiqueta: {event.badgeLabel ?? "Sin etiqueta"}</p>
                 </div>
               </div>

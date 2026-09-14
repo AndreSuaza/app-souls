@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import type { EventDetail } from "@/interfaces/events.interface";
 import { prisma } from "@/lib/prisma";
 import { EventSlugSchema } from "@/schemas/events/event.schema";
+import { resolveEventStores } from "./event-store-utils";
 
 export async function getEventByIdAction(
   slug: string,
@@ -33,11 +34,7 @@ export async function getEventByIdAction(
         status: true,
         badgeLabel: true,
         storeId: true,
-        store: {
-          select: {
-            name: true,
-          },
-        },
+        storeIds: true,
         createdAt: true,
       },
     });
@@ -45,6 +42,11 @@ export async function getEventByIdAction(
     if (!event || event.status === "deleted") {
       return null;
     }
+
+    const stores = await resolveEventStores({
+      storeIds: event.storeIds,
+      storeId: event.storeId,
+    });
 
     return {
       id: event.id,
@@ -59,8 +61,15 @@ export async function getEventByIdAction(
       endsAt: event.endsAt ? event.endsAt.toISOString() : null,
       status: event.status,
       badgeLabel: event.badgeLabel,
-      storeId: event.storeId,
-      storeName: event.store?.name ?? null,
+      storeId: stores[0]?.id ?? event.storeId,
+      storeIds: stores.map((store) => store.id),
+      storeName:
+        stores.length === 1
+          ? stores[0].name
+          : stores.length > 1
+            ? `${stores.length} tiendas`
+            : null,
+      stores,
       createdAt: event.createdAt.toISOString(),
     };
   } catch (error) {
