@@ -331,57 +331,59 @@ const UserDetailModal = ({
               <p>Actualizado: {formatDate(user.updatedAt)}</p>
             </div>
 
-          <section className="rounded-2xl border border-slate-200 p-4 dark:border-tournament-dark-border">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-              Historial reciente de PV
-            </h3>
-            <div className="mt-4 space-y-3">
-              {historyLoading && (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Cargando historial...
-                </p>
-              )}
-              {!historyLoading && history.length === 0 && (
-                <p className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-tournament-dark-border dark:text-slate-400">
-                  Este usuario no tiene ajustes manuales registrados.
-                </p>
-              )}
-              {!historyLoading &&
-                history.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/40"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span
-                        className={clsx(
-                          "text-sm font-bold",
-                          item.amount > 0
-                            ? "text-emerald-600 dark:text-emerald-300"
-                            : "text-red-600 dark:text-red-300",
-                        )}
-                      >
-                        {item.amount > 0 ? "+" : ""}
-                        {item.amount} PV
-                      </span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {formatDate(item.createdAt)}
-                      </span>
+            <section className="rounded-2xl border border-slate-200 p-4 dark:border-tournament-dark-border">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                Historial reciente de PV
+              </h3>
+              <div className="mt-4 space-y-3">
+                {historyLoading && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Cargando historial...
+                  </p>
+                )}
+                {!historyLoading && history.length === 0 && (
+                  <p className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-tournament-dark-border dark:text-slate-400">
+                    Este usuario no tiene ajustes manuales registrados.
+                  </p>
+                )}
+                {!historyLoading &&
+                  history.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/40"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span
+                          className={clsx(
+                            "text-sm font-bold",
+                            item.amount > 0
+                              ? "text-emerald-600 dark:text-emerald-300"
+                              : "text-red-600 dark:text-red-300",
+                          )}
+                        >
+                          {item.amount > 0 ? "+" : ""}
+                          {item.amount} PV
+                        </span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {formatDate(item.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
+                        {item.previousBalance} → {item.nextBalance} PV
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {item.reason}
+                      </p>
+                      <p className="mt-2 text-xs text-slate-400">
+                        Admin:{" "}
+                        {item.admin.nickname ??
+                          item.admin.email ??
+                          item.admin.id}
+                      </p>
                     </div>
-                    <p className="mt-1 text-sm text-slate-700 dark:text-slate-200">
-                      {item.previousBalance} → {item.nextBalance} PV
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      {item.reason}
-                    </p>
-                    <p className="mt-2 text-xs text-slate-400">
-                      Admin:{" "}
-                      {item.admin.nickname ?? item.admin.email ?? item.admin.id}
-                    </p>
-                  </div>
-                ))}
-            </div>
-          </section>
+                  ))}
+              </div>
+            </section>
           </div>
         </div>
       </div>
@@ -907,8 +909,8 @@ export const AdminUsersManager = () => {
     openConfirmation({
       text: active ? "Confirmar activacion" : "Confirmar desactivacion",
       description: active
-        ? `${user.nickname} podra iniciar sesion nuevamente.`
-        : `${user.nickname} no podra iniciar sesion mientras este inactivo.`,
+        ? `${user.nickname} podra iniciar sesión nuevamente.`
+        : `${user.nickname} no podra iniciar sesión mientras este inactivo.`,
       action: async () => {
         try {
           setSaving(true);

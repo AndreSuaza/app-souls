@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { userRegistration } from "@/actions/auth/register";
-import { simulatorCorsHeaders, simulatorOptionsResponse } from "@/lib/simulator-cors";
+import {
+  simulatorCorsHeaders,
+  simulatorOptionsResponse,
+} from "@/lib/simulator-cors";
 import { RegisterSchema } from "@/schemas";
 
 export const runtime = "nodejs";
@@ -11,7 +14,9 @@ export async function OPTIONS(request: Request) {
 
 export async function POST(request: Request) {
   const headers = simulatorCorsHeaders(request.headers.get("origin"));
-  const parsed = RegisterSchema.safeParse(await request.json().catch(() => null));
+  const parsed = RegisterSchema.safeParse(
+    await request.json().catch(() => null),
+  );
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -20,16 +25,25 @@ export async function POST(request: Request) {
     );
   }
 
-  const result = await userRegistration({ ...parsed.data, image: parsed.data.image ?? "" });
+  const result = await userRegistration({
+    ...parsed.data,
+    image: parsed.data.image ?? "",
+  });
 
   if (!("success" in result) || !result.success) {
-    const message = "message" in result && result.message ? result.message : "No se pudo crear la cuenta.";
+    const message =
+      "message" in result && result.message
+        ? result.message
+        : "No se pudo crear la cuenta.";
     const status = /registrado|uso/i.test(message) ? 409 : 400;
     return NextResponse.json({ error: message }, { status, headers });
   }
 
   return NextResponse.json(
-    { success: true, message: "Cuenta creada. Ya puedes iniciar sesion en el simulador." },
+    {
+      success: true,
+      message: "Cuenta creada. Ya puedes iniciar sesión en el simulador.",
+    },
     { status: 201, headers },
   );
 }

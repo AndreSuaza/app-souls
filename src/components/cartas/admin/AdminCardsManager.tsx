@@ -208,7 +208,7 @@ export const AdminCardsManager = ({ properties }: Props) => {
               <input
                 value={text}
                 onChange={(event) => setText(event.target.value)}
-                placeholder="Buscar por nombre, codigo, numeracion o efecto"
+                placeholder="Buscar por nombre, código, numeración o efecto"
                 className="w-full rounded-lg border border-tournament-dark-accent bg-white py-2 pl-9 pr-3 text-sm text-slate-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
               />
             </span>

@@ -121,7 +121,8 @@ const buildAdminWhere = (
   if (input.productId) and.push({ productId: input.productId });
   if (input.rarityId) and.push({ raritiesIds: { has: input.rarityId } });
   if (input.typeId) and.push({ typeIds: { has: input.typeId } });
-  if (input.archetypeId) and.push({ archetypesIds: { has: input.archetypeId } });
+  if (input.archetypeId)
+    and.push({ archetypesIds: { has: input.archetypeId } });
   if (input.keywordId) and.push({ keywordsIds: { has: input.keywordId } });
   if (input.rotation !== undefined) and.push({ rotation: input.rotation });
   if (input.image === "missing") {
@@ -193,9 +194,12 @@ const assertUniqueCard = async ({
   });
 
   if (!conflict) return;
-  if (conflict.code === code) throw new Error("El codigo de la carta ya existe");
+  if (conflict.code === code)
+    throw new Error("El código de la carta ya existe");
   if (conflict.slug === slug) throw new Error("El slug de la carta ya existe");
-  throw new Error("Ya existe una carta con la misma combinacion de codigo y numeracion");
+  throw new Error(
+    "Ya existe una carta con la misma combinación de código y numeración",
+  );
 };
 
 const toCardData = (
@@ -229,7 +233,10 @@ export async function getAdminCardPropertiesAction() {
       select: { id: true, name: true, code: true },
       orderBy: [{ name: "asc" }],
     }),
-    prisma.type.findMany({ select: { id: true, name: true }, orderBy: [{ name: "asc" }] }),
+    prisma.type.findMany({
+      select: { id: true, name: true },
+      orderBy: [{ name: "asc" }],
+    }),
     prisma.archetype.findMany({
       select: { id: true, name: true },
       orderBy: [{ name: "asc" }],
@@ -306,7 +313,9 @@ export async function uploadCardImageAction(formData: FormData) {
   }
 
   const inputBuffer = Buffer.from(await file.arrayBuffer());
-  const outputBuffer = await sharp(inputBuffer).webp({ quality: 88 }).toBuffer();
+  const outputBuffer = await sharp(inputBuffer)
+    .webp({ quality: 88 })
+    .toBuffer();
   const path = buildCardImageKey(parsed.code, parsed.idd);
 
   const asset = await uploadAsset({
