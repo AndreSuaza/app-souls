@@ -4,6 +4,7 @@ import Image from "next/image";
 import clsx from "clsx";
 import { useCallback, useEffect, useState } from "react";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
+import { TiltCard } from "@/components/ui/tilt/TiltCard";
 
 const pages = [
   {
@@ -119,7 +120,7 @@ export function AvanceEtereoCardsCarouselSection() {
   return (
     <section className="relative w-full overflow-hidden bg-transparent py-14  md:py-20">
       <div className="relative mx-auto grid min-h-[680px] w-full max-w-7xl grid-cols-1 items-start gap-8 px-6 pb-48 lg:grid-cols-2 lg:px-10 lg:pb-56">
-        <div className="relative z-20 grid max-w-xl text-center lg:pt-6 lg:text-left">
+        <div className="relative z-20 mx-auto grid w-full max-w-xl text-center lg:mx-0 lg:pt-6 lg:text-left">
           {pages.map((page, index) => (
             <div
               key={page.id}
@@ -157,8 +158,8 @@ export function AvanceEtereoCardsCarouselSection() {
               className={clsx(
                 "absolute inset-x-0 top-0 mx-auto h-[360px] w-full max-w-[620px] transition-[opacity,filter,transform] duration-1000 ease-in-out lg:h-[560px] lg:max-w-[720px]",
                 activeIndex === index
-                  ? "scale-100 opacity-100 blur-0"
-                  : "scale-[1.015] opacity-0 blur-[1px]",
+                  ? "pointer-events-auto scale-100 opacity-100 blur-0"
+                  : "pointer-events-none scale-[1.015] opacity-0 blur-[1px]",
               )}
             >
               <Image
@@ -182,21 +183,23 @@ export function AvanceEtereoCardsCarouselSection() {
                 className={clsx(
                   "absolute inset-0 grid grid-cols-3 items-end gap-3 transition-[opacity,filter,transform] duration-1000 ease-in-out sm:gap-6",
                   activeIndex === pageIndex
-                    ? "scale-100 opacity-100 blur-0"
-                    : "scale-[0.985] opacity-0 blur-[1px]",
+                    ? "pointer-events-auto scale-100 opacity-100 blur-0"
+                    : "pointer-events-none scale-[0.985] opacity-0 blur-[1px]",
                 )}
               >
                 {page.cards.map((card, cardIndex) => (
                   <div key={card} className="flex justify-center">
-                    <Image
-                      src={card}
-                      alt={`Carta Avance Etéreo ${pageIndex + 1}-${cardIndex + 1}`}
-                      title={`Carta Avance Etéreo ${pageIndex + 1}-${cardIndex + 1}`}
-                      width={300}
-                      height={431}
-                      sizes="(min-width: 1024px) 230px, 30vw"
-                      className="h-auto w-full max-w-[150px] cursor-crosshair rounded-xl object-cover shadow-2xl sm:max-w-[190px] lg:max-w-[230px]"
-                    />
+                    <TiltCard className="w-full max-w-[150px] sm:max-w-[190px] lg:max-w-[230px]">
+                      <Image
+                        src={card}
+                        alt={`Carta Avance Etéreo ${pageIndex + 1}-${cardIndex + 1}`}
+                        title={`Carta Avance Etéreo ${pageIndex + 1}-${cardIndex + 1}`}
+                        width={300}
+                        height={431}
+                        sizes="(min-width: 1024px) 230px, 30vw"
+                        className="h-auto w-full rounded-xl object-cover shadow-2xl"
+                      />
+                    </TiltCard>
                   </div>
                 ))}
               </div>

@@ -8,13 +8,13 @@ import { TiltCard } from "@/components/ui/tilt/TiltCard";
 const cards = [
   {
     id: "devora-1",
-    src: "/product-pages/obsidiana-y-tempestad/devora-1.webp",
-    alt: "Devora Cobardes Obsidiana y Tempestad",
+    src: "/product-pages/obsidiana-y-tempestad/devora-2.webp",
+    alt: "Devora Cobardes Secreta Dorada",
   },
   {
     id: "devora-2",
-    src: "/product-pages/obsidiana-y-tempestad/devora-2.webp",
-    alt: "Devora Cobardes Secreta Dorada",
+    src: "/product-pages/obsidiana-y-tempestad/devora-1.webp",
+    alt: "Devora Cobardes Obsidiana y Tempestad",
   },
 ];
 

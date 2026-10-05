@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
+import { TiltCard } from "@/components/ui/tilt/TiltCard";
 
 const packages = [
   {
@@ -86,9 +87,9 @@ export function ObsidianaPackagesSection() {
   }, [goToNext]);
 
   return (
-    <section className="relative w-full overflow-hidden bg-gradient-to-br from-[#061f2a] via-[#092d3d] to-[#0b2867] py-14 md:py-20">
-      <div className="relative mx-auto grid min-h-[660px] w-full max-w-7xl grid-cols-1 items-start gap-8 px-6 pb-44 lg:grid-cols-[0.9fr_1.1fr] lg:px-10 lg:pb-52">
-        <div className="relative z-20 grid max-w-xl text-center lg:pt-8 lg:text-left">
+    <section className="relative w-full overflow-hidden bg-transparent py-14 md:py-20">
+      <div className="relative mx-auto grid min-h-[680px] w-full max-w-7xl grid-cols-1 items-start gap-8 px-6 pb-48 lg:grid-cols-2 lg:px-10 lg:pb-56">
+        <div className="relative z-20 mx-auto grid w-full max-w-xl text-center lg:mx-0 lg:pt-6 lg:text-left">
           {packages.map((item, index) => (
             <div
               key={item.id}
@@ -100,12 +101,12 @@ export function ObsidianaPackagesSection() {
               )}
             >
               <p className="text-sm font-black uppercase tracking-[0.24em] text-[#65eadc]">
-                {item.eyebrow}
+                Obsidiana y Tempestad
               </p>
               <h2 className="text-3xl font-black uppercase tracking-wide sm:text-5xl">
                 {item.title}
               </h2>
-              <p className="text-sm leading-relaxed text-slate-100 sm:text-base">
+              <p className="text-sm leading-relaxed text-slate-100 drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)] sm:text-base">
                 {item.description}
               </p>
               <button
@@ -119,32 +120,38 @@ export function ObsidianaPackagesSection() {
           ))}
         </div>
 
-        <div className="relative z-10 min-h-[420px] lg:min-h-[520px]">
-          {packages.map((item, packageIndex) => (
-            <div
-              key={item.id}
-              className={clsx(
-                "absolute inset-0 grid grid-cols-3 items-center gap-3 transition-[opacity,filter,transform] duration-1000 ease-in-out sm:gap-6",
-                activeIndex === packageIndex
-                  ? "scale-100 opacity-100 blur-0"
-                  : "scale-[0.985] opacity-0 blur-[1px]",
-              )}
-            >
-              {item.cards.map((card, cardIndex) => (
-                <div key={card} className="flex justify-center">
-                  <Image
-                    src={card}
-                    alt={`Carta ${item.title} ${cardIndex + 1}`}
-                    title={`Carta ${item.title} ${cardIndex + 1}`}
-                    width={300}
-                    height={431}
-                    sizes="(min-width: 1024px) 230px, 30vw"
-                    className="h-auto w-full max-w-[150px] cursor-crosshair rounded-xl object-cover shadow-2xl shadow-black/40 sm:max-w-[190px] lg:max-w-[230px]"
-                  />
-                </div>
-              ))}
-            </div>
-          ))}
+        <div className="relative z-10 min-h-[340px] lg:min-h-[520px]" />
+
+        <div className="absolute inset-x-0 bottom-20 z-30 mx-auto flex w-full max-w-5xl justify-center px-6 lg:bottom-24">
+          <div className="relative h-[215px] w-full max-w-[760px] sm:h-[275px] lg:h-[330px]">
+            {packages.map((item, packageIndex) => (
+              <div
+                key={item.id}
+                className={clsx(
+                  "absolute inset-0 grid grid-cols-3 items-end gap-3 transition-[opacity,filter,transform] duration-1000 ease-in-out sm:gap-6",
+                  activeIndex === packageIndex
+                    ? "pointer-events-auto scale-100 opacity-100 blur-0"
+                    : "pointer-events-none scale-[0.985] opacity-0 blur-[1px]",
+                )}
+              >
+                {item.cards.map((card, cardIndex) => (
+                  <div key={card} className="flex justify-center">
+                    <TiltCard className="w-full max-w-[150px] sm:max-w-[190px] lg:max-w-[230px]">
+                      <Image
+                        src={card}
+                        alt={`Carta ${item.title} ${cardIndex + 1}`}
+                        title={`Carta ${item.title} ${cardIndex + 1}`}
+                        width={300}
+                        height={431}
+                        sizes="(min-width: 1024px) 230px, 30vw"
+                        className="h-auto w-full rounded-xl object-cover shadow-2xl shadow-black/40"
+                      />
+                    </TiltCard>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="absolute bottom-8 left-1/2 z-40 flex -translate-x-1/2 items-center justify-center gap-2">

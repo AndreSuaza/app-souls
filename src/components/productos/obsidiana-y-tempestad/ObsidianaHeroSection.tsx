@@ -2,12 +2,12 @@ import Image from "next/image";
 
 export function ObsidianaHeroSection() {
   return (
-    <section className="relative h-auto w-full overflow-hidden bg-[#061f2a] lg:min-h-screen">
+    <section className="relative h-auto w-full overflow-hidden bg-[#063a3a] lg:min-h-screen">
       <div className="relative flex w-full flex-col lg:block lg:h-screen">
         <div className="order-2 relative z-10 -mt-16 flex w-full lg:order-none lg:mt-0 lg:h-full lg:w-1/2">
-          <div className="pikingos-hero-cut flex w-full flex-col justify-start gap-6 bg-[#061f2a] px-6 py-10 pr-10 text-center text-white shadow-2xl lg:h-full lg:px-12 lg:py-16 lg:pr-28 lg:pt-14">
+          <div className="pikingos-hero-cut flex w-full flex-col justify-start gap-6 bg-[#063a3a] px-6 py-10 pr-10 text-center text-white shadow-2xl lg:h-full lg:px-12 lg:py-16 lg:pr-28 lg:pt-14">
             <div className="space-y-4">
-              <div className="mx-auto w-full max-w-[250px] sm:max-w-[320px] lg:max-w-[420px]">
+              <div className="mx-auto w-full max-w-[188px] sm:max-w-[240px] lg:max-w-[315px]">
                 <Image
                   src="/product-pages/obsidiana-y-tempestad/logo.webp"
                   alt="Logo Obsidiana y Tempestad"
@@ -29,17 +29,15 @@ export function ObsidianaHeroSection() {
                   una lucha por el dominio del mundo, desatando fuerzas capaces
                   de destruir una era y dar origen a la siguiente.
                 </p>
-                <p className="mx-auto max-w-xl text-sm leading-relaxed text-slate-200 sm:text-base">
-                  Una expansión cargada de mitología, poder y nuevas
-                  estrategias que llevan este legendario enfrentamiento al campo
-                  de batalla.
+                <p className="text-xl font-black uppercase text-[#65eadc] sm:text-3xl">
+                  Ya disponible
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="order-1 relative z-0 h-[360px] w-full sm:h-[440px] lg:absolute lg:inset-y-0 lg:-right-16 lg:h-full lg:w-[65%]">
+        <div className="order-1 relative z-0 h-[360px] w-full sm:h-[440px] lg:absolute lg:inset-y-0 lg:right-0 lg:h-full lg:w-[65%]">
           <Image
             src="/product-pages/obsidiana-y-tempestad/hero-banner.webp"
             alt="Arte Obsidiana y Tempestad"
@@ -47,7 +45,7 @@ export function ObsidianaHeroSection() {
             fill
             priority
             sizes="(min-width: 1024px) 70vw, 100vw"
-            className="object-contain object-right-bottom drop-shadow-[0_28px_54px_rgba(0,0,0,0.48)]"
+            className="object-cover object-right drop-shadow-[0_28px_54px_rgba(0,0,0,0.48)]"
           />
         </div>
       </div>

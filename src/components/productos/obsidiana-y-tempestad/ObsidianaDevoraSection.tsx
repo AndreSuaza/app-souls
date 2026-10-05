@@ -2,7 +2,7 @@ import { ObsidianaDevoraStack } from "@/components/productos/obsidiana-y-tempest
 
 export function ObsidianaDevoraSection() {
   return (
-    <section className="w-full bg-[#06111f] py-16 md:py-20">
+    <section className="w-full bg-[#063a3a]/60 py-16 md:py-20">
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-10 px-6 text-center lg:grid-cols-[0.9fr_1.1fr] lg:px-10 lg:text-left">
         <ObsidianaDevoraStack />
 
