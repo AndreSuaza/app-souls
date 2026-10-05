@@ -11,13 +11,12 @@ export function AvanceEtereoSplitSection() {
             Rareza Ascendida
           </p>
           <h2 className="text-2xl font-black uppercase tracking-wide text-white sm:text-4xl">
-            Lorem ipsum dolor sit amet
+            Skjold Antimagia
           </h2>
           <p className="text-sm leading-relaxed text-slate-200 sm:text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat.
+            Llega <b>Skjold Antimagia</b> en su <b>rareza Ascendida</b>: una
+            defensa capaz de aparecer en el instante más crítico y convertir una
+            derrota segura en una nueva oportunidad para vencer.
           </p>
         </div>
       </div>

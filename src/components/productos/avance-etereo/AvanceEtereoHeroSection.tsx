@@ -19,11 +19,13 @@ export function AvanceEtereoHeroSection() {
               </div>
               <div className="-mt-4 space-y-3 sm:-mt-6">
                 <p className="text-base font-semibold uppercase tracking-widest text-[#8b6bb7] sm:text-lg">
-                  Lorem ipsum dolor sit amet
+                  Conexiones que trascienden mundos
                 </p>
                 <p className="mx-auto max-w-xl text-sm text-slate-700 sm:text-base">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  <b>Avance Etéreo</b> explora las conexiones entre las almas y
+                  los mundos que estas alcanzan. Dragones, vampiros y los nuevos
+                  vudús emergen en una expansión donde cada vínculo puede
+                  cambiar el destino.
                 </p>
                 <p className="text-xl font-black uppercase text-[#347f7a] sm:text-3xl">
                   Ya disponible

@@ -8,11 +8,11 @@ import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 const pages = [
   {
     id: "bloque-1",
-    title: "Lorem ipsum dolor",
+    title: "Muñecos Vudú",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio praesent libero sed cursus ante dapibus diam.",
+      "Puedes capturar la esencia de personajes icónicos de Souls In Xtinction y, a través de su muñeco, invocarlos al campo de batalla.",
     renderSrc: "/product-pages/avance-etereo/reden-vampiro.webp",
-    renderPosition: "52% 48%",
+    renderPosition: "44% 48%",
     cards: [
       "/product-pages/avance-etereo/bloque-1-1.webp",
       "/product-pages/avance-etereo/bloque-1-2.webp",
@@ -21,11 +21,11 @@ const pages = [
   },
   {
     id: "bloque-2",
-    title: "Sed cursus ante",
+    title: "Nuevos Dragones",
     description:
-      "Sed nisi nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum praesent mauris fusce nec tellus.",
+      "Antiguos, imponentes y cargados de poder. Los Dragones llegan para dominar el campo con su fuerza y convertir cada combate en una prueba de fuego.",
     renderSrc: "/product-pages/avance-etereo/reden-vampiro.webp",
-    renderPosition: "44% 48%",
+    renderPosition: "52% 48%",
     cards: [
       "/product-pages/avance-etereo/bloque-2-1.webp",
       "/product-pages/avance-etereo/bloque-2-2.webp",
@@ -34,9 +34,9 @@ const pages = [
   },
   {
     id: "bloque-3",
-    title: "Fusce nec tellus",
+    title: "Llegan Aliados Inesperados",
     description:
-      "Praesent mauris fusce nec tellus sed augue semper porta. Mauris massa vestibulum lacinia arcu eget nulla.",
+      "Elegantes, letales y siempre al acecho. Los Vampiros transforman cada oportunidad en ventaja y saben exactamente cuándo atacar para inclinar la batalla a su favor.",
     renderSrc: "/product-pages/avance-etereo/reden-vampiro.webp",
     renderPosition: "61% 48%",
     cards: [
@@ -47,9 +47,9 @@ const pages = [
   },
   {
     id: "bloque-4",
-    title: "Vestibulum lacinia",
+    title: "Espíritus",
     description:
-      "Class aptent taciti sociosqu ad litora torquent per conubia nostra per inceptos himenaeos curabitur sodales.",
+      "Misteriosos y conectados con fuerzas que van más allá del mundo físico. Los Espíritus alteran el combate con poderes inesperados y planes elaborados.",
     renderSrc: "/product-pages/avance-etereo/reden-vampiro.webp",
     renderPosition: "70% 48%",
     cards: [
@@ -130,7 +130,7 @@ export function AvanceEtereoCardsCarouselSection() {
                   : "pointer-events-none scale-[0.995] opacity-0 blur-[1px]",
               )}
             >
-              <p className="text-sm font-black uppercase tracking-[0.24em] text-[#7BE7DE]">
+              <p className="text-sm font-black uppercase tracking-[0.24em] text-[#8b6bb7]">
                 Avance Etéreo
               </p>
               <h2 className="text-3xl font-black uppercase tracking-wide sm:text-5xl">
