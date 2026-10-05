@@ -91,6 +91,8 @@ const REQUIRED_HEADERS = [
 ] as const;
 
 const HEADER_ALIASES = {
+  [HEADER_KEYS.cost]: ["costo", "cost"],
+  [HEADER_KEYS.name]: ["nombre", "carta", "card"],
   [HEADER_KEYS.rotation]: ["rotation"],
 } as const;
 
@@ -446,11 +448,31 @@ export async function importCardsFromExcelAction(
   );
 
   if (missingHeaders.length > 0) {
-    throw new Error(
-      `Faltan columnas obligatorias en el Excel: ${missingHeaders
-        .map((header) => header.label)
-        .join(", ")}`,
-    );
+    const missingLabels = missingHeaders.map((header) => header.label);
+    return {
+      status: "conflict",
+      message: `Importacion detenida: faltan columnas obligatorias en el Excel: ${missingLabels.join(", ")}.`,
+      summary: buildSummary({
+        rowsRead: 0,
+        validRows: 0,
+        invalidRows: 1,
+        insertedRows: 0,
+      }),
+      invalidRows: [
+        {
+          rowNumber: 1,
+          generatedCode: null,
+          name: null,
+          reasons: [
+            `Faltan columnas obligatorias: ${missingLabels.join(", ")}.`,
+            "Verifica que los encabezados esten en la primera fila de la primera hoja.",
+          ],
+        },
+      ],
+      conflictCodes: [],
+      imageErrors: [],
+      importedCards: [],
+    };
   }
 
   const [types, archetypes, keywords, rarities, products] = await Promise.all([

@@ -12,9 +12,9 @@ const REQUIRED_COLUMNS = [
   "Producto",
   "Numeracion",
   "Codigo",
-  "Coste",
+  "Coste / Costo",
   "Rareza",
-  "Name",
+  "Name / Nombre",
   "Tipo",
   "Rotacion",
 ];
