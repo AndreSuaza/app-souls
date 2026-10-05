@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     siteName: "Avance Etéreo",
     images: [
       {
-        url: "https://soulsinxtinction.com/products/avance-etereo/logo.webp",
+        url: "https://soulsinxtinction.com/product-pages/avance-etereo/logo.webp",
         width: 2542,
         height: 1308,
         alt: "Avance Etéreo Souls In Xtinction TCG",
@@ -47,7 +47,7 @@ export default async function Page() {
   return (
     <>
       <h1 className="sr-only">Productos Avance Etéreo</h1>
-      <main className="relative isolate min-h-screen overflow-hidden text-white before:absolute before:inset-0 before:z-0 before:bg-[url('/products/avance-etereo/background.webp')] before:bg-cover before:bg-center before:bg-fixed before:brightness-125 before:contrast-75 before:content-['']">
+      <main className="relative isolate min-h-screen overflow-hidden text-white before:absolute before:inset-0 before:z-0 before:bg-[url('/product-pages/avance-etereo/background.webp')] before:bg-cover before:bg-center before:bg-fixed before:brightness-125 before:contrast-75 before:content-['']">
         <div className="relative z-10">
           <AvanceEtereoHeroSection />
           <AvanceEtereoCardsCarouselSection />

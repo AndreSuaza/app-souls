@@ -8,12 +8,12 @@ import { TiltCard } from "@/components/ui/tilt/TiltCard";
 const cards = [
   {
     id: "ascendida-1",
-    src: "/products/avance-etereo/ascendida-1.webp",
+    src: "/product-pages/avance-etereo/ascendida-1.webp",
     alt: "Carta Ascendida Avance Etéreo 1",
   },
   {
     id: "ascendida-2",
-    src: "/products/avance-etereo/ascendida-2.webp",
+    src: "/product-pages/avance-etereo/ascendida-2.webp",
     alt: "Carta Ascendida Avance Etéreo 2",
   },
 ];

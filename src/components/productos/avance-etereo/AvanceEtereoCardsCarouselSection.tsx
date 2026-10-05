@@ -11,12 +11,12 @@ const pages = [
     title: "Lorem ipsum dolor",
     description:
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio praesent libero sed cursus ante dapibus diam.",
-    renderSrc: "/products/avance-etereo/reden-vampiro.webp",
+    renderSrc: "/product-pages/avance-etereo/reden-vampiro.webp",
     renderPosition: "52% 48%",
     cards: [
-      "/products/avance-etereo/bloque-1-1.webp",
-      "/products/avance-etereo/bloque-1-2.webp",
-      "/products/avance-etereo/bloque-1-3.webp",
+      "/product-pages/avance-etereo/bloque-1-1.webp",
+      "/product-pages/avance-etereo/bloque-1-2.webp",
+      "/product-pages/avance-etereo/bloque-1-3.webp",
     ],
   },
   {
@@ -24,12 +24,12 @@ const pages = [
     title: "Sed cursus ante",
     description:
       "Sed nisi nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum praesent mauris fusce nec tellus.",
-    renderSrc: "/products/avance-etereo/reden-vampiro.webp",
+    renderSrc: "/product-pages/avance-etereo/reden-vampiro.webp",
     renderPosition: "44% 48%",
     cards: [
-      "/products/avance-etereo/bloque-2-1.webp",
-      "/products/avance-etereo/bloque-2-2.webp",
-      "/products/avance-etereo/bloque-2-3.webp",
+      "/product-pages/avance-etereo/bloque-2-1.webp",
+      "/product-pages/avance-etereo/bloque-2-2.webp",
+      "/product-pages/avance-etereo/bloque-2-3.webp",
     ],
   },
   {
@@ -37,12 +37,12 @@ const pages = [
     title: "Fusce nec tellus",
     description:
       "Praesent mauris fusce nec tellus sed augue semper porta. Mauris massa vestibulum lacinia arcu eget nulla.",
-    renderSrc: "/products/avance-etereo/reden-vampiro.webp",
+    renderSrc: "/product-pages/avance-etereo/reden-vampiro.webp",
     renderPosition: "61% 48%",
     cards: [
-      "/products/avance-etereo/bloque-3-1.webp",
-      "/products/avance-etereo/bloque-3-2.webp",
-      "/products/avance-etereo/bloque-3-3.webp",
+      "/product-pages/avance-etereo/bloque-3-1.webp",
+      "/product-pages/avance-etereo/bloque-3-2.webp",
+      "/product-pages/avance-etereo/bloque-3-3.webp",
     ],
   },
   {
@@ -50,12 +50,12 @@ const pages = [
     title: "Vestibulum lacinia",
     description:
       "Class aptent taciti sociosqu ad litora torquent per conubia nostra per inceptos himenaeos curabitur sodales.",
-    renderSrc: "/products/avance-etereo/reden-vampiro.webp",
+    renderSrc: "/product-pages/avance-etereo/reden-vampiro.webp",
     renderPosition: "70% 48%",
     cards: [
-      "/products/avance-etereo/bloque-4-1.webp",
-      "/products/avance-etereo/bloque-4-2.webp",
-      "/products/avance-etereo/bloque-4-3.webp",
+      "/product-pages/avance-etereo/bloque-4-1.webp",
+      "/product-pages/avance-etereo/bloque-4-2.webp",
+      "/product-pages/avance-etereo/bloque-4-3.webp",
     ],
   },
 ];
