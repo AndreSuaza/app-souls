@@ -31,6 +31,7 @@ export async function GET(request: Request) {
       tokenCards: true,
       tokenCardsNumber: true,
       userId: true,
+      visible: true,
     },
     orderBy: { updatedAt: "desc" },
   });

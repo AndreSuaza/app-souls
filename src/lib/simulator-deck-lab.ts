@@ -477,6 +477,7 @@ export async function loadPlayableSimulatorDecks(session: SimulatorTokenPayload)
       tokenCards: true,
       tokenCardsNumber: true,
       userId: true,
+      visible: true,
     },
     orderBy: {
       updatedAt: "desc",

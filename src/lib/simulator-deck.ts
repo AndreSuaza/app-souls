@@ -23,6 +23,7 @@ type SimulatorDeckSource = {
   tokenCards?: string | null;
   tokenCardsNumber?: number | null;
   userId: string;
+  visible?: boolean | null;
 };
 
 const countDeckEntries = (entries: { count: number }[]) =>
@@ -206,5 +207,6 @@ export const toSimulatorDeckDto = (
     soulDeckCount: 0,
     limboDeckCount: countDeckEntries(limboDeck),
     tokenDeckCount: countDeckEntries(tokenDeck),
+    visible: Boolean(deck.visible),
   };
 };

@@ -51,6 +51,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       tokenCards: true,
       tokenCardsNumber: true,
       userId: true,
+      visible: true,
     },
   });
 
