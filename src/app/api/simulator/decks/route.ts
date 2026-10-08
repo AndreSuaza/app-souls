@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { simulatorCorsHeaders, simulatorOptionsResponse } from "@/lib/simulator-cors";
-import { toSimulatorDeckDto } from "@/lib/simulator-deck";
+import { loadPlayableSimulatorDecks } from "@/lib/simulator-deck-lab";
 import { verifySimulatorToken } from "@/lib/simulator-token";
 
 export const runtime = "nodejs";
@@ -17,27 +16,10 @@ export async function GET(request: Request) {
   const session = verifySimulatorToken(getToken(request));
   if (!session) return NextResponse.json({ error: "Token de simulador invalido." }, { status: 401, headers });
 
-  const decks = await prisma.deck.findMany({
-    where: {
-      userId: session.userId,
-      cardsNumber: { gte: 40 },
-      AND: [{ OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }] }],
-    },
-    select: {
-      id: true,
-      name: true,
-      cards: true,
-      cardsNumber: true,
-      tokenCards: true,
-      tokenCardsNumber: true,
-      userId: true,
-      visible: true,
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+  const decks = await loadPlayableSimulatorDecks(session);
 
   return NextResponse.json(
-    { decks: decks.map((deck) => toSimulatorDeckDto(deck)) },
+    { decks },
     { headers },
   );
 }

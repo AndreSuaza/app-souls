@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { USER_DECK_LIMIT, countMainDeckCards } from "@/lib/deck-management";
-import { toSimulatorDeckDto } from "@/lib/simulator-deck";
+import {
+  isSimulatorDeckLegal,
+  simulatorDeckLookupKeys,
+  toSimulatorDeckDto,
+} from "@/lib/simulator-deck";
 import type { SimulatorTokenPayload } from "@/lib/simulator-token";
 import { resolveCardImageUrl } from "@/utils/card-image";
 import {
@@ -485,14 +489,7 @@ export async function loadPlayableSimulatorDecks(session: SimulatorTokenPayload)
   });
 
   const allKeys = Array.from(
-    new Set(
-      decks.flatMap((deck) => {
-        const parsed = toSimulatorDeckDto(deck);
-        return [...parsed.mainDeck, ...parsed.soulDeck, ...parsed.limboDeck, ...parsed.tokenDeck].map(
-          (entry) => entry.cardId,
-        );
-      }),
-    ),
+    new Set(decks.flatMap((deck) => simulatorDeckLookupKeys(deck))),
   );
   const cardKeys = expandCardLookupKeys(allKeys);
   const cardObjectIds = cardKeys.filter((key) => mongoObjectIdPattern.test(key));
@@ -517,6 +514,7 @@ export async function loadPlayableSimulatorDecks(session: SimulatorTokenPayload)
             effect: true,
             imageUrl: true,
             idd: true,
+            limit: true,
           },
         })
       : [];
@@ -546,7 +544,9 @@ export async function loadPlayableSimulatorDecks(session: SimulatorTokenPayload)
     imageUrl: resolveCardImageUrl(card),
   }));
 
-  return decks.map((deck) => toSimulatorDeckDto(deck, simulatorCards));
+  return decks
+    .filter((deck) => isSimulatorDeckLegal(deck, cards))
+    .map((deck) => toSimulatorDeckDto(deck, simulatorCards));
 }
 
 export async function loadDeckLabBootstrap(session: SimulatorTokenPayload, filters: DeckLabFilters = {}) {

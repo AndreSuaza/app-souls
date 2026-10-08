@@ -13,6 +13,7 @@ import {
   IoChevronForwardOutline,
   IoColorWandOutline,
   IoFlashOutline,
+  IoGameControllerOutline,
   IoLayers,
   IoLogInOutline,
   IoLogOutOutline,
@@ -69,6 +70,7 @@ export const Sidebar = () => {
     Eventos: IoCalendarOutline,
     Tienda: IoColorWandOutline,
     Tiendas: IoStorefrontOutline,
+    Simulador: IoGameControllerOutline,
   };
 
   const routeLinkClassName = (route: (typeof visibleRoutes)[number]) =>
@@ -200,6 +202,8 @@ export const Sidebar = () => {
                       key={route.name}
                       href={route.path ?? "/"}
                       title={`Ir a ${route.name}`}
+                      target={route.external ? "_blank" : undefined}
+                      rel={route.external ? "noopener noreferrer" : undefined}
                       onClick={handleClose}
                       className={routeLinkClassName(route)}
                     >

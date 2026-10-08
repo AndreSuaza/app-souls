@@ -15,6 +15,13 @@ type SimulatorCardSource = {
   imageUrl?: string;
 };
 
+type SimulatorDeckLegalityCardSource = Pick<
+  SimulatorCardSource,
+  "code" | "id" | "idd"
+> & {
+  limit?: string | null;
+};
+
 type SimulatorDeckSource = {
   cards: string;
   cardsNumber?: number | null;
@@ -29,7 +36,7 @@ type SimulatorDeckSource = {
 const countDeckEntries = (entries: { count: number }[]) =>
   entries.reduce((total, entry) => total + entry.count, 0);
 
-const cardDeckKeys = (card: SimulatorCardSource) =>
+const cardDeckKeys = (card: SimulatorDeckLegalityCardSource) =>
   Array.from(
     new Set(
       [
@@ -42,6 +49,49 @@ const cardDeckKeys = (card: SimulatorCardSource) =>
         .filter((value): value is string => Boolean(value)),
     ),
   );
+
+const allDeckEntries = (deck: Pick<SimulatorDeckSource, "cards">) =>
+  deck.cards
+    .split(ENCODED_SECTION_SEPARATOR)
+    .flatMap((segment) => parseEncodedDeckSegment(segment));
+
+export const simulatorDeckLookupKeys = (
+  deck: Pick<SimulatorDeckSource, "cards" | "tokenCards">,
+) =>
+  Array.from(
+    new Set([
+      ...allDeckEntries(deck).map((entry) => entry.key),
+      ...parseEncodedDeckSegment(deck.tokenCards ?? "").map(
+        (entry) => entry.key,
+      ),
+    ]),
+  );
+
+export const isSimulatorDeckLegal = (
+  deck: Pick<SimulatorDeckSource, "cards">,
+  cards: SimulatorDeckLegalityCardSource[],
+) => {
+  const cardByDeckKey = new Map<string, SimulatorDeckLegalityCardSource>();
+  cards.forEach((card) => {
+    cardDeckKeys(card).forEach((key) => {
+      cardByDeckKey.set(key, card);
+      cardByDeckKey.set(key.toLowerCase(), card);
+    });
+  });
+
+  const copiesByCardCode = new Map<string, number>();
+  return allDeckEntries(deck).every((entry) => {
+    const card =
+      cardByDeckKey.get(entry.key) ??
+      cardByDeckKey.get(entry.key.toLowerCase());
+    const cardCode = (card?.idd ?? entry.key).trim().toLowerCase();
+    const previousCount = copiesByCardCode.get(cardCode) ?? 0;
+    const nextCount = previousCount + entry.count;
+    const maxCopies = card?.limit === "1" ? 1 : 2;
+    copiesByCardCode.set(cardCode, nextCount);
+    return nextCount <= maxCopies;
+  });
+};
 
 export const toSimulatorCardDto = (card: SimulatorCardSource) => ({
   id: card.id,

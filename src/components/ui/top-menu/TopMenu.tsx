@@ -196,6 +196,8 @@ export const TopMenu = () => {
                     <Link
                       href={route.path ?? "/"}
                       title={`Ir a ${route.name}`}
+                      target={route.external ? "_blank" : undefined}
+                      rel={route.external ? "noopener noreferrer" : undefined}
                       className={routeItemClassName(route)}
                       onMouseEnter={() => closeRouteMenu()}
                     >

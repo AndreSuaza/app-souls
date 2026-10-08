@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { simulatorCorsHeaders, simulatorOptionsResponse } from "@/lib/simulator-cors";
-import { toSimulatorDeckDto } from "@/lib/simulator-deck";
+import {
+  isSimulatorDeckLegal,
+  simulatorDeckLookupKeys,
+  toSimulatorDeckDto,
+} from "@/lib/simulator-deck";
 import { verifySimulatorToken } from "@/lib/simulator-token";
 import { resolveCardImageUrl } from "@/utils/card-image";
 
@@ -57,13 +61,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   if (!deck) return NextResponse.json({ error: "Mazo no encontrado." }, { status: 404, headers });
 
-  const parsedDeck = toSimulatorDeckDto(deck);
   const cardKeys = expandCardLookupKeys(Array.from(
-    new Set(
-      [...parsedDeck.mainDeck, ...parsedDeck.soulDeck, ...parsedDeck.limboDeck, ...parsedDeck.tokenDeck].map(
-        (entry) => entry.cardId,
-      ),
-    ),
+    new Set(simulatorDeckLookupKeys(deck)),
   ));
   const cardObjectIds = cardKeys.filter((key) =>
     mongoObjectIdPattern.test(key),
@@ -91,9 +90,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             effect: true,
             imageUrl: true,
             idd: true,
+            limit: true,
           },
         })
       : [];
+  if (!isSimulatorDeckLegal(deck, cards)) {
+    return NextResponse.json(
+      { error: "Mazo no legal para el simulador." },
+      { status: 404, headers },
+    );
+  }
   const typeIds = Array.from(new Set(cards.flatMap((card) => card.typeIds)));
   const types =
     typeIds.length > 0

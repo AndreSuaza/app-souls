@@ -3,6 +3,7 @@ export interface Route {
   path?: string;
   menu?: Route[];
   navTone?: "gold";
+  external?: boolean;
 }
 
 export const Routes: Route[] = [
@@ -55,6 +56,11 @@ export const Routes: Route[] = [
   {
     path: "/noticias",
     name: "Noticias",
+  },
+  {
+    path: "https://simulador.soulsinxtinction.com",
+    name: "Simulador",
+    external: true,
   },
   {
     path: "/eventos",
