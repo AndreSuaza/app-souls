@@ -17,7 +17,10 @@ export const RegisterSchema = z
   .object({
     name: z.string().min(3).max(15),
     lastname: z.string().min(3).max(15),
-    nickname: z.string().min(3).max(15),
+    nickname: z
+      .string()
+      .min(3)
+      .max(10, "El nickname no puede superar los 10 caracteres."),
     image: z.string().optional(),
     email: z.string().trim().toLowerCase().email(),
     password: passwordSchema,

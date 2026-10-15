@@ -182,8 +182,8 @@ export const RegisterForm = () => {
                 message: "Debe tener al menos 3 caracteres.",
               },
               maxLength: {
-                value: 15,
-                message: "Debe tener máximo 15 caracteres.",
+                value: 10,
+                message: "Debe tener máximo 10 caracteres.",
               },
               validate: {
                 noRepetidos: (value) =>
@@ -229,6 +229,7 @@ export const RegisterForm = () => {
             )}
             type="text"
             placeholder="Crea tu nickname"
+            maxLength={10}
             {...register("nickname", {
               required: "El campo 'nickname' es requerido.",
               minLength: {
@@ -236,8 +237,8 @@ export const RegisterForm = () => {
                 message: "Debe tener al menos 3 caracteres.",
               },
               maxLength: {
-                value: 15,
-                message: "Debe tener máximo 15 caracteres.",
+                value: 10,
+                message: "Debe tener máximo 10 caracteres.",
               },
               pattern: {
                 value: /^[a-zA-Z0-9._]+$/,

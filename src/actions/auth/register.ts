@@ -44,8 +44,8 @@ const RESEND_COOLDOWN_SECONDS = Math.ceil(
 function validarNickname(nickname: string): string | null {
   const trimmed = nickname.trim().toLowerCase();
 
-  if (trimmed.length < 3 || trimmed.length > 15)
-    return "El nickname debe tener entre 3 y 15 caracteres.";
+  if (trimmed.length < 3 || trimmed.length > 10)
+    return "El nickname debe tener entre 3 y 10 caracteres.";
   if (!/^[a-zA-Z0-9._]+$/.test(trimmed))
     return "Solo se permiten letras, numeros, puntos y guiones bajos.";
   if (/([a-zA-Z0-9._])\1{3,}/.test(trimmed))

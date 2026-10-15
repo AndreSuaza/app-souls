@@ -13,6 +13,7 @@ import {
   parseEncodedDeckSegment,
 } from "@/utils/decklist";
 import { ZodError } from "zod";
+import { hasDuplicateTokenCopies } from "@/logic/token-deck";
 
 const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
 const MAX_TOKEN_DECK_CARDS = 10;
@@ -104,6 +105,17 @@ async function validateTokenDeck(rawDecklist?: string | null) {
   if (invalidEntry) {
     return {
       error: "El mazo de fichas solo acepta cartas de tipo Ficha o Token.",
+      normalized: "",
+      count: tokenCardsNumber,
+    };
+  }
+
+  if (hasDuplicateTokenCopies(entries.map((entry) => ({
+    card: cardByKey.get(entry.key)!,
+    count: entry.count,
+  })))) {
+    return {
+      error: "El mazo de fichas solo permite una copia por codigo de ficha, incluyendo sus variantes.",
       normalized: "",
       count: tokenCardsNumber,
     };

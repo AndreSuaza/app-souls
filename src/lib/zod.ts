@@ -26,5 +26,5 @@ export const registerSchema = object({
     .max(32, "nickname must be less than 32 characters"),
   nickname: string({ required_error: "Nickname is required" })
     .min(1, "Nickname is required")
-    .max(32, "Nickname must be less than 32 characters"),
+    .max(10, "Nickname must be less than 10 characters"),
 });

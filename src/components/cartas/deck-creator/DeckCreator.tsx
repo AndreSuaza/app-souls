@@ -17,6 +17,7 @@ import type {
 import { useUIStore } from "@/store";
 import { splitMainAndLimboDeck } from "@/utils/deck-sections";
 import { sortDecklistByTypeOrder } from "@/utils/deck-type-order";
+import { tokenCopyKey, uniqueTokenEntries } from "@/logic/token-deck";
 
 interface Propertie {
   id: string;
@@ -314,7 +315,7 @@ export const DeckCreator = ({
         setDeckListMain(sortDecklistByTypeOrder(Array.from(combinedMap.values())));
         setDeckListLimbo([]);
         setDeckListSide([]);
-        setDeckListToken(sortDecklistByTypeOrder(tokenDeck ?? []));
+        setDeckListToken(sortDecklistByTypeOrder(uniqueTokenEntries(tokenDeck ?? [])));
         hasImportedRef.current = true;
         hideLoading();
         return;
@@ -323,7 +324,7 @@ export const DeckCreator = ({
       setDeckListMain(sortDecklistByTypeOrder(mainDeck ?? []));
       setDeckListLimbo([]);
       setDeckListSide(sortDecklistByTypeOrder(sideDeck ?? []));
-      setDeckListToken(sortDecklistByTypeOrder(tokenDeck ?? []));
+      setDeckListToken(sortDecklistByTypeOrder(uniqueTokenEntries(tokenDeck ?? [])));
       hasImportedRef.current = true;
       hideLoading();
       return;
@@ -354,7 +355,7 @@ export const DeckCreator = ({
     }
 
     if (tokenDeck) {
-      const sortedToken = sortDecklistByTypeOrder([...tokenDeck]);
+      const sortedToken = sortDecklistByTypeOrder(uniqueTokenEntries(tokenDeck));
       const tokenCount = sortedToken.reduce((acc, deck) => acc + deck.count, 0);
 
       if (tokenCount <= 10) setDeckListToken(sortedToken);
@@ -641,13 +642,13 @@ export const DeckCreator = ({
 
   const addCardTokenDeck = (cardSeleted: Card) => {
     if (singleDeck || !isTokenCard(cardSeleted)) return;
-    const tokenCount = deckListToken.reduce((acc, deck) => acc + deck.count, 0);
-    if (tokenCount >= 10) return;
-
-    const result = addCardDecklistUnlimited(deckListToken, cardSeleted);
-    if (result) {
-      setDeckListToken(result);
-    }
+    setDeckListToken((current) => {
+      const tokenCount = current.reduce((acc, deck) => acc + deck.count, 0);
+      if (tokenCount >= 10 || current.some(
+        (entry) => tokenCopyKey(entry.card) === tokenCopyKey(cardSeleted),
+      )) return current;
+      return [{ card: cardSeleted, count: 1 }, ...current];
+    });
   };
 
   const dropCardTokenDeck = (cardSeleted: Card) => {
