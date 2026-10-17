@@ -296,6 +296,7 @@ model User {
   matchesPlayed     Int               @default(0)
   password          String?
   emailVerified     DateTime?
+  profileCompleted  Boolean           @default(true)
   image             String            @default("player")
   bannerImage       String?
   frameImage        String?
@@ -308,6 +309,7 @@ model User {
   userAvatar        UserAvatar[]
   avatarPurchases   AvatarPurchase[]
   battlePassClaims  BattlePassClaim[]
+  simulatorOAuthExchanges SimulatorOAuthExchange[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -422,6 +424,20 @@ model Session {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SimulatorOAuthExchange {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  codeHash   String    @unique
+  userId     String    @db.ObjectId
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId, consumedAt])
 }
 
 model VerificationToken {

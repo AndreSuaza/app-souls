@@ -23,8 +23,8 @@ import {
 } from "react-icons/io5";
 import { TbCards } from "react-icons/tb";
 import { IoTrophyOutline } from "react-icons/io5";
-import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
+import { signOutOnce } from "@/lib/client-sign-out";
 
 export const AdminSidebar = () => {
   const isOpen = useUIStore((state) => state.isTournamentSidebarOpen);
@@ -410,9 +410,10 @@ export const AdminSidebar = () => {
 
         <div className="px-2 lg:px-3 pb-4 border-t border-slate-200 dark:border-tournament-dark-border lg:hidden">
           <button
+            type="button"
             onClick={async () => {
               close();
-              await signOut();
+              await signOutOnce();
             }}
             className="mt-3 flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white"
           >

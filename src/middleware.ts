@@ -72,6 +72,7 @@ const middlewareAuthConfig: NextAuthConfig = {
     session({ session, token }) {
       if (session.user) {
         session.user.role = token.role;
+        session.user.profileCompleted = token.profileCompleted !== false;
       }
       return session;
     },
@@ -84,6 +85,7 @@ export default baseAuth((req) => {
   const { nextUrl } = req;
   const path = nextUrl.pathname;
   const isLoggedIn = !!req.auth;
+  const profileCompleted = req.auth?.user.profileCompleted !== false;
   const userAgent = req.headers.get("user-agent")?.toLowerCase() ?? "";
   const isBattlePassLinkPreview =
     path === battlePassRoute &&
@@ -116,7 +118,22 @@ export default baseAuth((req) => {
 
   // Redirigir a /dashboard si el usuario está logueado y trata de acceder a rutas de autenticación
   if (isLoggedIn && authRoutes.includes(path)) {
-    return NextResponse.redirect(new URL("/", nextUrl));
+    return NextResponse.redirect(
+      new URL(profileCompleted ? "/" : "/auth/complete-profile", nextUrl),
+    );
+  }
+
+  if (
+    isLoggedIn &&
+    !profileCompleted &&
+    !path.startsWith("/auth/complete-profile") &&
+    !path.startsWith("/auth/google/") &&
+    !path.startsWith("/api/simulator/auth/google")
+  ) {
+    const callbackUrl = `${path}${nextUrl.search}`;
+    const completionUrl = new URL("/auth/complete-profile", nextUrl);
+    completionUrl.searchParams.set("callbackUrl", callbackUrl);
+    return NextResponse.redirect(completionUrl);
   }
 
   // Redirigir a /login si el usuario no está logueado y trata de acceder a una ruta protegida

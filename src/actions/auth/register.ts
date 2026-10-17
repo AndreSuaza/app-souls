@@ -9,10 +9,10 @@ import {
   getVerificationTokenIdentifiers,
   getVerificationTokenRetryAfterSeconds,
 } from "@/lib/verification-token";
-import { palabrasProhibidas } from "@/models/inappropriateWords.model";
 import { RegisterSchema } from "@/schemas";
 import { getAvatarValue } from "@/utils/avatar-image";
 import { normalizeEmail } from "@/utils/email";
+import { validateNickname } from "@/utils/nickname";
 import { getProfileBannerValue } from "@/utils/profile-banner";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -40,23 +40,6 @@ const emailSchema = z.string().trim().email("Correo no valido.");
 const RESEND_COOLDOWN_SECONDS = Math.ceil(
   VERIFICATION_TOKEN_RESEND_COOLDOWN_MS / 1000,
 );
-
-function validarNickname(nickname: string): string | null {
-  const trimmed = nickname.trim().toLowerCase();
-
-  if (trimmed.length < 3 || trimmed.length > 10)
-    return "El nickname debe tener entre 3 y 10 caracteres.";
-  if (!/^[a-zA-Z0-9._]+$/.test(trimmed))
-    return "Solo se permiten letras, numeros, puntos y guiones bajos.";
-  if (/([a-zA-Z0-9._])\1{3,}/.test(trimmed))
-    return "No repitas el mismo caracter muchas veces.";
-  if (/^\d+$/.test(trimmed)) return "El nickname no puede ser solo numeros.";
-  if (/@|www\./.test(trimmed)) return "No se permiten correos o URLs.";
-  if (palabrasProhibidas.some((p) => trimmed.includes(p)))
-    return "El nickname contiene palabras restringidas.";
-
-  return null;
-}
 
 function isUniqueConstraintError(error: unknown) {
   return (
@@ -159,11 +142,11 @@ export async function userRegistration(
     }
 
     if (normalizedData.password !== normalizedData.confirmPassword) {
-      return { success: false, message: "Las contrasenas no coinciden." };
+      return { success: false, message: "Las contraseñas no coinciden." };
     }
 
     const normalizedNickname = normalizedData.nickname.trim().toLowerCase();
-    const nicknameError = validarNickname(normalizedNickname);
+    const nicknameError = validateNickname(normalizedNickname);
     if (nicknameError) {
       return { success: false, message: nicknameError };
     }
@@ -200,7 +183,9 @@ export async function userRegistration(
     });
 
     if (userdb.email) {
-      const emailResult = await createAndSendEmailVerificationToken(userdb.email);
+      const emailResult = await createAndSendEmailVerificationToken(
+        userdb.email,
+      );
 
       if (!emailResult.success) {
         await prisma.user.delete({ where: { id: userdb.id } });

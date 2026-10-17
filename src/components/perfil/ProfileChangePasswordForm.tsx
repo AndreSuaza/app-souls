@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IoEyeOffOutline,
   IoEyeOutline,
   IoLockClosedOutline,
   IoShieldCheckmarkOutline,
 } from "react-icons/io5";
-import { changePassword } from "@/actions";
+import { changePassword, getPasswordStatus } from "@/actions";
 import { useToastStore, useUIStore } from "@/store";
 
 type PasswordFieldProps = {
@@ -68,10 +68,24 @@ export const ProfileChangePasswordForm = ({ disabled = false }: Props) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [hasLocalPassword, setHasLocalPassword] = useState<boolean | null>(
+    disabled ? false : null,
+  );
 
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
+
+  useEffect(() => {
+    if (disabled) {
+      setHasLocalPassword(false);
+      return;
+    }
+
+    void getPasswordStatus().then((result) => {
+      setHasLocalPassword(result.hasPassword);
+    });
+  }, [disabled]);
 
   const clearFields = () => {
     setCurrentPassword("");
@@ -125,7 +139,7 @@ export const ProfileChangePasswordForm = ({ disabled = false }: Props) => {
   );
   const canSave =
     !disabled &&
-    currentPassword.trim().length > 0 &&
+    (hasLocalPassword === false || currentPassword.trim().length > 0) &&
     newPassword.trim().length > 0 &&
     confirmPassword.trim().length > 0;
 
@@ -140,20 +154,24 @@ export const ProfileChangePasswordForm = ({ disabled = false }: Props) => {
             Cambio de contraseña
           </h3>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            Ingresa tu contraseña actual y define la nueva contraseña.
+            {hasLocalPassword === false
+              ? "Define una contraseña local para tu cuenta."
+              : "Ingresa tu contraseña actual y define la nueva contraseña."}
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="md:col-span-2">
-            <PasswordField
-              label="Contraseña actual"
-              value={currentPassword}
-              visible={showCurrentPassword}
-              onChange={setCurrentPassword}
-              onToggle={() => setShowCurrentPassword((value) => !value)}
-            />
-          </div>
+          {hasLocalPassword !== false && (
+            <div className="md:col-span-2">
+              <PasswordField
+                label="Contraseña actual"
+                value={currentPassword}
+                visible={showCurrentPassword}
+                onChange={setCurrentPassword}
+                onToggle={() => setShowCurrentPassword((value) => !value)}
+              />
+            </div>
+          )}
           <PasswordField
             label="Nueva contraseña"
             value={newPassword}

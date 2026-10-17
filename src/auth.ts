@@ -1,13 +1,12 @@
 import NextAuth from "next-auth";
 import authConfig from "@/auth.config";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import db from "@/lib/db";
+import { authAdapter } from "@/lib/auth-adapter";
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 const SESSION_MAX_AGE_MS = SESSION_MAX_AGE_SECONDS * 1000;
 
 export const { signIn, signOut, auth, handlers } = NextAuth({
-  adapter: MongoDBAdapter(db),
+  adapter: authAdapter,
   ...authConfig,
   session: {
     strategy: "jwt",
@@ -26,6 +25,9 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
         token.idd = user.id;
         token.role = user.role;
         token.nickname = user.nickname;
+        token.name = user.name;
+        token.lastname = user.lastname;
+        token.profileCompleted = user.profileCompleted !== false;
         token.image = user.image ? user.image : "player";
         // Fija un vencimiento absoluto para evitar sesiones infinitas.
         token.expiresAt = token.expiresAt ?? now + SESSION_MAX_AGE_MS;
@@ -43,6 +45,12 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
       if (trigger === "update" && session?.user?.image) {
         token.image = session.user.image;
       }
+      if (trigger === "update" && session?.user) {
+        token.nickname = session.user.nickname ?? token.nickname;
+        token.name = session.user.name ?? token.name;
+        token.lastname = session.user.lastname ?? token.lastname;
+        token.profileCompleted = session.user.profileCompleted !== false;
+      }
 
       if (token.expiresAt && now > token.expiresAt) {
         return null;
@@ -57,7 +65,10 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
         session.user.idd = token.idd;
         session.user.role = token.role;
         session.user.nickname = token.nickname;
+        session.user.name = token.name;
+        session.user.lastname = token.lastname;
         session.user.image = token.image;
+        session.user.profileCompleted = token.profileCompleted !== false;
 
         // exponer storeId en sesión
         if (token.role === "store") {

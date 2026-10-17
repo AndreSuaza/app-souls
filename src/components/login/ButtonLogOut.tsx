@@ -1,6 +1,6 @@
 'use client';
 
-import { signOut } from "next-auth/react";
+import { signOutOnce } from "@/lib/client-sign-out";
 import React from "react"
 
 interface Props {
@@ -11,11 +11,11 @@ interface Props {
 export const ButtonLogOut = ({children, className}:Props) => {
 
   const handleClick = async() => {
-    await signOut();
+    await signOutOnce();
   }
 
   return (
-    <button onClick={handleClick} className={className}>
+    <button type="button" onClick={handleClick} className={className}>
       {children}
     </button>
   )

@@ -7,8 +7,10 @@ declare module "next-auth" {
       idd?: string;
       role?: string;
       nickname?: string;
+      lastname?: string | null;
       image?: string| null;
       storeId?: string | null;
+      profileCompleted?: boolean;
     } & DefaultSession["user"];
   }
 
@@ -16,8 +18,11 @@ declare module "next-auth" {
     idd?: string;
     role?: string;
     nickname?: string;
+    lastname?: string | null;
     image?: string| null;
     storeId?: string | null;
+    profileCompleted?: boolean;
+    status?: string;
   }
 }
 
@@ -26,8 +31,11 @@ declare module "next-auth/jwt" {
     idd?: string;
     role?: string;
     nickname?: string;
+    lastname?: string | null;
     image?: string| null;
     storeId?: string | null;
+    profileCompleted?: boolean;
+    name?: string | null;
     expiresAt?: number;
   }
 }

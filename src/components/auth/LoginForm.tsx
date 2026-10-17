@@ -9,6 +9,7 @@ import { MdError, MdCheckCircle } from "react-icons/md";
 import { authenticate } from "@/actions";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { ButtonSocial } from "@/components/login/ButtonSocial";
 
 type FormInputs = {
   email: string;
@@ -18,9 +19,14 @@ type FormInputs = {
 interface FormLoginProps {
   isVerified: boolean;
   callbackUrl?: string;
+  authError?: string;
 }
 
-export const LoginForm = ({ isVerified, callbackUrl }: FormLoginProps) => {
+export const LoginForm = ({
+  isVerified,
+  callbackUrl,
+  authError,
+}: FormLoginProps) => {
   const {
     register,
     handleSubmit,
@@ -31,6 +37,14 @@ export const LoginForm = ({ isVerified, callbackUrl }: FormLoginProps) => {
   const router = useRouter();
   const { update } = useSession();
   const [showPassword, setShowPassword] = useState(false);
+  const authErrorMessage =
+    authError === "GoogleEmailNotVerified"
+      ? "Google no confirmó el correo de esta cuenta."
+      : authError === "AccountInactive"
+        ? "Tu cuenta está inactiva o bloqueada. Contacta con soporte."
+        : authError === "GoogleSessionMissing"
+          ? "No se pudo completar el inicio con Google. Intenta nuevamente."
+          : null;
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     startTransition(async () => {
@@ -61,6 +75,13 @@ export const LoginForm = ({ isVerified, callbackUrl }: FormLoginProps) => {
         <div className="flex items-center gap-2 text-red-500 text-xs my-4 px-2 py-2 bg-red-50 border border-red-200 rounded">
           <MdError size={18} />
           <span>{error}</span>
+        </div>
+      )}
+
+      {authErrorMessage && !error && (
+        <div className="flex items-center gap-2 text-red-500 text-xs my-4 px-2 py-2 bg-red-50 border border-red-200 rounded">
+          <MdError size={18} />
+          <span>{authErrorMessage}</span>
         </div>
       )}
 
@@ -185,6 +206,14 @@ export const LoginForm = ({ isVerified, callbackUrl }: FormLoginProps) => {
         <div className="px-2 text-sm font-semibold text-slate-500">O</div>
         <div className="flex-1 border-t border-slate-300"></div>
       </div>
+
+      <ButtonSocial
+        callbackUrl={callbackUrl ?? "/"}
+        className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        provider="google"
+      >
+        Continuar con Google
+      </ButtonSocial>
 
       <Link
         href="/auth/register"

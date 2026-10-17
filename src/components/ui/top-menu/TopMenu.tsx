@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { signOutOnce } from "@/lib/client-sign-out";
 import {
   useEffect,
   useRef,
@@ -85,7 +86,7 @@ export const TopMenu = () => {
   }, []);
 
   const handleSignOut = async () => {
-    await signOut();
+    await signOutOnce();
   };
 
   const openRouteMenu = (route: Route, trigger: HTMLElement) => {

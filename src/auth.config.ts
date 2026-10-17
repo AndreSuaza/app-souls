@@ -1,6 +1,7 @@
 import type { NextAuthConfig } from "next-auth";
 
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
@@ -17,7 +18,15 @@ export const runtime = "nodejs";
 // Notice this is only an object, not a full Auth.js instance
 export default {
   providers: [
-    // Google,
+    Google({
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          prompt: "select_account",
+          scope: "openid email profile",
+        },
+      },
+    }),
     // GitHub,
     Credentials({
       authorize: async (credentials) => {
@@ -113,5 +122,20 @@ export default {
       },
     }),
   ],
+  callbacks: {
+    async signIn({ account, profile, user }) {
+      if (account?.provider !== "google") return true;
+
+      if (profile?.email_verified !== true) {
+        return "/auth/login?error=GoogleEmailNotVerified";
+      }
+
+      if (user.status === "inactive" || user.status === "banned") {
+        return "/auth/login?error=AccountInactive";
+      }
+
+      return true;
+    },
+  },
   secret: process.env.NEXTAUTH_SECRET,
 } satisfies NextAuthConfig;

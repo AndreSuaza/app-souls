@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import clsx from "clsx";
+import { signOutOnce } from "@/lib/client-sign-out";
 import {
   IoBagRemoveOutline,
   IoBookOutline,
@@ -95,7 +96,7 @@ export const Sidebar = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await signOutOnce();
     handleClose();
   };
 

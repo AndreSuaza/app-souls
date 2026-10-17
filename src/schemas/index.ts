@@ -7,6 +7,7 @@ export * from "./tournament/tournament.schema";
 
 export * from "./user/search-users.schema";
 export * from "./auth/register.schema";
+export * from "./auth/complete-google-profile.schema";
 export * from "./auth/verify-current-password.schema";
 export * from "./auth/change-password.schema";
 export * from "./profile/tournament.schema";

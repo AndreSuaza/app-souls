@@ -8,6 +8,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { MdError, MdCheckCircle } from "react-icons/md";
 import Link from "next/link";
 import { palabrasProhibidas } from "@/models/inappropriateWords.model";
+import { ButtonSocial } from "@/components/login/ButtonSocial";
 
 type FormInputs = {
   name: string;
@@ -434,6 +435,19 @@ export const RegisterForm = () => {
         )}
         {isPending ? "Registrando..." : "Registrarse"}
       </button>
+
+      <div className="flex items-center">
+        <div className="flex-1 border-t border-slate-300"></div>
+        <div className="px-2 text-sm font-semibold text-slate-500">O</div>
+        <div className="flex-1 border-t border-slate-300"></div>
+      </div>
+
+      <ButtonSocial
+        className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        provider="google"
+      >
+        Continuar con Google
+      </ButtonSocial>
 
       {success && (
         <button

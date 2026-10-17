@@ -36,9 +36,18 @@ export async function changePassword(input: ChangePasswordInput) {
   });
 
   if (!user?.password) {
+    const hashed = await bcrypt.hash(parsed.data.newPassword, 10);
+    await prisma.user.update({
+      where: { id: session.user.idd },
+      data: { password: hashed },
+    });
+    return { success: true };
+  }
+
+  if (!parsed.data.currentPassword) {
     return {
       success: false,
-      message: "No se encontró la contraseña actual.",
+      message: "Ingresa la contraseña actual para continuar.",
     };
   }
 

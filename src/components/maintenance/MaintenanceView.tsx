@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
 import { titleFont } from "@/config/fonts";
+import { signOutOnce } from "@/lib/client-sign-out";
 
 interface MaintenanceViewProps {
   cinzelClassName: string;
@@ -18,7 +19,7 @@ export function MaintenanceView({
   const { data: session } = useSession();
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/mantenimiento" });
+    await signOutOnce("/mantenimiento");
   };
 
   return (

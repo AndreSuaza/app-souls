@@ -86,7 +86,7 @@ const sidebarItems: SidebarItem[] = [
   {
     id: "security",
     label: "Seguridad",
-    description: "Contrasena",
+    description: "Contraseña",
     icon: IoLockClosedOutline,
   },
 ];
