@@ -1,6 +1,9 @@
 "use client";
 
-import { completeGoogleProfile } from "@/actions";
+import {
+  completeGoogleProfile,
+  completeSimulatorGoogleProfile,
+} from "@/actions";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -9,12 +12,20 @@ interface Props {
   callbackUrl: string;
   initialName: string;
   initialLastname: string;
+  simulatorTicket?: string;
 }
+
+type ProfileCompletionResult = {
+  success: boolean;
+  message?: string;
+  redirectUrl?: string;
+};
 
 export function CompleteGoogleProfileForm({
   callbackUrl,
   initialName,
   initialLastname,
+  simulatorTicket,
 }: Props) {
   const router = useRouter();
   const { update } = useSession();
@@ -29,9 +40,20 @@ export function CompleteGoogleProfileForm({
     setError(null);
 
     startTransition(async () => {
-      const result = await completeGoogleProfile({ name, lastname, nickname });
+      const result: ProfileCompletionResult = simulatorTicket
+        ? await completeSimulatorGoogleProfile(simulatorTicket, {
+            name,
+            lastname,
+            nickname,
+          })
+        : await completeGoogleProfile({ name, lastname, nickname });
       if (!result.success) {
         setError(result.message ?? "No se pudo completar el perfil.");
+        return;
+      }
+
+      if (simulatorTicket && result.redirectUrl) {
+        window.location.assign(result.redirectUrl);
         return;
       }
 

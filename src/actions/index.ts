@@ -60,6 +60,7 @@ export * from "./auth/logout";
 export * from "./auth/find-user";
 export * from "./auth/register";
 export * from "./auth/complete-google-profile";
+export * from "./auth/complete-simulator-google-profile";
 export * from "./auth/verify-current-password";
 export * from "./auth/change-password";
 export * from "./auth/get-password-status";

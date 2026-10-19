@@ -310,6 +310,7 @@ model User {
   avatarPurchases   AvatarPurchase[]
   battlePassClaims  BattlePassClaim[]
   simulatorOAuthExchanges SimulatorOAuthExchange[]
+    simulatorGoogleOAuthTransactions SimulatorGoogleOAuthTransaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -435,6 +436,23 @@ model SimulatorOAuthExchange {
   createdAt  DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId, consumedAt])
+}
+
+model SimulatorGoogleOAuthTransaction {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  stateHash         String    @unique
+  simulatorState    String
+  codeVerifier      String
+  profileTicketHash String?   @unique
+  userId            String?   @db.ObjectId
+  expiresAt         DateTime
+  consumedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([expiresAt])
   @@index([userId, consumedAt])
