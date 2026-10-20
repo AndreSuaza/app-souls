@@ -42,17 +42,6 @@ export async function GET(request: Request) {
     );
   }
 
-  // Google vuelve siempre al origen canónico de app-souls. Esto evita que el
-  // callback dependa de si el simulador fue abierto por localhost o por IP.
-  if (requestUrl.origin !== authUrl.origin) {
-    const canonicalUrl = new URL(
-      "/api/simulator/auth/google/start",
-      authUrl,
-    );
-    canonicalUrl.searchParams.set("state", simulatorState);
-    return NextResponse.redirect(canonicalUrl);
-  }
-
   const state = createGoogleOAuthState();
   const codeVerifier = createGooglePkceVerifier();
   await createSimulatorGoogleTransaction({
