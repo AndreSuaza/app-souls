@@ -19,6 +19,8 @@ const authRoutes = [
 const apiAuthPrefix = "/api/auth";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 const maintenancePath = "/mantenimiento";
+const canonicalHost = "soulsinxtinction.com";
+const alternateCanonicalHost = "www.soulsinxtinction.com";
 const maintenanceEnabled =
   process.env.MAINTENANCE_MODE === "true" ||
   process.env.MAINTENANCE_MODE === "1";
@@ -83,6 +85,10 @@ const { auth: baseAuth } = NextAuth(middlewareAuthConfig);
 
 export default baseAuth((req) => {
   const { nextUrl } = req;
+  const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0].trim();
+  const requestHost = (forwardedHost || req.headers.get("host") || nextUrl.hostname)
+    .split(":")[0]
+    .toLowerCase();
   const path = nextUrl.pathname;
   const isLoggedIn = !!req.auth;
   const profileCompleted = req.auth?.user.profileCompleted !== false;
@@ -90,6 +96,14 @@ export default baseAuth((req) => {
   const isBattlePassLinkPreview =
     path === battlePassRoute &&
     linkPreviewUserAgents.some((bot) => userAgent.includes(bot));
+
+  if (requestHost === alternateCanonicalHost) {
+    const canonicalUrl = nextUrl.clone();
+    canonicalUrl.protocol = "https:";
+    canonicalUrl.hostname = canonicalHost;
+    canonicalUrl.port = "";
+    return NextResponse.redirect(canonicalUrl, 308);
+  }
 
   if (
     crawlerSensitiveRoutes.some((route) => path.startsWith(route)) &&
