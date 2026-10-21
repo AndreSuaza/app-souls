@@ -8,7 +8,7 @@ import { assertCanCreateTournamentForStore } from "./tournament-action-auth";
 export async function createTournamentAction(input: CreateTournamentInput) {
   try {
     const data = CreateTournamentSchema.parse(input);
-    await assertCanCreateTournamentForStore(data.storeId);
+    await assertCanCreateTournamentForStore(data.storeId, data.format);
 
     // Crear torneo
     const tournament = await prisma.tournament.create({
@@ -20,7 +20,7 @@ export async function createTournamentAction(input: CreateTournamentInput) {
         image: data.image,
         format: data.format as TournamentFormat,
         date: new Date(data.date),
-        maxRounds: data.maxRounds,
+        maxRounds: data.format === "Elimination" ? 3 : data.maxRounds,
         storeId: data.storeId,
         typeTournamentId: data.typeTournamentId,
       },

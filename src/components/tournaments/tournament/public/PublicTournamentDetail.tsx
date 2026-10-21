@@ -33,7 +33,7 @@ import { RoundHistoryCardBase } from "../hisotry/RoundHistoryCardBase";
 import { ResultButton } from "../current-round/ResultButton";
 import { orderMatchesByBye } from "@/utils/matches";
 import { TopCutBracket } from "../top-cut/TopCutBracket";
-import { isTopCutStage, isTopCutTournamentType } from "@/logic";
+import { isBracketStage, isTopCutTournamentType } from "@/logic";
 
 type Props = {
   initialTournament: PublicTournamentDetail;
@@ -157,7 +157,9 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
 
   const showCurrentRoundSection = tournament?.status === "in_progress";
   const showPodium = tournament?.status === "finished";
-  const showTopCutSection = isTopCutTournamentType(tournament?.typeTournamentName);
+  const isElimination = tournament?.format === "Elimination";
+  const showTopCutSection =
+    isElimination || isTopCutTournamentType(tournament?.typeTournamentName);
 
   useEffect(() => {
     hideLoading();
@@ -476,7 +478,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                             players={players}
                             readOnly
                             decorated
-                            allowDraw={!isTopCutStage(currentRound?.stage)}
+                            allowDraw={!isBracketStage(currentRound?.stage)}
                             renderResult={() => renderVS()}
                           />
                         ))}
@@ -497,6 +499,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
               rounds={rounds}
               players={players}
               compact
+              bracketType={isElimination ? "elimination" : "topCut"}
             />
           )}
 
@@ -547,12 +550,12 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
                           : round.matches
                       }
                       readOnly
-                      allowDraw={!isTopCutStage(round.stage)}
+                      allowDraw={!isBracketStage(round.stage)}
                       allowExpand={false}
                       renderResult={(match) =>
                         status === "IN_PROGRESS"
                           ? renderVS()
-                          : renderResultButtons(match, !isTopCutStage(round.stage))
+                          : renderResultButtons(match, !isBracketStage(round.stage))
                       }
                     />
                   );

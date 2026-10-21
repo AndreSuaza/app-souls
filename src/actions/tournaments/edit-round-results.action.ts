@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { isTopCutStage } from "@/logic";
+import { isBracketStage } from "@/logic";
 import { assertCanManageTournament } from "./tournament-action-auth";
 
 const EditRoundResultsSchema = z.object({
@@ -84,8 +84,8 @@ export const editRoundResultsAction = async ({
         throw new Error("Match no encontrado.");
       }
 
-      if (match.result === "DRAW" && isTopCutStage(persistedMatch.round.stage)) {
-        throw new Error("El bracket Top 8 no permite empates.");
+      if (match.result === "DRAW" && isBracketStage(persistedMatch.round.stage)) {
+        throw new Error("Los brackets eliminatorios no permiten empates.");
       }
 
       return persistedMatch.result !== match.result;

@@ -8,9 +8,9 @@ import { isTopCutTournamentType } from "@/logic";
 
 export const TournamentCurrentRound = () => {
   const { tournament, rounds, players } = useTournamentStore();
-  const showTopCutSection = isTopCutTournamentType(
-    tournament?.typeTournamentName,
-  );
+  const isElimination = tournament?.format === "Elimination";
+  const showTopCutSection =
+    isElimination || isTopCutTournamentType(tournament?.typeTournamentName);
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -18,7 +18,11 @@ export const TournamentCurrentRound = () => {
       <CurrentRoundHeader />
 
       {showTopCutSection && (
-        <TopCutBracket rounds={rounds} players={players} />
+        <TopCutBracket
+          rounds={rounds}
+          players={players}
+          bracketType={isElimination ? "elimination" : "topCut"}
+        />
       )}
 
       {/* Seccion de rondas */}

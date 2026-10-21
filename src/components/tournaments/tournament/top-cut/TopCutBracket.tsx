@@ -5,24 +5,74 @@ import Link from "next/link";
 import {
   MatchInterface,
   RoundInterface,
+  RoundStage,
   TournamentPlayerInterface,
 } from "@/interfaces";
 import {
+  getBracketChampionId,
   getRoundStageLabel,
-  getTopCutChampionId,
 } from "@/logic";
 
 type Props = {
   rounds: RoundInterface[];
   players: TournamentPlayerInterface[];
   compact?: boolean;
+  bracketType?: "topCut" | "elimination";
 };
 
-const STAGES = [
-  { stage: "TOP8_QUARTERFINAL", title: "Cuartos", positions: [1, 2, 3, 4] },
-  { stage: "TOP8_SEMIFINAL", title: "Semifinal", positions: [1, 2] },
-  { stage: "TOP8_FINAL", title: "Final", positions: [1] },
-] as const;
+const getStages = (
+  bracketType: "topCut" | "elimination",
+  eliminationSize: "four" | "eight" | "sixteen",
+) => {
+  if (bracketType === "topCut") {
+    return [
+      {
+        stage: "TOP8_QUARTERFINAL",
+        title: "Cuartos",
+        positions: [1, 2, 3, 4],
+      },
+      { stage: "TOP8_SEMIFINAL", title: "Semifinal", positions: [1, 2] },
+      { stage: "TOP8_FINAL", title: "Final", positions: [1] },
+    ] as {
+      stage: RoundStage;
+      title: string;
+      positions: number[];
+    }[];
+  }
+
+  const stages = [
+    ...(eliminationSize === "sixteen"
+      ? [
+          {
+            stage: "ELIMINATION_ROUND_OF_16" as const,
+            title: "Ronda de 16",
+            positions: [1, 2, 3, 4, 5, 6, 7, 8],
+          },
+        ]
+      : []),
+    ...(eliminationSize !== "four"
+      ? [
+          {
+            stage: "ELIMINATION_QUARTERFINAL" as const,
+            title: "Cuartos",
+            positions: [1, 2, 3, 4],
+          },
+        ]
+      : []),
+    {
+      stage: "ELIMINATION_SEMIFINAL" as const,
+      title: "Semifinal",
+      positions: [1, 2],
+    },
+    { stage: "ELIMINATION_FINAL" as const, title: "Final", positions: [1] },
+  ];
+
+  return stages as {
+    stage: RoundStage;
+    title: string;
+    positions: number[];
+  }[];
+};
 
 type PlayerDisplay = {
   nickname: string;
@@ -72,11 +122,17 @@ const getMatchByPosition = (
   );
 
 const getPlaceholder = (stage: RoundInterface["stage"], position: number) => {
-  if (stage === "TOP8_SEMIFINAL") {
+  if (stage === "ELIMINATION_QUARTERFINAL") {
+    return `Ganador R16 ${position * 2 - 1}/${position * 2}`;
+  }
+
+  if (stage === "TOP8_SEMIFINAL" || stage === "ELIMINATION_SEMIFINAL") {
     return position === 1 ? "Ganador CF 1/2" : "Ganador CF 3/4";
   }
 
-  if (stage === "TOP8_FINAL") return "Ganador semifinal";
+  if (stage === "TOP8_FINAL" || stage === "ELIMINATION_FINAL") {
+    return "Ganador semifinal";
+  }
 
   return "Pendiente";
 };
@@ -100,7 +156,7 @@ const TopCutMatch = ({
   const player2Display = getPlayerDisplay(
     match?.player2Id ?? null,
     players,
-    placeholder,
+    match?.player2Nickname === "BYE" ? "BYE" : placeholder,
   );
 
   const player1Won = match?.result === "P1";
@@ -204,13 +260,27 @@ export const TopCutBracket = ({
   rounds,
   players,
   compact = false,
+  bracketType = "topCut",
 }: Props) => {
-  const bracketRounds = STAGES.map((stage) => ({
+  const hasEliminationQuarterfinal = rounds.some(
+    (round) => round.stage === "ELIMINATION_QUARTERFINAL",
+  );
+  const hasEliminationRoundOf16 = rounds.some(
+    (round) => round.stage === "ELIMINATION_ROUND_OF_16",
+  );
+  const eliminationSize =
+    players.length === 4 && !hasEliminationQuarterfinal && !hasEliminationRoundOf16
+      ? "four"
+      : players.length === 16 || hasEliminationRoundOf16
+      ? "sixteen"
+      : "eight";
+  const stages = getStages(bracketType, eliminationSize);
+  const bracketRounds = stages.map((stage) => ({
     ...stage,
     round: rounds.find((round) => round.stage === stage.stage),
   }));
   const hasBracket = bracketRounds.some((stage) => stage.round);
-  const championId = getTopCutChampionId(rounds);
+  const championId = getBracketChampionId(rounds, bracketType);
   const champion = championId
     ? players.find((player) => player.id === championId)
     : null;
@@ -218,7 +288,9 @@ export const TopCutBracket = ({
   if (!hasBracket) {
     return (
       <section className="min-w-0 max-w-full rounded-xl border border-dashed border-tournament-dark-accent bg-white p-5 text-sm text-slate-500 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-300">
-        El bracket Top 8 se habilitara cuando finalice la última ronda suiza.
+        {bracketType === "elimination"
+          ? "El bracket de eliminación se habilitará cuando el admin lo genere."
+          : "El bracket Top 8 se habilitara cuando finalice la última ronda suiza."}
       </section>
     );
   }
@@ -228,10 +300,12 @@ export const TopCutBracket = ({
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600 dark:text-amber-300">
-            Top 8
+            {bracketType === "elimination" ? "Eliminación directa" : "Top 8"}
           </p>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-            Bracket eliminatorio
+            {bracketType === "elimination"
+              ? "Bracket de eliminación"
+              : "Bracket eliminatorio"}
           </h3>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-500 dark:text-slate-300">
@@ -250,7 +324,14 @@ export const TopCutBracket = ({
       </div>
 
       <div className="w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain pb-2">
-        <div className="inline-grid min-w-[820px] grid-cols-3 items-center gap-4 align-middle lg:w-full lg:min-w-0">
+        <div
+          className={clsx(
+            "inline-grid items-center gap-4 align-middle lg:w-full lg:min-w-0",
+            bracketRounds.length === 4
+              ? "min-w-[1180px] grid-cols-4"
+              : "min-w-[820px] grid-cols-3",
+          )}
+        >
           {bracketRounds.map(({ stage, title, positions, round }) => (
             <div
               key={stage}

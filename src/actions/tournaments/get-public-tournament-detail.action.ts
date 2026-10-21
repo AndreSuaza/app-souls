@@ -25,6 +25,7 @@ export async function getPublicTournamentDetailAction(
         currentRoundNumber: true,
         maxRounds: true,
         topCutGeneratedAt: true,
+        eliminationGeneratedAt: true,
         format: true,
         typeTournament: {
           select: {
@@ -101,6 +102,9 @@ export async function getPublicTournamentDetailAction(
         maxRounds: tournament.maxRounds,
         topCutGeneratedAt: tournament.topCutGeneratedAt
           ? tournament.topCutGeneratedAt.toISOString()
+          : null,
+        eliminationGeneratedAt: tournament.eliminationGeneratedAt
+          ? tournament.eliminationGeneratedAt.toISOString()
           : null,
         format: tournament.format ?? null,
         typeTournamentName: tournament.typeTournament?.name ?? null,

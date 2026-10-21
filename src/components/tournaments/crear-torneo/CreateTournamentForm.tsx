@@ -56,7 +56,7 @@ export const CreateTournamentForm = () => {
     },
   });
 
-  const [format, setFormat] = useState<"Masters">("Masters");
+  const [format, setFormat] = useState<"Masters" | "Elimination">("Masters");
   const selectedTypeId = useWatch({
     control,
     name: "typeTournamentId",
@@ -255,7 +255,11 @@ export const CreateTournamentForm = () => {
           />
         )}
 
-        <TournamentFormatSelect value={format} onChange={setFormat} />
+        <TournamentFormatSelect
+          value={format}
+          onChange={setFormat}
+          canCreateElimination={role === "admin"}
+        />
       </div>
 
       <div className="flex gap-3 pt-4 justify-end">

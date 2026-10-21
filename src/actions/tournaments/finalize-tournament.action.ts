@@ -21,6 +21,7 @@ export async function finalizeTournamentAction(input: {
       select: {
         id: true,
         status: true,
+        format: true,
         typeTournament: {
           select: {
             name: true,
@@ -116,6 +117,17 @@ export async function finalizeTournamentAction(input: {
         }
         topCutPvByUserId.set(userId, pv);
       });
+    }
+
+    if (tournament.format === "Elimination") {
+      const finalRound = tournament.tournamentRounds.find(
+        (round) => round.stage === "ELIMINATION_FINAL",
+      );
+      const finalMatch = finalRound?.matches[0];
+
+      if (!finalMatch || finalMatch.result === null || finalMatch.result === "DRAW") {
+        throw new Error("Primero debes finalizar el bracket de eliminación");
+      }
     }
 
     const playersByIncrement = new Map<

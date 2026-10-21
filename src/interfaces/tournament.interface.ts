@@ -6,7 +6,7 @@ export interface Tournament {
   description: string;
   lat: number;
   lgn: number;
-  format: string;
+  format: TournamentFormat;
   date: Date;
   image?: string | null;
   status: "pending" | "in_progress" | "finished" | "cancelled";
@@ -43,12 +43,13 @@ export interface TournamentInterface {
   url: string;
   lat: number;
   lgn: number;
-  format: string;
+  format: TournamentFormat;
   date: Date;
   image: string;
   currentRoundNumber: number;
   maxRounds: number;
   topCutGeneratedAt?: Date | null;
+  eliminationGeneratedAt?: Date | null;
   createDate: Date;
   storeId: string;
   typeTournamentId: string;
@@ -76,7 +77,13 @@ export type RoundStage =
   | "SWISS"
   | "TOP8_QUARTERFINAL"
   | "TOP8_SEMIFINAL"
-  | "TOP8_FINAL";
+  | "TOP8_FINAL"
+  | "ELIMINATION_ROUND_OF_16"
+  | "ELIMINATION_QUARTERFINAL"
+  | "ELIMINATION_SEMIFINAL"
+  | "ELIMINATION_FINAL";
+
+export type TournamentFormat = "Masters" | "Elimination";
 
 export interface MatchInterface {
   id: string;
@@ -107,6 +114,7 @@ export interface TournamentSnapshot {
     maxRounds?: number;
     typeTournamentName?: string | null;
     topCutGeneratedAt?: string | null;
+    eliminationGeneratedAt?: string | null;
   };
   players: TournamentPlayerInterface[];
   rounds: RoundInterface[];
@@ -123,6 +131,7 @@ export interface PublicTournamentDetail {
     currentRoundNumber: number;
     maxRounds: number;
     topCutGeneratedAt?: string | null;
+    eliminationGeneratedAt?: string | null;
     format?: string | null;
     typeTournamentName?: string | null;
   };

@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { FaStopCircle, FaCheckCircle, FaPlay } from "react-icons/fa";
 import { useTournamentStore, useUIStore, useToastStore } from "@/store";
-import { isTopCutStage, isTopCutTournamentType } from "@/logic";
+import {
+  isBracketStage,
+  isTopCutTournamentType,
+} from "@/logic";
 import { TopCutGenerateModal } from "./TopCutGenerateModal";
 
 export const RoundActionButton = () => {
@@ -14,6 +17,7 @@ export const RoundActionButton = () => {
     players,
     generateRound,
     generateTopCutBracket,
+    generateEliminationBracket,
     startCurrentRound,
     finalizeRound,
     finalizeTournament,
@@ -35,25 +39,37 @@ export const RoundActionButton = () => {
 
   const isLastRound = tournament.currentRoundNumber === tournament.maxRounds;
   const currentRoundStage = currentRound?.stage ?? "SWISS";
-  const currentRoundIsTopCut = isTopCutStage(currentRoundStage);
-  const currentRoundIsTopCutFinal = currentRoundStage === "TOP8_FINAL";
+  const currentRoundIsBracket = isBracketStage(currentRoundStage);
+  const currentRoundIsFinal =
+    currentRoundStage === "TOP8_FINAL" ||
+    currentRoundStage === "ELIMINATION_FINAL";
   const currentRoundIsFinished = !!currentRound?.finishedAt;
   const requiresTopCut = isTopCutTournamentType(tournament.typeTournamentName);
+  const requiresElimination = tournament.format === "Elimination";
   const canShowTopCutGeneration =
     tournament.status !== "finished" &&
     requiresTopCut &&
     !tournament.topCutGeneratedAt &&
     hasRounds &&
     currentRound &&
-    !currentRoundIsTopCut &&
+    !currentRoundIsBracket &&
     isLastRound &&
     isRoundStarted &&
     allMatchesResolved;
   const hasEnoughTopCutPlayers = players.length >= 8;
   const canGenerateTopCut = canShowTopCutGeneration && hasEnoughTopCutPlayers;
+  const canGenerateElimination =
+    requiresElimination &&
+    tournament.status === "pending" &&
+    !hasRounds &&
+    !tournament.eliminationGeneratedAt &&
+    (players.length === 8 || players.length === 16);
 
   const canGenerateFirstRound =
-    tournament.status !== "finished" && !hasRounds && players.length > 3;
+    tournament.status !== "finished" &&
+    !requiresElimination &&
+    !hasRounds &&
+    players.length > 3;
   const requiresDeckAssociation = ["Tier 1", "Tier 2"].includes(
     tournament.typeTournamentName ?? ""
   );
@@ -119,6 +135,19 @@ export const RoundActionButton = () => {
     }
   };
 
+  const handleGenerateElimination = async () => {
+    if (!validateDeckAssociation("tournament")) return;
+    showLoading("Generando bracket de eliminación");
+    try {
+      await generateEliminationBracket();
+      showToast("Bracket de eliminación generado", "info");
+    } catch {
+      showToast("Error al generar el bracket de eliminación", "error");
+    } finally {
+      hideLoading();
+    }
+  };
+
   const handleFinalizeTournament = async () => {
     showLoading("Finalizando torneo");
     try {
@@ -132,6 +161,34 @@ export const RoundActionButton = () => {
   };
 
   // Generar primera ronda
+  if (canGenerateElimination) {
+    return (
+      <button
+        onClick={handleGenerateElimination}
+        className="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-amber-600 text-white font-semibold hover:bg-amber-700"
+      >
+        <FaPlay className="flex shrink-0" size={16} />
+        Generar bracket
+      </button>
+    );
+  }
+
+  if (
+    requiresElimination &&
+    tournament.status === "pending" &&
+    !hasRounds &&
+    !tournament.eliminationGeneratedAt &&
+    players.length > 0 &&
+    players.length !== 8 &&
+    players.length !== 16
+  ) {
+    return (
+      <span className="text-sm font-semibold text-amber-600 dark:text-amber-300">
+        Se requieren exactamente 8 o 16 jugadores para iniciar
+      </span>
+    );
+  }
+
   if (canGenerateFirstRound) {
     return (
       <button
@@ -206,9 +263,8 @@ export const RoundActionButton = () => {
     hasRounds &&
     currentRound &&
     isRoundStarted &&
-    ((!currentRoundIsTopCut && !isLastRound) ||
-      (currentRoundIsTopCut &&
-        (!currentRoundIsTopCutFinal || !currentRoundIsFinished)))
+    ((!currentRoundIsBracket && !isLastRound) ||
+      (currentRoundIsBracket && (!currentRoundIsFinal || !currentRoundIsFinished)))
   ) {
     return (
       <button
@@ -232,8 +288,10 @@ export const RoundActionButton = () => {
     tournament.status !== "finished" &&
     hasRounds &&
     isRoundStarted &&
-    ((!requiresTopCut && isLastRound) ||
-      (requiresTopCut && currentRoundIsTopCutFinal && currentRoundIsFinished))
+    ((!requiresTopCut && !requiresElimination && isLastRound) ||
+      ((requiresTopCut || requiresElimination) &&
+        currentRoundIsFinal &&
+        currentRoundIsFinished))
   ) {
     return (
       <button

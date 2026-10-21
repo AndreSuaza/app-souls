@@ -30,11 +30,27 @@ export async function addPlayerAction(input: TournamentPlayerInput) {
           id: true,
           status: true,
           maxRounds: true,
+          format: true,
+          eliminationGeneratedAt: true,
         },
       });
 
       if (!tournament) {
         throw new Error("El torneo no existe");
+      }
+
+      const playersCount = await tx.tournamentPlayer.count({
+        where: { tournamentId: data.tournamentId },
+      });
+
+      if (tournament.format === "Elimination") {
+        if (tournament.eliminationGeneratedAt) {
+          throw new Error("La inscripción está cerrada porque el bracket ya inició");
+        }
+
+        if (playersCount >= 16) {
+          throw new Error("Los torneos de eliminación admiten máximo 16 jugadores");
+        }
       }
 
       const exists = await tx.tournamentPlayer.findFirst({
@@ -63,10 +79,6 @@ export async function addPlayerAction(input: TournamentPlayerInput) {
         select: {
           id: true,
         },
-      });
-
-      const playersCount = await tx.tournamentPlayer.count({
-        where: { tournamentId: data.tournamentId },
       });
 
       const recalculatedMaxRounds =

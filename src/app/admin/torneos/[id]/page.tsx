@@ -19,9 +19,13 @@ export default function TournamentAdminPage() {
   const { tournament, fetchTournament, players, rounds, error } =
     useTournamentStore();
   const hideLoading = useUIStore((s) => s.hideLoading);
+  const isElimination = tournament?.format === "Elimination";
+  const canShowCurrentRound =
+    !isElimination || players.length === 8 || players.length === 16;
   const showTopCutTab =
-    tournament?.status === "finished" &&
-    isTopCutTournamentType(tournament.typeTournamentName);
+    isElimination ||
+    (tournament?.status === "finished" &&
+      isTopCutTournamentType(tournament.typeTournamentName));
 
   useEffect(() => {
     hideLoading(); // La navegación terminó
@@ -63,6 +67,11 @@ export default function TournamentAdminPage() {
       return;
     }
 
+    if (activeTab === "currentRound" && !canShowCurrentRound) {
+      setActiveTab("players");
+      return;
+    }
+
     // Si el torneo finalizó:
     // - se permite "players" y "rounds"
     // - se bloquea "currentRound"
@@ -80,7 +89,7 @@ export default function TournamentAdminPage() {
       }
       return;
     }
-  }, [tournament, players.length, activeTab, showTopCutTab]);
+  }, [tournament, players.length, activeTab, showTopCutTab, canShowCurrentRound]);
 
   if (error === "Torneo no encontrado") {
     notFound();
@@ -96,17 +105,25 @@ export default function TournamentAdminPage() {
         tournamentTitle={tournament?.title ?? "Torneo"}
         playersCount={players.length}
         tournamentStatus={tournament?.status}
+        tournamentFormat={tournament?.format}
         showTopCutTab={showTopCutTab}
+        bracketTabLabel={isElimination ? "Eliminación" : "Top 8"}
       />
 
       {activeTab === "players" && <TournamentPlayersView />}
 
-      {activeTab === "currentRound" && <TournamentCurrentRound />}
+      {activeTab === "currentRound" && canShowCurrentRound && (
+        <TournamentCurrentRound />
+      )}
 
       {activeTab === "rounds" && <TournamentRoundsHistory />}
 
       {activeTab === "topCut" && showTopCutTab && (
-        <TopCutBracket rounds={rounds} players={players} />
+        <TopCutBracket
+          rounds={rounds}
+          players={players}
+          bracketType={isElimination ? "elimination" : "topCut"}
+        />
       )}
 
       {activeTab === "information" && <TournamentInformation />}

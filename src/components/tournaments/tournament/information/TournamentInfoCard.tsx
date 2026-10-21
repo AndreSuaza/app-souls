@@ -28,6 +28,7 @@ export const TournamentInfoCard = ({
   onDelete,
   isFinished,
 }: TournamentInfoCardProps) => {
+  const formatLabel = format === "Elimination" ? "Eliminación directa" : format;
   const date = form.date.toISOString().split("T")[0];
   const time = form.date.toTimeString().slice(0, 5);
   // Ajusta el limite segun el tier del torneo.
@@ -94,7 +95,7 @@ export const TournamentInfoCard = ({
           <FormField label="Formato" labelFor="tournament-info-format">
             <FormInput
               id="tournament-info-format"
-              value={format ?? "-"}
+              value={formatLabel ?? "-"}
               disabled
               className="bg-slate-50 text-slate-600 dark:bg-tournament-dark-muted dark:text-slate-300"
             />

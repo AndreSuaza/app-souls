@@ -36,6 +36,8 @@ export * from "./tournaments/finalize-top-cut-round.action";
 export * from "./tournaments/finalize-tournament.action";
 export * from "./tournaments/generate-round.action";
 export * from "./tournaments/generate-top-cut-bracket.action";
+export * from "./tournaments/generate-elimination-bracket.action";
+export * from "./tournaments/finalize-elimination-round.action";
 export * from "./tournaments/get-admin-tournaments.action";
 export * from "./tournaments/get-public-tournaments.action";
 export * from "./tournaments/get-public-tournament-detail.action";

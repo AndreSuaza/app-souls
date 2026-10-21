@@ -47,8 +47,15 @@ export const assertCanManageTournament = async (tournamentId: string) => {
   return session;
 };
 
-export const assertCanCreateTournamentForStore = async (storeId: string) => {
+export const assertCanCreateTournamentForStore = async (
+  storeId: string,
+  format?: string,
+) => {
   const session = await assertAdminOrStore();
+
+  if (format === "Elimination" && session.user.role !== "admin") {
+    throw new Error("Solo un admin puede crear torneos de eliminación directa");
+  }
 
   if (session.user.role === "store" && session.user.storeId !== storeId) {
     throw new Error("No autorizado");

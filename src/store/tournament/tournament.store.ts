@@ -4,10 +4,12 @@ import {
   addPlayerAction,
   generateRoundAction,
   generateTopCutBracketAction,
+  generateEliminationBracketAction,
   recalculateRoundAction,
   saveMatchResultAction,
   finalizeRoundAction,
   finalizeTopCutRoundAction,
+  finalizeEliminationRoundAction,
   finalizeTournamentAction,
   deletePlayerAction,
   editRoundResultsAction,
@@ -20,8 +22,11 @@ import {
   applySwissResults,
   calculateBuchholzForPlayers,
   getTopCutChampionId,
+  getEliminationChampionId,
   isSwissStage,
   isTopCutStage,
+  isEliminationStage,
+  isBracketStage,
   isTopCutTournamentType,
 } from "@/logic";
 import {
@@ -40,6 +45,7 @@ export type BasicTournament = {
   currentRoundNumber: number;
   maxRounds: number;
   topCutGeneratedAt?: string | null;
+  eliminationGeneratedAt?: string | null;
   format?: string;
   typeTournamentName?: string;
 };
@@ -68,6 +74,7 @@ type TournamentStoreState = {
 
   generateRound: () => Promise<void>;
   generateTopCutBracket: () => Promise<void>;
+  generateEliminationBracket: () => Promise<void>;
   saveMatchResult: (
     matchId: string,
     result: "P1" | "P2" | "DRAW",
@@ -138,6 +145,9 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           maxRounds: data.maxRounds,
           topCutGeneratedAt: data.topCutGeneratedAt
             ? data.topCutGeneratedAt.toISOString()
+            : null,
+          eliminationGeneratedAt: data.eliminationGeneratedAt
+            ? data.eliminationGeneratedAt.toISOString()
             : null,
           format: data.format ?? undefined,
           typeTournamentName: data.typeTournament?.name ?? undefined,
@@ -349,13 +359,51 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     }
   },
 
+  generateEliminationBracket: async () => {
+    const state = get();
+    const tournamentId = state.tournamentId;
+    if (!tournamentId || !state.tournament) return;
+
+    try {
+      const apiBracket = await generateEliminationBracketAction({
+        tournamentId,
+      });
+
+      set((currentState) => ({
+        players: currentState.players.map((player) => {
+          const seededPlayer = apiBracket.seededPlayers.find(
+            (seeded) => seeded.id === player.id,
+          );
+
+          return {
+            ...player,
+            topCutSeed: seededPlayer?.topCutSeed ?? null,
+          };
+        }),
+        rounds: [...currentState.rounds, apiBracket.round],
+        tournament: currentState.tournament
+          ? {
+              ...currentState.tournament,
+              status: "in_progress",
+              maxRounds: apiBracket.maxRounds,
+              eliminationGeneratedAt: apiBracket.eliminationGeneratedAt,
+            }
+          : null,
+      }));
+    } catch (error) {
+      console.error(error);
+      set({ error: "Error generando el bracket de eliminación" });
+      throw error;
+    }
+  },
+
   saveMatchResult: async (matchId, result, player2Nickname) => {
     if (!matchId) return;
 
     const currentRound = get().rounds[get().rounds.length - 1];
 
     if (!currentRound.startedAt) return; // ronda no iniciada
-    if (result === "DRAW" && isTopCutStage(currentRound.stage)) return;
+    if (result === "DRAW" && isBracketStage(currentRound.stage)) return;
 
     const state = get();
     if (
@@ -421,6 +469,29 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         return;
       }
 
+      if (isEliminationStage(round.stage)) {
+        const apiResult = await finalizeEliminationRoundAction({
+          tournamentId: snapshot.tournament.id,
+          roundId: round.id,
+        });
+
+        set((state) => ({
+          rounds: [
+            ...state.rounds.slice(0, -1),
+            {
+              ...round,
+              finishedAt: new Date().toISOString(),
+            },
+            ...(apiResult.nextRound ? [apiResult.nextRound] : []),
+          ],
+          tournament: {
+            ...state.tournament!,
+            currentRoundNumber: state.tournament!.currentRoundNumber + 1,
+          },
+        }));
+        return;
+      }
+
       applySwissResults(round, snapshot.players);
 
       // calcular buchholz
@@ -461,6 +532,14 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
         !getTopCutChampionId(state.rounds)
       ) {
         set({ error: "Primero debes finalizar el bracket Top 8" });
+        return;
+      }
+
+      if (
+        state.tournament?.format === "Elimination" &&
+        !getEliminationChampionId(state.rounds)
+      ) {
+        set({ error: "Primero debes finalizar el bracket de eliminación" });
         return;
       }
 
@@ -627,9 +706,9 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
 
     const currentRound = state.rounds[roundIndex];
 
-    if (isTopCutStage(currentRound.stage)) {
+    if (isBracketStage(currentRound.stage)) {
       if (updatedMatches.some((match) => match.result === "DRAW")) {
-        set({ error: "El bracket Top 8 no permite empates" });
+        set({ error: "Los brackets eliminatorios no permiten empates" });
         return;
       }
 

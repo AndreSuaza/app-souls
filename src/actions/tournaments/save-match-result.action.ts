@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { isTopCutStage } from "@/logic";
+import { isBracketStage } from "@/logic";
 import { assertCanManageTournament } from "./tournament-action-auth";
 
 export async function saveMatchResultAction(
@@ -35,8 +35,8 @@ export async function saveMatchResultAction(
 
     await assertCanManageTournament(match.round.tournamentId);
 
-    if (result === "DRAW" && isTopCutStage(match.round.stage)) {
-      throw new Error("El bracket Top 8 no permite empates.");
+    if (result === "DRAW" && isBracketStage(match.round.stage)) {
+      throw new Error("Los brackets eliminatorios no permiten empates.");
     }
 
     // Actualizar match

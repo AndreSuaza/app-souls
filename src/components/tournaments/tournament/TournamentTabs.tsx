@@ -22,7 +22,9 @@ type Props = {
   tournamentTitle: string;
   playersCount: number;
   tournamentStatus?: "pending" | "in_progress" | "finished" | "cancelled";
+  tournamentFormat?: string;
   showTopCutTab?: boolean;
+  bracketTabLabel?: string;
   hiddenTabs?: TournamentTab[];
 };
 
@@ -50,11 +52,15 @@ export const TournamentTabs = ({
   tournamentTitle,
   playersCount,
   tournamentStatus,
+  tournamentFormat,
   showTopCutTab = false,
+  bracketTabLabel = "Top 8",
   hiddenTabs,
 }: Props) => {
   const canEnableCurrentRound =
-    playersCount >= MIN_PLAYERS_FOR_ROUND &&
+    (tournamentFormat === "Elimination"
+      ? playersCount === 8 || playersCount === 16
+      : playersCount >= MIN_PLAYERS_FOR_ROUND) &&
     tournamentStatus !== "finished" &&
     tournamentStatus !== "cancelled";
 
@@ -88,7 +94,7 @@ export const TournamentTabs = ({
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               )}
             >
-              {tab.label}
+              {tab.id === "topCut" ? bracketTabLabel : tab.label}
 
               {active === tab.id && (
                 <span className="absolute -bottom-2 left-0 right-0 h-[2px] bg-purple-600 rounded-full" />
@@ -112,7 +118,7 @@ export const TournamentTabs = ({
               )}
             >
               {tab.icon}
-              {tab.label}
+              {tab.id === "topCut" ? bracketTabLabel : tab.label}
             </button>
           ))}
         </div>

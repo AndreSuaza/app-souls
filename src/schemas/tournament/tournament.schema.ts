@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { getPlainTextFromMarkdown } from "../../utils/markdown";
 
-export const TournamentFormatEnum = z.enum(["Masters"]);
+export const TournamentFormatEnum = z.enum(["Masters", "Elimination"]);
 
 // Schema usado para agregar jugadores a un torneo.
 // - "pointsInitial" representa los puntos otorgados a un jugador que entra tarde

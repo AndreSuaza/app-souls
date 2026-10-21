@@ -169,6 +169,7 @@ model Tournament {
   currentRoundNumber Int              @default(0)
   maxRounds          Int              @default(1)
   topCutGeneratedAt  DateTime?
+  eliminationGeneratedAt DateTime?
   topCutPvBonus      Int?
   createDate         DateTime         @default(now())
 
@@ -195,6 +196,7 @@ model TypeTournament {
 
 enum TournamentFormat {
   Masters
+  Elimination
 }
 
 enum TournamentStatus {
@@ -215,6 +217,10 @@ enum RoundStage {
   TOP8_QUARTERFINAL
   TOP8_SEMIFINAL
   TOP8_FINAL
+  ELIMINATION_ROUND_OF_16
+  ELIMINATION_QUARTERFINAL
+  ELIMINATION_SEMIFINAL
+  ELIMINATION_FINAL
 }
 
 model TournamentPlayer {

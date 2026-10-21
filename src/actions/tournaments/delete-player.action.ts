@@ -29,6 +29,18 @@ export async function deletePlayerAction(input: {
 
     await assertCanManageTournament(tournamentPlayer.tournamentId);
 
+    const tournament = await prisma.tournament.findUnique({
+      where: { id: tournamentPlayer.tournamentId },
+      select: { format: true, eliminationGeneratedAt: true },
+    });
+
+    if (
+      tournament?.format === "Elimination" &&
+      tournament.eliminationGeneratedAt
+    ) {
+      throw new Error("No puedes eliminar jugadores después de iniciar el bracket");
+    }
+
     await prisma.$transaction(async (tx) => {
       if (data.matchDeleteId) {
         await tx.match.delete({ where: { id: data.matchDeleteId } });
