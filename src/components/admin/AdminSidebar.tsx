@@ -3,419 +3,302 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { useEffect, useMemo, useState } from "react";
 import { useUIStore } from "@/store";
 import {
-  IoAddCircleOutline,
-  IoArrowBackOutline,
+  IoBagRemoveOutline,
+  IoCalendarOutline,
+  IoChevronDownOutline,
   IoCloseOutline,
   IoGiftOutline,
   IoHomeOutline,
-  IoLayersOutline,
-  IoNewspaperOutline,
-  IoBagRemoveOutline,
-  IoCalendarOutline,
   IoImagesOutline,
+  IoLayersOutline,
   IoLogOutOutline,
+  IoNewspaperOutline,
   IoPeopleOutline,
-  IoReceiptOutline,
-  IoSettingsOutline,
-  IoStorefrontOutline,
+  IoTrophyOutline,
 } from "react-icons/io5";
 import { TbCards } from "react-icons/tb";
-import { IoTrophyOutline } from "react-icons/io5";
 import { useSession } from "next-auth/react";
 import { signOutOnce } from "@/lib/client-sign-out";
+
+type AdminRole = "admin" | "store" | "news";
+
+type AdminNavItem = {
+  label: string;
+  href: string;
+  icon: typeof IoHomeOutline;
+};
+
+type AdminNavGroup = {
+  id: string;
+  label: string;
+  icon: typeof IoHomeOutline;
+  items: AdminNavItem[];
+};
+
+const isPathActive = (pathname: string, href: string) => {
+  const [hrefPath] = href.split("?");
+
+  return hrefPath === "/admin"
+    ? pathname === "/admin" || pathname === "/admin/"
+    : pathname === hrefPath || pathname.startsWith(`${hrefPath}/`);
+};
+
+const getAdminNavigation = (role?: string | null) => {
+  const normalizedRole = role as AdminRole | undefined;
+
+  if (normalizedRole === "admin") {
+    return [
+      {
+        id: "operations",
+        label: "Operación",
+        icon: IoTrophyOutline,
+        items: [
+          { label: "Torneos", href: "/admin/torneos", icon: IoTrophyOutline },
+          { label: "Eventos", href: "/admin/eventos", icon: IoCalendarOutline },
+        ],
+      },
+      {
+        id: "content",
+        label: "Contenido",
+        icon: IoNewspaperOutline,
+        items: [
+          { label: "Noticias", href: "/admin/noticias", icon: IoNewspaperOutline },
+          { label: "Productos", href: "/admin/productos", icon: IoBagRemoveOutline },
+          {
+            label: "Imágenes y cosméticos",
+            href: "/admin/medios",
+            icon: IoImagesOutline,
+          },
+        ],
+      },
+      {
+        id: "community",
+        label: "Comunidad",
+        icon: IoPeopleOutline,
+        items: [
+          { label: "Usuarios", href: "/admin/usuarios", icon: IoPeopleOutline },
+          { label: "Mazos", href: "/admin/mazos", icon: IoLayersOutline },
+          { label: "Cartas", href: "/admin/cartas", icon: TbCards },
+          {
+            label: "Importar cartas",
+            href: "/admin/cartas/importar-cartas",
+            icon: TbCards,
+          },
+          {
+            label: "Actualizar imágenes",
+            href: "/admin/cartas/actualizar-imagenes",
+            icon: IoImagesOutline,
+          },
+        ],
+      },
+      {
+        id: "rewards",
+        label: "Recompensas",
+        icon: IoGiftOutline,
+        items: [
+          {
+            label: "Pase de batalla",
+            href: "/admin/pase-batalla",
+            icon: IoGiftOutline,
+          },
+        ],
+      },
+      /*
+       * La administración de tienda queda oculta temporalmente, pero sus
+       * rutas y componentes se conservan para una futura reactivación.
+       * Tienda: /admin/tienda
+       * Ventas: /admin/tienda/ventas
+       * Configuración: /admin/tienda/configuracion
+       * Entregas: /admin/pase-batalla/entregas-tienda
+       */
+    ] satisfies AdminNavGroup[];
+  }
+
+  if (normalizedRole === "store") {
+    return [
+      {
+        id: "operations",
+        label: "Operación",
+        icon: IoTrophyOutline,
+        items: [
+          { label: "Torneos", href: "/admin/torneos", icon: IoTrophyOutline },
+        ],
+      },
+    ] satisfies AdminNavGroup[];
+  }
+
+  if (normalizedRole === "news") {
+    return [
+      {
+        id: "content",
+        label: "Contenido",
+        icon: IoNewspaperOutline,
+        items: [
+          { label: "Noticias", href: "/admin/noticias", icon: IoNewspaperOutline },
+        ],
+      },
+    ] satisfies AdminNavGroup[];
+  }
+
+  return [] satisfies AdminNavGroup[];
+};
 
 export const AdminSidebar = () => {
   const isOpen = useUIStore((state) => state.isTournamentSidebarOpen);
   const close = useUIStore((state) => state.closeTournamentSidebar);
   const { data: session } = useSession();
-  const role = session?.user?.role;
-
   const pathname = usePathname();
-  const isTournamentSection = pathname.startsWith("/admin/torneos");
-  const isNewsSection = pathname.startsWith("/admin/noticias");
-  const isEventsSection = pathname.startsWith("/admin/eventos");
-  const isDeckSection = pathname.startsWith("/admin/mazos");
-  const isCardsSection = pathname.startsWith("/admin/cartas");
-  const isProductSection = pathname.startsWith("/admin/productos");
-  const isMediaSection = pathname.startsWith("/admin/medios");
-  const isStoreSection = pathname.startsWith("/admin/tienda");
-  const isBattlePassSection = pathname.startsWith("/admin/pase-batalla");
-  const isUsersSection = pathname.startsWith("/admin/usuarios");
+  const navigation = useMemo(
+    () => getAdminNavigation(session?.user?.role),
+    [session?.user?.role],
+  );
+  const activeGroupId = navigation.find((group) =>
+    group.items.some((item) => isPathActive(pathname, item.href)),
+  )?.id;
+  const [openGroups, setOpenGroups] = useState<string[]>(
+    activeGroupId ? [activeGroupId] : [],
+  );
+
+  useEffect(() => {
+    if (!activeGroupId) return;
+
+    setOpenGroups((current) =>
+      current.includes(activeGroupId) ? current : [...current, activeGroupId],
+    );
+  }, [activeGroupId]);
+
+  const activeItemHref = navigation
+    .flatMap((group) => group.items)
+    // La pestaña de cosméticos comparte pathname con medios; el módulo
+    // general mantiene el estado activo mientras se navega por query string.
+    .filter((item) => !item.href.includes("?") && isPathActive(pathname, item.href))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups((current) =>
+      current.includes(groupId)
+        ? current.filter((id) => id !== groupId)
+        : [...current, groupId],
+    );
+  };
+
   const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
-
-  const menuItems = [
-    {
-      label: "Inicio",
-      href: "/",
-      icon: IoHomeOutline,
-    },
-  ];
-
-  if (isAdminRoot) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Torneos",
-          href: "/admin/torneos",
-          icon: IoTrophyOutline,
-        },
-        {
-          label: "Noticias",
-          href: "/admin/noticias",
-          icon: IoNewspaperOutline,
-        },
-        {
-          label: "Eventos",
-          href: "/admin/eventos",
-          icon: IoCalendarOutline,
-        },
-        {
-          label: "Productos",
-          href: "/admin/productos",
-          icon: IoBagRemoveOutline,
-        },
-        {
-          label: "Medios",
-          href: "/admin/medios",
-          icon: IoImagesOutline,
-        },
-        {
-          label: "Tienda",
-          href: "/admin/tienda",
-          icon: IoStorefrontOutline,
-        },
-        {
-          label: "Pase",
-          href: "/admin/pase-batalla",
-          icon: IoGiftOutline,
-        },
-        {
-          label: "Usuarios",
-          href: "/admin/usuarios",
-          icon: IoPeopleOutline,
-        },
-        {
-          label: "Mazos",
-          href: "/admin/mazos",
-          icon: IoLayersOutline,
-        },
-        {
-          label: "Cartas",
-          href: "/admin/cartas",
-          icon: TbCards,
-        },
-      );
-    }
-  }
-
-  if (isTournamentSection) {
-    if (role === "admin" || role === "store") {
-      menuItems.push(
-        {
-          label: "Crear torneo",
-          href: "/admin/torneos/crear-torneo",
-          icon: IoAddCircleOutline,
-        },
-        {
-          label: "Torneos",
-          href: "/admin/torneos",
-          icon: IoTrophyOutline,
-        },
-      );
-    }
-
-    if (role === "admin") {
-      menuItems.push({
-        label: "Volver",
-        href: "/admin",
-        icon: IoArrowBackOutline,
-      });
-    }
-  }
-
-  if (isNewsSection) {
-    if (role === "admin" || role === "news") {
-      menuItems.push(
-        {
-          label: "Crear noticia",
-          href: "/admin/noticias/crear-noticia",
-          icon: IoAddCircleOutline,
-        },
-        {
-          label: "Noticias",
-          href: "/admin/noticias",
-          icon: IoNewspaperOutline,
-        },
-      );
-    }
-
-    if (role === "admin") {
-      menuItems.push({
-        label: "Volver",
-        href: "/admin",
-        icon: IoArrowBackOutline,
-      });
-    }
-  }
-
-  if (isEventsSection) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Crear evento",
-          href: "/admin/eventos/crear-evento",
-          icon: IoAddCircleOutline,
-        },
-        {
-          label: "Eventos",
-          href: "/admin/eventos",
-          icon: IoCalendarOutline,
-        },
-        {
-          label: "Volver",
-          href: "/admin",
-          icon: IoArrowBackOutline,
-        },
-      );
-    }
-  }
-
-  if (isProductSection) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Crear producto",
-          href: "/admin/productos/crear-producto",
-          icon: IoAddCircleOutline,
-        },
-        {
-          label: "Productos",
-          href: "/admin/productos",
-          icon: IoBagRemoveOutline,
-        },
-      );
-
-      menuItems.push({
-        label: "Volver",
-        href: "/admin",
-        icon: IoArrowBackOutline,
-      });
-    }
-  }
-
-  if (isDeckSection) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Crear mazo",
-          href: "/admin/mazos/laboratorio",
-          icon: IoAddCircleOutline,
-        },
-        {
-          label: "Mazos",
-          href: "/admin/mazos",
-          icon: IoLayersOutline,
-        },
-      );
-
-      menuItems.push({
-        label: "Volver",
-        href: "/admin",
-        icon: IoArrowBackOutline,
-      });
-    }
-  }
-
-  if (isCardsSection) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Cartas",
-          href: "/admin/cartas",
-          icon: TbCards,
-        },
-        {
-          label: "Crear carta",
-          href: "/admin/cartas/crear-carta",
-          icon: IoAddCircleOutline,
-        },
-        {
-          label: "Importar cartas",
-          href: "/admin/cartas/importar-cartas",
-          icon: TbCards,
-        },
-        {
-          label: "Actualizar imagenes",
-          href: "/admin/cartas/actualizar-imagenes",
-          icon: IoImagesOutline,
-        },
-        {
-          label: "Volver",
-          href: "/admin",
-          icon: IoArrowBackOutline,
-        },
-      );
-    }
-  }
-
-  if (isMediaSection) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Medios",
-          href: "/admin/medios",
-          icon: IoImagesOutline,
-        },
-        {
-          label: "Volver",
-          href: "/admin",
-          icon: IoArrowBackOutline,
-        },
-      );
-    }
-  }
-
-  if (isStoreSection) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Cosméticos",
-          href: "/admin/tienda",
-          icon: IoStorefrontOutline,
-        },
-        {
-          label: "Ventas",
-          href: "/admin/tienda/ventas",
-          icon: IoReceiptOutline,
-        },
-        {
-          label: "Configuracion",
-          href: "/admin/tienda/configuracion",
-          icon: IoSettingsOutline,
-        },
-        {
-          label: "Volver",
-          href: "/admin",
-          icon: IoArrowBackOutline,
-        },
-      );
-    }
-  }
-
-  if (isBattlePassSection) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Pase",
-          href: "/admin/pase-batalla",
-          icon: IoGiftOutline,
-        },
-        {
-          label: "Entregas tienda",
-          href: "/admin/pase-batalla/entregas-tienda",
-          icon: IoStorefrontOutline,
-        },
-        {
-          label: "Volver",
-          href: "/admin",
-          icon: IoArrowBackOutline,
-        },
-      );
-    }
-
-    if (role === "store") {
-      menuItems.push(
-        {
-          label: "Torneos",
-          href: "/admin/torneos",
-          icon: IoTrophyOutline,
-        },
-      );
-    }
-  }
-
-  if (isUsersSection) {
-    if (role === "admin") {
-      menuItems.push(
-        {
-          label: "Usuarios",
-          href: "/admin/usuarios",
-          icon: IoPeopleOutline,
-        },
-        {
-          label: "Volver",
-          href: "/admin",
-          icon: IoArrowBackOutline,
-        },
-      );
-    }
-  }
 
   return (
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-30 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
           onClick={close}
         />
       )}
 
       <aside
         className={clsx(
-          "fixed top-0 right-0 z-40 h-full w-64 bg-white dark:bg-tournament-dark-surface text-slate-900 dark:text-white shadow-sm transition-transform duration-200 flex flex-col lg:static lg:z-auto lg:h-screen lg:w-64 lg:border-r lg:border-tournament-dark-accent dark:lg:border-tournament-dark-border lg:border-l-0 lg:translate-x-0 lg:sticky lg:top-0",
+          "fixed top-0 right-0 z-40 flex h-full w-72 flex-col bg-white text-slate-900 shadow-sm transition-transform duration-200 dark:bg-tournament-dark-surface dark:text-white lg:static lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-72 lg:translate-x-0 lg:border-r lg:border-tournament-dark-accent dark:lg:border-tournament-dark-border",
           {
             "translate-x-0": isOpen,
             "translate-x-full": !isOpen,
           },
         )}
       >
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-tournament-dark-border">
-          <span className="font-bold text-slate-900 dark:text-white whitespace-nowrap">
+        <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-tournament-dark-border">
+          <span className="whitespace-nowrap font-bold text-slate-900 dark:text-white">
             Panel de administración
           </span>
 
-          <button onClick={close} className="lg:hidden">
+          <button
+            type="button"
+            onClick={close}
+            className="rounded-md p-1 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted lg:hidden"
+            aria-label="Cerrar menú de administración"
+          >
             <IoCloseOutline size={22} />
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col px-2 lg:px-3 py-4 gap-1 overflow-y-auto min-h-0">
-          {menuItems.map(({ label, href, icon: Icon }) => {
-            const isActive = pathname === href;
+        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-4">
+          <Link
+            href="/admin"
+            onClick={close}
+            className={clsx(
+              "flex items-center gap-3 rounded-lg px-4 py-3 font-semibold transition-colors",
+              isAdminRoot
+                ? "bg-purple-600 text-white shadow-sm dark:bg-tournament-dark-accent"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-white",
+            )}
+          >
+            <IoHomeOutline size={22} />
+            <span>Dashboard</span>
+          </Link>
+
+          <div className="my-1 border-t border-slate-200 dark:border-tournament-dark-border" />
+
+          {navigation.map((group) => {
+            const isGroupOpen = openGroups.includes(group.id);
+            const GroupIcon = group.icon;
 
             return (
-              <Link
-                key={href}
-                href={href}
-                onClick={close}
-                className={clsx(
-                  "flex items-center gap-3 rounded-lg px-4 py-3 font-medium transition-colors",
-                  {
-                    "lg:justify-start lg:px-4 lg:py-3 lg:gap-3": true,
-                    "bg-purple-600 text-white shadow-sm dark:bg-tournament-dark-accent dark:text-white":
-                      isActive,
-                    "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white":
-                      !isActive,
-                  },
+              <section key={group.id}>
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.id)}
+                  aria-expanded={isGroupOpen}
+                  className="flex w-full items-center justify-between rounded-lg px-4 py-2 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-tournament-dark-muted dark:hover:text-white"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <GroupIcon size={17} />
+                    <span className="truncate">{group.label}</span>
+                  </span>
+                  <IoChevronDownOutline
+                    size={17}
+                    className={clsx(
+                      "shrink-0 transition-transform",
+                      isGroupOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+
+                {isGroupOpen && (
+                  <div className="mt-1 space-y-1 border-l border-slate-200 pl-2 dark:border-tournament-dark-border">
+                    {group.items.map(({ label, href, icon: Icon }) => {
+                      const isActive = activeItemHref === href;
+
+                      return (
+                        <Link
+                          key={href}
+                          href={href}
+                          onClick={close}
+                          className={clsx(
+                            "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                            isActive
+                              ? "bg-purple-600 text-white shadow-sm dark:bg-tournament-dark-accent"
+                              : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-white",
+                          )}
+                        >
+                          <Icon size={19} />
+                          <span className="whitespace-nowrap">{label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-              >
-                <Icon size={22} />
-                <span className="whitespace-nowrap">{label}</span>
-              </Link>
+              </section>
             );
           })}
         </nav>
 
-        <div className="px-2 lg:px-3 pb-4 border-t border-slate-200 dark:border-tournament-dark-border lg:hidden">
+        <div className="border-t border-slate-200 px-3 pb-4 dark:border-tournament-dark-border lg:hidden">
           <button
             type="button"
             onClick={async () => {
               close();
               await signOutOnce();
             }}
-            className="mt-3 flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-tournament-dark-muted hover:text-slate-900 dark:hover:text-white"
+            className="mt-3 flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-white"
           >
             <IoLogOutOutline size={22} />
             Cerrar sesión

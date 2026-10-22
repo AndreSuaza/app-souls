@@ -1,5 +1,20 @@
-import { AdminMediaManager } from "@/components/media/admin/AdminMediaManager";
+import { AdminMediaHub } from "@/components/media/admin/AdminMediaHub";
 
-export default function Page() {
-  return <AdminMediaManager />;
+interface Props {
+  searchParams: Promise<{
+    section?: string;
+    group?: string;
+  }>;
+}
+
+export default async function Page({ searchParams }: Props) {
+  const { section, group } = await searchParams;
+  const initialView =
+    section === "cosmetics"
+      ? "cosmetics"
+      : group === "events" || group === "products"
+        ? group
+        : "news";
+
+  return <AdminMediaHub initialView={initialView} />;
 }

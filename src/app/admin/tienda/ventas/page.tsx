@@ -1,5 +1,6 @@
-﻿import { AdminStoreManager } from "@/components/tienda/admin/AdminStoreManager";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <AdminStoreManager section="sales" />;
+  // Ruta reservada para una futura reactivación de ventas.
+  redirect("/admin");
 }

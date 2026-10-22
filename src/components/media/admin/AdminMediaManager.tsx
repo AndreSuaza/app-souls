@@ -39,7 +39,17 @@ const getFileLabel = (url: string) => {
   return clean.split("/").pop() ?? url;
 };
 
-export const AdminMediaManager = () => {
+type Props = {
+  initialGroup?: string;
+  showGroupTabs?: boolean;
+  showHeader?: boolean;
+};
+
+export const AdminMediaManager = ({
+  initialGroup = MEDIA_GROUPS[0].id,
+  showGroupTabs = true,
+  showHeader = true,
+}: Props) => {
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
@@ -47,7 +57,11 @@ export const AdminMediaManager = () => {
     (state) => state.openAlertConfirmation,
   );
 
-  const [activeGroup, setActiveGroup] = useState(MEDIA_GROUPS[0].id);
+  const [activeGroup, setActiveGroup] = useState(
+    MEDIA_GROUPS.some((group) => group.id === initialGroup)
+      ? initialGroup
+      : MEDIA_GROUPS[0].id,
+  );
   const [activeSection, setActiveSection] = useState<MediaSectionKey>(
     MEDIA_GROUPS[0].sections[0],
   );
@@ -284,45 +298,49 @@ export const AdminMediaManager = () => {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-          Administración de medios
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Gestiona las imágenes almacenadas en R2 para cada sección del
-          proyecto.
-        </p>
-      </header>
+      {showHeader && (
+        <header className="space-y-2">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+            Administración de medios
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Gestiona las imágenes almacenadas en R2 para cada sección del
+            proyecto.
+          </p>
+        </header>
+      )}
 
       <div className="space-y-0 overflow-hidden rounded-tr-2xl">
-        <div className="flex flex-wrap items-end gap-2 border-b border-tournament-dark-accent dark:border-tournament-dark-border">
-          {MEDIA_GROUPS.map((group) => {
-            const isActive = activeGroup === group.id;
-            return (
-              <button
-                key={group.id}
-                type="button"
-                onClick={() => setActiveGroup(group.id)}
-                className={clsx(
-                  "relative -mb-px inline-flex items-center gap-2 rounded-t-xl border border-b-0 px-4 py-2 text-sm font-semibold transition",
-                  isActive
-                    ? "border-purple-500 bg-white text-purple-700 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-purple-200"
-                    : "border-tournament-dark-accent bg-slate-100 text-slate-500 hover:border-purple-400 hover:text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300 dark:hover:bg-tournament-dark-muted-strong dark:hover:text-purple-100",
-                )}
-              >
-                {groupIcons[group.id] ?? <IoImagesOutline className="h-4 w-4" />}
-                <span
+        {showGroupTabs && (
+          <div className="flex flex-wrap items-end gap-2 border-b border-tournament-dark-accent dark:border-tournament-dark-border">
+            {MEDIA_GROUPS.map((group) => {
+              const isActive = activeGroup === group.id;
+              return (
+                <button
+                  key={group.id}
+                  type="button"
+                  onClick={() => setActiveGroup(group.id)}
                   className={clsx(
-                    "whitespace-nowrap",
-                    isActive ? "inline" : "hidden sm:inline",
+                    "relative -mb-px inline-flex items-center gap-2 rounded-t-xl border border-b-0 px-4 py-2 text-sm font-semibold transition",
+                    isActive
+                      ? "border-purple-500 bg-white text-purple-700 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-purple-200"
+                      : "border-tournament-dark-accent bg-slate-100 text-slate-500 hover:border-purple-400 hover:text-slate-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300 dark:hover:bg-tournament-dark-muted-strong dark:hover:text-purple-100",
                   )}
                 >
-                  {group.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  {groupIcons[group.id] ?? <IoImagesOutline className="h-4 w-4" />}
+                  <span
+                    className={clsx(
+                      "whitespace-nowrap",
+                      isActive ? "inline" : "hidden sm:inline",
+                    )}
+                  >
+                    {group.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         <section className="-mt-px space-y-5 rounded-b-2xl border border-tournament-dark-accent border-t-0 bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
           {currentGroup && currentGroup.sections.length > 1 && (
