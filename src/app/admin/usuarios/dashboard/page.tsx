@@ -1,0 +1,12 @@
+import { getAdminDashboardOptionsAction, getAdminUserDashboardAction } from "@/actions/admin/dashboard-analytics.action";
+import { AdminDashboardHeader, AdminDashboardKpis, AdminDashboardLink, AdminDashboardNav, AdminDashboardSelectFilters, AdminDashboardUpdatedAt } from "@/components/admin/dashboard/AdminDashboardShell";
+import { DashboardBarChart, DashboardChartCard, DashboardDonutChart, DashboardLineChart } from "@/components/admin/dashboard/AdminDashboardCharts";
+
+type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+const value = (input: string | string[] | undefined) => Array.isArray(input) ? input[0] : input;
+
+export default async function UserDashboardPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const [data, stores] = await Promise.all([getAdminUserDashboardAction({ preset: value(params.preset) as "7" | "30" | "90" | "custom" | undefined, from: value(params.from), to: value(params.to), storeId: value(params.storeId), role: value(params.role) as "all" | "admin" | "store" | "news" | "player" | undefined, userStatus: value(params.userStatus) as "all" | "active" | "inactive" | "banned" | undefined }), getAdminDashboardOptionsAction()]);
+  return <section className="space-y-6"><AdminDashboardHeader title="Dashboard de usuarios" description="Entiende el crecimiento, la participación y la actividad registrada de la comunidad." /><AdminDashboardSelectFilters kind="users" stores={stores} /><AdminDashboardNav active="usuarios" /><div className="flex items-center justify-between"><AdminDashboardUpdatedAt value={data.updatedAt} /><AdminDashboardLink href="/admin/usuarios">Gestionar usuarios</AdminDashboardLink></div><AdminDashboardKpis items={data.kpis} /><div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]"><DashboardChartCard title="Registros" subtitle="Nuevos usuarios por día"><DashboardLineChart data={data.registrationsSeries} name="Usuarios" /></DashboardChartCard><DashboardChartCard title="Actividad combinada" subtitle="Usuarios únicos por fuente"><DashboardDonutChart data={data.activityBreakdown} /></DashboardChartCard></div><div className="grid gap-6 lg:grid-cols-2"><DashboardChartCard title="Usuarios por rol" subtitle="Distribución actual"><DashboardBarChart data={data.roleBreakdown} name="Usuarios" /></DashboardChartCard><DashboardChartCard title="Usuarios por estado" subtitle="Estado de las cuentas"><DashboardBarChart data={data.statusBreakdown} name="Usuarios" /></DashboardChartCard></div></section>;
+}

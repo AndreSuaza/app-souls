@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useUIStore } from "@/store";
@@ -69,13 +70,18 @@ export default function AdminTournamentsPage() {
 
   return (
     <section className="space-y-6">
-      <header>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
           Administración de torneos
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Gestiona y administra los torneos creados desde tu tienda.
         </p>
+        </div>
+        <Link href="/admin/torneos/dashboard" className="inline-flex rounded-lg border border-purple-400/50 px-3 py-2 text-sm font-semibold text-purple-200 transition hover:bg-purple-600/20">
+          Ver dashboard →
+        </Link>
       </header>
       {!loading && error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-600 dark:border-red-500/30 dark:bg-red-900/20 dark:text-red-200">

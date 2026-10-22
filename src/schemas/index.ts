@@ -20,6 +20,7 @@ export * from "./profile/public-user-id.schema";
 export * from "./battle-pass/battle-pass.schema";
 export * from "./admin/reset-elo-season.schema";
 export * from "./admin/user-management.schema";
+export * from "./admin/dashboard.schema";
 
 export * from "./decks/deck-filters.schema";
 export * from "./decks/deck-like.schema";

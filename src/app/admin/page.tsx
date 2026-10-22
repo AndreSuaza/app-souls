@@ -1,95 +1,12 @@
-import Link from "next/link";
-import { AdminResetEloCard } from "@/components/admin/AdminResetEloCard";
+import { getAdminDashboardAction } from "@/actions/admin/dashboard-analytics.action";
+import { AdminDashboardHeader, AdminDashboardKpis, AdminDashboardLink, AdminDashboardNav, AdminDashboardUpdatedAt } from "@/components/admin/dashboard/AdminDashboardShell";
+import { DashboardAreaChart, DashboardBarChart, DashboardChartCard, DashboardDonutChart, DashboardLineChart } from "@/components/admin/dashboard/AdminDashboardCharts";
 
-export default function Page() {
-  return (
-    <div className="min-h-screen space-y-6">
-      <div className="flex flex-col gap-2 rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Administrador
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Panel base para gestionar el sistema. Aqui estan las secciones
-          principales y las acciones criticas del admin.
-        </p>
-      </div>
+type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+const value = (input: string | string[] | undefined) => Array.isArray(input) ? input[0] : input;
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-              Accesos rapidos
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Accede a las secciones principales del panel.
-            </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Link
-                href="/admin/torneos"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Torneos
-              </Link>
-              <Link
-                href="/admin/noticias"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Noticias
-              </Link>
-              <Link
-                href="/admin/eventos"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Eventos
-              </Link>
-              <Link
-                href="/admin/productos"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Productos
-              </Link>
-              <Link
-                href="/admin/medios"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Medios
-              </Link>
-              {/*
-                Acceso temporalmente oculto. La ruta /admin/tienda y sus
-                componentes se conservan para una futura reactivación.
-              */}
-              <Link
-                href="/admin/pase-batalla"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Pase de batalla
-              </Link>
-              <Link
-                href="/admin/usuarios"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Usuarios
-              </Link>
-              <Link
-                href="/admin/mazos"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Mazos
-              </Link>
-              <Link
-                href="/admin/cartas/importar-cartas"
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-purple-300 hover:text-purple-700 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200 dark:hover:text-purple-300"
-              >
-                Importar cartas
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="lg:col-span-1">
-          <AdminResetEloCard />
-        </div>
-      </div>
-    </div>
-  );
+export default async function AdminDashboardPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const data = await getAdminDashboardAction({ preset: value(params.preset) as "7" | "30" | "90" | "custom" | undefined, from: value(params.from), to: value(params.to) });
+  return <section className="space-y-6"><AdminDashboardHeader title="Dashboard general" description="Una lectura rápida de la actividad, crecimiento y operación de Souls In Xtinction." /><AdminDashboardNav active="general" /><div className="flex items-center justify-between"><AdminDashboardUpdatedAt value={data.updatedAt} /><AdminDashboardLink href="/admin/torneos/dashboard">Explorar torneos</AdminDashboardLink></div><AdminDashboardKpis items={data.kpis} /><div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]"><DashboardChartCard title="Nuevos usuarios" subtitle="Registros diarios del periodo"><DashboardLineChart data={data.usersSeries} name="Usuarios" /></DashboardChartCard><DashboardChartCard title="Torneos por estado" subtitle="Distribución de torneos creados en el periodo"><DashboardBarChart data={data.tournamentsByStatus} name="Torneos" /></DashboardChartCard></div><div className="grid gap-6 lg:grid-cols-2"><DashboardChartCard title="Actividad del simulador" subtitle="Partidas registradas por día"><DashboardAreaChart data={data.simulatorSeries} name="Partidas" /></DashboardChartCard><DashboardChartCard title="Actividad por módulo" subtitle="Usuarios y actividad registrada"><DashboardDonutChart data={data.activityByModule} /></DashboardChartCard></div><div className="grid gap-6 lg:grid-cols-2"><DashboardChartCard className="lg:col-span-2" title="Jugadores únicos por tienda" subtitle="Participantes distintos en torneos activos o finalizados del periodo"><DashboardBarChart data={data.uniquePlayersByStore} name="Jugadores únicos" color="#22c55e" /></DashboardChartCard></div><section className="rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface p-5"><div className="flex items-center justify-between gap-4"><div><h2 className="text-base font-semibold text-white">Alertas operativas</h2><p className="mt-1 text-xs text-slate-400">Situaciones que requieren revisión.</p></div><AdminDashboardLink href="/admin/torneos">Ver torneos</AdminDashboardLink></div><div className="mt-4 space-y-2">{data.alerts.length === 0 ? <p className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">No hay alertas activas.</p> : data.alerts.map((alert) => <div key={alert.title} className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3"><p className="text-sm font-semibold text-white">{alert.title}</p><p className="mt-1 text-xs text-slate-300">{alert.description}</p></div>)}</div></section></section>;
 }

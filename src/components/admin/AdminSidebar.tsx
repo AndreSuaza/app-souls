@@ -10,6 +10,7 @@ import {
   IoCalendarOutline,
   IoChevronDownOutline,
   IoCloseOutline,
+  IoAnalyticsOutline,
   IoGiftOutline,
   IoHomeOutline,
   IoImagesOutline,
@@ -51,6 +52,17 @@ const getAdminNavigation = (role?: string | null) => {
 
   if (normalizedRole === "admin") {
     return [
+      {
+        id: "dashboards",
+        label: "Dashboards",
+        icon: IoAnalyticsOutline,
+        items: [
+          { label: "General", href: "/admin", icon: IoHomeOutline },
+          { label: "Torneos", href: "/admin/torneos/dashboard", icon: IoTrophyOutline },
+          { label: "Usuarios", href: "/admin/usuarios/dashboard", icon: IoPeopleOutline },
+          { label: "Simulador", href: "/admin/simulador/dashboard", icon: IoAnalyticsOutline },
+        ],
+      },
       {
         id: "operations",
         label: "Operación",
@@ -185,8 +197,6 @@ export const AdminSidebar = () => {
     );
   };
 
-  const isAdminRoot = pathname === "/admin" || pathname === "/admin/";
-
   return (
     <>
       {isOpen && (
@@ -221,22 +231,6 @@ export const AdminSidebar = () => {
         </div>
 
         <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-4">
-          <Link
-            href="/admin"
-            onClick={close}
-            className={clsx(
-              "flex items-center gap-3 rounded-lg px-4 py-3 font-semibold transition-colors",
-              isAdminRoot
-                ? "bg-purple-600 text-white shadow-sm dark:bg-tournament-dark-accent"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-white",
-            )}
-          >
-            <IoHomeOutline size={22} />
-            <span>Dashboard</span>
-          </Link>
-
-          <div className="my-1 border-t border-slate-200 dark:border-tournament-dark-border" />
-
           {navigation.map((group) => {
             const isGroupOpen = openGroups.includes(group.id);
             const GroupIcon = group.icon;
