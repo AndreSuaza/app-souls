@@ -61,20 +61,20 @@ export const ConfirmationModal = ({ className = "" }: Props) => {
       >
         {hasTextConfirmation ? (
           <div className="space-y-5">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300">
-                <IoWarningOutline size={18} />
-              </div>
-              <div className="space-y-1">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 aspect-square items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300">
+                  <IoWarningOutline size={18} />
+                </div>
                 <p className="text-left text-lg font-semibold text-slate-900 dark:text-white">
                   {text}
                 </p>
-                {description && (
-                  <p className="text-left text-sm text-slate-600 dark:text-slate-300">
-                    {description}
-                  </p>
-                )}
               </div>
+              {description && (
+                <p className="text-left text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  {description}
+                </p>
+              )}
             </div>
 
             {content}

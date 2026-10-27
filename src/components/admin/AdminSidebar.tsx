@@ -12,12 +12,14 @@ import {
   IoCloseOutline,
   IoAnalyticsOutline,
   IoGiftOutline,
+  IoGameControllerOutline,
   IoHomeOutline,
   IoImagesOutline,
   IoLayersOutline,
   IoLogOutOutline,
   IoNewspaperOutline,
   IoPeopleOutline,
+  IoRibbonOutline,
   IoTrophyOutline,
 } from "react-icons/io5";
 import { TbCards } from "react-icons/tb";
@@ -61,6 +63,7 @@ const getAdminNavigation = (role?: string | null) => {
           { label: "Torneos", href: "/admin/torneos/dashboard", icon: IoTrophyOutline },
           { label: "Usuarios", href: "/admin/usuarios/dashboard", icon: IoPeopleOutline },
           { label: "Simulador", href: "/admin/simulador/dashboard", icon: IoAnalyticsOutline },
+          { label: "PV", href: "/admin/pv/dashboard", icon: IoRibbonOutline },
         ],
       },
       {
@@ -70,6 +73,7 @@ const getAdminNavigation = (role?: string | null) => {
         items: [
           { label: "Torneos", href: "/admin/torneos", icon: IoTrophyOutline },
           { label: "Eventos", href: "/admin/eventos", icon: IoCalendarOutline },
+          { label: "Administrar simulador", href: "/admin/simulador/administracion", icon: IoGameControllerOutline },
         ],
       },
       {

@@ -102,7 +102,7 @@ export const AdminDashboardSelectFilters = ({
   kind,
   stores = [],
 }: {
-  kind: "tournaments" | "users" | "simulator";
+  kind: "tournaments" | "users" | "simulator" | "pv";
   stores?: Array<{ id: string; name: string }>;
 }) => {
   const router = useRouter();
@@ -126,9 +126,9 @@ export const AdminDashboardSelectFilters = ({
 
   return (
     <div className="flex flex-wrap gap-2 rounded-xl border border-tournament-dark-border bg-tournament-dark-surface p-3">
-      {kind !== "simulator" && select("storeId", "Todas las tiendas", stores.map((store) => ({ value: store.id, label: store.name })))}
+      {(kind === "tournaments" || kind === "users") && select("storeId", "Todas las tiendas", stores.map((store) => ({ value: store.id, label: store.name })))}
       {kind === "tournaments" && <>{select("format", "Todos los formatos", [{ value: "Masters", label: "Masters" }, { value: "Elimination", label: "Eliminación" }])}{select("status", "Todos los estados", [{ value: "pending", label: "Pendientes" }, { value: "in_progress", label: "En curso" }, { value: "finished", label: "Finalizados" }, { value: "cancelled", label: "Cancelados" }])}</>}
-      {kind === "users" && <>{select("role", "Todos los roles", [{ value: "admin", label: "Admin" }, { value: "store", label: "Store" }, { value: "news", label: "Noticias" }, { value: "player", label: "Jugadores" }])}{select("userStatus", "Todos los estados", [{ value: "active", label: "Activos" }, { value: "inactive", label: "Inactivos" }, { value: "banned", label: "Baneados" }])}</>}
+      {(kind === "users" || kind === "pv") && <>{select("role", "Todos los roles", [{ value: "admin", label: "Admin" }, { value: "store", label: "Store" }, { value: "news", label: "Noticias" }, { value: "player", label: "Jugadores" }])}{select("userStatus", "Todos los estados", [{ value: "active", label: "Activos" }, { value: "inactive", label: "Inactivos" }, { value: "banned", label: "Baneados" }])}</>}
       {kind === "simulator" && <>{select("mode", "Todos los modos", [{ value: "manual", label: "Manual" }, { value: "matchmaking", label: "Matchmaking" }])}{select("matchMode", "Todas las modalidades", [{ value: "bestOf1", label: "Mejor de 1" }, { value: "bestOf3", label: "Mejor de 3" }])}{select("simulatorStatus", "Todos los estados", [{ value: "completed", label: "Finalizadas" }, { value: "active", label: "Activas" }])}</>}
     </div>
   );
@@ -147,7 +147,7 @@ export const AdminDashboardHeader = ({ title, description }: { title: string; de
 
 export const AdminDashboardNav = ({ active }: { active: string }) => (
   <nav className="flex min-w-0 gap-2 overflow-x-auto pb-1" aria-label="Dashboards administrativos">
-    {[{ id: "general", label: "General", href: "/admin" }, { id: "torneos", label: "Torneos", href: "/admin/torneos/dashboard" }, { id: "usuarios", label: "Usuarios", href: "/admin/usuarios/dashboard" }, { id: "simulador", label: "Simulador", href: "/admin/simulador/dashboard" }].map((item) => (
+    {[{ id: "general", label: "General", href: "/admin" }, { id: "torneos", label: "Torneos", href: "/admin/torneos/dashboard" }, { id: "usuarios", label: "Usuarios", href: "/admin/usuarios/dashboard" }, { id: "simulador", label: "Simulador", href: "/admin/simulador/dashboard" }, { id: "pv", label: "PV", href: "/admin/pv/dashboard" }].map((item) => (
       <Link key={item.id} href={item.href} className={`whitespace-nowrap rounded-lg border px-4 py-2 text-sm font-semibold transition ${active === item.id ? "border-purple-400 bg-purple-600/20 text-purple-200" : "border-tournament-dark-border text-slate-400 hover:border-purple-400 hover:text-white"}`}>
         {item.label}
       </Link>
