@@ -63,10 +63,21 @@ export type UserDashboardData = {
   activityBreakdown: Array<{ name: string; value: number; color: string }>;
 };
 
+export type PvDashboardData = {
+  period: UserDashboardData["period"];
+  updatedAt: string;
+  kpis: DashboardKpi[];
+  movementsSeries: DashboardSeriesPoint[];
+  distribution: Array<{ name: string; value: number; color?: string }>;
+  roleBreakdown: Array<{ name: string; value: number; color?: string }>;
+  topUsers: Array<{ name: string; value: number; color?: string }>;
+};
+
 export type SimulatorDashboardData = {
   available: boolean;
   updatedAt: string;
   error?: string;
+  playerUserIds: string[];
   kpis: DashboardKpi[];
   matchesSeries: DashboardSeriesPoint[];
   concurrencySeries: DashboardSeriesPoint[];
@@ -126,21 +137,24 @@ const getActiveUserIds = async (
   from: Date,
   to: Date,
   filters: AdminDashboardFilters,
+  simulatorPlayerIds: string[] = [],
 ) => {
   const scopedUsers = filters.storeId
     ? await prisma.user.findMany({ where: { storeId: filters.storeId }, select: { id: true } })
     : null;
   const allowedIds = scopedUsers ? new Set(scopedUsers.map(({ id }) => id)) : null;
-  const [tournaments, decks, likes, rewards, purchases, simulator] = await Promise.all([
+  const [tournaments, decks, likes, rewards, purchases] = await Promise.all([
     prisma.tournamentPlayer.findMany({ where: { createDate: { gte: from, lte: to } }, select: { userId: true } }),
     prisma.deck.findMany({ where: { createdAt: { gte: from, lte: to } }, select: { userId: true } }),
     prisma.like.findMany({ where: { createdAt: { gte: from, lte: to } }, select: { userId: true } }),
     prisma.battlePassClaim.findMany({ where: { claimedAt: { gte: from, lte: to } }, select: { userId: true } }),
     prisma.avatarPurchase.findMany({ where: { createdAt: { gte: from, lte: to } }, select: { userId: true } }),
-    prisma.simulatorOAuthExchange.findMany({ where: { createdAt: { gte: from, lte: to } }, select: { userId: true } }),
   ]);
   const ids = new Set<string>();
-  [...tournaments, ...decks, ...likes, ...rewards, ...purchases, ...simulator].forEach(({ userId }) => {
+  [...tournaments, ...decks, ...likes, ...rewards, ...purchases].forEach(({ userId }) => {
+    if (!allowedIds || allowedIds.has(userId)) ids.add(userId);
+  });
+  simulatorPlayerIds.forEach((userId) => {
     if (!allowedIds || allowedIds.has(userId)) ids.add(userId);
   });
   return [...ids];
@@ -153,8 +167,9 @@ const countUsersWithActivity = async (
   filters: AdminDashboardFilters,
   from: Date,
   to: Date,
+  simulatorPlayerIds: string[] = [],
 ) => {
-  const ids = await getActiveUserIds(from, to, filters);
+  const ids = await getActiveUserIds(from, to, filters, simulatorPlayerIds);
   if (ids.length === 0) return 0;
   return prisma.user.count({ where: { ...buildUserWhere(filters), id: { in: ids } } });
 };
@@ -207,6 +222,7 @@ const getSimulatorReport = async (input: AdminDashboardFilters): Promise<Simulat
       available: false,
       updatedAt: new Date().toISOString(),
       error: "El API administrativo del simulador no está configurado.",
+      playerUserIds: [],
       kpis: [],
       matchesSeries: [],
       concurrencySeries: [],
@@ -230,6 +246,7 @@ const getSimulatorReport = async (input: AdminDashboardFilters): Promise<Simulat
       available: false,
       updatedAt: new Date().toISOString(),
       error: error instanceof Error ? error.message : "No se pudo consultar el simulador.",
+      playerUserIds: [],
       kpis: [],
       matchesSeries: [],
       concurrencySeries: [],
@@ -245,11 +262,10 @@ export const getAdminDashboardAction = async (input?: DashboardInput): Promise<A
   const period = resolveDashboardPeriod(filters);
   const userWhere = buildUserWhere(filters);
   const tournamentWhere = buildTournamentWhere(filters, period.from, period.to);
-  const [totalUsers, newUsers, previousNewUsers, activeUsers, activeTournaments, finishedTournaments, statusCounts, simulator, userDates, pendingRounds, overdueTournaments, uniquePlayersByStore] = await Promise.all([
+  const [totalUsers, newUsers, previousNewUsers, activeTournaments, finishedTournaments, statusCounts, simulator, userDates, pendingRounds, overdueTournaments, uniquePlayersByStore] = await Promise.all([
     prisma.user.count({ where: userWhere }),
     countNewUsers(filters, period.from, period.to),
     countNewUsers(filters, period.previousFrom, period.previousTo),
-    countUsersWithActivity(filters, period.from, period.to),
     prisma.tournament.count({ where: { ...tournamentWhere, status: "in_progress" } }),
     prisma.tournament.count({ where: { ...tournamentWhere, status: "finished" } }),
     Promise.all((Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map(async (status) => ({
@@ -265,6 +281,7 @@ export const getAdminDashboardAction = async (input?: DashboardInput): Promise<A
   ]);
   const userDateMap = new Map<string, number>();
   userDates.forEach(({ createdAt }) => addToDateMap(userDateMap, createdAt));
+  const activeUsers = await countUsersWithActivity(filters, period.from, period.to, simulator.playerUserIds ?? []);
   const simulatorSeries = simulator.matchesSeries;
 
   return {
@@ -352,20 +369,25 @@ export const getAdminUserDashboardAction = async (input?: DashboardInput): Promi
   const filters = parseInput(input);
   const period = resolveDashboardPeriod(filters);
   const userWhere = buildUserWhere(filters);
-  const [total, newUsers, previousNewUsers, activeUsers, users, roleGroups, statusGroups, tournamentUsers, simulatorUsers] = await Promise.all([
+  const [total, newUsers, previousNewUsers, users, roleGroups, statusGroups, tournamentUsers, simulatorReport] = await Promise.all([
     prisma.user.count({ where: userWhere }),
     countNewUsers(filters, period.from, period.to),
     countNewUsers(filters, period.previousFrom, period.previousTo),
-    countUsersWithActivity(filters, period.from, period.to),
     prisma.user.findMany({ where: { ...userWhere, createdAt: { gte: period.from, lte: period.to } }, select: { createdAt: true } }),
     prisma.user.groupBy({ by: ["role"], where: userWhere, _count: { _all: true } }),
     prisma.user.groupBy({ by: ["status"], where: userWhere, _count: { _all: true } }),
     prisma.tournamentPlayer.findMany({ where: { createDate: { gte: period.from, lte: period.to } }, select: { userId: true } }),
-    prisma.simulatorOAuthExchange.findMany({ where: { createdAt: { gte: period.from, lte: period.to } }, select: { userId: true } }),
+    getSimulatorReport({ ...filters, from: period.fromKey, to: period.toKey }),
   ]);
   const dateMap = new Map<string, number>();
   users.forEach(({ createdAt }) => addToDateMap(dateMap, createdAt));
-  const activity = new Set([...tournamentUsers, ...simulatorUsers].map(({ userId }) => userId));
+  const simulatorPlayerIds = simulatorReport.playerUserIds ?? [];
+  const [activeUsers, simulatorUsers] = await Promise.all([
+    countUsersWithActivity(filters, period.from, period.to, simulatorPlayerIds),
+    prisma.user.count({ where: { ...userWhere, id: { in: simulatorPlayerIds } } }),
+  ]);
+  const tournamentUserIds = new Set(tournamentUsers.map(({ userId }) => userId));
+  const activity = new Set([...tournamentUserIds, ...simulatorPlayerIds]);
 
   const roleColors: Record<string, string> = {
     store: "#f59e0b",
@@ -387,18 +409,116 @@ export const getAdminUserDashboardAction = async (input?: DashboardInput): Promi
       { label: "Usuarios totales", value: total },
       { label: "Nuevos usuarios", value: newUsers, previousValue: previousNewUsers, change: percentageChange(newUsers, previousNewUsers) },
       { label: "Usuarios con actividad", value: activeUsers },
-      { label: "Participantes en torneos", value: new Set(tournamentUsers.map(({ userId }) => userId)).size },
-      { label: "Usuarios del simulador", value: new Set(simulatorUsers.map(({ userId }) => userId)).size },
+      { label: "Participantes en torneos", value: tournamentUserIds.size },
+      { label: "Usuarios del simulador", value: simulatorUsers },
       { label: "Actividad combinada", value: activity.size },
     ],
     registrationsSeries: buildDateSeries(period, dateMap),
     roleBreakdown: roleGroups.map(({ role, _count }, index) => ({ name: role, value: _count._all, color: roleColors[role] ?? roleFallbackColors[index % roleFallbackColors.length] })),
     statusBreakdown: statusGroups.map(({ status, _count }) => ({ name: status, value: _count._all, color: statusColors[status] ?? "#a78bfa" })),
     activityBreakdown: [
-      { name: "Torneos", value: new Set(tournamentUsers.map(({ userId }) => userId)).size, color: "#f59e0b" },
-      { name: "Simulador", value: new Set(simulatorUsers.map(({ userId }) => userId)).size, color: "#22c55e" },
+      { name: "Torneos", value: tournamentUserIds.size, color: "#f59e0b" },
+      { name: "Simulador", value: simulatorUsers, color: "#22c55e" },
       { name: "Actividad total", value: activeUsers, color: "#a855f7" },
     ],
+  };
+};
+
+export const getAdminPvDashboardAction = async (input?: DashboardInput): Promise<PvDashboardData> => {
+  await requireAdmin();
+  const filters = parseInput(input);
+  const period = resolveDashboardPeriod(filters);
+  const userWhere = buildUserWhere(filters);
+  const [users, adjustments, claims] = await Promise.all([
+    prisma.user.findMany({
+      where: userWhere,
+      select: {
+        nickname: true,
+        victoryPoints: true,
+        role: true,
+      },
+      orderBy: [{ victoryPoints: "desc" }, { nickname: "asc" }],
+    }),
+    prisma.victoryPointAdjustment.findMany({
+      where: {
+        createdAt: { gte: period.from, lte: period.to },
+        user: userWhere,
+      },
+      select: { amount: true, createdAt: true },
+    }),
+    prisma.battlePassClaim.findMany({
+      where: {
+        claimedAt: { gte: period.from, lte: period.to },
+        rewardType: "PV",
+        user: userWhere,
+      },
+      select: { claimedAt: true, victoryPointsAwarded: true },
+    }),
+  ]);
+
+  const balances = users.map((user) => user.victoryPoints ?? 0);
+  const totalPv = balances.reduce((total, value) => total + value, 0);
+  const usersWithPv = balances.filter((value) => value > 0).length;
+  const averagePv = users.length ? Math.round((totalPv / users.length) * 10) / 10 : 0;
+  const manualNet = adjustments.reduce((total, adjustment) => total + adjustment.amount, 0);
+  const battlePassPv = claims.reduce((total, claim) => total + (claim.victoryPointsAwarded ?? 0), 0);
+  const movementByDate = new Map<string, number>();
+
+  adjustments.forEach(({ amount, createdAt }) => addToDateMap(movementByDate, createdAt, amount));
+  claims.forEach(({ victoryPointsAwarded, claimedAt }) => addToDateMap(movementByDate, claimedAt, victoryPointsAwarded ?? 0));
+
+  const distributionDefinitions = [
+    { name: "0 PV", min: 0, max: 0, color: "#64748b" },
+    { name: "1–9 PV", min: 1, max: 9, color: "#38bdf8" },
+    { name: "10–24 PV", min: 10, max: 24, color: "#22c55e" },
+    { name: "25–49 PV", min: 25, max: 49, color: "#f59e0b" },
+    { name: "50–99 PV", min: 50, max: 99, color: "#f97316" },
+    { name: "100+ PV", min: 100, max: Number.POSITIVE_INFINITY, color: "#a855f7" },
+  ];
+  const distribution = distributionDefinitions.map(({ name, min, max, color }) => ({
+    name,
+    value: balances.filter((value) => value >= min && value <= max).length,
+    color,
+  }));
+
+  const roleLabels: Record<string, string> = {
+    player: "Jugadores",
+    store: "Tiendas",
+    admin: "Administradores",
+    news: "Noticias",
+  };
+  const roleColors: Record<string, string> = {
+    player: "#a855f7",
+    store: "#f59e0b",
+    admin: "#38bdf8",
+    news: "#22c55e",
+  };
+  const pvByRole = new Map<string, number>();
+  users.forEach((user) => {
+    const role = user.role;
+    pvByRole.set(role, (pvByRole.get(role) ?? 0) + (user.victoryPoints ?? 0));
+  });
+
+  return {
+    period: periodDto(period),
+    updatedAt: new Date().toISOString(),
+    kpis: [
+      { label: "PV en circulación", value: totalPv },
+      { label: "Usuarios con PV", value: usersWithPv },
+      { label: "PV promedio por usuario", value: averagePv },
+      { label: "Mayor saldo", value: balances[0] ?? 0, suffix: " PV" },
+      { label: "Ajustes manuales netos", value: manualNet, suffix: " PV" },
+      { label: "PV reclamados del pase", value: battlePassPv, suffix: " PV" },
+    ],
+    movementsSeries: buildDateSeries(period, movementByDate),
+    distribution,
+    roleBreakdown: [...pvByRole.entries()]
+      .map(([role, value]) => ({ name: roleLabels[role] ?? role, value, color: roleColors[role] ?? "#a78bfa" }))
+      .sort((first, second) => second.value - first.value),
+    topUsers: users
+      .filter((user) => (user.victoryPoints ?? 0) > 0)
+      .slice(0, 10)
+      .map((user) => ({ name: user.nickname, value: user.victoryPoints ?? 0, color: "#a855f7" })),
   };
 };
 

@@ -141,18 +141,30 @@ export const DashboardAreaChart = ({ data, color = "#22c55e", name = "Valor" }: 
   );
 };
 
-export const DashboardBarChart = ({ data, color = "#a855f7", name = "Valor" }: { data: Breakdown[]; color?: string; name?: string }) => {
+export const DashboardBarChart = ({ data, color = "#a855f7", name = "Valor", gradient }: { data: Breakdown[]; color?: string; name?: string; gradient?: "purple" }) => {
   const reducedMotion = useReducedMotion();
   if (data.length === 0) return <EmptyChart />;
+  const purpleGradientColors = [
+    ["#3b1768", "#6d28d9"],
+    ["#4c1d95", "#7c3aed"],
+    ["#5b21b6", "#9333ea"],
+    ["#6d28d9", "#a855f7"],
+    ["#7c3aed", "#c084fc"],
+    ["#9333ea", "#d8b4fe"],
+  ];
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+        {gradient && <defs>{data.map((entry, index) => {
+          const [from, to] = purpleGradientColors[index % purpleGradientColors.length];
+          return <linearGradient key={entry.name} id={`dashboard-${gradient}-${index}`} x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor={from} /><stop offset="100%" stopColor={to} /></linearGradient>;
+        })}</defs>}
         <CartesianGrid stroke={gridColor} vertical={false} />
         <XAxis dataKey="name" stroke={axisColor} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
         <YAxis stroke={axisColor} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
         <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} formatter={(value) => [value, name]} labelStyle={{ color: "#ddd6fe", fontWeight: 600 }} cursor={{ fill: "rgba(168,85,247,.08)" }} />
         <Bar dataKey="value" name={name} radius={[7, 7, 0, 0]} isAnimationActive={!reducedMotion}>
-          {data.map((entry) => <Cell key={entry.name} fill={entry.color ?? color} />)}
+          {data.map((entry, index) => <Cell key={entry.name} fill={gradient ? `url(#dashboard-${gradient}-${index})` : entry.color ?? color} />)}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -162,12 +174,20 @@ export const DashboardBarChart = ({ data, color = "#a855f7", name = "Valor" }: {
 export const DashboardDonutChart = ({ data }: { data: Breakdown[] }) => {
   const reducedMotion = useReducedMotion();
   if (data.length === 0) return <EmptyChart />;
+  const explicitTotal = data.find((entry) => entry.name.toLowerCase().includes("total"))?.value;
+  const total = explicitTotal ?? data.reduce((sum, entry) => sum + entry.value, 0);
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart>
         <Pie data={data} dataKey="value" nameKey="name" innerRadius="56%" outerRadius="78%" paddingAngle={3} isAnimationActive={!reducedMotion}>
           {data.map((entry, index) => <Cell key={entry.name} fill={entry.color ?? ["#a855f7", "#f59e0b", "#22c55e", "#38bdf8"][index % 4]} />)}
         </Pie>
+        <text x="50%" y="46%" textAnchor="middle" dominantBaseline="middle" fill="#f8fafc" fontSize="24" fontWeight="700">
+          {total}
+        </text>
+        <text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" fill="#9d8aae" fontSize="11">
+          Total
+        </text>
         <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={{ color: "#f5d0fe", fontWeight: 600 }} formatter={(value, _name, item) => [value, item?.payload?.name ?? "Valor"]} />
         <Legend iconType="circle" wrapperStyle={{ color: "#d8cbe2", fontSize: 12 }} />
       </PieChart>

@@ -17,6 +17,7 @@ export const dashboardChartComposition: Record<string, readonly DashboardChartTy
   tournaments: ["line", "donut", "bar", "line"],
   users: ["line", "donut", "bar", "bar"],
   simulator: ["line", "area", "bar", "bar"],
+  pv: ["line", "bar", "bar", "bar"],
 };
 
 export const isDashboardChartCompositionValid = (dashboard: string) => {
@@ -84,9 +85,9 @@ export const buildDateSeries = (
   return result;
 };
 
-export const addToDateMap = (map: Map<string, number>, date: Date) => {
+export const addToDateMap = (map: Map<string, number>, date: Date, amount = 1) => {
   const key = toDateKey(date);
-  map.set(key, (map.get(key) ?? 0) + 1);
+  map.set(key, (map.get(key) ?? 0) + amount);
 };
 
 export const percentageChange = (current: number, previous: number) => {

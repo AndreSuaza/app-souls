@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 interface State {
   isAlertConfirmation: boolean;
   text: string;
-  description?: string;
+  description?: ReactNode;
   content?: ReactNode;
   confirmText?: string;
   confirmPlaceholder?: string;
@@ -14,7 +14,7 @@ interface State {
 
   openAlertConfirmation: (params: {
     text: string;
-    description?: string;
+    description?: ReactNode;
     content?: ReactNode;
     confirmText?: string;
     confirmPlaceholder?: string;

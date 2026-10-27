@@ -4,7 +4,6 @@ import { DashboardAreaChart, DashboardBarChart, DashboardChartCard, DashboardLin
 
 type PageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 const value = (input: string | string[] | undefined) => Array.isArray(input) ? input[0] : input;
-
 export default async function SimulatorDashboardPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const data = await getAdminSimulatorDashboardAction({ preset: value(params.preset) as "7" | "30" | "90" | "custom" | undefined, from: value(params.from), to: value(params.to), mode: value(params.mode), matchMode: value(params.matchMode), simulatorStatus: value(params.simulatorStatus) });
