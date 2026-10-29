@@ -21,6 +21,7 @@ type FormInputs = {
 };
 
 export const RegisterForm = () => {
+  const googleAuthEnabled = process.env.NEXT_PUBLIC_ENABLE_GOOGLE_AUTH !== "false";
   const {
     register,
     handleSubmit,
@@ -436,18 +437,22 @@ export const RegisterForm = () => {
         {isPending ? "Registrando..." : "Registrarse"}
       </button>
 
-      <div className="flex items-center">
-        <div className="flex-1 border-t border-slate-300"></div>
-        <div className="px-2 text-sm font-semibold text-slate-500">O</div>
-        <div className="flex-1 border-t border-slate-300"></div>
-      </div>
+      {googleAuthEnabled && (
+        <>
+          <div className="flex items-center">
+            <div className="flex-1 border-t border-slate-300"></div>
+            <div className="px-2 text-sm font-semibold text-slate-500">O</div>
+            <div className="flex-1 border-t border-slate-300"></div>
+          </div>
 
-      <ButtonSocial
-        className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-        provider="google"
-      >
-        Continuar con Google
-      </ButtonSocial>
+          <ButtonSocial
+            className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            provider="google"
+          >
+            Continuar con Google
+          </ButtonSocial>
+        </>
+      )}
 
       {success && (
         <button

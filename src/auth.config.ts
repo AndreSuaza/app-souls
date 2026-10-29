@@ -15,18 +15,20 @@ import { normalizeEmail } from "./utils/email";
 
 export const runtime = "nodejs";
 
+const googleProvider = Google({
+  allowDangerousEmailAccountLinking: true,
+  authorization: {
+    params: {
+      prompt: "select_account",
+      scope: "openid email profile",
+    },
+  },
+});
+
 // Notice this is only an object, not a full Auth.js instance
 export default {
   providers: [
-    Google({
-      allowDangerousEmailAccountLinking: true,
-      authorization: {
-        params: {
-          prompt: "select_account",
-          scope: "openid email profile",
-        },
-      },
-    }),
+    ...(process.env.ENABLE_GOOGLE_AUTH === "false" ? [] : [googleProvider]),
     // GitHub,
     Credentials({
       authorize: async (credentials) => {

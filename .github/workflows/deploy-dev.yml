@@ -1,0 +1,94 @@
+name: Deploy app-souls development
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+concurrency:
+  group: app-souls-development
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy development
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/app_souls_dev_vps
+          chmod 600 ~/.ssh/app_souls_dev_vps
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy development app
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -i ~/.ssh/app_souls_dev_vps -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" 'bash -s' <<'REMOTE'
+          set -euo pipefail
+
+          APP_DIR=/opt/apps/app-souls-dev
+          SOURCE_DIR=/opt/apps/app-souls
+
+          if [ ! -d "$APP_DIR/.git" ]; then
+            git clone --no-hardlinks "$SOURCE_DIR" "$APP_DIR"
+          fi
+
+          if [ ! -f "$APP_DIR/.env" ]; then
+            echo "Falta $APP_DIR/.env con la configuración de app-souls-dev/sixDev" >&2
+            exit 1
+          fi
+
+          if ! grep -Eiq 'sixDev' "$APP_DIR/.env"; then
+            echo "La configuración dev no apunta a sixDev" >&2
+            exit 1
+          fi
+
+          if ! grep -Eq 'simulador-dev\.soulsinxtinction\.com' "$APP_DIR/.env"; then
+            echo "La configuración dev no autoriza simulador-dev" >&2
+            exit 1
+          fi
+
+          for variable in ENABLE_GOOGLE_AUTH NEXT_PUBLIC_ENABLE_GOOGLE_AUTH; do
+            if ! grep -Eiq "^[[:space:]]*${variable}[[:space:]]*=.*false" "$APP_DIR/.env"; then
+              echo "${variable} debe estar en false en app-souls-dev" >&2
+              exit 1
+            fi
+          done
+
+          if ! grep -Eq 'SIMULATOR_ADMIN_API_URL=.*2568' "$APP_DIR/.env"; then
+            echo "SIMULATOR_ADMIN_API_URL debe apuntar al servidor dev en 2568" >&2
+            exit 1
+          fi
+
+          git -C "$APP_DIR" fetch origin dev
+          git -C "$APP_DIR" checkout dev
+          git -C "$APP_DIR" reset --hard origin/dev
+
+          cd "$APP_DIR"
+          npm ci
+          NEXT_TELEMETRY_DISABLED=1 npm run build
+
+          pm2 startOrReload "$APP_DIR/ecosystem.config.dev.cjs"
+          pm2 save
+
+          sudo nginx -t
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS -A "GitHubActionsDeployCheck" http://127.0.0.1:3001/ >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          pm2 logs app-souls-dev --lines 80 --nostream --no-color
+          exit 1
+          REMOTE
