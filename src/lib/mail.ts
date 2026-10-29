@@ -1,6 +1,19 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.AUTH_RESEND_KEY);
+const getResendClient = () => {
+  const apiKey = process.env.AUTH_RESEND_KEY?.trim();
+  return apiKey ? new Resend(apiKey) : null;
+};
+
+type EmailSendResult =
+  | { success: true; id: string }
+  | { success: false; error: true; message: string };
+
+const missingEmailProviderResponse: EmailSendResult = {
+  success: false,
+  error: true,
+  message: "El servicio de correo no está configurado en este entorno.",
+};
 
 const getEmailErrorMessage = (error: unknown) => {
   if (error instanceof Error) return error.message;
@@ -17,7 +30,13 @@ const getEmailErrorMessage = (error: unknown) => {
   return "No se pudo enviar el correo.";
 };
 
-export const sendEmailVerification = async (email: string, token: string) => {
+export const sendEmailVerification = async (
+  email: string,
+  token: string,
+): Promise<EmailSendResult> => {
+  const resend = getResendClient();
+  if (!resend) return missingEmailProviderResponse;
+
   try {
     const response = await resend.emails.send({
       from: "Souls In Xtinction Verificación de correo <verificacion@soulsinxtinction.com>",
@@ -131,7 +150,13 @@ export const sendEmailVerification = async (email: string, token: string) => {
   }
 };
 
-export const sendPasswordResetEmail = async (email: string, token: string) => {
+export const sendPasswordResetEmail = async (
+  email: string,
+  token: string,
+): Promise<EmailSendResult> => {
+  const resend = getResendClient();
+  if (!resend) return missingEmailProviderResponse;
+
   try {
     const response = await resend.emails.send({
       from: "Souls In Xtinction Soporte <soporte@soulsinxtinction.com>",
