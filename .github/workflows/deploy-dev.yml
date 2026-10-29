@@ -78,7 +78,7 @@ jobs:
           npm ci
           NEXT_TELEMETRY_DISABLED=1 npm run build
 
-          pm2 startOrReload "$APP_DIR/ecosystem.config.dev.cjs"
+          pm2 startOrReload "$APP_DIR/ecosystem.config.dev.js"
           pm2 save
 
           sudo nginx -t
