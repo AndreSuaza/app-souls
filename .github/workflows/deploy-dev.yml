@@ -69,6 +69,7 @@ jobs:
             exit 1
           fi
 
+          git -C "$APP_DIR" remote set-url origin https://github.com/AndreSuaza/app-souls.git
           git -C "$APP_DIR" fetch origin dev
           git -C "$APP_DIR" checkout dev
           git -C "$APP_DIR" reset --hard origin/dev
