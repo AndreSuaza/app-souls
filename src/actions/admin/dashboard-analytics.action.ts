@@ -2,8 +2,12 @@
 
 import { auth } from "@/auth";
 import {
+  addToAverageDateMap,
   addToDateMap,
+  buildAverageDateSeries,
   buildDateSeries,
+  buildSparseDateSeries,
+  buildSparseAverageDateSeries,
   percentageChange,
   resolveDashboardPeriod,
 } from "@/logic/admin-dashboard";
@@ -49,6 +53,7 @@ export type TournamentDashboardData = {
   kpis: DashboardKpi[];
   createdSeries: DashboardSeriesPoint[];
   averagePlayersSeries: DashboardSeriesPoint[];
+  durationSeries: DashboardSeriesPoint[];
   statusBreakdown: Array<{ name: string; value: number; color: string }>;
   formatBreakdown: Array<{ name: string; value: number; color?: string }>;
 };
@@ -81,6 +86,7 @@ export type SimulatorDashboardData = {
   kpis: DashboardKpi[];
   matchesSeries: DashboardSeriesPoint[];
   concurrencySeries: DashboardSeriesPoint[];
+  durationSeries: DashboardSeriesPoint[];
   completionByMode: Array<{ name: string; value: number }>;
   durationByMode: Array<{ name: string; value: number }>;
 };
@@ -120,12 +126,15 @@ const buildTournamentWhere = (
   filters: AdminDashboardFilters,
   from: Date,
   to: Date,
-): Prisma.TournamentWhereInput => ({
-  createDate: { gte: from, lte: to },
-  ...(filters.storeId ? { storeId: filters.storeId } : {}),
-  ...(filters.format && filters.format !== "all" ? { format: filters.format } : {}),
-  ...(filters.status && filters.status !== "all" ? { status: filters.status } : {}),
-});
+): Prisma.TournamentWhereInput =>
+  filters.tournamentId
+    ? { id: filters.tournamentId }
+    : {
+        createDate: { gte: from, lte: to },
+        ...(filters.storeId ? { storeId: filters.storeId } : {}),
+        ...(filters.format && filters.format !== "all" ? { format: filters.format } : {}),
+        ...(filters.status && filters.status !== "all" ? { status: filters.status } : {}),
+      };
 
 const buildUserWhere = (filters: AdminDashboardFilters): Prisma.UserWhereInput => ({
   ...(filters.storeId ? { storeId: filters.storeId } : {}),
@@ -226,6 +235,7 @@ const getSimulatorReport = async (input: AdminDashboardFilters): Promise<Simulat
       kpis: [],
       matchesSeries: [],
       concurrencySeries: [],
+      durationSeries: [],
       completionByMode: [],
       durationByMode: [],
     };
@@ -250,6 +260,7 @@ const getSimulatorReport = async (input: AdminDashboardFilters): Promise<Simulat
       kpis: [],
       matchesSeries: [],
       concurrencySeries: [],
+      durationSeries: [],
       completionByMode: [],
       durationByMode: [],
     };
@@ -318,7 +329,7 @@ export const getAdminTournamentDashboardAction = async (input?: DashboardInput):
   const period = resolveDashboardPeriod(filters);
   const where = buildTournamentWhere(filters, period.from, period.to);
   const [tournaments, statusBreakdown, formatCounts] = await Promise.all([
-    prisma.tournament.findMany({ where, select: { id: true, createDate: true, format: true, status: true, storeId: true, tournamentPlayers: { select: { id: true } } } }),
+    prisma.tournament.findMany({ where, select: { id: true, createDate: true, date: true, finishedAt: true, format: true, status: true, storeId: true, tournamentPlayers: { select: { id: true } } } }),
     Promise.all((Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map(async (status) => ({ name: statusLabels[status], value: await prisma.tournament.count({ where: { ...where, status: status as TournamentStatus } }), color: statusColors[status] }))),
     Promise.all(
       ["Masters", "Elimination"].map(async (format) => ({
@@ -329,14 +340,37 @@ export const getAdminTournamentDashboardAction = async (input?: DashboardInput):
   ]);
   const dateMap = new Map<string, number>();
   const playersDateMap = new Map<string, number>();
+  const durationByDate = new Map<string, { total: number; count: number }>();
   tournaments.forEach(({ createDate, tournamentPlayers }) => {
     addToDateMap(dateMap, createDate);
     tournamentPlayers.forEach(() => addToDateMap(playersDateMap, createDate));
+  });
+  tournaments.forEach(({ date, finishedAt, status }) => {
+    if (status !== "finished" || !finishedAt) return;
+    const durationMinutes = (finishedAt.getTime() - date.getTime()) / 60_000;
+    addToAverageDateMap(durationByDate, date, durationMinutes);
   });
   const started = tournaments.filter(({ status }) => status === "in_progress" || status === "finished").length;
   const finished = tournaments.filter(({ status }) => status === "finished").length;
   const players = tournaments.reduce((sum, tournament) => sum + tournament.tournamentPlayers.length, 0);
   const completion = tournaments.length === 0 ? 0 : Math.round((finished / tournaments.length) * 100);
+  const selectedTournament = Boolean(filters.tournamentId);
+  const createdSeries = selectedTournament
+    ? buildSparseDateSeries(dateMap)
+    : buildDateSeries(period, dateMap);
+  const averagePlayersSeries = selectedTournament
+    ? buildSparseDateSeries(dateMap).map((point) => ({
+        ...point,
+        value: point.value > 0
+          ? Math.round(((playersDateMap.get(point.date) ?? 0) / point.value) * 10) / 10
+          : 0,
+      }))
+    : buildDateSeries(period, dateMap).map((point) => ({
+        ...point,
+        value: point.value > 0
+          ? Math.round(((playersDateMap.get(point.date) ?? 0) / point.value) * 10) / 10
+          : 0,
+      }));
 
   return {
     period: periodDto(period),
@@ -349,16 +383,17 @@ export const getAdminTournamentDashboardAction = async (input?: DashboardInput):
       { label: "Promedio de jugadores", value: tournaments.length ? Math.round((players / tournaments.length) * 10) / 10 : 0 },
       { label: "Finalización", value: completion, suffix: "%" },
     ],
-    createdSeries: buildDateSeries(period, dateMap).map((point) => ({
+    createdSeries: createdSeries.map((point) => ({
       ...point,
       players: playersDateMap.get(point.date) ?? 0,
     })),
-    averagePlayersSeries: buildDateSeries(period, dateMap).map((point) => ({
-      ...point,
-      value: point.value > 0
-        ? Math.round(((playersDateMap.get(point.date) ?? 0) / point.value) * 10) / 10
-        : 0,
-    })),
+    averagePlayersSeries,
+    durationSeries:
+      durationByDate.size === 0
+        ? []
+        : filters.tournamentId
+          ? buildSparseAverageDateSeries(durationByDate)
+          : buildAverageDateSeries(period, durationByDate),
     statusBreakdown,
     formatBreakdown: formatCounts,
   };
@@ -533,4 +568,17 @@ export const getAdminDashboardOptionsAction = async () => {
   await requireAdmin();
   const stores = await prisma.store.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } });
   return stores;
+};
+
+export const getAdminTournamentDashboardOptionsAction = async () => {
+  await requireAdmin();
+  const tournaments = await prisma.tournament.findMany({
+    select: { id: true, title: true, date: true, status: true },
+    orderBy: [{ date: "desc" }, { title: "asc" }],
+  });
+
+  return tournaments.map((tournament) => ({
+    ...tournament,
+    date: tournament.date.toISOString(),
+  }));
 };

@@ -120,6 +120,11 @@ const getAdminNavigation = (role?: string | null) => {
             href: "/admin/pase-batalla",
             icon: IoGiftOutline,
           },
+          {
+            label: "Progreso por jugador",
+            href: "/admin/pase-batalla/progreso-jugadores",
+            icon: IoPeopleOutline,
+          },
         ],
       },
       /*

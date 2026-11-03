@@ -26,11 +26,29 @@ Textos en grises text-slate-500
   --scrollbar-thumb: 17 6 30;
   --scrollbar-thumb-hover: 124 58 237;
   --scrollbar-size: 8px;
+  --admin-chart-axis: #64748b;
+  --admin-chart-grid: rgba(100, 116, 139, 0.22);
+  --admin-chart-tooltip-bg: #ffffff;
+  --admin-chart-tooltip-border: #c4b5fd;
+  --admin-chart-tooltip-text: #1e293b;
+  --admin-chart-tooltip-label: #6d28d9;
+  --admin-chart-legend: #475569;
+  --admin-chart-total: #1e293b;
+  --admin-chart-cursor: rgba(124, 58, 237, 0.08);
 }
 
 .dark {
   --scrollbar-thumb: 10 7 15;
   --scrollbar-thumb-hover: 22 15 30;
+  --admin-chart-axis: #9d8aae;
+  --admin-chart-grid: rgba(157, 138, 174, 0.18);
+  --admin-chart-tooltip-bg: #21162d;
+  --admin-chart-tooltip-border: #6b3ea2;
+  --admin-chart-tooltip-text: #f8fafc;
+  --admin-chart-tooltip-label: #ddd6fe;
+  --admin-chart-legend: #d8cbe2;
+  --admin-chart-total: #f8fafc;
+  --admin-chart-cursor: rgba(168, 85, 247, 0.08);
 }
 /* 
 @media (prefers-color-scheme: dark) {

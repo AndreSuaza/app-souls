@@ -15,6 +15,7 @@ import {
   IoGiftOutline,
   IoImagesOutline,
   IoMedalOutline,
+  IoPeopleOutline,
   IoStorefrontOutline,
   IoTrashOutline,
   IoTrophyOutline,
@@ -331,7 +332,7 @@ const LevelReorderCard = ({
         <button
           type="button"
           onClick={() => onEditLevel(level)}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#3b3144] text-[#cfc2d6] transition hover:bg-[#251c2e] hover:text-[#edddf7] sm:h-8 sm:w-8"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-600 transition hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700 dark:border-transparent dark:bg-[#3b3144] dark:text-[#cfc2d6] dark:hover:bg-[#251c2e] dark:hover:text-[#edddf7] sm:h-8 sm:w-8"
           title={`Editar nivel ${level.levelNumber}`}
           aria-label={`Editar nivel ${level.levelNumber}`}
         >
@@ -340,7 +341,7 @@ const LevelReorderCard = ({
         <button
           type="button"
           onClick={() => onDeleteLevel(level)}
-          className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#93000a]/20 text-[#ffb4ab] transition hover:bg-[#93000a] hover:text-[#ffdad6] sm:h-8 sm:w-8"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100 hover:text-red-800 dark:border-transparent dark:bg-[#93000a]/20 dark:text-[#ffb4ab] dark:hover:bg-[#93000a] dark:hover:text-[#ffdad6] sm:h-8 sm:w-8"
           title="Eliminar nivel"
           aria-label={`Eliminar nivel ${level.levelNumber}`}
         >
@@ -620,6 +621,13 @@ const MobileSummaryPanel = ({
           >
             <IoCreateOutline className="h-4 w-4" />
           </button>
+          <Link
+            href="/admin/pase-batalla/progreso-jugadores"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-700 transition hover:bg-blue-100 dark:bg-blue-500/15 dark:text-blue-200 dark:hover:bg-blue-500/25"
+            aria-label="Administrar progreso por jugador"
+          >
+            <IoPeopleOutline className="h-4 w-4" />
+          </Link>
           <button
             type="button"
             onClick={() => setIsOpen((value) => !value)}
@@ -1500,7 +1508,7 @@ export const AdminBattlePassManager = () => {
           </div>
         )}
 
-        <header className="hidden min-w-0 flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-transparent dark:bg-[#251c2e] dark:shadow-lg md:flex lg:flex-row lg:items-center lg:justify-between">
+        <header className="flex min-w-0 flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-transparent dark:bg-[#251c2e] dark:shadow-lg sm:p-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-[#edddf7]">
@@ -1524,13 +1532,13 @@ export const AdminBattlePassManager = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
             {selectedPass && (
               <>
                 <button
                   type="button"
                   onClick={() => editPass(selectedPass)}
-                  className="inline-flex items-center gap-1.5 rounded bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-200 dark:bg-[#302639] dark:text-[#edddf7] dark:hover:bg-[#3b3144]"
+                  className="inline-flex items-center gap-1.5 rounded bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500/20 dark:text-blue-100 dark:hover:bg-blue-500/30"
                 >
                   <IoCreateOutline className="h-4 w-4" />
                   Editar pase
@@ -1538,7 +1546,7 @@ export const AdminBattlePassManager = () => {
                 <button
                   type="button"
                   onClick={() => confirmDeletePass(selectedPass)}
-                  className="inline-flex items-center gap-1.5 rounded bg-[#93000a]/20 px-3 py-1.5 text-xs font-semibold text-[#ffb4ab] shadow-sm transition hover:bg-[#93000a] hover:text-[#ffdad6]"
+                  className="inline-flex items-center gap-1.5 rounded border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm transition hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/15 dark:text-red-200 dark:hover:bg-red-500/25"
                 >
                   <IoTrashOutline className="h-4 w-4" />
                   Eliminar
@@ -1548,7 +1556,7 @@ export const AdminBattlePassManager = () => {
             <button
               type="button"
               onClick={resetPassForm}
-              className="inline-flex items-center gap-1.5 rounded bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-200 dark:bg-[#302639] dark:text-[#edddf7] dark:hover:bg-[#3b3144]"
+              className="inline-flex items-center gap-1.5 rounded bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-100 dark:hover:bg-emerald-500/30"
             >
               <IoAddCircleOutline className="h-4 w-4" />
               Nuevo pase
@@ -1557,11 +1565,18 @@ export const AdminBattlePassManager = () => {
               type="button"
               onClick={resetLevelForm}
               disabled={!selectedPassId}
-              className="inline-flex items-center gap-1.5 rounded bg-[#7c03d3] px-3.5 py-1.5 text-xs font-bold text-[#edddf7] shadow-md transition hover:bg-[#b76dff] hover:text-[#400071] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded bg-purple-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-md transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#7c03d3] dark:text-[#edddf7] dark:hover:bg-[#b76dff] dark:hover:text-[#400071]"
             >
               <IoAddCircleOutline className="h-4 w-4" />
               Nuevo nivel
             </button>
+            <Link
+              href="/admin/pase-batalla/progreso-jugadores"
+              className="inline-flex items-center gap-1.5 rounded border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-700 transition hover:bg-purple-100 dark:border-purple-400/30 dark:bg-purple-500/10 dark:text-purple-200 dark:hover:bg-purple-500/20"
+            >
+              <IoPeopleOutline className="h-4 w-4" />
+              Administrar progreso
+            </Link>
           </div>
         </header>
 
@@ -1621,14 +1636,6 @@ export const AdminBattlePassManager = () => {
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={resetPassForm}
-              className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-purple-50 px-3 text-xs font-semibold text-purple-700 transition hover:bg-purple-100 dark:bg-[#251c2e] dark:text-[#ddb7ff] dark:hover:bg-[#302639]"
-            >
-              <IoAddCircleOutline className="h-4 w-4" />
-              Crear pase
-            </button>
           </div>
         </section>
 
@@ -1662,7 +1669,7 @@ export const AdminBattlePassManager = () => {
                 : "text-slate-600 hover:text-slate-900 dark:text-[#cfc2d6] dark:hover:text-[#edddf7]",
             )}
           >
-            Canjes fisicos ({manualClaims.length})
+            Entregas en tienda ({manualClaims.length})
           </button>
         </div>
 

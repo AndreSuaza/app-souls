@@ -85,10 +85,69 @@ export const buildDateSeries = (
   return result;
 };
 
+export const buildSparseDateSeries = (values: Map<string, number>) =>
+  [...values.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([date, value]) => ({
+      date,
+      label: new Intl.DateTimeFormat("es-CO", {
+        day: "2-digit",
+        month: "short",
+      }).format(new Date(`${date}T00:00:00.000Z`)),
+      value,
+    }));
+
 export const addToDateMap = (map: Map<string, number>, date: Date, amount = 1) => {
   const key = toDateKey(date);
   map.set(key, (map.get(key) ?? 0) + amount);
 };
+
+export type DashboardAverageValue = { total: number; count: number };
+
+export const addToAverageDateMap = (
+  map: Map<string, DashboardAverageValue>,
+  date: Date,
+  value: number,
+) => {
+  if (!Number.isFinite(date.getTime()) || !Number.isFinite(value) || value < 0) {
+    return;
+  }
+
+  const key = toDateKey(date);
+  const current = map.get(key) ?? { total: 0, count: 0 };
+  map.set(key, {
+    total: current.total + value,
+    count: current.count + 1,
+  });
+};
+
+const averageValue = ({ total, count }: DashboardAverageValue) =>
+  count > 0 ? Math.round((total / count) * 10) / 10 : 0;
+
+export const buildAverageDateSeries = (
+  period: DashboardPeriod,
+  values: Map<string, DashboardAverageValue>,
+) =>
+  buildDateSeries(
+    period,
+    new Map(
+      [...values.entries()].map(([date, value]) => [date, averageValue(value)]),
+    ),
+  );
+
+export const buildSparseAverageDateSeries = (
+  values: Map<string, DashboardAverageValue>,
+) =>
+  [...values.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([date, value]) => ({
+      date,
+      label: new Intl.DateTimeFormat("es-CO", {
+        day: "2-digit",
+        month: "short",
+      }).format(new Date(`${date}T00:00:00.000Z`)),
+      value: averageValue(value),
+    }));
 
 export const percentageChange = (current: number, previous: number) => {
   if (previous === 0) return current === 0 ? 0 : 100;

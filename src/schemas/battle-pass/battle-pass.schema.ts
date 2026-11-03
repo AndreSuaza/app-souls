@@ -157,6 +157,27 @@ export const ClaimBattlePassRewardSchema = z.object({
   levelId: ObjectIdSchema,
 });
 
+export const AdminBattlePassPlayersQuerySchema = z.object({
+  battlePassId: ObjectIdSchema,
+  page: z.number().int().min(1).optional().default(1),
+  perPage: z.number().int().min(1).max(50).optional().default(20),
+  query: z.string().trim().max(100).optional().default(""),
+});
+
+export const AdminBattlePassProgressAdjustmentSchema = z.object({
+  battlePassId: ObjectIdSchema,
+  userId: ObjectIdSchema,
+  amount: z
+    .number()
+    .int("El ajuste debe ser un numero entero.")
+    .refine((value) => value !== 0, "El ajuste no puede ser 0."),
+  reason: z
+    .string()
+    .trim()
+    .min(5, "El motivo debe tener al menos 5 caracteres.")
+    .max(240, "El motivo no puede superar 240 caracteres."),
+});
+
 export type CreateBattlePassInput = z.infer<typeof CreateBattlePassSchema>;
 export type UpdateBattlePassInput = z.infer<typeof UpdateBattlePassSchema>;
 export type ReorderBattlePassLevelsInput = z.infer<
@@ -167,4 +188,10 @@ export type UpsertBattlePassLevelInput = z.infer<
 >;
 export type ClaimBattlePassRewardInput = z.infer<
   typeof ClaimBattlePassRewardSchema
+>;
+export type AdminBattlePassPlayersQueryInput = z.infer<
+  typeof AdminBattlePassPlayersQuerySchema
+>;
+export type AdminBattlePassProgressAdjustmentInput = z.infer<
+  typeof AdminBattlePassProgressAdjustmentSchema
 >;

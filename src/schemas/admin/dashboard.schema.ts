@@ -8,6 +8,7 @@ export const AdminDashboardFiltersSchema = z
     to: dateParam.optional(),
     preset: z.enum(["7", "30", "90", "custom"]).optional(),
     storeId: z.string().trim().regex(/^[a-f0-9]{24}$/i, "Tienda inválida").optional(),
+    tournamentId: z.string().trim().regex(/^[a-f0-9]{24}$/i, "Torneo inválido").optional(),
     format: z.enum(["all", "Masters", "Elimination"]).optional(),
     status: z
       .enum(["all", "pending", "in_progress", "finished", "cancelled"])

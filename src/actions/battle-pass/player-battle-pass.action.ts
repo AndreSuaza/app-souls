@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { calculateBattlePassProgress } from "@/logic/battle-pass-progress";
 import {
   ClaimBattlePassRewardSchema,
   type ClaimBattlePassRewardInput,
@@ -136,27 +137,48 @@ const resolveOptionalCurrentUser = async () => {
 
 const getBattlePassProgress = async ({
   userId,
+  battlePassId,
   startsAt,
   endsAt,
+  maxLevel,
 }: {
   userId: string;
+  battlePassId: string;
   startsAt: Date;
   endsAt: Date;
+  maxLevel: number;
 }) =>
-  prisma.tournament.count({
-    where: {
-      status: "finished",
-      date: {
-        gte: startsAt,
-        lte: endsAt,
-      },
-      tournamentPlayers: {
-        some: {
-          userId,
+  Promise.all([
+    prisma.tournament.count({
+      where: {
+        status: "finished",
+        date: {
+          gte: startsAt,
+          lte: endsAt,
+        },
+        tournamentPlayers: {
+          some: {
+            userId,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.battlePassUserProgress.findUnique({
+      where: {
+        userId_battlePassId: {
+          userId,
+          battlePassId,
+        },
+      },
+      select: { manualOffset: true },
+    }),
+  ]).then(([automaticProgress, progressOverride]) =>
+    calculateBattlePassProgress({
+      automaticProgress,
+      manualOffset: progressOverride?.manualOffset ?? 0,
+      maxLevel,
+    }),
+  );
 
 const mapRewardAvatar = (
   avatar: PlayerBattlePassLevelPayload["rewardAvatar"],
@@ -237,11 +259,17 @@ export const getActiveBattlePassAction =
       return null;
     }
 
+    const maxLevel = Math.max(
+      0,
+      ...pass.levels.map((level) => level.levelNumber),
+    );
     const [progress, claims] = await Promise.all([
       getBattlePassProgress({
         userId: user.id,
+        battlePassId: pass.id,
         startsAt: pass.startsAt,
         endsAt: pass.endsAt,
+        maxLevel,
       }),
       prisma.battlePassClaim.findMany({
         where: {
@@ -258,13 +286,6 @@ export const getActiveBattlePassAction =
     const claimByLevelId = new Map(
       claims.map((claim) => [claim.battlePassLevelId, claim]),
     );
-    const maxLevel = Math.max(
-      0,
-      ...pass.levels.map((level) => level.levelNumber),
-    );
-    const cappedProgress =
-      maxLevel > 0 ? Math.min(progress, maxLevel) : 0;
-
     return {
       id: pass.id,
       title: pass.title,
@@ -273,13 +294,13 @@ export const getActiveBattlePassAction =
       seasonNumber: pass.seasonNumber,
       startsAt: pass.startsAt.toISOString(),
       endsAt: pass.endsAt.toISOString(),
-      progress: cappedProgress,
+      progress,
       maxLevel,
       victoryPoints: user.victoryPoints ?? 0,
       levels: pass.levels.map((level) =>
         mapLevel({
           level,
-          progress: cappedProgress,
+          progress,
           claim: claimByLevelId.get(level.id),
         }),
       ),
@@ -311,6 +332,7 @@ export const claimBattlePassRewardAction = async (
           id: true,
           startsAt: true,
           endsAt: true,
+          levels: { select: { levelNumber: true } },
         },
       },
     },
@@ -322,8 +344,13 @@ export const claimBattlePassRewardAction = async (
 
   const progress = await getBattlePassProgress({
     userId: user.id,
+    battlePassId: level.battlePass.id,
     startsAt: level.battlePass.startsAt,
     endsAt: level.battlePass.endsAt,
+    maxLevel: level.battlePass.levels.reduce(
+      (highest, item) => Math.max(highest, item.levelNumber),
+      0,
+    ),
   });
 
   if (level.levelNumber > progress) {
@@ -459,8 +486,13 @@ export const claimAllBattlePassRewardsAction =
 
     const progress = await getBattlePassProgress({
       userId: user.id,
+      battlePassId: pass.id,
       startsAt: pass.startsAt,
       endsAt: pass.endsAt,
+      maxLevel: Math.max(
+        0,
+        ...pass.levels.map((level) => level.levelNumber),
+      ),
     });
     const unlockedLevels = pass.levels.filter(
       (level) => level.levelNumber <= progress,
@@ -638,8 +670,13 @@ export const syncEndedBattlePassRewardsAction =
     for (const pass of passes) {
       const progress = await getBattlePassProgress({
         userId: user.id,
+        battlePassId: pass.id,
         startsAt: pass.startsAt,
         endsAt: pass.endsAt,
+        maxLevel: Math.max(
+          0,
+          ...pass.levels.map((level) => level.levelNumber),
+        ),
       });
       const unlockedLevels = pass.levels.filter(
         (level) => level.levelNumber <= progress,
