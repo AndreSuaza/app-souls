@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { useReducedMotion, motion } from "framer-motion";
 import {
   Area,
@@ -9,8 +10,6 @@ import {
   CartesianGrid,
   Cell,
   Legend,
-  Line,
-  LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -44,11 +43,13 @@ export const DashboardChartCard = ({
   subtitle,
   children,
   className = "",
+  chartClassName = "h-64",
 }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   className?: string;
+  chartClassName?: string;
 }) => (
   <motion.section
     initial={{ opacity: 0, y: 12 }}
@@ -60,7 +61,7 @@ export const DashboardChartCard = ({
       <h2 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2>
       {subtitle && <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{subtitle}</p>}
     </div>
-    <div role="img" aria-label={`${title}${subtitle ? `: ${subtitle}` : ""}`} className="h-64 min-w-0">{children}</div>
+    <div role="img" aria-label={`${title}${subtitle ? `: ${subtitle}` : ""}`} className={`${chartClassName} min-w-0`}>{children}</div>
   </motion.section>
 );
 
@@ -123,6 +124,7 @@ export const DashboardLineChart = ({
   singleValue?: boolean;
 }) => {
   const reducedMotion = useReducedMotion();
+  const gradientId = `dashboard-line-gradient-${useId().replace(/:/g, "")}`;
   if (data.length === 0) return <EmptyChart />;
   if (singleValue) {
     return (
@@ -139,30 +141,116 @@ export const DashboardLineChart = ({
   }
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.38} />
+            <stop offset="100%" stopColor={color} stopOpacity={0} />
+          </linearGradient>
+        </defs>
         <CartesianGrid stroke={gridColor} vertical={false} />
         <XAxis dataKey="label" stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} />
         <YAxis stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} allowDecimals={allowDecimals} />
         <Tooltip content={<DashboardLineTooltip primaryName={name} secondaryKey={secondaryKey} secondaryName={secondaryName} showHoursEquivalent={showHoursEquivalent} />} />
-        <Line type="monotone" dataKey="value" name={name} stroke={color} strokeWidth={3} dot={{ r: 3, fill: color, strokeWidth: 0 }} activeDot={{ r: 6 }} isAnimationActive={!reducedMotion} />
-      </LineChart>
+        <Area type="monotone" dataKey="value" name={name} stroke={color} strokeWidth={3} fill={`url(#${gradientId})`} dot={{ r: 3, fill: color, strokeWidth: 0 }} activeDot={{ r: 6 }} isAnimationActive={!reducedMotion} />
+      </AreaChart>
     </ResponsiveContainer>
   );
 };
 
 export const DashboardAreaChart = ({ data, color = "#22c55e", name = "Valor" }: { data: Point[]; color?: string; name?: string }) => {
   const reducedMotion = useReducedMotion();
+  const gradientId = `dashboard-area-gradient-${useId().replace(/:/g, "")}`;
   if (data.length === 0) return <EmptyChart />;
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-        <defs><linearGradient id="dashboard-area-gradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity={0.45} /><stop offset="100%" stopColor={color} stopOpacity={0} /></linearGradient></defs>
+        <defs><linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity={0.45} /><stop offset="100%" stopColor={color} stopOpacity={0} /></linearGradient></defs>
         <CartesianGrid stroke={gridColor} vertical={false} />
         <XAxis dataKey="label" stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} />
         <YAxis stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} allowDecimals={false} />
         <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} formatter={(value) => [value, name]} labelStyle={{ color: "var(--admin-chart-tooltip-label)", fontWeight: 600 }} />
-        <Area type="monotone" dataKey="value" name={name} stroke={color} strokeWidth={2.5} fill="url(#dashboard-area-gradient)" isAnimationActive={!reducedMotion} />
+        <Area type="monotone" dataKey="value" name={name} stroke={color} strokeWidth={2.5} fill={`url(#${gradientId})`} isAnimationActive={!reducedMotion} />
       </AreaChart>
+    </ResponsiveContainer>
+  );
+};
+
+type PlayerBreakdown = Breakdown & { href: string };
+
+const openPlayerProfile = (href: string) => {
+  window.open(href, "_blank", "noopener,noreferrer");
+};
+
+const PlayerAxisTick = ({
+  x = 0,
+  y = 0,
+  payload,
+  data,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value?: string };
+  data: PlayerBreakdown[];
+}) => {
+  const name = payload?.value ?? "";
+  const player = data.find((entry) => entry.name === name);
+  if (!player) return null;
+
+  return (
+    <text
+      x={x - 8}
+      y={y}
+      textAnchor="end"
+      dominantBaseline="middle"
+      fill={axisColor}
+      fontSize={11}
+      role="link"
+      tabIndex={0}
+      style={{ cursor: "pointer" }}
+      onClick={() => openPlayerProfile(player.href)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openPlayerProfile(player.href);
+        }
+      }}
+    >
+      {name}
+    </text>
+  );
+};
+
+export const DashboardPlayerBarChart = ({
+  data,
+  name = "Puntos",
+}: {
+  data: PlayerBreakdown[];
+  name?: string;
+}) => {
+  const reducedMotion = useReducedMotion();
+  if (data.length === 0) return <EmptyChart />;
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart layout="vertical" data={data} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+        <CartesianGrid stroke={gridColor} horizontal={false} />
+        <XAxis type="number" stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} allowDecimals={false} />
+        <YAxis type="category" dataKey="name" width={132} stroke={axisColor} tickLine={false} axisLine={false} tick={<PlayerAxisTick data={data} />} />
+        <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} formatter={(value) => [value, name]} labelStyle={{ color: "var(--admin-chart-tooltip-label)", fontWeight: 600 }} cursor={{ fill: "var(--admin-chart-cursor)" }} />
+        <Bar
+          dataKey="value"
+          name={name}
+          fill="#a855f7"
+          radius={[0, 7, 7, 0]}
+          isAnimationActive={!reducedMotion}
+          cursor="pointer"
+          onClick={(_, index) => {
+            const player = data[index];
+            if (player) openPlayerProfile(player.href);
+          }}
+        />
+      </BarChart>
     </ResponsiveContainer>
   );
 };

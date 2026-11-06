@@ -10,6 +10,8 @@ interface State {
   isTournamentSidebarOpen: boolean;
   openTournamentSidebar: () => void;
   closeTournamentSidebar: () => void;
+  isTournamentSidebarCollapsed: boolean;
+  toggleTournamentSidebarCollapsed: () => void;
 
   // Loading global
   isLoading: boolean;
@@ -28,6 +30,11 @@ export const useUIStore = create<State>()((set) => ({
   isTournamentSidebarOpen: false,
   openTournamentSidebar: () => set({ isTournamentSidebarOpen: true }),
   closeTournamentSidebar: () => set({ isTournamentSidebarOpen: false }),
+  isTournamentSidebarCollapsed: false,
+  toggleTournamentSidebarCollapsed: () =>
+    set((state) => ({
+      isTournamentSidebarCollapsed: !state.isTournamentSidebarCollapsed,
+    })),
 
   // Loading global
   isLoading: false,

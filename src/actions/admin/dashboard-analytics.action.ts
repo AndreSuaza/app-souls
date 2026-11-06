@@ -56,6 +56,7 @@ export type TournamentDashboardData = {
   durationSeries: DashboardSeriesPoint[];
   statusBreakdown: Array<{ name: string; value: number; color: string }>;
   formatBreakdown: Array<{ name: string; value: number; color?: string }>;
+  playersRanking: Array<{ name: string; value: number; href: string }>;
 };
 
 export type UserDashboardData = {
@@ -329,7 +330,23 @@ export const getAdminTournamentDashboardAction = async (input?: DashboardInput):
   const period = resolveDashboardPeriod(filters);
   const where = buildTournamentWhere(filters, period.from, period.to);
   const [tournaments, statusBreakdown, formatCounts] = await Promise.all([
-    prisma.tournament.findMany({ where, select: { id: true, createDate: true, date: true, finishedAt: true, format: true, status: true, storeId: true, tournamentPlayers: { select: { id: true } } } }),
+    prisma.tournament.findMany({
+      where,
+      select: {
+        id: true,
+        createDate: true,
+        finishedAt: true,
+        format: true,
+        status: true,
+        storeId: true,
+        tournamentPlayers: { select: { id: true, playerNickname: true, points: true } },
+        tournamentRounds: {
+          orderBy: { roundNumber: "asc" },
+          take: 1,
+          select: { startedAt: true },
+        },
+      },
+    }),
     Promise.all((Object.keys(statusLabels) as Array<keyof typeof statusLabels>).map(async (status) => ({ name: statusLabels[status], value: await prisma.tournament.count({ where: { ...where, status: status as TournamentStatus } }), color: statusColors[status] }))),
     Promise.all(
       ["Masters", "Elimination"].map(async (format) => ({
@@ -345,16 +362,26 @@ export const getAdminTournamentDashboardAction = async (input?: DashboardInput):
     addToDateMap(dateMap, createDate);
     tournamentPlayers.forEach(() => addToDateMap(playersDateMap, createDate));
   });
-  tournaments.forEach(({ date, finishedAt, status }) => {
+  tournaments.forEach(({ createDate, finishedAt, status, tournamentRounds }) => {
     if (status !== "finished" || !finishedAt) return;
-    const durationMinutes = (finishedAt.getTime() - date.getTime()) / 60_000;
-    addToAverageDateMap(durationByDate, date, durationMinutes);
+    const startedAt = tournamentRounds[0]?.startedAt ?? createDate;
+    const durationMinutes = (finishedAt.getTime() - startedAt.getTime()) / 60_000;
+    addToAverageDateMap(durationByDate, startedAt, durationMinutes);
   });
   const started = tournaments.filter(({ status }) => status === "in_progress" || status === "finished").length;
   const finished = tournaments.filter(({ status }) => status === "finished").length;
   const players = tournaments.reduce((sum, tournament) => sum + tournament.tournamentPlayers.length, 0);
   const completion = tournaments.length === 0 ? 0 : Math.round((finished / tournaments.length) * 100);
   const selectedTournament = Boolean(filters.tournamentId);
+  const playersRanking = selectedTournament
+    ? (tournaments[0]?.tournamentPlayers ?? [])
+        .map((player) => ({
+          href: `/perfil/${encodeURIComponent(player.playerNickname)}`,
+          name: player.playerNickname,
+          value: player.points,
+        }))
+        .sort((first, second) => second.value - first.value || first.name.localeCompare(second.name))
+    : [];
   const createdSeries = selectedTournament
     ? buildSparseDateSeries(dateMap)
     : buildDateSeries(period, dateMap);
@@ -396,6 +423,7 @@ export const getAdminTournamentDashboardAction = async (input?: DashboardInput):
           : buildAverageDateSeries(period, durationByDate),
     statusBreakdown,
     formatBreakdown: formatCounts,
+    playersRanking,
   };
 };
 
@@ -553,7 +581,7 @@ export const getAdminPvDashboardAction = async (input?: DashboardInput): Promise
     topUsers: users
       .filter((user) => (user.victoryPoints ?? 0) > 0)
       .slice(0, 10)
-      .map((user) => ({ name: user.nickname, value: user.victoryPoints ?? 0, color: "#a855f7" })),
+      .map((user) => ({ name: user.nickname, value: user.victoryPoints ?? 0, color: "#22c55e" })),
   };
 };
 

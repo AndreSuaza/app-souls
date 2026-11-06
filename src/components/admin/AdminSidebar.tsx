@@ -16,6 +16,7 @@ import {
   IoHomeOutline,
   IoImagesOutline,
   IoLayersOutline,
+  IoMenuSharp,
   IoLogOutOutline,
   IoNewspaperOutline,
   IoPeopleOutline,
@@ -170,6 +171,10 @@ const getAdminNavigation = (role?: string | null) => {
 export const AdminSidebar = () => {
   const isOpen = useUIStore((state) => state.isTournamentSidebarOpen);
   const close = useUIStore((state) => state.closeTournamentSidebar);
+  const isCollapsed = useUIStore((state) => state.isTournamentSidebarCollapsed);
+  const toggleCollapsed = useUIStore(
+    (state) => state.toggleTournamentSidebarCollapsed,
+  );
   const { data: session } = useSession();
   const pathname = usePathname();
   const navigation = useMemo(
@@ -216,18 +221,69 @@ export const AdminSidebar = () => {
       )}
 
       <aside
+        id="admin-sidebar"
         className={clsx(
-          "fixed top-0 right-0 z-40 flex h-full w-72 flex-col bg-white text-slate-900 shadow-sm transition-transform duration-200 dark:bg-tournament-dark-surface dark:text-white lg:static lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-72 lg:translate-x-0 lg:border-r lg:border-tournament-dark-accent dark:lg:border-tournament-dark-border",
+          "fixed top-0 right-0 z-40 flex h-full w-72 flex-col bg-white text-slate-900 shadow-sm transition-[width] duration-200 ease-out dark:bg-tournament-dark-surface dark:text-white lg:static lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0 lg:will-change-[width] lg:border-r lg:border-tournament-dark-accent dark:lg:border-tournament-dark-border",
+          isCollapsed ? "lg:w-20" : "lg:w-72",
           {
             "translate-x-0": isOpen,
             "translate-x-full": !isOpen,
           },
         )}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-tournament-dark-border">
-          <span className="whitespace-nowrap font-bold text-slate-900 dark:text-white">
+        <div
+          className={clsx(
+            "flex items-center justify-between border-b border-slate-200 p-4 dark:border-tournament-dark-border",
+            isCollapsed && "lg:justify-center",
+          )}
+        >
+          <span
+            className={clsx(
+              "whitespace-nowrap font-bold text-slate-900 dark:text-white",
+              isCollapsed && "lg:hidden",
+            )}
+          >
             Panel de administración
           </span>
+
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className="hidden rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:inline-flex dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-white"
+            aria-label={
+              isCollapsed
+                ? "Expandir menú de administración"
+                : "Contraer menú de administración"
+            }
+            aria-expanded={!isCollapsed}
+            aria-controls="admin-sidebar"
+            title={
+              isCollapsed
+                ? "Expandir menú de administración"
+                : "Contraer menú de administración"
+            }
+          >
+            <span className="relative flex h-6 w-6 items-center justify-center">
+              <IoMenuSharp
+                className={clsx(
+                  "absolute h-6 w-6 transition duration-200 ease-in-out",
+                  isCollapsed
+                    ? "rotate-90 scale-75 opacity-0"
+                    : "rotate-0 scale-100 opacity-100",
+                )}
+                aria-hidden="true"
+              />
+              <IoCloseOutline
+                className={clsx(
+                  "absolute h-6 w-6 transition duration-200 ease-in-out",
+                  isCollapsed
+                    ? "rotate-0 scale-100 opacity-100"
+                    : "-rotate-90 scale-75 opacity-0",
+                )}
+                aria-hidden="true"
+              />
+            </span>
+          </button>
 
           <button
             type="button"
@@ -239,7 +295,12 @@ export const AdminSidebar = () => {
           </button>
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-4">
+        <nav
+          className={clsx(
+            "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 py-4",
+            isCollapsed && "lg:px-2",
+          )}
+        >
           {navigation.map((group) => {
             const isGroupOpen = openGroups.includes(group.id);
             const GroupIcon = group.icon;
@@ -250,23 +311,35 @@ export const AdminSidebar = () => {
                   type="button"
                   onClick={() => toggleGroup(group.id)}
                   aria-expanded={isGroupOpen}
-                  className="flex w-full items-center justify-between rounded-lg px-4 py-2 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-tournament-dark-muted dark:hover:text-white"
+                  title={isCollapsed ? group.label : undefined}
+                  className={clsx(
+                    "flex w-full items-center justify-between rounded-lg px-4 py-2 text-left text-xs font-bold uppercase tracking-[0.14em] text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-tournament-dark-muted dark:hover:text-white",
+                    isCollapsed && "lg:justify-center lg:px-2",
+                  )}
                 >
                   <span className="flex min-w-0 items-center gap-2">
                     <GroupIcon size={17} />
-                    <span className="truncate">{group.label}</span>
+                    <span className={clsx("truncate", isCollapsed && "lg:hidden")}>
+                      {group.label}
+                    </span>
                   </span>
                   <IoChevronDownOutline
                     size={17}
                     className={clsx(
                       "shrink-0 transition-transform",
                       isGroupOpen && "rotate-180",
+                      isCollapsed && "lg:hidden",
                     )}
                   />
                 </button>
 
                 {isGroupOpen && (
-                  <div className="mt-1 space-y-1 border-l border-slate-200 pl-2 dark:border-tournament-dark-border">
+                  <div
+                    className={clsx(
+                      "mt-1 space-y-1 border-l border-slate-200 pl-2 dark:border-tournament-dark-border",
+                      isCollapsed && "lg:border-l-0 lg:pl-0",
+                    )}
+                  >
                     {group.items.map(({ label, href, icon: Icon }) => {
                       const isActive = activeItemHref === href;
 
@@ -275,15 +348,24 @@ export const AdminSidebar = () => {
                           key={href}
                           href={href}
                           onClick={close}
+                          title={isCollapsed ? label : undefined}
                           className={clsx(
                             "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                            isCollapsed && "lg:justify-center lg:px-2",
                             isActive
                               ? "bg-purple-600 text-white shadow-sm dark:bg-tournament-dark-accent"
                               : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-white",
                           )}
                         >
                           <Icon size={19} />
-                          <span className="whitespace-nowrap">{label}</span>
+                          <span
+                            className={clsx(
+                              "whitespace-nowrap",
+                              isCollapsed && "lg:hidden",
+                            )}
+                          >
+                            {label}
+                          </span>
                         </Link>
                       );
                     })}

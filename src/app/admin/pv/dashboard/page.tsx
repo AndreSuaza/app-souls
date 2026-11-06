@@ -72,9 +72,8 @@ export default async function PvDashboardPage({ searchParams }: PageProps) {
           subtitle="Usuarios por rango de saldo actual"
         >
           <DashboardBarChart
-            data={data.distribution}
+            data={data.distribution.map(({ name, value }) => ({ name, value }))}
             name="Usuarios"
-            gradient="purple"
           />
         </DashboardChartCard>
       </div>
@@ -89,7 +88,7 @@ export default async function PvDashboardPage({ searchParams }: PageProps) {
           title="Mayores saldos"
           subtitle="Top 10 usuarios con más PV"
         >
-          <DashboardBarChart data={data.topUsers} name="PV" color="#a855f7" />
+          <DashboardBarChart data={data.topUsers} name="PV" color="#22c55e" />
         </DashboardChartCard>
       </div>
     </section>
