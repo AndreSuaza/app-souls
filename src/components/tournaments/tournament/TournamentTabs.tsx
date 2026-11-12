@@ -59,7 +59,7 @@ export const TournamentTabs = ({
 }: Props) => {
   const canEnableCurrentRound =
     (tournamentFormat === "Elimination"
-      ? playersCount === 8 || playersCount === 16
+      ? playersCount >= 8
       : playersCount >= MIN_PLAYERS_FOR_ROUND) &&
     tournamentStatus !== "finished" &&
     tournamentStatus !== "cancelled";

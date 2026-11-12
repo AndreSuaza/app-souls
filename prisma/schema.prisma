@@ -217,6 +217,8 @@ enum RoundStage {
   TOP8_QUARTERFINAL
   TOP8_SEMIFINAL
   TOP8_FINAL
+  ELIMINATION_PLAY_IN
+  ELIMINATION_ROUND
   ELIMINATION_ROUND_OF_16
   ELIMINATION_QUARTERFINAL
   ELIMINATION_SEMIFINAL
@@ -254,6 +256,8 @@ model Round {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   roundNumber  Int
   stage        RoundStage? @default(SWISS)
+  bracketSize  Int?
+  layoutRevision Int        @default(0)
   tournamentId String      @db.ObjectId
   matches      Match[]
   createDate   DateTime    @default(now())

@@ -160,6 +160,9 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
   const isElimination = tournament?.format === "Elimination";
   const showTopCutSection =
     isElimination || isTopCutTournamentType(tournament?.typeTournamentName);
+  const hasGeneratedBracket = rounds.some((round) =>
+    isBracketStage(round.stage),
+  );
 
   useEffect(() => {
     hideLoading();
@@ -460,6 +463,15 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
               </div>
             )}
 
+            {showTopCutSection && hasGeneratedBracket && (
+              <TopCutBracket
+                rounds={rounds}
+                players={players}
+                compact
+                bracketType={isElimination ? "elimination" : "topCut"}
+              />
+            )}
+
             {tournament && (
               <div className="space-y-4">
                 {showCurrentRoundSection && (
@@ -494,7 +506,7 @@ export function PublicTournamentDetail({ initialTournament }: Props) {
             )}
           </div>
 
-          {showTopCutSection && (
+          {showTopCutSection && !hasGeneratedBracket && (
             <TopCutBracket
               rounds={rounds}
               players={players}

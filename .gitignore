@@ -44,6 +44,7 @@ next-env.d.ts
 
 # Codex / AI instructions
 # AGENTS.md
+.playwright-cli/
 
 # Documentation is restricted to root README.md and AGENTS.md.
 *.md

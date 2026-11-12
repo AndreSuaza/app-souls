@@ -4,6 +4,11 @@ import {
   TournamentPlayerInterface,
 } from "@/interfaces";
 import { sortPlayersByRanking } from "@/utils/ranking";
+import {
+  getEliminationStageForBracketSize,
+  getEliminationStageTitle,
+  isEliminationStage,
+} from "./elimination";
 
 export const TOP_CUT_SIZE = 8;
 
@@ -56,26 +61,22 @@ export const isTopCutStage = (stage?: RoundStage | null) =>
   stage === "TOP8_SEMIFINAL" ||
   stage === "TOP8_FINAL";
 
-export const isEliminationStage = (stage?: RoundStage | null) =>
-  stage === "ELIMINATION_ROUND_OF_16" ||
-  stage === "ELIMINATION_QUARTERFINAL" ||
-  stage === "ELIMINATION_SEMIFINAL" ||
-  stage === "ELIMINATION_FINAL";
-
 export const isBracketStage = (stage?: RoundStage | null) =>
   isTopCutStage(stage) || isEliminationStage(stage);
 
 export const isSwissStage = (stage?: RoundStage | null) =>
   !stage || stage === "SWISS";
 
-export const getRoundStageLabel = (stage?: RoundStage | null) => {
+export const getRoundStageLabel = (
+  stage?: RoundStage | null,
+  bracketSize?: number | null,
+) => {
   if (stage === "TOP8_QUARTERFINAL") return "Top 8 - Cuartos";
   if (stage === "TOP8_SEMIFINAL") return "Top 8 - Semifinal";
   if (stage === "TOP8_FINAL") return "Top 8 - Final";
-  if (stage === "ELIMINATION_ROUND_OF_16") return "Eliminación - Ronda de 16";
-  if (stage === "ELIMINATION_QUARTERFINAL") return "Eliminación - Cuartos";
-  if (stage === "ELIMINATION_SEMIFINAL") return "Eliminación - Semifinal";
-  if (stage === "ELIMINATION_FINAL") return "Eliminación - Final";
+  if (isEliminationStage(stage)) {
+    return `Eliminación - ${getEliminationStageTitle(stage, bracketSize)}`;
+  }
   return "Ronda";
 };
 
@@ -92,7 +93,11 @@ export const getBracketChampionId = (
 
 export const getNextEliminationStage = (
   stage?: RoundStage | null,
+  bracketSize?: number | null,
 ): RoundStage | null => {
+  if (isEliminationStage(stage) && bracketSize && bracketSize > 2) {
+    return getEliminationStageForBracketSize(bracketSize / 2);
+  }
   if (stage === "ELIMINATION_ROUND_OF_16") return "ELIMINATION_QUARTERFINAL";
   if (stage === "ELIMINATION_QUARTERFINAL") return "ELIMINATION_SEMIFINAL";
   if (stage === "ELIMINATION_SEMIFINAL") return "ELIMINATION_FINAL";

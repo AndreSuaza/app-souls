@@ -1,4 +1,5 @@
 import { RoundInterface } from "@/interfaces";
+import { isEliminationStage } from "@/logic";
 
 export const RoundProgressBar = ({
   round,
@@ -13,8 +14,11 @@ export const RoundProgressBar = ({
     );
   }
 
-  const totalMatches = round.matches.length;
-  const completedMatches = round.matches.filter(
+  const matches = isEliminationStage(round.stage)
+    ? round.matches.filter((match) => match.player2Id !== null)
+    : round.matches;
+  const totalMatches = matches.length;
+  const completedMatches = matches.filter(
     (m) => m.result !== null
   ).length;
 

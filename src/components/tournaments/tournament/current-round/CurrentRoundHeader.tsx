@@ -103,7 +103,7 @@ export const CurrentRoundHeader = () => {
     !isBracketStage(currentRound.stage);
   const currentRoundTitle = currentRound
     ? isBracketStage(currentRound.stage)
-      ? getRoundStageLabel(currentRound.stage)
+      ? getRoundStageLabel(currentRound.stage, currentRound.bracketSize)
       : `Ronda ${currentRound.roundNumber}`
     : `Ronda ${tournament.currentRoundNumber}`;
 

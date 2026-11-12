@@ -1,6 +1,8 @@
 import NextAuth from "next-auth";
 import authConfig from "@/auth.config";
 import { authAdapter } from "@/lib/auth-adapter";
+import { prisma } from "@/lib/prisma";
+import { createStarterDecksForUser } from "@/lib/starter-decks";
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 const SESSION_MAX_AGE_MS = SESSION_MAX_AGE_SECONDS * 1000;
@@ -79,15 +81,13 @@ export const { signIn, signOut, auth, handlers } = NextAuth({
     },
   },
   events: {
-    // El evento linkAccount se dispara cuando una cuenta (proveedor OAuth: GitHub, Google, Facebook, etc.)  se vincula a un usuario existente en tu base de datos.
-    // async linkAccount({ user }) {
-    //   await db.user.update({
-    //     where: { id: user.id },
-    //     data: {
-    //       emailVerified: new Date(),
-    //     },
-    //   });
-    // },
+    async createUser({ user }) {
+      if (!user.id) {
+        throw new Error("No se pudo identificar el nuevo usuario.");
+      }
+
+      await createStarterDecksForUser(prisma, user.id);
+    },
   },
   // providers: [
   //   Google,

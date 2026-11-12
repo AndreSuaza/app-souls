@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { USER_DECK_LIMIT, countMainDeckCards } from "@/lib/deck-management";
+import { countMainDeckCards } from "@/lib/deck-management";
+import { USER_DECK_LIMIT } from "@/models/deck-limits";
 import {
   isSimulatorDeckLegal,
   simulatorDeckLookupKeys,

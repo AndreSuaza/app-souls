@@ -7,7 +7,8 @@ import { useTournamentStore } from "@/store";
 import { isTopCutTournamentType } from "@/logic";
 
 export const TournamentCurrentRound = () => {
-  const { tournament, rounds, players } = useTournamentStore();
+  const { tournament, rounds, players, reorderEliminationBracket } =
+    useTournamentStore();
   const isElimination = tournament?.format === "Elimination";
   const showTopCutSection =
     isElimination || isTopCutTournamentType(tournament?.typeTournamentName);
@@ -22,6 +23,8 @@ export const TournamentCurrentRound = () => {
           rounds={rounds}
           players={players}
           bracketType={isElimination ? "elimination" : "topCut"}
+          editable={isElimination}
+          onReorder={isElimination ? reorderEliminationBracket : undefined}
         />
       )}
 

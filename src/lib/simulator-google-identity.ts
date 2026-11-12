@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { prisma } from "@/lib/prisma";
+import { createStarterDecksForUser } from "@/lib/starter-decks";
 import { getAvatarValue } from "@/utils/avatar-image";
 import { normalizeEmail } from "@/utils/email";
 
@@ -46,20 +47,25 @@ async function createProvisionalUser(identity: SimulatorGoogleIdentity) {
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      return await prisma.user.create({
-        data: {
-          email: identity.email,
-          emailVerified: new Date(),
-          image: getAvatarValue(),
-          lastname,
-          name,
-          nickname: `g_${nanoid(8)}`,
-          password: null,
-          profileCompleted: false,
-          role: "player",
-          status: "active",
-        },
-        select: selectUser(),
+      return await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email: identity.email,
+            emailVerified: new Date(),
+            image: getAvatarValue(),
+            lastname,
+            name,
+            nickname: `g_${nanoid(8)}`,
+            password: null,
+            profileCompleted: false,
+            role: "player",
+            status: "active",
+          },
+          select: selectUser(),
+        });
+
+        await createStarterDecksForUser(tx, user.id);
+        return user;
       });
     } catch (error) {
       if (

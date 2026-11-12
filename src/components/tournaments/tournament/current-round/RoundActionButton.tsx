@@ -22,6 +22,7 @@ export const RoundActionButton = () => {
     finalizeRound,
     finalizeTournament,
     setShowMissingDeckIndicator,
+    isBracketSaving,
   } = useTournamentStore();
 
   const showLoading = useUIStore((s) => s.showLoading);
@@ -63,7 +64,7 @@ export const RoundActionButton = () => {
     tournament.status === "pending" &&
     !hasRounds &&
     !tournament.eliminationGeneratedAt &&
-    (players.length === 8 || players.length === 16);
+    players.length >= 8;
 
   const canGenerateFirstRound =
     tournament.status !== "finished" &&
@@ -179,12 +180,11 @@ export const RoundActionButton = () => {
     !hasRounds &&
     !tournament.eliminationGeneratedAt &&
     players.length > 0 &&
-    players.length !== 8 &&
-    players.length !== 16
+    players.length < 8
   ) {
     return (
       <span className="text-sm font-semibold text-amber-600 dark:text-amber-300">
-        Se requieren exactamente 8 o 16 jugadores para iniciar
+        Se requieren al menos 8 jugadores para iniciar
       </span>
     );
   }
@@ -238,6 +238,7 @@ export const RoundActionButton = () => {
   ) {
     return (
       <button
+        disabled={isBracketSaving}
         onClick={async () => {
           if (!validateDeckAssociation("round")) return;
           showLoading("Iniciando ronda");
@@ -249,10 +250,14 @@ export const RoundActionButton = () => {
             hideLoading();
           }
         }}
-        className="flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700"
+        className={`flex items-center gap-2 px-2 sm:px-4 py-2 rounded-lg text-white font-semibold ${
+          isBracketSaving
+            ? "cursor-not-allowed bg-green-300"
+            : "bg-green-600 hover:bg-green-700"
+        }`}
       >
         <FaPlay className="flex shrink-0" size={16} />
-        Iniciar ronda
+        {isBracketSaving ? "Guardando bracket" : "Iniciar ronda"}
       </button>
     );
   }

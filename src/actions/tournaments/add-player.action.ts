@@ -48,9 +48,6 @@ export async function addPlayerAction(input: TournamentPlayerInput) {
           throw new Error("La inscripción está cerrada porque el bracket ya inició");
         }
 
-        if (playersCount >= 16) {
-          throw new Error("Los torneos de eliminación admiten máximo 16 jugadores");
-        }
       }
 
       const exists = await tx.tournamentPlayer.findFirst({

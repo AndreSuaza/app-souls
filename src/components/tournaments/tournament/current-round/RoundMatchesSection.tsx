@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTournamentStore } from "@/store";
 import { MatchCard } from "./MarchCard";
 import { orderMatchesByBye } from "@/utils/matches";
-import { isBracketStage } from "@/logic";
+import { isBracketStage, isEliminationStage } from "@/logic";
 
 export const RoundMatchesSection = () => {
   const { rounds, players } = useTournamentStore();
@@ -14,6 +14,10 @@ export const RoundMatchesSection = () => {
     () => orderMatchesByBye(currentRound?.matches ?? []),
     [currentRound?.matches],
   );
+  const visibleMatches =
+    currentRound && isEliminationStage(currentRound.stage)
+      ? orderedMatches.filter((match) => match.player2Id !== null)
+      : orderedMatches;
 
   if (!currentRound) {
     return (
@@ -29,6 +33,11 @@ export const RoundMatchesSection = () => {
       <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
         Emparejamientos
       </h3>
+      {visibleMatches.length !== orderedMatches.length && (
+        <p className="text-sm text-slate-500 dark:text-slate-300">
+          Los BYEs avanzan automáticamente y no requieren mesa.
+        </p>
+      )}
 
       {/* Encabezados */}
       <div className="hidden md:grid grid-cols-[72px_1fr_220px_1fr_72px] text-xs font-semibold text-slate-500 dark:text-slate-400 px-4">
@@ -41,7 +50,7 @@ export const RoundMatchesSection = () => {
 
       {/* Matches */}
       <div className="flex flex-col gap-3">
-        {orderedMatches.map((match, index) => (
+        {visibleMatches.map((match, index) => (
           <MatchCard
             key={match.id}
             match={match}

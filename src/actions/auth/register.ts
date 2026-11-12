@@ -2,6 +2,7 @@
 
 import { sendEmailVerification } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import { createStarterDecksForUser } from "@/lib/starter-decks";
 import {
   EMAIL_VERIFICATION_TOKEN_TTL_MS,
   VERIFICATION_TOKEN_RESEND_COOLDOWN_MS,
@@ -170,16 +171,21 @@ export async function userRegistration(
 
     const passwordHash = await bcrypt.hash(normalizedData.password, 10);
 
-    const userdb = await prisma.user.create({
-      data: {
-        name: normalizedData.name,
-        lastname: normalizedData.lastname,
-        email: normalizedData.email,
-        nickname: normalizedNickname,
-        password: passwordHash,
-        image: getAvatarValue(),
-        bannerImage: getProfileBannerValue(),
-      },
+    const userdb = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          name: normalizedData.name,
+          lastname: normalizedData.lastname,
+          email: normalizedData.email,
+          nickname: normalizedNickname,
+          password: passwordHash,
+          image: getAvatarValue(),
+          bannerImage: getProfileBannerValue(),
+        },
+      });
+
+      await createStarterDecksForUser(tx, user.id);
+      return user;
     });
 
     if (userdb.email) {
@@ -188,7 +194,10 @@ export async function userRegistration(
       );
 
       if (!emailResult.success) {
-        await prisma.user.delete({ where: { id: userdb.id } });
+        await prisma.$transaction(async (tx) => {
+          await tx.deck.deleteMany({ where: { userId: userdb.id } });
+          await tx.user.delete({ where: { id: userdb.id } });
+        });
         return emailResult;
       }
 

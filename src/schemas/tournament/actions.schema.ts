@@ -8,6 +8,7 @@ import {
   GenerateRoundSchema,
   GenerateTopCutBracketSchema,
   GenerateEliminationBracketSchema,
+  ReorderEliminationBracketSchema,
 } from "./round.schema";
 import { SaveMatchSchema } from "./match.schema";
 
@@ -21,6 +22,7 @@ export const Schemas = {
   generateRound: GenerateRoundSchema,
   generateTopCutBracket: GenerateTopCutBracketSchema,
   generateEliminationBracket: GenerateEliminationBracketSchema,
+  reorderEliminationBracket: ReorderEliminationBracketSchema,
   finalizeRound: FinalizeRoundSchema,
   finalizeTopCutRound: FinalizeTopCutRoundSchema,
   saveMatchResult: SaveMatchSchema,

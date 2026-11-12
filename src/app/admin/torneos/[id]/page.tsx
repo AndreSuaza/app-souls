@@ -16,12 +16,19 @@ import { isTopCutTournamentType } from "@/logic";
 
 export default function TournamentAdminPage() {
   const { id } = useParams<{ id: string }>();
-  const { tournament, fetchTournament, players, rounds, error } =
+  const {
+    tournament,
+    fetchTournament,
+    players,
+    rounds,
+    error,
+    reorderEliminationBracket,
+  } =
     useTournamentStore();
   const hideLoading = useUIStore((s) => s.hideLoading);
   const isElimination = tournament?.format === "Elimination";
   const canShowCurrentRound =
-    !isElimination || players.length === 8 || players.length === 16;
+    !isElimination || players.length >= 8;
   const showTopCutTab =
     isElimination ||
     (tournament?.status === "finished" &&
@@ -123,6 +130,8 @@ export default function TournamentAdminPage() {
           rounds={rounds}
           players={players}
           bracketType={isElimination ? "elimination" : "topCut"}
+          editable={isElimination}
+          onReorder={isElimination ? reorderEliminationBracket : undefined}
         />
       )}
 

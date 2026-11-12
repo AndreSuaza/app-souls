@@ -10,12 +10,9 @@ import type {
 } from "@/interfaces";
 import {
   assertTopCutRoundResolved,
-  buildEliminationQuarterfinalPairings,
-  buildEliminationFinalPairing,
-  buildEliminationSemifinalPairings,
-  getNextEliminationStage,
   isEliminationStage,
 } from "@/logic";
+import { buildNextEliminationRound } from "@/logic";
 import { assertCanManageTournament } from "./tournament-action-auth";
 
 type Input = { tournamentId: string; roundId: string };
@@ -94,6 +91,8 @@ export async function finalizeEliminationRoundAction(input: Input) {
           tournamentId: true,
           roundNumber: true,
           stage: true,
+          bracketSize: true,
+          layoutRevision: true,
           finishedAt: true,
           matches: {
             select: {
@@ -131,40 +130,55 @@ export async function finalizeEliminationRoundAction(input: Input) {
         data: { currentRoundNumber: { increment: 1 } },
       });
 
-      const nextStage = getNextEliminationStage(
-        round.stage as RoundStage | null,
-      );
-      if (!nextStage) return { nextRound: null };
+      if (
+        round.stage === "ELIMINATION_FINAL" ||
+        round.bracketSize === 2
+      ) {
+        return { nextRound: null };
+      }
 
       const players = tournament.tournamentPlayers.map(mapPlayer);
-      const pairings =
-        nextStage === "ELIMINATION_QUARTERFINAL"
-          ? buildEliminationQuarterfinalPairings(matches, players)
-          : nextStage === "ELIMINATION_SEMIFINAL"
-          ? buildEliminationSemifinalPairings(matches, players)
-          : buildEliminationFinalPairing(matches, players);
+      const nextRoundPlan = buildNextEliminationRound(
+        {
+          stage: round.stage as RoundStage | null,
+          bracketSize: round.bracketSize,
+          matches,
+        },
+        players,
+      );
+      const nextRoundMatches = nextRoundPlan.matches.map((pairing) => {
+        if (!pairing.player2) {
+          throw new Error("No se pudo construir la siguiente ronda");
+        }
+
+        return {
+          player1Id: pairing.player1.id,
+          player1Nickname: pairing.player1.playerNickname,
+          player2Id: pairing.player2.id,
+          player2Nickname: pairing.player2.playerNickname,
+          result: null,
+          bracketPosition: pairing.bracketPosition,
+        };
+      });
 
       const nextRound = await tx.round.create({
         data: {
           tournamentId: tournament.id,
           roundNumber: round.roundNumber + 1,
-          stage: nextStage,
+          stage: nextRoundPlan.stage,
+          bracketSize: nextRoundPlan.bracketSize,
+          layoutRevision: 0,
           startedAt: null,
           matches: {
-            create: pairings.map((pairing) => ({
-              player1Id: pairing.player1.id,
-              player1Nickname: pairing.player1.playerNickname,
-              player2Id: pairing.player2.id,
-              player2Nickname: pairing.player2.playerNickname,
-              result: null,
-              bracketPosition: pairing.bracketPosition,
-            })),
+            create: nextRoundMatches,
           },
         },
         select: {
           id: true,
           roundNumber: true,
           stage: true,
+          bracketSize: true,
+          layoutRevision: true,
           startedAt: true,
           finishedAt: true,
           matches: {

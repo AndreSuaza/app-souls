@@ -17,6 +17,7 @@ import {
   deleteTournamentAction,
   updateTournamentInfoAction,
   removeTournamentDeckAction,
+  reorderEliminationBracketAction,
 } from "@/actions";
 import {
   applySwissResults,
@@ -50,6 +51,12 @@ export type BasicTournament = {
   typeTournamentName?: string;
 };
 
+export type EliminationBracketSlot = {
+  id: string;
+  player1Id: string;
+  player2Id: string | null;
+};
+
 type TournamentStoreState = {
   tournamentId: string | null;
   tournament: BasicTournament | null;
@@ -58,6 +65,7 @@ type TournamentStoreState = {
   loading: boolean;
   error: string | null;
   showMissingDeckIndicator: boolean;
+  isBracketSaving: boolean;
 
   setTournamentId: (id: string) => void;
   setShowMissingDeckIndicator: (value: boolean) => void;
@@ -75,6 +83,11 @@ type TournamentStoreState = {
   generateRound: () => Promise<void>;
   generateTopCutBracket: () => Promise<void>;
   generateEliminationBracket: () => Promise<void>;
+  reorderEliminationBracket: (
+    roundId: string,
+    layoutRevision: number,
+    matches: EliminationBracketSlot[],
+  ) => Promise<void>;
   saveMatchResult: (
     matchId: string,
     result: "P1" | "P2" | "DRAW",
@@ -106,6 +119,7 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
   loading: false,
   error: null,
   showMissingDeckIndicator: false,
+  isBracketSaving: false,
 
   setTournamentId: (id: string) => set({ tournamentId: id }),
   setShowMissingDeckIndicator: (value: boolean) =>
@@ -172,6 +186,8 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
           id: r.id,
           roundNumber: r.roundNumber,
           stage: r.stage ?? "SWISS",
+          bracketSize: r.bracketSize ?? null,
+          layoutRevision: r.layoutRevision ?? 0,
           startedAt: r.startedAt ? r.startedAt.toISOString() : null,
           finishedAt: r.finishedAt ? r.finishedAt.toISOString() : null,
           matches: r.matches.map((m) => ({
@@ -393,6 +409,80 @@ export const useTournamentStore = create<TournamentStoreState>((set, get) => ({
     } catch (error) {
       console.error(error);
       set({ error: "Error generando el bracket de eliminación" });
+      throw error;
+    }
+  },
+
+  reorderEliminationBracket: async (roundId, layoutRevision, matches) => {
+    const state = get();
+    if (!state.tournament || !state.tournamentId) return;
+
+    const roundIndex = state.rounds.findIndex((round) => round.id === roundId);
+    const round = state.rounds[roundIndex];
+    if (!round || round.startedAt || round.finishedAt) {
+      throw new Error("La ronda ya no permite editar el bracket.");
+    }
+
+    const previousRound = round;
+    const nextMatches = previousRound.matches.map((match) => {
+      const update = matches.find((item) => item.id === match.id);
+      if (!update) return match;
+
+      const player1 = state.players.find((player) => player.id === update.player1Id);
+      const player2 = update.player2Id
+        ? state.players.find((player) => player.id === update.player2Id)
+        : null;
+
+      return {
+        ...match,
+        player1Id: update.player1Id,
+        player1Nickname: player1?.playerNickname ?? match.player1Nickname,
+        player2Id: update.player2Id,
+        player2Nickname: player2?.playerNickname ?? "BYE",
+        result: update.player2Id ? null : ("P1" as const),
+      };
+    });
+
+    set((currentState) => ({
+      isBracketSaving: true,
+      rounds: currentState.rounds.map((item, index) =>
+        index === roundIndex
+          ? {
+              ...item,
+              matches: nextMatches,
+              layoutRevision: layoutRevision + 1,
+            }
+          : item,
+      ),
+    }));
+
+    try {
+      const updatedRound = await reorderEliminationBracketAction({
+        tournamentId: state.tournamentId,
+        roundId,
+        layoutRevision,
+        matches,
+      });
+
+      set((currentState) => ({
+        isBracketSaving: false,
+        rounds: currentState.rounds.map((item) =>
+          item.id === updatedRound.id
+            ? {
+                ...item,
+                matches: updatedRound.matches,
+                layoutRevision: updatedRound.layoutRevision,
+              }
+            : item,
+        ),
+      }));
+    } catch (error) {
+      set((currentState) => ({
+        isBracketSaving: false,
+        rounds: currentState.rounds.map((item) =>
+          item.id === roundId ? previousRound : item,
+        ),
+      }));
       throw error;
     }
   },

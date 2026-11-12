@@ -20,7 +20,7 @@ export async function createTournamentAction(input: CreateTournamentInput) {
         image: data.image,
         format: data.format as TournamentFormat,
         date: new Date(data.date),
-        maxRounds: data.format === "Elimination" ? 3 : data.maxRounds,
+        maxRounds: data.format === "Elimination" ? 1 : data.maxRounds,
         storeId: data.storeId,
         typeTournamentId: data.typeTournamentId,
       },

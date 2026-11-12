@@ -78,6 +78,8 @@ export type RoundStage =
   | "TOP8_QUARTERFINAL"
   | "TOP8_SEMIFINAL"
   | "TOP8_FINAL"
+  | "ELIMINATION_PLAY_IN"
+  | "ELIMINATION_ROUND"
   | "ELIMINATION_ROUND_OF_16"
   | "ELIMINATION_QUARTERFINAL"
   | "ELIMINATION_SEMIFINAL"
@@ -99,6 +101,8 @@ export interface RoundInterface {
   id: string;
   roundNumber: number;
   stage?: RoundStage | null;
+  bracketSize?: number | null;
+  layoutRevision?: number;
   startedAt: string | null;
   finishedAt?: string | null;
   matches: MatchInterface[];

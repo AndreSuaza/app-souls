@@ -36,6 +36,21 @@ export const GenerateEliminationBracketSchema = z.object({
   tournamentId: z.string().min(1, "El ID del torneo es requerido"),
 });
 
+export const ReorderEliminationBracketSchema = z.object({
+  tournamentId: z.string().min(1, "El ID del torneo es requerido"),
+  roundId: z.string().min(1, "El ID de la ronda es requerido"),
+  layoutRevision: z.number().int().min(0),
+  matches: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        player1Id: z.string().min(1),
+        player2Id: z.string().min(1).nullable(),
+      }),
+    )
+    .min(1),
+});
+
 export const FinalizeTopCutRoundSchema = z.object({
   tournamentId: z.string().min(1, "El ID del torneo es requerido"),
   roundId: z.string().min(1, "El ID de la ronda es requerido"),
@@ -49,6 +64,9 @@ export type GenerateTopCutBracketInput = z.infer<
 >;
 export type GenerateEliminationBracketInput = z.infer<
   typeof GenerateEliminationBracketSchema
+>;
+export type ReorderEliminationBracketInput = z.infer<
+  typeof ReorderEliminationBracketSchema
 >;
 export type FinalizeTopCutRoundInput = z.infer<
   typeof FinalizeTopCutRoundSchema

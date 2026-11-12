@@ -36,6 +36,7 @@ import {
   serializeEncodedDecklist,
 } from "@/utils/decklist";
 import { resolveCardImageUrl } from "@/utils/card-image";
+import { USER_DECK_LIMIT } from "@/models/deck-limits";
 
 interface Decklist {
   count: number;
@@ -308,7 +309,7 @@ export const OptionsDeckCreator = ({
       return;
     }
 
-    const maxDecks = 12;
+    const maxDecks = USER_DECK_LIMIT;
     try {
       // Evita abrir el modal si ya se alcanzó el límite de mazos sin torneo.
       const countResult = await getUserDecksFilteredAction({
@@ -320,7 +321,7 @@ export const OptionsDeckCreator = ({
       });
       if (countResult.totalCount >= maxDecks) {
         showToast(
-          "Ya alcanzaste el número máximo de mazos guardados permitidos (12).",
+          `Ya alcanzaste el número máximo de mazos guardados permitidos (${USER_DECK_LIMIT}).`,
           "warning",
         );
         return;

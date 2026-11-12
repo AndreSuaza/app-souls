@@ -4,10 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { GenerateEliminationBracketSchema } from "@/schemas";
 import type { TournamentPlayerInterface } from "@/interfaces";
-import {
-  ELIMINATION_ROUND_OF_16_PAIRINGS,
-  TOP_CUT_QUARTERFINAL_PAIRINGS,
-} from "@/logic";
+import { getInitialEliminationPlan } from "@/logic";
 import { assertCanManageTournament } from "./tournament-action-auth";
 
 type Input = { tournamentId: string };
@@ -80,13 +77,6 @@ export async function generateEliminationBracketAction(input: Input) {
       if (tournament.tournamentPlayers.length < 8) {
         throw new Error("Se requieren al menos 8 jugadores para iniciar el bracket");
       }
-      if (tournament.tournamentPlayers.length > 16) {
-        throw new Error("Los torneos de eliminación admiten máximo 16 jugadores");
-      }
-      if (![8, 16].includes(tournament.tournamentPlayers.length)) {
-        throw new Error("El bracket solo puede iniciar con exactamente 8 o 16 jugadores");
-      }
-
       const existingRounds = await tx.round.count({
         where: { tournamentId: tournament.id },
       });
@@ -95,28 +85,14 @@ export async function generateEliminationBracketAction(input: Input) {
       }
 
       const players = tournament.tournamentPlayers.map(mapPlayer);
-      const isSixteenPlayerBracket = players.length === 16;
-      const maxRounds = isSixteenPlayerBracket ? 4 : 3;
-      const pairings = isSixteenPlayerBracket
-        ? ELIMINATION_ROUND_OF_16_PAIRINGS
-        : TOP_CUT_QUARTERFINAL_PAIRINGS;
-      const initialStage = isSixteenPlayerBracket
-        ? "ELIMINATION_ROUND_OF_16"
-        : "ELIMINATION_QUARTERFINAL";
-      const seededPlayers = players.map((player, index) => ({
-        ...player,
-        topCutSeed: index + 1,
-      }));
-      const playerBySeed = new Map(
-        seededPlayers.map((player) => [player.topCutSeed, player]),
-      );
+      const plan = getInitialEliminationPlan(players);
       const eliminationGeneratedAt = new Date();
 
       await tx.tournament.update({
         where: { id: tournament.id },
         data: {
           status: "in_progress",
-          maxRounds,
+          maxRounds: plan.maxRounds,
           eliminationGeneratedAt,
         },
       });
@@ -126,7 +102,7 @@ export async function generateEliminationBracketAction(input: Input) {
         data: { topCutSeed: null },
       });
 
-      for (const player of seededPlayers) {
+      for (const player of plan.seededPlayers) {
         await tx.tournamentPlayer.update({
           where: { id: player.id },
           data: { topCutSeed: player.topCutSeed },
@@ -137,34 +113,27 @@ export async function generateEliminationBracketAction(input: Input) {
         data: {
           tournamentId: tournament.id,
           roundNumber: 1,
-          stage: initialStage,
+          stage: plan.stage,
+          bracketSize: plan.bracketSize,
+          layoutRevision: 0,
           startedAt: null,
           matches: {
-            create: pairings.map(
-              ([player1Seed, player2Seed], index) => {
-                const player1 = playerBySeed.get(player1Seed);
-                const player2 = playerBySeed.get(player2Seed);
-
-                if (!player1) {
-                  throw new Error("No se pudo construir el bracket de eliminación");
-                }
-
-                return {
-                  player1Id: player1.id,
-                  player1Nickname: player1.playerNickname,
-                  player2Id: player2?.id ?? null,
-                  player2Nickname: player2?.playerNickname ?? "BYE",
-                  result: player2 ? null : "P1",
-                  bracketPosition: index + 1,
-                };
-              },
-            ),
+            create: plan.matches.map(({ player1, player2, bracketPosition }) => ({
+              player1Id: player1.id,
+              player1Nickname: player1.playerNickname,
+              player2Id: player2?.id ?? null,
+              player2Nickname: player2?.playerNickname ?? "BYE",
+              result: player2 ? null : "P1",
+              bracketPosition,
+            })),
           },
         },
         select: {
           id: true,
           roundNumber: true,
           stage: true,
+          bracketSize: true,
+          layoutRevision: true,
           startedAt: true,
           finishedAt: true,
           matches: {
@@ -184,8 +153,8 @@ export async function generateEliminationBracketAction(input: Input) {
 
       return {
         eliminationGeneratedAt: eliminationGeneratedAt.toISOString(),
-        maxRounds,
-        seededPlayers: seededPlayers.map((player) => ({
+        maxRounds: plan.maxRounds,
+        seededPlayers: plan.seededPlayers.map((player) => ({
           id: player.id,
           topCutSeed: player.topCutSeed,
         })),

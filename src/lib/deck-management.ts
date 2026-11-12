@@ -14,11 +14,12 @@ import {
 } from "@/utils/decklist";
 import { ZodError } from "zod";
 import { hasDuplicateTokenCopies } from "@/logic/token-deck";
+import { USER_DECK_LIMIT } from "@/models/deck-limits";
+
+export { USER_DECK_LIMIT } from "@/models/deck-limits";
 
 const MAX_TOURNAMENT_DECK_EDIT_DAYS = 7;
 const MAX_TOKEN_DECK_CARDS = 10;
-
-export const USER_DECK_LIMIT = 12;
 
 export type DeckManagementUser = {
   idd?: string | null;
@@ -310,7 +311,10 @@ export async function saveUserDeck(
       });
 
       if (decksNumber >= USER_DECK_LIMIT) {
-        return { success: false, message: "Limite de 12 mazos alcanzado" };
+        return {
+          success: false,
+          message: `Limite de ${USER_DECK_LIMIT} mazos alcanzado`,
+        };
       }
     }
 
