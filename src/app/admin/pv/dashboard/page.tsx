@@ -12,6 +12,7 @@ import {
   DashboardChartCard,
   DashboardLineChart,
 } from "@/components/admin/dashboard/AdminDashboardCharts";
+import { buildNiceIntegerTicks } from "@/logic/admin-dashboard";
 
 type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -39,6 +40,8 @@ export default async function PvDashboardPage({ searchParams }: PageProps) {
       | "banned"
       | undefined,
   });
+  const topPlayersCount = data.topPlayersAverageSeries.at(-1)?.players ?? 0;
+  const topPlayersXAxisTicks = buildNiceIntegerTicks(topPlayersCount);
 
   return (
     <section className="space-y-6">
@@ -79,16 +82,31 @@ export default async function PvDashboardPage({ searchParams }: PageProps) {
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <DashboardChartCard
-          title="PV por rol"
-          subtitle="Saldo total de PV según el rol actual"
+          title="Promedio acumulado de los mejores jugadores"
+          subtitle="Cada punto muestra el promedio de PV de los mejores X jugadores; el eje va de 0 al total de usuarios."
+          chartClassName="h-72"
         >
-          <DashboardBarChart data={data.roleBreakdown} name="PV" />
+          <DashboardLineChart
+            data={data.topPlayersAverageSeries}
+            name="PV promedio"
+            color="#f59e0b"
+            secondaryKey="players"
+            secondaryName="Jugadores incluidos"
+            allowDecimals
+            showDots={data.topPlayersAverageSeries.length <= 100}
+            xAxisTicks={topPlayersXAxisTicks}
+          />
         </DashboardChartCard>
         <DashboardChartCard
           title="Mayores saldos"
           subtitle="Top 10 usuarios con más PV"
+          chartClassName="h-72"
         >
-          <DashboardBarChart data={data.topUsers} name="PV" color="#22c55e" />
+          <DashboardBarChart
+            data={data.topUsers}
+            name="PV"
+            color="#22c55e"
+          />
         </DashboardChartCard>
       </div>
     </section>

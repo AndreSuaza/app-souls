@@ -55,13 +55,13 @@ export const DashboardChartCard = ({
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.28 }}
-    className={`min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:shadow-lg dark:shadow-black/10 ${className}`}
+    className={`flex h-full min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:shadow-lg dark:shadow-black/10 ${className}`}
   >
     <div className="mb-4">
       <h2 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2>
       {subtitle && <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{subtitle}</p>}
     </div>
-    <div role="img" aria-label={`${title}${subtitle ? `: ${subtitle}` : ""}`} className={`${chartClassName} min-w-0`}>{children}</div>
+    <div role="img" aria-label={`${title}${subtitle ? `: ${subtitle}` : ""}`} className={`${chartClassName} mt-auto min-w-0`}>{children}</div>
   </motion.section>
 );
 
@@ -113,6 +113,8 @@ export const DashboardLineChart = ({
   allowDecimals = false,
   showHoursEquivalent = false,
   singleValue = false,
+  showDots = true,
+  xAxisTicks,
 }: {
   data: Point[];
   color?: string;
@@ -122,6 +124,8 @@ export const DashboardLineChart = ({
   allowDecimals?: boolean;
   showHoursEquivalent?: boolean;
   singleValue?: boolean;
+  showDots?: boolean;
+  xAxisTicks?: Array<string | number>;
 }) => {
   const reducedMotion = useReducedMotion();
   const gradientId = `dashboard-line-gradient-${useId().replace(/:/g, "")}`;
@@ -131,7 +135,7 @@ export const DashboardLineChart = ({
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
           <CartesianGrid stroke={gridColor} vertical={false} />
-          <XAxis dataKey="label" stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} />
+          <XAxis dataKey="label" stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} ticks={xAxisTicks?.map(String)} interval={xAxisTicks ? 0 : undefined} />
           <YAxis stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} allowDecimals={allowDecimals} />
           <Tooltip content={<DashboardLineTooltip primaryName={name} secondaryKey={secondaryKey} secondaryName={secondaryName} showHoursEquivalent={showHoursEquivalent} />} />
           <Bar dataKey="value" name={name} fill={color} radius={[7, 7, 0, 0]} isAnimationActive={!reducedMotion} />
@@ -149,10 +153,10 @@ export const DashboardLineChart = ({
           </linearGradient>
         </defs>
         <CartesianGrid stroke={gridColor} vertical={false} />
-        <XAxis dataKey="label" stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} />
+        <XAxis dataKey="label" stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} ticks={xAxisTicks?.map(String)} interval={xAxisTicks ? 0 : undefined} />
         <YAxis stroke={axisColor} tick={{ fontSize: 11, fill: axisColor }} tickLine={false} axisLine={false} allowDecimals={allowDecimals} />
         <Tooltip content={<DashboardLineTooltip primaryName={name} secondaryKey={secondaryKey} secondaryName={secondaryName} showHoursEquivalent={showHoursEquivalent} />} />
-        <Area type="monotone" dataKey="value" name={name} stroke={color} strokeWidth={3} fill={`url(#${gradientId})`} dot={{ r: 3, fill: color, strokeWidth: 0 }} activeDot={{ r: 6 }} isAnimationActive={!reducedMotion} />
+        <Area type="monotone" dataKey="value" name={name} stroke={color} strokeWidth={3} fill={`url(#${gradientId})`} dot={showDots ? { r: 3, fill: color, strokeWidth: 0 } : false} activeDot={{ r: 6 }} isAnimationActive={!reducedMotion} />
       </AreaChart>
     </ResponsiveContainer>
   );

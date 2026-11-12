@@ -8,6 +8,7 @@ import {
   buildDateSeries,
   buildSparseDateSeries,
   buildSparseAverageDateSeries,
+  buildTopPlayersAverageSeries,
   percentageChange,
   resolveDashboardPeriod,
 } from "@/logic/admin-dashboard";
@@ -33,6 +34,12 @@ export type DashboardSeriesPoint = {
   label: string;
   value: number;
   players?: number;
+};
+
+export type DashboardRankingPoint = {
+  label: string;
+  value: number;
+  players: number;
 };
 
 export type AppDashboardData = {
@@ -74,8 +81,8 @@ export type PvDashboardData = {
   updatedAt: string;
   kpis: DashboardKpi[];
   movementsSeries: DashboardSeriesPoint[];
+  topPlayersAverageSeries: DashboardRankingPoint[];
   distribution: Array<{ name: string; value: number; color?: string }>;
-  roleBreakdown: Array<{ name: string; value: number; color?: string }>;
   topUsers: Array<{ name: string; value: number; color?: string }>;
 };
 
@@ -544,24 +551,6 @@ export const getAdminPvDashboardAction = async (input?: DashboardInput): Promise
     color,
   }));
 
-  const roleLabels: Record<string, string> = {
-    player: "Jugadores",
-    store: "Tiendas",
-    admin: "Administradores",
-    news: "Noticias",
-  };
-  const roleColors: Record<string, string> = {
-    player: "#a855f7",
-    store: "#f59e0b",
-    admin: "#38bdf8",
-    news: "#22c55e",
-  };
-  const pvByRole = new Map<string, number>();
-  users.forEach((user) => {
-    const role = user.role;
-    pvByRole.set(role, (pvByRole.get(role) ?? 0) + (user.victoryPoints ?? 0));
-  });
-
   return {
     period: periodDto(period),
     updatedAt: new Date().toISOString(),
@@ -574,10 +563,8 @@ export const getAdminPvDashboardAction = async (input?: DashboardInput): Promise
       { label: "PV reclamados del pase", value: battlePassPv, suffix: " PV" },
     ],
     movementsSeries: buildDateSeries(period, movementByDate),
+    topPlayersAverageSeries: buildTopPlayersAverageSeries(balances),
     distribution,
-    roleBreakdown: [...pvByRole.entries()]
-      .map(([role, value]) => ({ name: roleLabels[role] ?? role, value, color: roleColors[role] ?? "#a78bfa" }))
-      .sort((first, second) => second.value - first.value),
     topUsers: users
       .filter((user) => (user.victoryPoints ?? 0) > 0)
       .slice(0, 10)

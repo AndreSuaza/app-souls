@@ -149,6 +149,54 @@ export const buildSparseAverageDateSeries = (
       value: averageValue(value),
     }));
 
+export const buildTopPlayersAverageSeries = (values: number[]) => {
+  const sortedValues = values
+    .filter((value) => Number.isFinite(value))
+    .slice()
+    .sort((left, right) => right - left);
+
+  if (sortedValues.length === 0) return [];
+
+  const series = [{ label: "0", value: 0, players: 0 }];
+  let total = 0;
+
+  sortedValues.forEach((value, index) => {
+    const players = index + 1;
+    total += value;
+    series.push({
+      label: String(players),
+      value: Math.round((total / players) * 10) / 10,
+      players,
+    });
+  });
+
+  return series;
+};
+
+export const buildNiceIntegerTicks = (maxValue: number, targetTickCount = 7) => {
+  if (!Number.isFinite(maxValue) || maxValue <= 0) return [0];
+
+  const roughStep = maxValue / Math.max(1, targetTickCount);
+  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
+  const normalizedStep = roughStep / magnitude;
+  const factor = normalizedStep <= 1
+    ? 1
+    : normalizedStep <= 2
+      ? 2
+      : normalizedStep <= 2.5
+        ? 2.5
+        : normalizedStep <= 5
+          ? 5
+          : 10;
+  const step = factor * magnitude;
+  const tickMax = Math.ceil(maxValue / step) * step;
+  const tickCount = Math.floor(tickMax / step);
+
+  return Array.from({ length: tickCount + 1 }, (_, index) =>
+    Math.round(index * step * 100) / 100,
+  );
+};
+
 export const percentageChange = (current: number, previous: number) => {
   if (previous === 0) return current === 0 ? 0 : 100;
   return Math.round(((current - previous) / previous) * 1000) / 10;
