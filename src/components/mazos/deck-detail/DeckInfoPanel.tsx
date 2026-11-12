@@ -57,7 +57,7 @@ export const DeckInfoPanel = ({
   const description = deck.description?.trim() || "Sin descripción disponible.";
   const deckShareUrl = useMemo(() => {
     if (!deck.cards) return "https://soulsinxtinction.com/laboratorio";
-    // El deck ya está serializado con `%3A/%3B/%7C`; aquí se vuelve a codificar para URL.
+    // Convierte la lista serializada al transporte versionado d1_ para compartirla.
     const encodedDecklist = encodeDecklistForQueryParam(deck.cards);
     return `https://soulsinxtinction.com/laboratorio?decklist=${encodedDecklist}`;
   }, [deck.cards]);

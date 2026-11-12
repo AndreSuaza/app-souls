@@ -244,7 +244,7 @@ export const OptionsDeckCreator = ({
 
   const deckShareUrl = () => {
     const deckCode = deckListText();
-    // El query param se codifica otra vez para que searchParams entregue `%3A/%3B/%7C`.
+    // Usa el transporte versionado d1_ para evitar caracteres reservados en la URL.
     const encodedDeckCode = encodeDecklistForQueryParam(deckCode);
     return `https://soulsinxtinction.com/laboratorio?decklist=${encodedDeckCode}`;
   };

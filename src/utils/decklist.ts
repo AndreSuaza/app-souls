@@ -11,15 +11,53 @@ export type ParsedDecklistEntry = {
 export const ENCODED_ENTRY_SEPARATOR = "%3B";
 export const ENCODED_PAIR_SEPARATOR = "%3A";
 export const ENCODED_SECTION_SEPARATOR = "%7C";
+export const SAFE_DECKLIST_PREFIX = "d1_";
 
 const RAW_DECKLIST_SEPARATOR_REGEX = /[;:|]/;
 
-export const normalizeEncodedDecklist = (value: string) =>
-  value
-    .trim()
+const encodeBase64Url = (value: string) => {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+};
+
+const decodeBase64Url = (value: string) => {
+  if (!value || !/^[A-Za-z0-9_-]+$/.test(value) || value.length % 4 === 1) {
+    return null;
+  }
+
+  try {
+    const padded = value.replace(/-/g, "+").replace(/_/g, "/")
+      + "=".repeat((4 - (value.length % 4)) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return null;
+  }
+};
+
+export const normalizeEncodedDecklist = (value: string) => {
+  const trimmed = value.trim();
+  const decodedTransport = trimmed.startsWith(SAFE_DECKLIST_PREFIX)
+    ? decodeBase64Url(trimmed.slice(SAFE_DECKLIST_PREFIX.length))
+    : trimmed;
+
+  if (decodedTransport === null) return "";
+
+  return decodedTransport
     .replace(/%3a/gi, ENCODED_PAIR_SEPARATOR)
     .replace(/%3b/gi, ENCODED_ENTRY_SEPARATOR)
     .replace(/%7c/gi, ENCODED_SECTION_SEPARATOR);
+};
 
 export const hasRawDecklistSeparators = (value: string) =>
   RAW_DECKLIST_SEPARATOR_REGEX.test(value);
@@ -59,8 +97,12 @@ export const serializeEncodedDecklist = (
 ) =>
   `${serializeEncodedDeckSegment(mainEntries)}${ENCODED_SECTION_SEPARATOR}${serializeEncodedDeckSegment(sideEntries)}`;
 
-export const encodeDecklistForQueryParam = (decklist: string) =>
-  encodeURIComponent(decklist);
+export const encodeDecklistForQueryParam = (decklist: string) => {
+  const normalized = normalizeEncodedDecklist(decklist);
+  if (!normalized) return "";
+
+  return `${SAFE_DECKLIST_PREFIX}${encodeBase64Url(normalized)}`;
+};
 
 export const parseEncodedDeckSegment = (segment: string) => {
   const normalized = normalizeEncodedDecklist(segment);
