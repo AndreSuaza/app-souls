@@ -34,6 +34,6 @@ export async function GET(request: Request) {
   const session = verifySimulatorToken(getToken(request));
   if (!session) return NextResponse.json({ error: "Token de simulador invalido." }, { status: 401, headers });
 
-  const payload = await loadDeckLabCards(readFilters(request));
+  const payload = await loadDeckLabCards(readFilters(request), session);
   return NextResponse.json(payload, { headers });
 }

@@ -144,6 +144,7 @@ export default async function Page({ searchParams }: Props) {
           isAdminDeck
           skipDeckLimitCheck
           enableBulkAdd
+          includeExclusive={true}
         />
       </div>
     </div>

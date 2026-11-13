@@ -6,6 +6,7 @@ const optionalNumber = z.preprocess(
 );
 
 const idArray = z.array(z.string().trim().min(1)).default([]);
+const cardAccess = z.enum(["PUBLIC", "OWNED"]);
 
 const BaseAdminCardSchema = z.object({
   idd: z
@@ -37,6 +38,8 @@ const BaseAdminCardSchema = z.object({
     "Selecciona al menos una rareza",
   ),
   imageUrl: z.string().trim().optional(),
+  access: cardAccess.default("PUBLIC"),
+  baseCardId: z.string().trim().optional().nullable(),
 });
 
 export const CreateAdminCardSchema = BaseAdminCardSchema.extend({

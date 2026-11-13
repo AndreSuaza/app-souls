@@ -7,7 +7,11 @@ import clsx from "clsx";
 import {
   adjustUserVictoryPointsAction,
   bulkAdjustUserVictoryPointsAction,
+  bulkGrantAdminUserCardAction,
+  getAdminUserCardOwnershipAction,
+  grantAdminUserCardAction,
   getAdminUsersAction,
+  revokeAdminUserCardAction,
   getUserPvAdjustmentsAction,
   resendAdminVerificationEmailAction,
   sendAdminPasswordResetEmailAction,
@@ -133,6 +137,10 @@ type UserDetailModalProps = {
   onResendVerification: () => void;
 };
 
+type UserCardOwnershipItem = Awaited<
+  ReturnType<typeof getAdminUserCardOwnershipAction>
+>[number];
+
 const UserDetailModal = ({
   user,
   history,
@@ -147,11 +155,64 @@ const UserDetailModal = ({
 }: UserDetailModalProps) => {
   const [role, setRole] = useState(user.role);
   const [status, setStatus] = useState(user.status);
+  const [cardSearch, setCardSearch] = useState("");
+  const [ownershipCards, setOwnershipCards] = useState<UserCardOwnershipItem[]>([]);
+  const [ownershipLoading, setOwnershipLoading] = useState(false);
+  const [ownershipSaving, setOwnershipSaving] = useState(false);
+  const openConfirmation = useAlertConfirmationStore(
+    (state) => state.openAlertConfirmation,
+  );
+  const showToast = useToastStore((state) => state.showToast);
 
   useEffect(() => {
     setRole(user.role);
     setStatus(user.status);
   }, [user]);
+
+  const loadOwnershipCards = useCallback(async () => {
+    try {
+      setOwnershipLoading(true);
+      const result = await getAdminUserCardOwnershipAction({
+        userId: user.id,
+        text: cardSearch,
+        limit: 40,
+      });
+      setOwnershipCards(result);
+    } catch (error) {
+      showToast(getSafeErrorMessage(error, "No se pudieron cargar las cartas exclusivas."), "error");
+    } finally {
+      setOwnershipLoading(false);
+    }
+  }, [cardSearch, showToast, user.id]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => void loadOwnershipCards(), 250);
+    return () => clearTimeout(timeout);
+  }, [loadOwnershipCards]);
+
+  const changeOwnership = (card: UserCardOwnershipItem) => {
+    const action = card.owned ? revokeAdminUserCardAction : grantAdminUserCardAction;
+    openConfirmation({
+      text: card.owned ? "Revocar variante" : "Asignar variante",
+      description: card.owned
+        ? `La variante ${card.code} se reemplazara por su carta base en los mazos de ${user.nickname}.`
+        : `Se habilitara la variante ${card.code} para ${user.nickname}.`,
+      action: async () => {
+        try {
+          setOwnershipSaving(true);
+          await action({ userId: user.id, cardId: card.id, note: "Gestion manual desde usuarios." });
+          await loadOwnershipCards();
+          return true;
+        } catch (error) {
+          showToast(getSafeErrorMessage(error, "No se pudo actualizar la propiedad."), "error");
+          return false;
+        } finally {
+          setOwnershipSaving(false);
+        }
+      },
+      onSuccess: () => showToast(card.owned ? "Variante revocada." : "Variante asignada.", "success"),
+    });
+  };
 
   const hasChanges = role !== user.role || status !== user.status;
   const canDeactivate = user.status === "active" && !user.isCurrentAdmin;
@@ -330,6 +391,49 @@ const UserDetailModal = ({
               <p>Creado: {formatDate(user.createdAt)}</p>
               <p>Actualizado: {formatDate(user.updatedAt)}</p>
             </div>
+
+            <section className="rounded-2xl border border-slate-200 p-4 dark:border-tournament-dark-border">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                    Cartas exclusivas
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    Las variantes asignadas se pueden utilizar en ambos laboratorios.
+                  </p>
+                </div>
+                <input
+                  value={cardSearch}
+                  onChange={(event) => setCardSearch(event.target.value)}
+                  placeholder="Buscar carta, código o idd"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white"
+                />
+              </div>
+              <div className="mt-4 max-h-72 space-y-2 overflow-y-auto">
+                {ownershipLoading && <p className="text-sm text-slate-500">Cargando variantes...</p>}
+                {!ownershipLoading && ownershipCards.length === 0 && (
+                  <p className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-tournament-dark-border dark:text-slate-400">
+                    No hay variantes exclusivas configuradas.
+                  </p>
+                )}
+                {!ownershipLoading && ownershipCards.map((card) => (
+                  <div key={card.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/30">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{card.name}</p>
+                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">{card.code} · {card.product.name}</p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={ownershipSaving}
+                      onClick={() => changeOwnership(card)}
+                      className={clsx("shrink-0 rounded-lg px-3 py-2 text-xs font-semibold transition disabled:opacity-50", card.owned ? "border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-500/40 dark:text-red-200" : "bg-purple-600 text-white hover:bg-purple-700")}
+                    >
+                      {card.owned ? "Revocar" : "Asignar"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
 
             <section className="rounded-2xl border border-slate-200 p-4 dark:border-tournament-dark-border">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -662,6 +766,85 @@ const BulkPvAdjustmentModal = ({
   );
 };
 
+type BulkCardOwnershipModalProps = {
+  selectedUsers: AdminUserListItem[];
+  saving: boolean;
+  onClose: () => void;
+  onSubmit: (cardId: string, note: string) => void;
+};
+
+const BulkCardOwnershipModal = ({
+  selectedUsers,
+  saving,
+  onClose,
+  onSubmit,
+}: BulkCardOwnershipModalProps) => {
+  const [search, setSearch] = useState("");
+  const [cards, setCards] = useState<UserCardOwnershipItem[]>([]);
+  const [cardId, setCardId] = useState("");
+  const [note, setNote] = useState("");
+  const showToast = useToastStore((state) => state.showToast);
+
+  useEffect(() => {
+    const userId = selectedUsers[0]?.id;
+    if (!userId) return;
+    const timeout = setTimeout(() => {
+      void getAdminUserCardOwnershipAction({ userId, text: search, limit: 60 })
+        .then(setCards)
+        .catch((error) => showToast(getSafeErrorMessage(error, "No se pudieron cargar las variantes."), "error"));
+    }, 200);
+    return () => clearTimeout(timeout);
+  }, [search, selectedUsers, showToast]);
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <form
+        className="w-full max-w-2xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-2xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (cardId && selectedUsers.length > 0) onSubmit(cardId, note);
+        }}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-500">Cartas exclusivas</p>
+            <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">Asignar a varios usuarios</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Se asignara un desbloqueo, no copias fisicas.</p>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 p-2 text-slate-500 dark:border-tournament-dark-border dark:text-slate-300" aria-label="Cerrar asignacion de cartas">
+            <IoCloseOutline className="h-6 w-6" />
+          </button>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-slate-200 p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/30">
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">{selectedUsers.length} usuarios seleccionados</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{selectedUsers.map((user) => user.nickname).join(", ")}</p>
+        </div>
+
+        <label className="mt-5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          Buscar variante
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Nombre, código o idd" className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white" />
+        </label>
+        <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          Variante exclusiva
+          <select value={cardId} onChange={(event) => setCardId(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white">
+            <option value="">Selecciona una variante</option>
+            {cards.map((card) => <option key={card.id} value={card.id}>{card.code} · {card.name}</option>)}
+          </select>
+        </label>
+        <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          Motivo opcional
+          <input value={note} onChange={(event) => setNote(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white" />
+        </label>
+        <div className="mt-6 flex justify-end gap-3">
+          <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 dark:border-tournament-dark-border dark:text-slate-300">Cancelar</button>
+          <button type="submit" disabled={!cardId || saving || selectedUsers.length === 0} className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50">Asignar variante</button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
 const MetricCard = ({ label, value }: { label: string; value: number }) => (
   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
@@ -759,7 +942,9 @@ export const AdminUsersManager = () => {
   const [bulkReason, setBulkReason] = useState("");
   const [bulkSaving, setBulkSaving] = useState(false);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
-  useBodyScrollLock(Boolean(selectedUser || pvUser || bulkModalOpen));
+  const [bulkCardModalOpen, setBulkCardModalOpen] = useState(false);
+  const [bulkCardSaving, setBulkCardSaving] = useState(false);
+  useBodyScrollLock(Boolean(selectedUser || pvUser || bulkModalOpen || bulkCardModalOpen));
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -1197,6 +1382,29 @@ export const AdminUsersManager = () => {
     });
   };
 
+  const handleBulkCardSubmit = (cardId: string, note: string) => {
+    const userIds = [...selectedUserIds];
+    if (userIds.length === 0) return;
+    openConfirmation({
+      text: "¿Confirmas la asignacion de la variante?",
+      description: `La variante se asignara a ${userIds.length} usuarios seleccionados.`,
+      action: async () => {
+        try {
+          setBulkCardSaving(true);
+          const result = await bulkGrantAdminUserCardAction({ userIds, cardId, note });
+          setBulkCardModalOpen(false);
+          showToast(`Variante asignada a ${result.affectedCount} usuarios.`, "success");
+          return true;
+        } catch (error) {
+          showToast(getSafeErrorMessage(error, "No se pudo asignar la variante."), "error");
+          return false;
+        } finally {
+          setBulkCardSaving(false);
+        }
+      },
+    });
+  };
+
   const filteredLabel = useMemo(
     () => `Mostrando ${users.length} de ${totalCount} usuarios`,
     [totalCount, users.length],
@@ -1292,6 +1500,14 @@ export const AdminUsersManager = () => {
               className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-400"
             >
               Asignar PV masivo
+            </button>
+            <button
+              type="button"
+              disabled={selectedUsersCount === 0 || selectedUsersCount > BULK_PV_MAX_USERS}
+              onClick={() => setBulkCardModalOpen(true)}
+              className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Asignar carta exclusiva
             </button>
           </div>
         </div>
@@ -1491,6 +1707,15 @@ export const AdminUsersManager = () => {
           onAmountChange={setBulkAmount}
           onReasonChange={setBulkReason}
           onSubmit={handleBulkPvSubmit}
+        />
+      )}
+
+      {bulkCardModalOpen && (
+        <BulkCardOwnershipModal
+          selectedUsers={selectedUsersForBulkModal}
+          saving={bulkCardSaving}
+          onClose={() => setBulkCardModalOpen(false)}
+          onSubmit={handleBulkCardSubmit}
         />
       )}
     </section>

@@ -61,6 +61,7 @@ interface Props {
   skipDeckLimitCheck?: boolean;
   showSaveControls?: boolean;
   enableBulkAdd?: boolean;
+  includeExclusive?: boolean;
 }
 
 const addCardLogic = (
@@ -215,6 +216,7 @@ export const DeckCreator = ({
   skipDeckLimitCheck = false,
   showSaveControls = true,
   enableBulkAdd = false,
+  includeExclusive = false,
 }: Props) => {
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
@@ -811,6 +813,7 @@ export const DeckCreator = ({
             onBulkAction={handleBulkAdd}
             isBulkActionLoading={isBulkAdding}
             bulkActionTitle="Agregar cartas filtradas"
+            includeExclusive={includeExclusive}
           />
         </div>
       </section>

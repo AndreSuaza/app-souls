@@ -16,6 +16,7 @@ import {
 } from "@/utils/decklist";
 import { activeCardWhere } from "@/actions/cards/card-status";
 import type { Prisma } from "@prisma/client";
+import { accessibleCardWhere } from "@/lib/card-access";
 
 const mongoObjectIdPattern = /^[a-f\d]{24}$/i;
 const trailingMongoObjectIdPattern = /-([a-f\d]{24})$/i;
@@ -200,10 +201,15 @@ const buildCardWhere = (filters: DeckLabFilters): Prisma.CardWhereInput => {
   return { AND: [activeCardWhere(), where] };
 };
 
-export async function loadDeckLabCards(filters: DeckLabFilters = {}) {
+export async function loadDeckLabCards(
+  filters: DeckLabFilters = {},
+  session?: SimulatorTokenPayload,
+) {
   const page = Math.max(1, Number.isFinite(filters.page) ? Math.trunc(filters.page ?? 1) : 1);
   const take = Math.min(60, Math.max(12, Number.isFinite(filters.take) ? Math.trunc(filters.take ?? 24) : 24));
-  const where = buildCardWhere(filters);
+  const where = {
+    AND: [buildCardWhere(filters), accessibleCardWhere(session?.userId)],
+  } satisfies Prisma.CardWhereInput;
 
   const [cards, totalCount] = await Promise.all([
     prisma.card.findMany({
@@ -215,6 +221,15 @@ export async function loadDeckLabCards(filters: DeckLabFilters = {}) {
         product: { select: { code: true, name: true, show: true, url: true } },
         rarities: { select: { id: true, name: true } },
         types: { select: { id: true, name: true } },
+        baseCard: {
+          include: {
+            archetypes: { select: { id: true, name: true } },
+            keywords: { select: { id: true, name: true } },
+            product: { select: { code: true, name: true, show: true, url: true } },
+            rarities: { select: { id: true, name: true } },
+            types: { select: { id: true, name: true } },
+          },
+        },
       },
       where,
       orderBy: [{ id: "desc" }],
@@ -355,7 +370,11 @@ const expandCardLookupKeys = (keys: string[]) =>
     ),
   );
 
-async function loadLabEntries(rawDecklist?: string | null) {
+async function loadLabEntries(
+  rawDecklist: string | null | undefined,
+  session: SimulatorTokenPayload | undefined,
+  context: "owner" | "public",
+) {
   const normalized = normalizeEncodedDecklist(rawDecklist ?? "");
   if (!normalized || hasRawDecklistSeparators(normalized)) return [];
 
@@ -370,39 +389,72 @@ async function loadLabEntries(rawDecklist?: string | null) {
       product: { select: { code: true, name: true, show: true, url: true } },
       rarities: { select: { id: true, name: true } },
       types: { select: { id: true, name: true } },
+      baseCard: {
+        include: {
+          archetypes: { select: { id: true, name: true } },
+          keywords: { select: { id: true, name: true } },
+          product: { select: { code: true, name: true, show: true, url: true } },
+          rarities: { select: { id: true, name: true } },
+          types: { select: { id: true, name: true } },
+        },
+      },
     },
     where: {
       AND: [
         activeCardWhere(),
-        {
-          OR: [{ code: { in: keys } }, { idd: { in: keys } }],
-        },
+        { OR: [{ code: { in: keys } }, { idd: { in: keys } }] },
       ],
     },
   });
 
+  const ownedCardIds =
+    context === "owner" && session?.userId
+      ? new Set(
+          (
+            await prisma.userCardOwnership.findMany({
+              where: {
+                userId: session.userId,
+                unlocked: true,
+                cardId: { in: cards.map((card) => card.id) },
+              },
+              select: { cardId: true },
+            })
+          ).map((ownership) => ownership.cardId),
+        )
+      : new Set<string>();
+
   const cardByKey = new Map<string, (typeof cards)[number]>();
   cards.forEach((card) => {
     cardByKey.set(card.code, card);
-    cardByKey.set(card.idd, card);
+    const currentByIdd = cardByKey.get(card.idd);
+    if (!currentByIdd || (currentByIdd.access === "OWNED" && card.access !== "OWNED")) {
+      cardByKey.set(card.idd, card);
+    }
   });
 
   const relatedProducts = await loadRelatedProductsByIdd(cards.map((card) => card.idd));
 
-  return entries.flatMap((entry) => {
-    const card = cardByKey.get(entry.key);
-    if (!card) return [];
+  return (await Promise.all(entries.map(async (entry) => {
+    const exactCard = cardByKey.get(entry.key);
+    const card = exactCard ?? cards.find((item) => item.idd === entry.key);
+    if (!card) return null;
+    const resolvedCard =
+      card.access === "OWNED" &&
+      (context === "public" || !ownedCardIds.has(card.id))
+        ? card.baseCard
+        : card;
+    if (!resolvedCard) return null;
     return [
       {
         card: toDeckLabCardDto({
-          ...card,
-          price: card.price ?? null,
-          relatedProducts: relatedProducts.get(card.idd) ?? [],
+          ...resolvedCard,
+          price: resolvedCard.price ?? null,
+          relatedProducts: relatedProducts.get(resolvedCard.idd) ?? [],
         }),
         count: entry.count,
       },
     ];
-  });
+  }))).flatMap((entry) => entry ?? []);
 }
 
 export async function loadDeckLabDetail(session: SimulatorTokenPayload, deckId: string) {
@@ -432,9 +484,9 @@ export async function loadDeckLabDetail(session: SimulatorTokenPayload, deckId: 
   const normalizedDecklist = normalizeEncodedDecklist(deck.cards);
   const [mainSegment = "", sideSegment = ""] = normalizedDecklist.split(ENCODED_SECTION_SEPARATOR);
   const [mainDeck, sideDeck, tokenDeck] = await Promise.all([
-    loadLabEntries(mainSegment),
-    loadLabEntries(sideSegment),
-    loadLabEntries(deck.tokenCards),
+    loadLabEntries(mainSegment, session, "owner"),
+    loadLabEntries(sideSegment, session, "owner"),
+    loadLabEntries(deck.tokenCards, session, "owner"),
   ]);
 
   return {
@@ -447,7 +499,11 @@ export async function loadDeckLabDetail(session: SimulatorTokenPayload, deckId: 
   };
 }
 
-export async function previewDeckLabDeck(rawDecklist: string, rawTokenDecklist?: string) {
+export async function previewDeckLabDeck(
+  rawDecklist: string,
+  rawTokenDecklist?: string,
+  session?: SimulatorTokenPayload,
+) {
   const normalizedDecklist = normalizeEncodedDecklist(rawDecklist);
   if (!normalizedDecklist || hasRawDecklistSeparators(normalizedDecklist)) {
     return null;
@@ -455,9 +511,9 @@ export async function previewDeckLabDeck(rawDecklist: string, rawTokenDecklist?:
 
   const [mainSegment = "", sideSegment = ""] = normalizedDecklist.split(ENCODED_SECTION_SEPARATOR);
   const [mainDeck, sideDeck, tokenDeck] = await Promise.all([
-    loadLabEntries(mainSegment),
-    loadLabEntries(sideSegment),
-    loadLabEntries(rawTokenDecklist),
+    loadLabEntries(mainSegment, session, session ? "owner" : "public"),
+    loadLabEntries(sideSegment, session, session ? "owner" : "public"),
+    loadLabEntries(rawTokenDecklist, session, session ? "owner" : "public"),
   ]);
 
   return {
@@ -498,10 +554,15 @@ export async function loadPlayableSimulatorDecks(session: SimulatorTokenPayload)
     cardKeys.length > 0
       ? await prisma.card.findMany({
           where: {
-            OR: [
-              { code: { in: cardKeys } },
-              { idd: { in: cardKeys } },
-              ...(cardObjectIds.length > 0 ? [{ id: { in: cardObjectIds } }] : []),
+            AND: [
+              accessibleCardWhere(session.userId),
+              {
+                OR: [
+                  { code: { in: cardKeys } },
+                  { idd: { in: cardKeys } },
+                  ...(cardObjectIds.length > 0 ? [{ id: { in: cardObjectIds } }] : []),
+                ],
+              },
             ],
           },
           select: {
@@ -553,7 +614,7 @@ export async function loadPlayableSimulatorDecks(session: SimulatorTokenPayload)
 export async function loadDeckLabBootstrap(session: SimulatorTokenPayload, filters: DeckLabFilters = {}) {
   const [properties, cards, decks] = await Promise.all([
     loadDeckLabProperties(),
-    loadDeckLabCards(filters),
+    loadDeckLabCards(filters, session),
     loadOwnedDeckLabSummaries(session),
   ]);
 

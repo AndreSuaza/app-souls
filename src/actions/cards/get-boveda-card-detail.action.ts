@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { CardSlugSchema, type CardSlugInput } from "@/schemas";
 import { normalizeCardSlug } from "@/utils/card-slug";
 import { activeCardWhere } from "./card-status";
+import { publicCardWhere } from "@/lib/card-access";
 
 const cardDetailSelect = {
   id: true,
@@ -19,6 +20,7 @@ const cardDetailSelect = {
   effect: true,
   price: true,
   status: true,
+  access: true,
   product: {
     select: {
       name: true,
@@ -109,6 +111,7 @@ export async function getBovedaCardDetailAction(input: CardSlugInput) {
         where: {
           AND: [
             activeCardWhere(),
+            publicCardWhere(),
             {
               code: legacyParts.cardCode,
               ...(legacyParts.idd ? { idd: legacyParts.idd } : {}),
@@ -134,6 +137,7 @@ export async function getBovedaCardDetailAction(input: CardSlugInput) {
         where: {
           AND: [
             activeCardWhere(),
+            publicCardWhere(),
             {
               slug: {
                 startsWith: `${legacyParts.nameSlug}-`,
@@ -157,12 +161,13 @@ export async function getBovedaCardDetailAction(input: CardSlugInput) {
     if (isDeletedCard(card)) card = null;
   }
 
-  if (!card) return null;
+  if (!card || card.access === "OWNED") return null;
 
   const relatedProducts = await prisma.card.findMany({
     where: {
       AND: [
         activeCardWhere(),
+        publicCardWhere(),
         {
           idd: card.idd,
         },

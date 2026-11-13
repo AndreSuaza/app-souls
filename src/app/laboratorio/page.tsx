@@ -123,8 +123,12 @@ export default async function Cards({ searchParams }: Props) {
   }
 
   const [{ mainDeck, sideDeck }, tokenDeck] = await Promise.all([
-    getDecksByIds(decklistCards),
-    getTokenDeckByIds(deckUser?.tokenCards),
+    getDecksByIds(decklistCards, {
+      viewerUserId: session?.user?.idd,
+    }),
+    getTokenDeckByIds(deckUser?.tokenCards, {
+      viewerUserId: session?.user?.idd,
+    }),
   ]);
   const isOwnerDeck =
     Boolean(session?.user?.idd) && deckUser?.userId === session?.user?.idd;

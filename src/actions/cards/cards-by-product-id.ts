@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { activeCardWhere } from "./card-status";
+import { publicCardWhere } from "@/lib/card-access";
 
 export const getCardsByProductId = async (id: string) => {
   if (!id) return [];
@@ -39,7 +40,7 @@ export const getCardsByProductId = async (id: string) => {
         },
       },
       where: {
-        AND: [activeCardWhere(), { productId: id }],
+        AND: [activeCardWhere(), publicCardWhere(), { productId: id }],
       },
     });
 

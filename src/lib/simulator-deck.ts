@@ -95,6 +95,7 @@ export const isSimulatorDeckLegal = (
 
 export const toSimulatorCardDto = (card: SimulatorCardSource) => ({
   id: card.id,
+  ...(card.idd ? { idd: card.idd } : {}),
   code: card.code,
   aliases: cardDeckKeys(card),
   name: card.name,

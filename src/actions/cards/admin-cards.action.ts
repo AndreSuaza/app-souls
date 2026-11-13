@@ -20,6 +20,7 @@ import { toAssetUrl } from "@/utils/asset-path";
 import { buildCardSlug } from "@/utils/card-slug";
 import type { Prisma } from "@prisma/client";
 import { activeCardWhere } from "./card-status";
+import { assertCardRulesMatchBase, assertCardVariantMatchesBase, publicCardWhere } from "@/lib/card-access";
 
 const ensureAdmin = async () => {
   const session = await auth();
@@ -43,6 +44,8 @@ const cardAdminSelect = {
   imageUrl: true,
   price: true,
   status: true,
+  access: true,
+  baseCardId: true,
   productId: true,
   typeIds: true,
   archetypesIds: true,
@@ -223,12 +226,14 @@ const toCardData = (
   keywordsIds: input.keywordsIds,
   raritiesIds: input.raritiesIds,
   ...(imageUrl !== undefined ? { imageUrl } : {}),
+  access: input.access,
+  baseCardId: input.baseCardId || null,
 });
 
 export async function getAdminCardPropertiesAction() {
   await ensureAdmin();
 
-  const [products, types, archetypes, keywords, rarities] = await Promise.all([
+  const [products, types, archetypes, keywords, rarities, baseCards] = await Promise.all([
     prisma.product.findMany({
       select: { id: true, name: true, code: true },
       orderBy: [{ name: "asc" }],
@@ -249,9 +254,14 @@ export async function getAdminCardPropertiesAction() {
       select: { id: true, name: true },
       orderBy: [{ name: "asc" }],
     }),
+    prisma.card.findMany({
+      where: { AND: [activeCardWhere(), publicCardWhere()] },
+      select: { id: true, idd: true, code: true, name: true },
+      orderBy: [{ name: "asc" }, { code: "asc" }],
+    }),
   ]);
 
-  return { products, types, archetypes, keywords, rarities };
+  return { products, types, archetypes, keywords, rarities, baseCards };
 }
 
 export async function getAdminCardsAction(input: unknown = {}) {
@@ -334,6 +344,17 @@ export async function createCardAction(input: CreateAdminCardInput) {
   const slug = buildCardSlug(data.name, data.code);
 
   await ensureReferencesExist(data);
+  if (data.access === "OWNED") {
+    if (!data.baseCardId) {
+      throw new Error("Las cartas exclusivas deben tener una carta base publica.");
+    }
+    await assertCardRulesMatchBase({
+      card: data,
+      baseCardId: data.baseCardId,
+    });
+  } else if (data.baseCardId) {
+    throw new Error("Las cartas publicas no pueden tener carta base de variante.");
+  }
   await assertUniqueCard({ code: data.code, idd: data.idd, slug });
 
   const card = await prisma.card.create({
@@ -359,6 +380,17 @@ export async function updateCardAction(input: UpdateAdminCardInput) {
 
   const slug = buildCardSlug(data.name, data.code);
   await ensureReferencesExist(data);
+  if (data.access === "OWNED") {
+    if (!data.baseCardId) {
+      throw new Error("Las cartas exclusivas deben tener una carta base publica.");
+    }
+    await assertCardVariantMatchesBase({
+      cardId: data.cardId,
+      baseCardId: data.baseCardId,
+    });
+  } else if (data.baseCardId) {
+    throw new Error("Las cartas publicas no pueden tener carta base de variante.");
+  }
   await assertUniqueCard({
     cardId: data.cardId,
     code: data.code,

@@ -101,6 +101,7 @@ export * from "./profile/purchase-cosmetic.action";
 export * from "./profile/get-admin-store-sales.action";
 export * from "./admin/reset-elo-season.action";
 export * from "./admin/admin-users.action";
+export * from "./admin/card-ownership.action";
 export * from "./profile/get-profile-deck-counts.action";
 
 export * from "./battle-pass/admin-battle-pass.action";

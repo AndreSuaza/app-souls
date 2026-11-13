@@ -35,6 +35,7 @@ export async function POST(request: Request) {
   const preview = await previewDeckLabDeck(
     body.deckList,
     typeof body.tokenDeckList === "string" ? body.tokenDeckList : "",
+    session,
   );
   if (!preview) {
     return NextResponse.json(

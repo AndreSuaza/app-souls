@@ -86,6 +86,7 @@ export default async function Cards({ searchParams }: Props) {
     defenses,
     rarities,
     limit,
+    includeExclusive: true,
   });
 
   return (
@@ -100,6 +101,7 @@ export default async function Cards({ searchParams }: Props) {
         useAdvancedFilters
         disableGridInitialAnimation
         disableGridAnimations
+        includeExclusive={true}
       />
     </>
   );

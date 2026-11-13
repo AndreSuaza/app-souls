@@ -4,6 +4,7 @@ import { simulatorCorsHeaders, simulatorOptionsResponse } from "@/lib/simulator-
 import { toSimulatorCardDto } from "@/lib/simulator-deck";
 import { verifySimulatorToken } from "@/lib/simulator-token";
 import { resolveCardImageUrl } from "@/utils/card-image";
+import { accessibleCardWhere } from "@/lib/card-access";
 
 export const runtime = "nodejs";
 
@@ -49,10 +50,15 @@ export async function GET(request: Request) {
     cardKeys.length > 0
       ? await prisma.card.findMany({
           where: {
-            OR: [
-              { code: { in: cardKeys } },
-              { idd: { in: cardKeys } },
-              ...(cardObjectIds.length > 0 ? [{ id: { in: cardObjectIds } }] : []),
+            AND: [
+              accessibleCardWhere(session.userId),
+              {
+                OR: [
+                  { code: { in: cardKeys } },
+                  { idd: { in: cardKeys } },
+                  ...(cardObjectIds.length > 0 ? [{ id: { in: cardObjectIds } }] : []),
+                ],
+              },
             ],
           },
           select: {

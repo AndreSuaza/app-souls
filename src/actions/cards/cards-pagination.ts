@@ -2,7 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import { auth } from "@/auth";
 import { activeCardWhere } from "./card-status";
+import { accessibleCardWhere } from "@/lib/card-access";
 
 interface PaginationOptions {
   page?: number;
@@ -17,6 +19,7 @@ interface PaginationOptions {
   defenses?: string;
   rarities?: string;
   limit?: string;
+  includeExclusive?: boolean;
 }
 
 export const getPaginatedCards = async ({
@@ -32,11 +35,15 @@ export const getPaginatedCards = async ({
   defenses,
   rarities,
   limit,
+  includeExclusive = false,
 }: PaginationOptions) => {
   if (isNaN(Number(page))) page = 1;
   if (page < 1) page = 1;
 
   try {
+    // La biblioteca muestra todas las variantes; el laboratorio filtra por la
+    // sesión real para no confiar en un userId enviado desde el cliente.
+    const viewerUserId = includeExclusive ? null : (await auth())?.user?.idd;
     const whereConstruction = () => {
       const where: Prisma.CardWhereInput = {};
       if (products) {
@@ -87,7 +94,13 @@ export const getPaginatedCards = async ({
       if (limit) {
         where.limit = { in: limit.split(",").map((item) => item.trim()) };
       }
-      return { AND: [activeCardWhere(), where] };
+      return {
+        AND: [
+          activeCardWhere(),
+          ...(includeExclusive ? [] : [accessibleCardWhere(viewerUserId)]),
+          where,
+        ],
+      };
     };
 
     const cards = await prisma.card.findMany({

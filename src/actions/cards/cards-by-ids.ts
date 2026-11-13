@@ -78,12 +78,19 @@ const buildFallbackCard = (entryKey: string): Card | null => {
 
 const parseDeckEntries = (ids: string) => parseEncodedDeckSegment(ids);
 
-const getCardsByIds = async (ids: string) => {
+type CardViewerOptions = {
+  viewerUserId?: string | null;
+  ownerUserId?: string | null;
+  preserveExclusiveVariants?: boolean;
+};
+
+const getCardsByIds = async (ids: string, options: CardViewerOptions = {}) => {
   if (!ids) return [];
   let deck: Decklist[] = [];
   const entries = parseDeckEntries(ids);
   const keys = entries.map((entry) => entry.key);
   const uniqueKeys = Array.from(new Set(keys));
+  const accessUserId = options.viewerUserId ?? options.ownerUserId ?? null;
 
   if (uniqueKeys.length === 0) {
     return [];
@@ -121,6 +128,15 @@ const getCardsByIds = async (ids: string) => {
             name: true;
           };
         };
+        baseCard: {
+          include: {
+            product: { select: { name: true; code: true; show: true; url: true } };
+            types: { select: { name: true } };
+            keywords: { select: { name: true } };
+            rarities: { select: { name: true; id: true } };
+            archetypes: { select: { name: true } };
+          };
+        };
       };
     }>[] = await prisma.card.findMany({
       include: {
@@ -153,63 +169,91 @@ const getCardsByIds = async (ids: string) => {
             name: true,
           },
         },
+        baseCard: {
+          include: {
+            product: { select: { name: true, code: true, show: true, url: true } },
+            types: { select: { name: true } },
+            keywords: { select: { name: true } },
+            rarities: { select: { name: true, id: true } },
+            archetypes: { select: { name: true } },
+          },
+        },
       },
       where: {
         AND: [
           activeCardWhere(),
           {
             OR: [
-              {
-                idd: {
-                  in: uniqueKeys,
-                },
-              },
-              {
-                code: {
-                  in: uniqueKeys,
-                },
-              },
+              { idd: { in: uniqueKeys } },
+              { code: { in: uniqueKeys } },
+              ...(uniqueKeys.some((key) => /^[a-f\d]{24}$/i.test(key))
+                ? [{ id: { in: uniqueKeys.filter((key) => /^[a-f\d]{24}$/i.test(key)) } }]
+                : []),
             ],
           },
         ],
       },
     });
 
+    const ownedCardIds =
+      accessUserId && !options.preserveExclusiveVariants
+        ? new Set(
+            (
+              await prisma.userCardOwnership.findMany({
+                where: {
+                  userId: accessUserId,
+                  unlocked: true,
+                  cardId: { in: cards.map((card) => card.id) },
+                },
+                select: { cardId: true },
+              })
+            ).map((ownership) => ownership.cardId),
+          )
+        : new Set<string>();
+
     const cardByCode = new Map(cards.map((card) => [card.code, card]));
-    // Mantenemos el primer registro por idd para no duplicar cartas legacy.
+    const cardById = new Map(cards.map((card) => [card.id, card]));
+    // Para claves legacy por idd preferimos la versión pública.
     const cardByIdd = new Map<string, (typeof cards)[number]>();
     cards.forEach((card) => {
-      if (!cardByIdd.has(card.idd)) {
+      const current = cardByIdd.get(card.idd);
+      if (!current || (current.access === "OWNED" && card.access !== "OWNED")) {
         cardByIdd.set(card.idd, card);
       }
     });
 
     entries.forEach((entry) => {
-      const card = cardByCode.get(entry.key) ?? cardByIdd.get(entry.key);
-      const fallbackCard = !card ? buildFallbackCard(entry.key) : null;
-      if (!card && !fallbackCard) return;
+      const card = cardById.get(entry.key) ?? cardByCode.get(entry.key) ?? cardByIdd.get(entry.key);
+      const resolvedCard =
+        !options.preserveExclusiveVariants &&
+        card?.access === "OWNED" &&
+        !ownedCardIds.has(card.id)
+          ? card.baseCard
+          : card;
+      const fallbackCard = !resolvedCard ? buildFallbackCard(entry.key) : null;
+      if (!resolvedCard && !fallbackCard) return;
 
       deck = [
         ...deck,
         {
-          card: card
+          card: resolvedCard
             ? {
-                id: card.id,
-                idd: card.idd,
-                code: card.code,
-                types: card.types,
-                limit: card.limit,
-                rarities: card.rarities,
-                cost: card.cost,
-                force: card.force,
-                defense: card.defense,
-                archetypes: card.archetypes,
-                keywords: card.keywords,
-                name: card.name,
-                effect: card.effect,
-                imageUrl: card.imageUrl ?? null,
-                product: card.product,
-                price: card.price ?? null,
+                id: resolvedCard.id,
+                idd: resolvedCard.idd,
+                code: resolvedCard.code,
+                types: resolvedCard.types,
+                limit: resolvedCard.limit,
+                rarities: resolvedCard.rarities,
+                cost: resolvedCard.cost,
+                force: resolvedCard.force,
+                defense: resolvedCard.defense,
+                archetypes: resolvedCard.archetypes,
+                keywords: resolvedCard.keywords,
+                name: resolvedCard.name,
+                effect: resolvedCard.effect,
+                imageUrl: resolvedCard.imageUrl ?? null,
+                product: resolvedCard.product,
+                price: resolvedCard.price ?? null,
               }
             : (fallbackCard as Card),
           count: entry.count,
@@ -223,7 +267,7 @@ const getCardsByIds = async (ids: string) => {
   }
 };
 
-export const getDecksByIds = async (ids?: string) => {
+export const getDecksByIds = async (ids?: string, options: CardViewerOptions = {}) => {
   if (!ids) return { mainDeck: [], sideDeck: [], tokenDeck: [] };
 
   const normalizedIds = normalizeEncodedDecklist(ids);
@@ -239,14 +283,14 @@ export const getDecksByIds = async (ids?: string) => {
 
   // Ejecutamos en paralelo
   const [mainDeck, sideDeck] = await Promise.all([
-    getCardsByIds(mainIds),
-    getCardsByIds(sideIds),
+    getCardsByIds(mainIds, options),
+    getCardsByIds(sideIds, options),
   ]);
 
   return { mainDeck, sideDeck, tokenDeck: [] };
 };
 
-export const getTokenDeckByIds = async (ids?: string | null) => {
+export const getTokenDeckByIds = async (ids?: string | null, options: CardViewerOptions = {}) => {
   if (!ids) return [];
 
   const normalizedIds = normalizeEncodedDecklist(ids);
@@ -254,5 +298,5 @@ export const getTokenDeckByIds = async (ids?: string | null) => {
     return [];
   }
 
-  return getCardsByIds(normalizedIds);
+  return getCardsByIds(normalizedIds, options);
 };

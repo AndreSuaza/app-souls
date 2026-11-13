@@ -199,8 +199,8 @@ export const AdminCardsManager = ({ properties }: Props) => {
 
       <div className="space-y-4 rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-[minmax(0,2fr)_repeat(4,minmax(0,1fr))]">
-          <label className="sm:col-span-2 md:col-span-4 lg:col-span-1">
-            <span className="hidden text-sm font-semibold text-slate-700 dark:text-slate-200 lg:invisible lg:mb-1 lg:block">
+          <label className="flex min-w-0 flex-col sm:col-span-2 md:col-span-4 lg:col-span-1">
+            <span className="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400 lg:invisible">
               Busqueda
             </span>
             <span className="relative block">

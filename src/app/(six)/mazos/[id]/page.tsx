@@ -105,8 +105,8 @@ export default async function Page({ params }: Props) {
 
   const decklistCards = deck.cards ?? "";
   const [deckLists, tokenDeck, tournamentSummary, likeStatus] = await Promise.all([
-    getDecksByIds(decklistCards),
-    getTokenDeckByIds(deck.tokenCards),
+    getDecksByIds(decklistCards, { preserveExclusiveVariants: true }),
+    getTokenDeckByIds(deck.tokenCards, { preserveExclusiveVariants: true }),
     deck.tournamentId
       ? getTournamentSummaryAction(deck.tournamentId)
       : Promise.resolve(null),

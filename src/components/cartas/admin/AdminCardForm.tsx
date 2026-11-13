@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { IoArrowBackOutline } from "react-icons/io5";
 import {
   createCardAction,
   updateCardAction,
@@ -36,6 +37,8 @@ type FormValues = {
   keywordsIds: string[];
   raritiesIds: string[];
   imageUrl: string;
+  access: "PUBLIC" | "OWNED";
+  baseCardId: string;
 };
 
 type Props = {
@@ -62,6 +65,8 @@ const defaultValues: FormValues = {
   keywordsIds: [],
   raritiesIds: [],
   imageUrl: "",
+  access: "PUBLIC",
+  baseCardId: "",
 };
 
 const toInitialValues = (card?: AdminCard): FormValues => {
@@ -84,6 +89,8 @@ const toInitialValues = (card?: AdminCard): FormValues => {
     keywordsIds: card.keywordsIds,
     raritiesIds: card.raritiesIds,
     imageUrl: card.imageUrl ?? "",
+    access: card.access === "OWNED" ? "OWNED" : "PUBLIC",
+    baseCardId: card.baseCardId ?? "",
   };
 };
 
@@ -180,6 +187,8 @@ export const AdminCardForm = ({
         keywordsIds: values.keywordsIds,
         raritiesIds: values.raritiesIds,
         imageUrl,
+        access: values.access,
+        baseCardId: values.access === "OWNED" ? values.baseCardId || null : null,
       };
 
       if (isCreate) {
@@ -238,8 +247,9 @@ export const AdminCardForm = ({
         </div>
         <Link
           href={cancelHref}
-          className="inline-flex w-fit rounded-lg border border-tournament-dark-accent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
+          className="inline-flex w-fit items-center gap-2 rounded-lg border border-tournament-dark-accent px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:text-slate-200 dark:hover:bg-tournament-dark-muted"
         >
+          <IoArrowBackOutline className="h-4 w-4" aria-hidden="true" />
           Volver
         </Link>
       </header>
@@ -317,6 +327,32 @@ export const AdminCardForm = ({
                 </option>
               ))}
             </Select>
+            <Select
+              label="Acceso"
+              value={values.access}
+              onChange={(value) => updateValue("access", value as FormValues["access"])}
+              required
+            >
+              <option value="PUBLIC">Pública</option>
+              <option value="OWNED">Exclusiva</option>
+            </Select>
+            {values.access === "OWNED" && (
+              <Select
+                label="Carta base pública"
+                value={values.baseCardId}
+                onChange={(value) => updateValue("baseCardId", value)}
+                required
+              >
+                <option value="">Selecciona carta base</option>
+                {properties.baseCards
+                  .filter((base) => base.id !== card?.id && base.idd === values.idd)
+                  .map((base) => (
+                    <option key={base.id} value={base.id}>
+                      {base.code} · {base.name} ({base.idd})
+                    </option>
+                  ))}
+              </Select>
+            )}
           </div>
 
           <div className="grid gap-4 rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:grid-cols-2">

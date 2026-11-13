@@ -15,6 +15,7 @@ import {
 import { ZodError } from "zod";
 import { hasDuplicateTokenCopies } from "@/logic/token-deck";
 import { USER_DECK_LIMIT } from "@/models/deck-limits";
+import { accessibleCardWhere, cardKeyCandidates } from "@/lib/card-access";
 
 export { USER_DECK_LIMIT } from "@/models/deck-limits";
 
@@ -58,7 +59,55 @@ export const countMainDeckCards = (deckList: string) => {
   return countEncodedDeckSegment(mainSegment);
 };
 
-async function validateTokenDeck(rawDecklist?: string | null) {
+const resolveDeckCard = (
+  key: string,
+  cards: Array<{ id: string; code: string; idd: string }>,
+) => {
+  const candidates = cardKeyCandidates(key);
+  return (
+    cards.find((card) => candidates.includes(card.id)) ??
+    cards.find((card) => candidates.includes(card.code)) ??
+    cards.find((card) => candidates.includes(card.idd))
+  );
+};
+
+async function validateDeckCardAccess(
+  rawDecklist: string,
+  userId: string,
+  message: string,
+) {
+  const normalized = normalizeEncodedDecklist(rawDecklist);
+  if (!normalized || hasRawDecklistSeparators(normalized)) return "";
+
+  const entries = normalized
+    .split(ENCODED_SECTION_SEPARATOR)
+    .flatMap((segment) => parseEncodedDeckSegment(segment));
+  const keys = Array.from(new Set(entries.map((entry) => entry.key)));
+  if (keys.length === 0) return "";
+
+  const expandedKeys = Array.from(new Set(keys.flatMap(cardKeyCandidates)));
+  const objectIds = expandedKeys.filter((key) => /^[a-f\d]{24}$/i.test(key));
+  const cards = await prisma.card.findMany({
+    where: {
+      AND: [
+        accessibleCardWhere(userId),
+        {
+          OR: [
+            { code: { in: expandedKeys } },
+            { idd: { in: expandedKeys } },
+            ...(objectIds.length > 0 ? [{ id: { in: objectIds } }] : []),
+          ],
+        },
+      ],
+    },
+    select: { id: true, code: true, idd: true },
+  });
+
+  if (entries.some((entry) => !resolveDeckCard(entry.key, cards))) return message;
+  return "";
+}
+
+async function validateTokenDeck(rawDecklist: string | null | undefined, userId: string) {
   const normalized = normalizeEncodedDecklist(rawDecklist ?? "");
   if (!normalized) return { normalized: "", count: 0 };
   if (hasRawDecklistSeparators(normalized)) {
@@ -85,7 +134,10 @@ async function validateTokenDeck(rawDecklist?: string | null) {
   const keys = Array.from(new Set(entries.map((entry) => entry.key)));
   const cards = await prisma.card.findMany({
     where: {
-      OR: [{ code: { in: keys } }, { idd: { in: keys } }],
+      AND: [
+        accessibleCardWhere(userId),
+        { OR: [{ code: { in: keys } }, { idd: { in: keys } }] },
+      ],
     },
     include: {
       types: { select: { name: true } },
@@ -153,7 +205,7 @@ export async function saveUserDeck(
     const normalizedDeckList = normalizeEncodedDecklist(data.deckList);
     const mainCardsNumber = Math.max(0, Math.trunc(data.cardsNumber));
 
-    const tokenDeckValidation = await validateTokenDeck(data.tokenDeckList);
+    const tokenDeckValidation = await validateTokenDeck(data.tokenDeckList, userId);
 
     if (tokenDeckValidation.error) {
       return {
@@ -183,6 +235,26 @@ export async function saveUserDeck(
         message:
           "El formato del código del mazo no es valido. Reabre el laboratorio y vuelve a intentarlo.",
       };
+    }
+
+    const mainDeckAccessError = await validateDeckCardAccess(
+      normalizedDeckList,
+      userId,
+      "El mazo contiene una carta que no tienes disponible.",
+    );
+    if (mainDeckAccessError) {
+      return { success: false, message: mainDeckAccessError };
+    }
+
+    if (data.tokenDeckList) {
+      const tokenDeckAccessError = await validateDeckCardAccess(
+        data.tokenDeckList,
+        userId,
+        "El mazo de fichas contiene una carta que no tienes disponible.",
+      );
+      if (tokenDeckAccessError) {
+        return { success: false, message: tokenDeckAccessError };
+      }
     }
 
     if (data.deckId) {

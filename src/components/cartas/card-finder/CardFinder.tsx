@@ -88,6 +88,7 @@ interface Props {
   onBulkAction?: () => void;
   isBulkActionLoading?: boolean;
   bulkActionTitle?: string;
+  includeExclusive?: boolean;
 }
 
 export const CardFinder = ({
@@ -119,6 +120,7 @@ export const CardFinder = ({
   onBulkAction,
   isBulkActionLoading = false,
   bulkActionTitle = "Agregar cartas filtradas",
+  includeExclusive = false,
 }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -289,6 +291,7 @@ export const CardFinder = ({
       const result = await getPaginatedCards({
         page,
         ...filters,
+        includeExclusive,
       });
 
       setCardsState(result.cards);

@@ -90,6 +90,23 @@ enum CardStatus {
   deleted
 }
 
+enum CardAccess {
+  PUBLIC
+  OWNED
+}
+
+enum UserCardOwnershipSource {
+  ADMIN
+  EVENT
+  PROMO
+  REWARD
+}
+
+enum CardOwnershipAuditAction {
+  GRANTED
+  REVOKED
+}
+
 model ProductImage {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   url        String
@@ -114,6 +131,8 @@ model Card {
   effect     String
   imageUrl   String?
   status     CardStatus? @default(active)
+  access     CardAccess? @default(PUBLIC)
+  baseCardId String?     @db.ObjectId
   createDate DateTime    @default(now())
 
   price Float?
@@ -133,7 +152,14 @@ model Card {
   product   Product @relation(fields: [productId], references: [id])
   productId String  @db.ObjectId
 
+  baseCard       Card?                  @relation("CardVariantBase", fields: [baseCardId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  variants       Card[]                 @relation("CardVariantBase")
+  userOwnerships UserCardOwnership[]
+  ownershipAudits CardOwnershipAudit[]
+
   @@index([cost, force, defense])
+  @@index([access, idd])
+  @@index([baseCardId])
 }
 
 model Store {
@@ -324,6 +350,11 @@ model User {
   battlePassProgressAdjustmentsMade BattlePassProgressAdjustment[] @relation("BattlePassProgressAdjustmentAdmin")
   simulatorOAuthExchanges SimulatorOAuthExchange[]
     simulatorGoogleOAuthTransactions SimulatorGoogleOAuthTransaction[]
+  cardOwnerships UserCardOwnership[] @relation("UserCardOwnershipUser")
+  cardOwnershipsGranted UserCardOwnership[] @relation("UserCardOwnershipGrantedBy")
+  cardOwnershipsRevoked UserCardOwnership[] @relation("UserCardOwnershipRevokedBy")
+  cardOwnershipAudits CardOwnershipAudit[] @relation("CardOwnershipAuditUser")
+  cardOwnershipAuditsMade CardOwnershipAudit[] @relation("CardOwnershipAuditAdmin")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -459,7 +490,7 @@ model SimulatorGoogleOAuthTransaction {
   stateHash         String    @unique
   simulatorState    String
   codeVerifier      String
-  profileTicketHash String?   @unique
+  profileTicketHash String?
   userId            String?   @db.ObjectId
   expiresAt         DateTime
   consumedAt        DateTime?
@@ -469,6 +500,7 @@ model SimulatorGoogleOAuthTransaction {
 
   @@index([expiresAt])
   @@index([userId, consumedAt])
+  @@index([profileTicketHash])
 }
 
 model VerificationToken {
@@ -521,6 +553,54 @@ model Deck {
   likes             Like[]
   tournamentPlayers TournamentPlayer[]
   Product           Product[]
+}
+
+model UserCardOwnership {
+  id         String                   @id @default(auto()) @map("_id") @db.ObjectId
+  unlocked   Boolean                  @default(true)
+  source     UserCardOwnershipSource  @default(ADMIN)
+  note       String?
+  grantedAt  DateTime                 @default(now())
+  revokedAt  DateTime?
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+
+  userId String @db.ObjectId
+  user   User   @relation("UserCardOwnershipUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  cardId String @db.ObjectId
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  grantedById String? @db.ObjectId
+  grantedBy   User?   @relation("UserCardOwnershipGrantedBy", fields: [grantedById], references: [id])
+
+  revokedById String? @db.ObjectId
+  revokedBy   User?   @relation("UserCardOwnershipRevokedBy", fields: [revokedById], references: [id])
+
+  @@unique([userId, cardId])
+  @@index([userId, unlocked])
+  @@index([cardId, unlocked])
+}
+
+model CardOwnershipAudit {
+  id        String                    @id @default(auto()) @map("_id") @db.ObjectId
+  action    CardOwnershipAuditAction
+  source    UserCardOwnershipSource   @default(ADMIN)
+  note      String?
+  createdAt DateTime                  @default(now())
+
+  userId String @db.ObjectId
+  user   User   @relation("CardOwnershipAuditUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  cardId String @db.ObjectId
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  adminId String @db.ObjectId
+  admin   User   @relation("CardOwnershipAuditAdmin", fields: [adminId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([cardId, createdAt])
+  @@index([adminId, createdAt])
 }
 
 enum AvatarRarity {

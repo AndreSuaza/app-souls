@@ -3,13 +3,14 @@
 import { prisma } from "@/lib/prisma";
 import { CardIdSchema, type CardIdInput } from "@/schemas";
 import { activeCardWhere } from "./card-status";
+import { publicCardWhere } from "@/lib/card-access";
 
 export async function getCardByIdAction(input: CardIdInput) {
   const { cardId } = CardIdSchema.parse(input);
 
   const card = await prisma.card.findFirst({
     where: {
-      AND: [activeCardWhere(), { OR: [{ id: cardId }, { idd: cardId }] }],
+      AND: [activeCardWhere(), publicCardWhere(), { OR: [{ id: cardId }, { idd: cardId }] }],
     },
     select: {
       id: true,
