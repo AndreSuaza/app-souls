@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import {
   IoAddCircleOutline,
@@ -44,6 +45,7 @@ import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { AVATAR_AVAILABILITIES, AVATAR_RARITIES } from "@/models/avatar.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { toAssetStorageUrl } from "@/utils/asset-path";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 
 type PassFormState = {
   id: string;
@@ -98,6 +100,10 @@ type PassSummaryPanelProps = {
 
 type DeliveriesPanelProps = {
   claims: AdminBattlePassClaim[];
+  totalClaims: number;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
   onDeliverClaims: (userId: string, claimIds: string[]) => Promise<void>;
 };
 
@@ -158,6 +164,7 @@ const EMPTY_QUICK_COSMETIC_FORM: QuickCosmeticFormState = {
 };
 
 const BATTLE_PASS_PV_IMAGE = "/battle-pass/victory-points.png";
+const MANUAL_CLAIMS_PAGE_SIZE = 10;
 
 const statusLabels: Record<PassFormState["status"], string> = {
   DRAFT: "Borrador",
@@ -716,39 +723,66 @@ const MobileSummaryPanel = ({
   );
 };
 
-const DeliveriesPanel = ({ claims, onDeliverClaims }: DeliveriesPanelProps) => (
-  <section className={clsx(panelClassName, "min-w-0 p-4 lg:p-5")}>
-    <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <IoStorefrontOutline className="h-5 w-5 text-[#ddb8ff]" />
-          <h2 className="text-lg font-semibold text-[#edddf7]">
-            Entregas en tienda
-          </h2>
-        </div>
-        <p className="mt-1 text-xs text-[#cfc2d6]">
-          Sobres, promos, playmats u otros premios que requieren gestion.
-        </p>
-      </div>
-      <div className="flex shrink-0 flex-wrap gap-2">
-        <span className="rounded-lg bg-[#3b3144] px-3 py-1 text-xs font-black uppercase text-[#ddb8ff]">
-          {claims.length} pendientes
-        </span>
-        <Link
-          href="/admin/pase-batalla/entregas-tienda"
-          className="inline-flex items-center justify-center rounded-lg bg-[#302639] px-3 py-1 text-xs font-bold uppercase text-[#ddb7ff] transition hover:bg-[#3b3144]"
-        >
-          Vista tienda
-        </Link>
-      </div>
-    </div>
+const DeliveriesPanel = ({
+  claims,
+  totalClaims,
+  currentPage,
+  totalPages,
+  onPageChange,
+  onDeliverClaims,
+}: DeliveriesPanelProps) => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-    <BattlePassDeliveryGroups
-      claims={claims}
-      onDeliverClaims={onDeliverClaims}
-    />
-  </section>
-);
+  return (
+    <section className={clsx(panelClassName, "min-w-0 p-4 lg:p-5")}>
+      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <IoStorefrontOutline className="h-5 w-5 text-[#ddb8ff]" />
+            <h2 className="text-lg font-semibold text-[#edddf7]">
+              Entregas en tienda
+            </h2>
+          </div>
+          <p className="mt-1 text-xs text-[#cfc2d6]">
+            Sobres, promos, playmats u otros premios que requieren gestion.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <span className="rounded-lg bg-[#3b3144] px-3 py-1 text-xs font-black uppercase text-[#ddb8ff]">
+            {totalClaims} pendientes
+          </span>
+          <Link
+            href="/admin/pase-batalla/entregas-tienda"
+            className="inline-flex items-center justify-center rounded-lg bg-[#302639] px-3 py-1 text-xs font-bold uppercase text-[#ddb7ff] transition hover:bg-[#3b3144]"
+          >
+            Vista tienda
+          </Link>
+        </div>
+      </div>
+
+      <BattlePassDeliveryGroups
+        claims={claims}
+        pageSize={MANUAL_CLAIMS_PAGE_SIZE}
+        onDeliverClaims={onDeliverClaims}
+      />
+
+      <div className="mt-4 flex flex-col gap-2 text-xs text-[#988d9f] sm:flex-row sm:items-center sm:justify-between">
+        <span>
+          {totalClaims} entregas · Página {currentPage} de {totalPages}
+        </span>
+        <PaginationLine
+          totalPages={totalPages}
+          currentPage={currentPage}
+          searchParams={searchParams}
+          pathname={pathname}
+          onPageChange={onPageChange}
+          className="mt-0 mb-0 w-full sm:flex-1 sm:justify-end"
+        />
+      </div>
+    </section>
+  );
+};
 
 const LevelsPanel = ({
   canReorder,
@@ -863,6 +897,9 @@ export const AdminBattlePassManager = () => {
     [],
   );
   const [manualClaims, setManualClaims] = useState<AdminBattlePassClaim[]>([]);
+  const [manualClaimsPage, setManualClaimsPage] = useState(1);
+  const [manualClaimsTotal, setManualClaimsTotal] = useState(0);
+  const [manualClaimsTotalPages, setManualClaimsTotalPages] = useState(1);
   const [levelItems, setLevelItems] = useState<AdminBattlePassLevel[]>([]);
   const [passForm, setPassForm] = useState<PassFormState>(EMPTY_PASS_FORM);
   const [passBackgroundFile, setPassBackgroundFile] = useState<File | null>(
@@ -892,6 +929,7 @@ export const AdminBattlePassManager = () => {
 
   const latestOrderRef = useRef<AdminBattlePassLevel[]>([]);
   const savedOrderRef = useRef("");
+  const skipManualClaimsPageLoadRef = useRef(true);
 
   const selectedPass = useMemo(
     () => passes.find((pass) => pass.id === selectedPassId) ?? null,
@@ -995,11 +1033,18 @@ export const AdminBattlePassManager = () => {
   }, [selectedPassId]);
 
   const loadManualClaims = useCallback(async () => {
-    const claims = await getAdminBattlePassClaimsAction({
+    const result = await getAdminBattlePassClaimsAction({
       status: "PENDING_FULFILLMENT",
+      page: manualClaimsPage,
+      perPage: MANUAL_CLAIMS_PAGE_SIZE,
     });
-    setManualClaims(claims);
-  }, []);
+    setManualClaims(result.items);
+    setManualClaimsTotal(result.totalItems);
+    setManualClaimsTotalPages(result.totalPages);
+    if (result.currentPage !== manualClaimsPage) {
+      setManualClaimsPage(result.currentPage);
+    }
+  }, [manualClaimsPage]);
 
   const loadManualRewardImages = useCallback(async () => {
     try {
@@ -1035,15 +1080,22 @@ export const AdminBattlePassManager = () => {
     try {
       setError(null);
       showLoading("Cargando pase de batalla...");
-      const [passList, options, claims] = await Promise.all([
+      const [passList, options, claimsResult] = await Promise.all([
         getAdminBattlePassesAction(),
         getBattlePassRewardOptionsAction(),
-        getAdminBattlePassClaimsAction({ status: "PENDING_FULFILLMENT" }),
+        getAdminBattlePassClaimsAction({
+          status: "PENDING_FULFILLMENT",
+          page: 1,
+          perPage: MANUAL_CLAIMS_PAGE_SIZE,
+        }),
       ]);
 
       setPasses(passList);
       setRewardOptions(options);
-      setManualClaims(claims);
+      setManualClaims(claimsResult.items);
+      setManualClaimsTotal(claimsResult.totalItems);
+      setManualClaimsTotalPages(claimsResult.totalPages);
+      setManualClaimsPage(claimsResult.currentPage);
       setSelectedPassId(passList[0]?.id ?? null);
     } catch (err) {
       setError(
@@ -1059,6 +1111,15 @@ export const AdminBattlePassManager = () => {
   useEffect(() => {
     loadInitialData();
   }, [loadInitialData]);
+
+  useEffect(() => {
+    if (skipManualClaimsPageLoadRef.current) {
+      skipManualClaimsPageLoadRef.current = false;
+      return;
+    }
+
+    loadManualClaims();
+  }, [loadManualClaims, manualClaimsPage]);
 
   useEffect(() => {
     loadManualRewardImages();
@@ -1669,7 +1730,7 @@ export const AdminBattlePassManager = () => {
                 : "text-slate-600 hover:text-slate-900 dark:text-[#cfc2d6] dark:hover:text-[#edddf7]",
             )}
           >
-            Entregas en tienda ({manualClaims.length})
+            Entregas en tienda ({manualClaimsTotal})
           </button>
         </div>
 
@@ -1719,6 +1780,10 @@ export const AdminBattlePassManager = () => {
           ) : (
             <DeliveriesPanel
               claims={manualClaims}
+              totalClaims={manualClaimsTotal}
+              currentPage={manualClaimsPage}
+              totalPages={manualClaimsTotalPages}
+              onPageChange={setManualClaimsPage}
               onDeliverClaims={fulfillClaims}
             />
           )}
@@ -1727,6 +1792,10 @@ export const AdminBattlePassManager = () => {
         <div className="hidden xl:block">
           <DeliveriesPanel
             claims={manualClaims}
+            totalClaims={manualClaimsTotal}
+            currentPage={manualClaimsPage}
+            totalPages={manualClaimsTotalPages}
+            onPageChange={setManualClaimsPage}
             onDeliverClaims={fulfillClaims}
           />
         </div>

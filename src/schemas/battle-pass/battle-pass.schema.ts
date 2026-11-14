@@ -164,6 +164,12 @@ export const AdminBattlePassPlayersQuerySchema = z.object({
   query: z.string().trim().max(100).optional().default(""),
 });
 
+export const AdminStoreBattlePassDeliveriesQuerySchema = z.object({
+  page: z.number().int().min(1).optional().default(1),
+  perPage: z.number().int().min(1).max(50).optional().default(20),
+  query: z.string().trim().max(100).optional().default(""),
+});
+
 export const AdminBattlePassProgressAdjustmentSchema = z.object({
   battlePassId: ObjectIdSchema,
   userId: ObjectIdSchema,
@@ -191,6 +197,9 @@ export type ClaimBattlePassRewardInput = z.infer<
 >;
 export type AdminBattlePassPlayersQueryInput = z.infer<
   typeof AdminBattlePassPlayersQuerySchema
+>;
+export type AdminStoreBattlePassDeliveriesQueryInput = z.infer<
+  typeof AdminStoreBattlePassDeliveriesQuerySchema
 >;
 export type AdminBattlePassProgressAdjustmentInput = z.infer<
   typeof AdminBattlePassProgressAdjustmentSchema

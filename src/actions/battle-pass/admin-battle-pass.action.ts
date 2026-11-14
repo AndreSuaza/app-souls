@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import {
   AdminBattlePassPlayersQuerySchema,
+  AdminStoreBattlePassDeliveriesQuerySchema,
   AdminBattlePassProgressAdjustmentSchema,
   BattlePassClaimIdSchema,
   BattlePassIdSchema,
@@ -19,7 +20,7 @@ import {
   type UpsertBattlePassLevelInput,
 } from "@/schemas/battle-pass/battle-pass.schema";
 import { calculateBattlePassProgress } from "@/logic/battle-pass-progress";
-import type { AvatarType, BattlePassClaimStatus, Prisma } from "@prisma/client";
+import type { AvatarType, Prisma } from "@prisma/client";
 import sharp from "sharp";
 import { z } from "zod";
 
@@ -37,6 +38,8 @@ const AdminBattlePassClaimsFiltersSchema = z.object({
     .enum(["ALL", "CLAIMED", "PENDING_FULFILLMENT", "FULFILLED"])
     .optional()
     .default("PENDING_FULFILLMENT"),
+  page: z.number().int().min(1).optional().default(1),
+  perPage: z.number().int().min(1).max(50).optional().default(10),
 });
 
 const FulfillBattlePassClaimsSchema = z.object({
@@ -255,6 +258,82 @@ export type AdminBattlePassClaim = {
     type: string;
   } | null;
 };
+
+export type AdminBattlePassClaimsPage = {
+  items: AdminBattlePassClaim[];
+  totalCount: number;
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  perPage: number;
+};
+
+const adminBattlePassClaimSelect = {
+  id: true,
+  rewardType: true,
+  status: true,
+  claimedAt: true,
+  fulfilledAt: true,
+  victoryPointsAwarded: true,
+  user: {
+    select: {
+      id: true,
+      nickname: true,
+      email: true,
+      name: true,
+      lastname: true,
+    },
+  },
+  battlePass: {
+    select: {
+      id: true,
+      title: true,
+      seasonNumber: true,
+    },
+  },
+  battlePassLevel: {
+    select: {
+      id: true,
+      levelNumber: true,
+      title: true,
+      imageUrl: true,
+      manualRewardLabel: true,
+    },
+  },
+  rewardAvatar: {
+    select: {
+      id: true,
+      name: true,
+      imageUrl: true,
+      type: true,
+    },
+  },
+} satisfies Prisma.BattlePassClaimSelect;
+
+type AdminBattlePassClaimRecord = Prisma.BattlePassClaimGetPayload<{
+  select: typeof adminBattlePassClaimSelect;
+}>;
+
+const mapAdminBattlePassClaim = (
+  claim: AdminBattlePassClaimRecord,
+): AdminBattlePassClaim => ({
+  id: claim.id,
+  rewardType: claim.rewardType,
+  status: claim.status,
+  claimedAt: claim.claimedAt.toISOString(),
+  fulfilledAt: claim.fulfilledAt?.toISOString() ?? null,
+  victoryPointsAwarded: claim.victoryPointsAwarded,
+  user: claim.user,
+  battlePass: claim.battlePass,
+  level: {
+    id: claim.battlePassLevel.id,
+    levelNumber: claim.battlePassLevel.levelNumber,
+    title: claim.battlePassLevel.title,
+    imageUrl: claim.battlePassLevel.imageUrl,
+    manualRewardLabel: claim.battlePassLevel.manualRewardLabel,
+  },
+  rewardAvatar: claim.rewardAvatar,
+});
 
 const normalizeLevelData = async (
   input: UpsertBattlePassLevelInput,
@@ -1087,230 +1166,118 @@ export const getBattlePassRewardOptionsAction = async (): Promise<
   }));
 };
 
-export const getAdminBattlePassClaimsAction = async (input?: {
-  status?: BattlePassClaimStatus | "ALL";
-}): Promise<AdminBattlePassClaim[]> => {
+export const getAdminBattlePassClaimsAction = async (
+  input?: unknown,
+): Promise<AdminBattlePassClaimsPage> => {
   await requireAdmin();
-  const { status } = AdminBattlePassClaimsFiltersSchema.parse(input ?? {});
+  const { status, page, perPage } = AdminBattlePassClaimsFiltersSchema.parse(
+    input ?? {},
+  );
+  const where = status === "ALL" ? {} : { status };
+  const totalItems = await prisma.battlePassClaim.count({ where });
+  const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+  const currentPage = Math.min(page, totalPages);
 
   const claims = await prisma.battlePassClaim.findMany({
-    where: status === "ALL" ? {} : { status },
-    orderBy: { claimedAt: "desc" },
-    take: 100,
-    select: {
-      id: true,
-      rewardType: true,
-      status: true,
-      claimedAt: true,
-      fulfilledAt: true,
-      victoryPointsAwarded: true,
-      user: {
-        select: {
-          id: true,
-          nickname: true,
-          email: true,
-          name: true,
-          lastname: true,
-        },
-      },
-      battlePass: {
-        select: {
-          id: true,
-          title: true,
-          seasonNumber: true,
-        },
-      },
-      battlePassLevel: {
-        select: {
-          id: true,
-          levelNumber: true,
-          title: true,
-          imageUrl: true,
-          manualRewardLabel: true,
-        },
-      },
-      rewardAvatar: {
-        select: {
-          id: true,
-          name: true,
-          imageUrl: true,
-          type: true,
-        },
-      },
-    },
+    where,
+    orderBy: [{ claimedAt: "desc" }, { id: "desc" }],
+    skip: (currentPage - 1) * perPage,
+    take: perPage,
+    select: adminBattlePassClaimSelect,
   });
 
-  return claims.map((claim) => ({
-    id: claim.id,
-    rewardType: claim.rewardType,
-    status: claim.status,
-    claimedAt: claim.claimedAt.toISOString(),
-    fulfilledAt: claim.fulfilledAt?.toISOString() ?? null,
-    victoryPointsAwarded: claim.victoryPointsAwarded,
-    user: claim.user,
-    battlePass: claim.battlePass,
-    level: {
-      id: claim.battlePassLevel.id,
-      levelNumber: claim.battlePassLevel.levelNumber,
-      title: claim.battlePassLevel.title,
-      imageUrl: claim.battlePassLevel.imageUrl,
-      manualRewardLabel: claim.battlePassLevel.manualRewardLabel,
-    },
-    rewardAvatar: claim.rewardAvatar,
-  }));
+  return {
+    items: claims.map(mapAdminBattlePassClaim),
+    totalCount: totalItems,
+    totalItems,
+    totalPages,
+    currentPage,
+    perPage,
+  };
 };
 
-export const getStoreBattlePassDeliveriesAction = async (): Promise<
-  AdminBattlePassClaim[]
-> => {
+export const getStoreBattlePassDeliveriesAction = async (
+  input?: unknown,
+): Promise<AdminBattlePassClaimsPage> => {
   await requireAdmin();
-
-  const claims = await prisma.battlePassClaim.findMany({
-    where: {
-      rewardType: "MANUAL",
-      status: "PENDING_FULFILLMENT",
-      battlePass: {
-        status: { in: ["ACTIVE", "ARCHIVED"] },
-      },
+  const parsed = AdminStoreBattlePassDeliveriesQuerySchema.parse(input ?? {});
+  const searchFilter = buildPlayerSearchFilter(parsed.query);
+  const claimWhere: Prisma.BattlePassClaimWhereInput = {
+    rewardType: "MANUAL",
+    status: "PENDING_FULFILLMENT",
+    battlePass: {
+      status: { in: ["ACTIVE", "ARCHIVED"] },
     },
-    orderBy: { claimedAt: "desc" },
-    take: 100,
-    select: {
-      id: true,
-      rewardType: true,
-      status: true,
-      claimedAt: true,
-      fulfilledAt: true,
-      victoryPointsAwarded: true,
-      user: {
-        select: {
-          id: true,
-          nickname: true,
-          email: true,
-          name: true,
-          lastname: true,
-        },
-      },
-      battlePass: {
-        select: {
-          id: true,
-          title: true,
-          seasonNumber: true,
-        },
-      },
-      battlePassLevel: {
-        select: {
-          id: true,
-          levelNumber: true,
-          title: true,
-          imageUrl: true,
-          manualRewardLabel: true,
-        },
-      },
-      rewardAvatar: {
-        select: {
-          id: true,
-          name: true,
-          imageUrl: true,
-          type: true,
-        },
-      },
+  };
+  const userWhere: Prisma.UserWhereInput = {
+    ...(searchFilter ?? {}),
+    battlePassClaims: { some: claimWhere },
+  };
+  const totalCount = await prisma.user.count({ where: userWhere });
+  const totalItems = await prisma.battlePassClaim.count({
+    where: {
+      ...claimWhere,
+      ...(searchFilter ? { user: searchFilter } : {}),
     },
   });
+  const totalPages = Math.max(1, Math.ceil(totalCount / parsed.perPage));
+  const currentPage = Math.min(parsed.page, totalPages);
+  const users = await prisma.user.findMany({
+    where: userWhere,
+    orderBy: [{ nickname: "asc" }, { id: "asc" }],
+    skip: (currentPage - 1) * parsed.perPage,
+    take: parsed.perPage,
+    select: { id: true },
+  });
+  const userIds = users.map((user) => user.id);
+  const claims = userIds.length
+    ? await prisma.battlePassClaim.findMany({
+        where: { ...claimWhere, userId: { in: userIds } },
+        orderBy: [{ claimedAt: "desc" }, { id: "desc" }],
+        select: adminBattlePassClaimSelect,
+      })
+    : [];
 
-  return claims.map((claim) => ({
-    id: claim.id,
-    rewardType: claim.rewardType,
-    status: claim.status,
-    claimedAt: claim.claimedAt.toISOString(),
-    fulfilledAt: claim.fulfilledAt?.toISOString() ?? null,
-    victoryPointsAwarded: claim.victoryPointsAwarded,
-    user: claim.user,
-    battlePass: claim.battlePass,
-    level: {
-      id: claim.battlePassLevel.id,
-      levelNumber: claim.battlePassLevel.levelNumber,
-      title: claim.battlePassLevel.title,
-      imageUrl: claim.battlePassLevel.imageUrl,
-      manualRewardLabel: claim.battlePassLevel.manualRewardLabel,
-    },
-    rewardAvatar: claim.rewardAvatar,
-  }));
+  return {
+    items: claims.map(mapAdminBattlePassClaim),
+    totalCount,
+    totalItems,
+    totalPages,
+    currentPage,
+    perPage: parsed.perPage,
+  };
 };
 
-export const getStoreBattlePassDeliveryHistoryAction = async (): Promise<
-  AdminBattlePassClaim[]
-> => {
+export const getStoreBattlePassDeliveryHistoryAction = async (
+  input?: unknown,
+): Promise<AdminBattlePassClaimsPage> => {
   await requireAdmin();
-
+  const parsed = AdminStoreBattlePassDeliveriesQuerySchema.parse(input ?? {});
+  const searchFilter = buildPlayerSearchFilter(parsed.query);
+  const where: Prisma.BattlePassClaimWhereInput = {
+    rewardType: "MANUAL",
+    status: "FULFILLED",
+    ...(searchFilter ? { user: searchFilter } : {}),
+  };
+  const totalCount = await prisma.battlePassClaim.count({ where });
+  const totalPages = Math.max(1, Math.ceil(totalCount / parsed.perPage));
+  const currentPage = Math.min(parsed.page, totalPages);
   const claims = await prisma.battlePassClaim.findMany({
-    where: {
-      rewardType: "MANUAL",
-      status: "FULFILLED",
-    },
-    orderBy: { fulfilledAt: "desc" },
-    take: 150,
-    select: {
-      id: true,
-      rewardType: true,
-      status: true,
-      claimedAt: true,
-      fulfilledAt: true,
-      victoryPointsAwarded: true,
-      user: {
-        select: {
-          id: true,
-          nickname: true,
-          email: true,
-          name: true,
-          lastname: true,
-        },
-      },
-      battlePass: {
-        select: {
-          id: true,
-          title: true,
-          seasonNumber: true,
-        },
-      },
-      battlePassLevel: {
-        select: {
-          id: true,
-          levelNumber: true,
-          title: true,
-          imageUrl: true,
-          manualRewardLabel: true,
-        },
-      },
-      rewardAvatar: {
-        select: {
-          id: true,
-          name: true,
-          imageUrl: true,
-          type: true,
-        },
-      },
-    },
+    where,
+    orderBy: [{ fulfilledAt: "desc" }, { id: "desc" }],
+    skip: (currentPage - 1) * parsed.perPage,
+    take: parsed.perPage,
+    select: adminBattlePassClaimSelect,
   });
 
-  return claims.map((claim) => ({
-    id: claim.id,
-    rewardType: claim.rewardType,
-    status: claim.status,
-    claimedAt: claim.claimedAt.toISOString(),
-    fulfilledAt: claim.fulfilledAt?.toISOString() ?? null,
-    victoryPointsAwarded: claim.victoryPointsAwarded,
-    user: claim.user,
-    battlePass: claim.battlePass,
-    level: {
-      id: claim.battlePassLevel.id,
-      levelNumber: claim.battlePassLevel.levelNumber,
-      title: claim.battlePassLevel.title,
-      imageUrl: claim.battlePassLevel.imageUrl,
-      manualRewardLabel: claim.battlePassLevel.manualRewardLabel,
-    },
-    rewardAvatar: claim.rewardAvatar,
-  }));
+  return {
+    items: claims.map(mapAdminBattlePassClaim),
+    totalCount,
+    totalItems: totalCount,
+    totalPages,
+    currentPage,
+    perPage: parsed.perPage,
+  };
 };
 
 export const fulfillBattlePassClaimAction = async (input: unknown) => {

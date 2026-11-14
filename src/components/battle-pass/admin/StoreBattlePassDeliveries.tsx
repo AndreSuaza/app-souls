@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { IoSearchOutline } from "react-icons/io5";
 import {
@@ -9,10 +10,12 @@ import {
   getStoreBattlePassDeliveriesAction,
   getStoreBattlePassDeliveryHistoryAction,
   type AdminBattlePassClaim,
+  type AdminBattlePassClaimsPage,
 } from "@/actions/battle-pass/admin-battle-pass.action";
 import { BattlePassDeliveryGroups } from "./BattlePassDeliveryGroups";
 import { useToastStore, useUIStore } from "@/store";
 import { toAssetStorageUrl } from "@/utils/asset-path";
+import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 
 const formatDate = (value: string | null) =>
   value
@@ -34,28 +37,30 @@ const PENDING_GROUP_PAGE_SIZE = 5;
 
 type DeliveryTab = "pending" | "history";
 
-const matchesPlayerSearch = (claim: AdminBattlePassClaim, query: string) => {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) return true;
-
-  return [
-    claim.user.name,
-    claim.user.lastname,
-    [claim.user.name, claim.user.lastname].filter(Boolean).join(" "),
-    claim.user.nickname,
-    claim.user.email,
-  ].some((value) => value?.toLowerCase().includes(normalizedQuery));
+const EMPTY_PAGE: AdminBattlePassClaimsPage = {
+  items: [],
+  totalCount: 0,
+  totalItems: 0,
+  totalPages: 1,
+  currentPage: 1,
+  perPage: 1,
 };
 
 export const StoreBattlePassDeliveries = () => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const showToast = useToastStore((state) => state.showToast);
 
-  const [deliveries, setDeliveries] = useState<AdminBattlePassClaim[]>([]);
-  const [history, setHistory] = useState<AdminBattlePassClaim[]>([]);
+  const [deliveriesPage, setDeliveriesPage] =
+    useState<AdminBattlePassClaimsPage>(EMPTY_PAGE);
+  const [historyPage, setHistoryPage] =
+    useState<AdminBattlePassClaimsPage>(EMPTY_PAGE);
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [pendingPage, setPendingPage] = useState(1);
+  const [historyPageNumber, setHistoryPageNumber] = useState(1);
   const [activeTab, setActiveTab] = useState<DeliveryTab>("pending");
   const [error, setError] = useState<string | null>(null);
 
@@ -64,11 +69,25 @@ export const StoreBattlePassDeliveries = () => {
       setError(null);
       showLoading("Cargando entregas en tienda...");
       const [nextDeliveries, nextHistory] = await Promise.all([
-        getStoreBattlePassDeliveriesAction(),
-        getStoreBattlePassDeliveryHistoryAction(),
+        getStoreBattlePassDeliveriesAction({
+          page: pendingPage,
+          perPage: PENDING_GROUP_PAGE_SIZE,
+          query: debouncedSearchQuery,
+        }),
+        getStoreBattlePassDeliveryHistoryAction({
+          page: historyPageNumber,
+          perPage: HISTORY_PAGE_SIZE,
+          query: debouncedSearchQuery,
+        }),
       ]);
-      setDeliveries(nextDeliveries);
-      setHistory(nextHistory);
+      setDeliveriesPage(nextDeliveries);
+      setHistoryPage(nextHistory);
+      if (nextDeliveries.currentPage !== pendingPage) {
+        setPendingPage(nextDeliveries.currentPage);
+      }
+      if (nextHistory.currentPage !== historyPageNumber) {
+        setHistoryPageNumber(nextHistory.currentPage);
+      }
     } catch (err) {
       setError(
         err instanceof Error
@@ -78,7 +97,13 @@ export const StoreBattlePassDeliveries = () => {
     } finally {
       hideLoading();
     }
-  }, [hideLoading, showLoading]);
+  }, [
+    debouncedSearchQuery,
+    hideLoading,
+    historyPageNumber,
+    pendingPage,
+    showLoading,
+  ]);
 
   useEffect(() => {
     loadDeliveries();
@@ -86,7 +111,9 @@ export const StoreBattlePassDeliveries = () => {
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      setDebouncedSearchQuery(searchInput);
+      setDebouncedSearchQuery(searchInput.trim());
+      setPendingPage(1);
+      setHistoryPageNumber(1);
     }, 300);
 
     return () => window.clearTimeout(timeout);
@@ -112,13 +139,6 @@ export const StoreBattlePassDeliveries = () => {
     }
   };
 
-  const filteredDeliveries = deliveries.filter((claim) =>
-    matchesPlayerSearch(claim, debouncedSearchQuery),
-  );
-  const filteredHistory = history.filter((claim) =>
-    matchesPlayerSearch(claim, debouncedSearchQuery),
-  );
-
   const tabs: Array<{
     id: DeliveryTab;
     label: string;
@@ -129,13 +149,13 @@ export const StoreBattlePassDeliveries = () => {
       id: "pending",
       label: "Pendientes",
       description: "Agrupadas por jugador para entregar todas o solo algunas.",
-      count: filteredDeliveries.length,
+      count: deliveriesPage.totalItems,
     },
     {
       id: "history",
       label: "Historial de entregas",
       description: "Recompensas de tienda marcadas como entregadas.",
-      count: filteredHistory.length,
+      count: historyPage.totalItems,
     },
   ];
   const selectedTab = tabs.find((tab) => tab.id === activeTab) ?? tabs[0];
@@ -164,10 +184,10 @@ export const StoreBattlePassDeliveries = () => {
           />
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          {filteredDeliveries.length} pendiente
-          {filteredDeliveries.length === 1 ? "" : "s"} ·{" "}
-          {filteredHistory.length} entregada
-          {filteredHistory.length === 1 ? "" : "s"}
+          {deliveriesPage.totalItems} pendiente
+          {deliveriesPage.totalItems === 1 ? "" : "s"} ·{" "}
+          {historyPage.totalItems} entregada
+          {historyPage.totalItems === 1 ? "" : "s"}
         </p>
       </div>
 
@@ -230,37 +250,59 @@ export const StoreBattlePassDeliveries = () => {
 
         {activeTab === "pending" ? (
           <BattlePassDeliveryGroups
-            claims={filteredDeliveries}
+            claims={deliveriesPage.items}
             emptyMessage="No hay entregas en tienda pendientes."
             pageSize={PENDING_GROUP_PAGE_SIZE}
             onDeliverClaims={markSelectedAsDelivered}
           />
         ) : (
-          <DeliveryHistory claims={filteredHistory} />
+          <DeliveryHistory claims={historyPage.items} />
         )}
+
+        <div className="mt-4 flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between dark:text-slate-400">
+          <span>
+            {activeTab === "pending"
+              ? deliveriesPage.totalCount
+              : historyPage.totalItems}{" "}
+            {activeTab === "pending" ? "jugadores" : "entregas"} ·
+            Página{" "}
+            {selectedTab.id === "pending"
+              ? deliveriesPage.currentPage
+              : historyPage.currentPage}{" "}
+            de{" "}
+            {selectedTab.id === "pending"
+              ? deliveriesPage.totalPages
+              : historyPage.totalPages}
+          </span>
+          <PaginationLine
+            totalPages={
+              selectedTab.id === "pending"
+                ? deliveriesPage.totalPages
+                : historyPage.totalPages
+            }
+            currentPage={
+              selectedTab.id === "pending"
+                ? deliveriesPage.currentPage
+                : historyPage.currentPage
+            }
+            searchParams={searchParams}
+            pathname={pathname}
+            onPageChange={(nextPage) => {
+              if (selectedTab.id === "pending") {
+                setPendingPage(nextPage);
+              } else {
+                setHistoryPageNumber(nextPage);
+              }
+            }}
+            className="mt-0 mb-0 w-full sm:flex-1 sm:justify-end"
+          />
+        </div>
       </section>
     </div>
   );
 };
 
 const DeliveryHistory = ({ claims }: { claims: AdminBattlePassClaim[] }) => {
-  const [page, setPage] = useState(1);
-  const pageCount = Math.max(1, Math.ceil(claims.length / HISTORY_PAGE_SIZE));
-  const visibleClaims = claims.slice(
-    (page - 1) * HISTORY_PAGE_SIZE,
-    page * HISTORY_PAGE_SIZE,
-  );
-
-  useEffect(() => {
-    setPage(1);
-  }, [claims.length]);
-
-  useEffect(() => {
-    if (page > pageCount) {
-      setPage(pageCount);
-    }
-  }, [page, pageCount]);
-
   if (claims.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-sm text-slate-500 dark:border-tournament-dark-border dark:text-slate-400">
@@ -273,7 +315,7 @@ const DeliveryHistory = ({ claims }: { claims: AdminBattlePassClaim[] }) => {
     <>
       <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-tournament-dark-border">
         <div className="grid gap-2 p-3 md:hidden">
-          {visibleClaims.map((claim) => (
+          {claims.map((claim) => (
           <article
             key={claim.id}
             className="rounded-xl bg-slate-50 p-3 dark:bg-tournament-dark-muted"
@@ -311,7 +353,7 @@ const DeliveryHistory = ({ claims }: { claims: AdminBattlePassClaim[] }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-tournament-dark-border">
-            {visibleClaims.map((claim) => (
+            {claims.map((claim) => (
               <tr key={claim.id}>
                 <td className="px-3 py-3">
                   <div className="truncate font-semibold text-slate-900 dark:text-white">
@@ -352,50 +394,9 @@ const DeliveryHistory = ({ claims }: { claims: AdminBattlePassClaim[] }) => {
         </table>
       </div>
 
-      {pageCount > 1 && (
-        <PaginationControls
-          page={page}
-          pageCount={pageCount}
-          onPageChange={setPage}
-        />
-      )}
     </>
   );
 };
-
-const PaginationControls = ({
-  page,
-  pageCount,
-  onPageChange,
-}: {
-  page: number;
-  pageCount: number;
-  onPageChange: (page: number) => void;
-}) => (
-  <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-    <p className="text-xs text-slate-500 dark:text-slate-400">
-      Pagina {page} de {pageCount}
-    </p>
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => onPageChange(Math.max(1, page - 1))}
-        disabled={page === 1}
-        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-purple-400 hover:text-purple-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#4d4354] dark:text-[#cfc2d6] dark:hover:text-white"
-      >
-        Anterior
-      </button>
-      <button
-        type="button"
-        onClick={() => onPageChange(Math.min(pageCount, page + 1))}
-        disabled={page === pageCount}
-        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-purple-400 hover:text-purple-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#4d4354] dark:text-[#cfc2d6] dark:hover:text-white"
-      >
-        Siguiente
-      </button>
-    </div>
-  </div>
-);
 
 const RewardThumb = ({ claim }: { claim: AdminBattlePassClaim }) => {
   const image = getRewardImage(claim);
