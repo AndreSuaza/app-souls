@@ -1,16 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoReloadOutline } from "react-icons/io5";
+import { BattlePassPlayerSearch } from "./BattlePassPlayerSearch";
 import {
   fulfillStoreBattlePassDeliveriesAction,
   getStoreBattlePassDeliveriesAction,
   getStoreBattlePassDeliveryHistoryAction,
   type AdminBattlePassClaim,
   type AdminBattlePassClaimsPage,
+  type PendingBattlePassDeliveriesPage,
 } from "@/actions/battle-pass/admin-battle-pass.action";
 import { BattlePassDeliveryGroups } from "./BattlePassDeliveryGroups";
 import { useToastStore, useUIStore } from "@/store";
@@ -54,10 +56,10 @@ export const StoreBattlePassDeliveries = () => {
   const showToast = useToastStore((state) => state.showToast);
 
   const [deliveriesPage, setDeliveriesPage] =
-    useState<AdminBattlePassClaimsPage>(EMPTY_PAGE);
+    useState<PendingBattlePassDeliveriesPage>({ ...EMPTY_PAGE, items: [] });
   const [historyPage, setHistoryPage] =
     useState<AdminBattlePassClaimsPage>(EMPTY_PAGE);
-  const [searchInput, setSearchInput] = useState("");
+  const requestRef = useRef(0);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [pendingPage, setPendingPage] = useState(1);
   const [historyPageNumber, setHistoryPageNumber] = useState(1);
@@ -65,6 +67,7 @@ export const StoreBattlePassDeliveries = () => {
   const [error, setError] = useState<string | null>(null);
 
   const loadDeliveries = useCallback(async () => {
+    const request = ++requestRef.current;
     try {
       setError(null);
       showLoading("Cargando entregas en tienda...");
@@ -80,6 +83,7 @@ export const StoreBattlePassDeliveries = () => {
           query: debouncedSearchQuery,
         }),
       ]);
+      if (request !== requestRef.current) return;
       setDeliveriesPage(nextDeliveries);
       setHistoryPage(nextHistory);
       if (nextDeliveries.currentPage !== pendingPage) {
@@ -89,6 +93,7 @@ export const StoreBattlePassDeliveries = () => {
         setHistoryPageNumber(nextHistory.currentPage);
       }
     } catch (err) {
+      if (request !== requestRef.current) return;
       setError(
         err instanceof Error
           ? err.message
@@ -106,27 +111,49 @@ export const StoreBattlePassDeliveries = () => {
   ]);
 
   useEffect(() => {
-    loadDeliveries();
+    void loadDeliveries();
+    return () => { requestRef.current += 1; };
   }, [loadDeliveries]);
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      setDebouncedSearchQuery(searchInput.trim());
-      setPendingPage(1);
-      setHistoryPageNumber(1);
-    }, 300);
-
-    return () => window.clearTimeout(timeout);
-  }, [searchInput]);
+  const searchPlayers = useCallback((value: string) => {
+    setDebouncedSearchQuery(value);
+    setPendingPage(1);
+    setHistoryPageNumber(1);
+  }, []);
 
   const markSelectedAsDelivered = async (
     userId: string,
-    claimIds: string[],
+    levelIds: string[],
   ) => {
     try {
       showLoading("Marcando entregas...");
-      await fulfillStoreBattlePassDeliveriesAction({ userId, claimIds });
-      await loadDeliveries();
+      const delivered = await fulfillStoreBattlePassDeliveriesAction({ userId, levelIds });
+      requestRef.current += 1;
+      setDeliveriesPage((current) => {
+        const items = current.items.filter((item) => item.user.id !== userId || !delivered.levelIds.includes(item.level.id));
+        const removed = current.items.length - items.length;
+        const totalCount = current.totalCount - (removed > 0 && !items.some((item) => item.user.id === userId) ? 1 : 0);
+        return {
+          ...current, items, totalCount,
+          totalItems: Math.max(0, current.totalItems - removed),
+          // Conserva la página visible hasta que el admin navegue o actualice.
+          totalPages: Math.max(current.currentPage, Math.ceil(totalCount / PENDING_GROUP_PAGE_SIZE)),
+        };
+      });
+      setHistoryPage((current) => {
+        const existingIds = new Set(current.items.map((item) => item.id));
+        const added = delivered.items.filter((item) =>
+          delivered.newlyFulfilledLevelIds.includes(item.level.id) && !existingIds.has(item.id),
+        );
+        const totalItems = current.totalItems + added.length;
+        return {
+          ...current, totalItems, totalCount: totalItems,
+          totalPages: Math.max(1, Math.ceil(totalItems / HISTORY_PAGE_SIZE)),
+          items: current.currentPage === 1
+            ? [...added, ...current.items].sort((a, b) => (b.fulfilledAt ?? "").localeCompare(a.fulfilledAt ?? "")).slice(0, HISTORY_PAGE_SIZE)
+            : current.items,
+        };
+      });
       showToast("Entregas marcadas como entregadas.", "success");
     } catch (err) {
       showToast(
@@ -167,22 +194,22 @@ export const StoreBattlePassDeliveries = () => {
           Entregas en tienda
         </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Reclamos pendientes de recompensas fisicas de pases activos o
+          Recompensas físicas pendientes de pases activos o
           finalizados.
         </p>
       </header>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-sm">
-          <IoSearchOutline className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-          <input
-            type="search"
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="Buscar jugador"
-            className="w-full rounded-lg border border-tournament-dark-accent bg-white py-2 pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-purple-600 focus:ring-1 focus:ring-purple-600/30 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-white dark:placeholder:text-slate-500"
-          />
-        </div>
+        <BattlePassPlayerSearch onSearch={searchPlayers} />
+        <button
+          type="button"
+          onClick={() => void loadDeliveries()}
+          aria-label="Actualizar entregas"
+          title="Actualizar entregas"
+          className="inline-flex items-center justify-center rounded-lg border border-slate-300 p-2 text-slate-700 dark:border-[#4d4354] dark:text-[#cfc2d6]"
+        >
+          <IoReloadOutline className="h-4 w-4" aria-hidden="true" />
+        </button>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           {deliveriesPage.totalItems} pendiente
           {deliveriesPage.totalItems === 1 ? "" : "s"} ·{" "}

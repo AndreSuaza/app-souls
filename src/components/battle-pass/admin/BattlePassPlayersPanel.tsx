@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { IoSearchOutline } from "react-icons/io5";
+import { BattlePassPlayerSearch } from "./BattlePassPlayerSearch";
+import { BattlePassDeliveryGroups } from "./BattlePassDeliveryGroups";
 import {
   adjustAdminBattlePassPlayerProgressAction,
   getAdminBattlePassPlayersAction,
+  fulfillStoreBattlePassDeliveriesAction,
   type AdminBattlePassPlayerProgress,
   type AdminBattlePassPlayersResult,
 } from "@/actions/battle-pass/admin-battle-pass.action";
@@ -58,7 +60,7 @@ export const BattlePassPlayersPanel = ({
   const [result, setResult] = useState<AdminBattlePassPlayersResult>(
     EMPTY_RESULT,
   );
-  const [searchInput, setSearchInput] = useState("");
+  const requestRef = useRef(0);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [reason, setReason] = useState("");
@@ -66,6 +68,7 @@ export const BattlePassPlayersPanel = ({
   const [error, setError] = useState<string | null>(null);
 
   const loadPlayers = useCallback(async () => {
+    const request = ++requestRef.current;
     if (!battlePassId) {
       setResult(EMPTY_RESULT);
       return;
@@ -81,33 +84,54 @@ export const BattlePassPlayersPanel = ({
         query,
         perPage: 20,
       });
+      if (request !== requestRef.current) return;
       setResult(nextResult);
       if (nextResult.currentPage !== page) {
         setPage(nextResult.currentPage);
       }
     } catch (loadError) {
+      if (request !== requestRef.current) return;
       setError(
         loadError instanceof Error
           ? loadError.message
           : "No se pudo cargar el progreso de los jugadores.",
       );
     } finally {
-      setLoading(false);
+      if (request === requestRef.current) setLoading(false);
     }
   }, [battlePassId, page, query]);
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setQuery(searchInput.trim());
-      setPage(1);
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchInput]);
-
-  useEffect(() => {
-    loadPlayers();
+    void loadPlayers();
+    return () => { requestRef.current += 1; };
   }, [loadPlayers]);
+
+  const searchPlayers = useCallback((value: string) => {
+    setQuery(value);
+    setPage(1);
+  }, []);
+
+  const deliverRewards = async (userId: string, levelIds: string[]) => {
+    try {
+      showLoading("Registrando entrega...");
+      const delivered = await fulfillStoreBattlePassDeliveriesAction({ userId, levelIds });
+      requestRef.current += 1;
+      setResult((current) => ({
+        ...current,
+        items: current.items.map((item) => item.user.id !== userId ? item : ({
+          ...item,
+          claimedLevels: item.claimedLevels + delivered.newlyClaimedLevelIds.length,
+          pendingDeliveries: item.pendingDeliveries.filter((reward) => !delivered.levelIds.includes(reward.level.id)),
+        })),
+      }));
+      showToast("Recompensas entregadas.", "success");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "No se pudo registrar la entrega.", "error");
+      throw error;
+    } finally {
+      hideLoading();
+    }
+  };
 
   const requestAdjustment = (item: AdminBattlePassPlayerProgress, amount: 1 | -1) => {
     if (!battlePassId) return;
@@ -166,15 +190,7 @@ export const BattlePassPlayersPanel = ({
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#988d9f]">
               Buscar jugador
             </label>
-            <div className="relative">
-              <IoSearchOutline className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#988d9f]" />
-              <input
-                value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
-                placeholder="Nickname, nombre o email"
-                className={`${inputClassName} pl-9`}
-              />
-            </div>
+            <BattlePassPlayerSearch onSearch={searchPlayers} />
           </div>
         </div>
 
@@ -280,6 +296,14 @@ export const BattlePassPlayersPanel = ({
                       + escalón
                     </button>
                   </div>
+                </div>
+                <div className="mt-4">
+                  <h3 className="mb-2 text-sm font-semibold text-slate-700 dark:text-[#edddf7]">Recompensas físicas por entregar</h3>
+                  <BattlePassDeliveryGroups
+                    claims={item.pendingDeliveries}
+                    emptyMessage="No hay recompensas físicas pendientes en el nivel actual."
+                    onDeliverClaims={deliverRewards}
+                  />
                 </div>
               </article>
             ))}

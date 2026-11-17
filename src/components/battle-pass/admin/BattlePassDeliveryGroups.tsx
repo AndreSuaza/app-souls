@@ -8,20 +8,20 @@ import {
   IoCloseOutline,
   IoGiftOutline,
 } from "react-icons/io5";
-import type { AdminBattlePassClaim } from "@/actions/battle-pass/admin-battle-pass.action";
+import type { PendingBattlePassDelivery } from "@/actions/battle-pass/admin-battle-pass.action";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { toAssetStorageUrl } from "@/utils/asset-path";
 
 type Props = {
-  claims: AdminBattlePassClaim[];
+  claims: PendingBattlePassDelivery[];
   emptyMessage?: string;
   pageSize?: number;
-  onDeliverClaims: (userId: string, claimIds: string[]) => Promise<void>;
+  onDeliverClaims: (userId: string, levelIds: string[]) => Promise<void>;
 };
 
 type ClaimGroup = {
-  user: AdminBattlePassClaim["user"];
-  claims: AdminBattlePassClaim[];
+  user: PendingBattlePassDelivery["user"];
+  claims: PendingBattlePassDelivery[];
 };
 
 const formatDate = (value: string) =>
@@ -31,10 +31,10 @@ const formatDate = (value: string) =>
     year: "numeric",
   }).format(new Date(value));
 
-const getRewardName = (claim: AdminBattlePassClaim) =>
+const getRewardName = (claim: PendingBattlePassDelivery) =>
   claim.level.manualRewardLabel || claim.level.title;
 
-const getRewardImage = (claim: AdminBattlePassClaim) =>
+const getRewardImage = (claim: PendingBattlePassDelivery) =>
   claim.level.imageUrl || claim.rewardAvatar?.imageUrl || "";
 
 export const BattlePassDeliveryGroups = ({
@@ -89,7 +89,7 @@ export const BattlePassDeliveryGroups = ({
 
   const openGroup = (group: ClaimGroup) => {
     setActiveGroup(group);
-    setSelectedIds(group.claims.map((claim) => claim.id));
+    setSelectedIds(group.claims.map((claim) => claim.level.id));
   };
 
   const closeGroup = () => {
@@ -153,6 +153,11 @@ export const BattlePassDeliveryGroups = ({
                   <p className="truncate text-xs text-slate-500 dark:text-[#cfc2d6]">
                     {fullName}
                   </p>
+                  {Array.from(new Map(group.claims.map((claim) => [claim.battlePass.id, claim])).values()).map((claim) => (
+                    <p key={claim.battlePass.id} className="mt-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                      {claim.battlePass.title} · T{claim.battlePass.seasonNumber} · Niveles {claim.progress}/{claim.maxLevel}
+                    </p>
+                  ))}
                   <p className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-200">
                     {group.claims.length} recompensa
                     {group.claims.length === 1 ? "" : "s"} pendiente
@@ -173,7 +178,7 @@ export const BattlePassDeliveryGroups = ({
               <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {group.claims.slice(0, 6).map((claim) => (
                   <div
-                    key={claim.id}
+                    key={claim.level.id}
                     className="flex min-w-0 items-center gap-2 rounded-lg bg-white p-2 text-xs text-slate-600 dark:bg-[#130a1c] dark:text-[#cfc2d6]"
                   >
                     <RewardImage claim={claim} />
@@ -256,11 +261,11 @@ export const BattlePassDeliveryGroups = ({
 
             <div className="max-h-[52dvh] space-y-2 overflow-y-auto p-5">
               {activeGroup.claims.map((claim) => {
-                const checked = selectedIds.includes(claim.id);
+                const checked = selectedIds.includes(claim.level.id);
 
                 return (
                   <label
-                    key={claim.id}
+                    key={claim.level.id}
                     className={clsx(
                       "grid cursor-pointer grid-cols-[auto_52px_minmax(0,1fr)] items-center gap-3 rounded-xl border p-3 transition",
                       checked
@@ -271,7 +276,7 @@ export const BattlePassDeliveryGroups = ({
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => toggleClaim(claim.id)}
+                      onChange={() => toggleClaim(claim.level.id)}
                       className="h-4 w-4 accent-emerald-500"
                     />
                     <RewardImage claim={claim} size="large" />
@@ -285,7 +290,7 @@ export const BattlePassDeliveryGroups = ({
                         {claim.battlePass.seasonNumber}
                       </p>
                       <p className="mt-1 text-xs text-slate-500 dark:text-[#988d9f]">
-                        Reclamado el {formatDate(claim.claimedAt)}
+                        {claim.claimedAt ? `Reclamado el ${formatDate(claim.claimedAt)}` : "Disponible por nivel alcanzado"}
                       </p>
                     </div>
                   </label>
@@ -322,7 +327,7 @@ const RewardImage = ({
   claim,
   size = "normal",
 }: {
-  claim: AdminBattlePassClaim;
+  claim: PendingBattlePassDelivery;
   size?: "normal" | "large";
 }) => {
   const image = getRewardImage(claim);

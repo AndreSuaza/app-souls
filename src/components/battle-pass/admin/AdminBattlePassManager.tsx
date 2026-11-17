@@ -17,6 +17,7 @@ import {
   IoImagesOutline,
   IoMedalOutline,
   IoPeopleOutline,
+  IoReloadOutline,
   IoStorefrontOutline,
   IoTrashOutline,
   IoTrophyOutline,
@@ -26,14 +27,14 @@ import {
   deleteBattlePassAction,
   deleteBattlePassLevelAction,
   fulfillStoreBattlePassDeliveriesAction,
-  getAdminBattlePassClaimsAction,
+  getStoreBattlePassDeliveriesAction,
   getAdminBattlePassDetailAction,
   getAdminBattlePassesAction,
   getBattlePassRewardOptionsAction,
   reorderBattlePassLevelsAction,
   upsertBattlePassWithBackgroundAction,
   upsertBattlePassLevelWithImageAction,
-  type AdminBattlePassClaim,
+  type PendingBattlePassDelivery,
   type AdminBattlePassDetail,
   type AdminBattlePassLevel,
   type AdminBattlePassListItem,
@@ -41,6 +42,7 @@ import {
 } from "@/actions/battle-pass/admin-battle-pass.action";
 import { getMediaImagesAction } from "@/actions/media/get-media-images.action";
 import { BattlePassDeliveryGroups } from "./BattlePassDeliveryGroups";
+import { BattlePassPlayerSearch } from "./BattlePassPlayerSearch";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { AVATAR_AVAILABILITIES, AVATAR_RARITIES } from "@/models/avatar.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
@@ -99,12 +101,14 @@ type PassSummaryPanelProps = {
 };
 
 type DeliveriesPanelProps = {
-  claims: AdminBattlePassClaim[];
+  claims: PendingBattlePassDelivery[];
   totalClaims: number;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onDeliverClaims: (userId: string, claimIds: string[]) => Promise<void>;
+  onSearch: (query: string) => void;
+  onRefresh: () => Promise<void>;
+  onDeliverClaims: (userId: string, levelIds: string[]) => Promise<void>;
 };
 
 type LevelsPanelProps = {
@@ -729,6 +733,8 @@ const DeliveriesPanel = ({
   currentPage,
   totalPages,
   onPageChange,
+  onSearch,
+  onRefresh,
   onDeliverClaims,
 }: DeliveriesPanelProps) => {
   const pathname = usePathname();
@@ -749,18 +755,22 @@ const DeliveriesPanel = ({
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
-          <span className="rounded-lg bg-[#3b3144] px-3 py-1 text-xs font-black uppercase text-[#ddb8ff]">
+          <button
+            type="button"
+            onClick={() => void onRefresh()}
+            aria-label="Actualizar entregas"
+            title="Actualizar entregas"
+            className="inline-flex items-center justify-center rounded-lg bg-[#302639] p-2 text-[#ddb7ff] transition hover:bg-[#3b3144]"
+          >
+            <IoReloadOutline className="h-4 w-4" aria-hidden="true" />
+          </button>
+          <span className="inline-flex items-center justify-center rounded-lg bg-[#3b3144] px-3 py-1 text-xs font-black uppercase text-[#ddb8ff]">
             {totalClaims} pendientes
           </span>
-          <Link
-            href="/admin/pase-batalla/entregas-tienda"
-            className="inline-flex items-center justify-center rounded-lg bg-[#302639] px-3 py-1 text-xs font-bold uppercase text-[#ddb7ff] transition hover:bg-[#3b3144]"
-          >
-            Vista tienda
-          </Link>
         </div>
       </div>
 
+      <div className="mb-4"><BattlePassPlayerSearch onSearch={onSearch} /></div>
       <BattlePassDeliveryGroups
         claims={claims}
         pageSize={MANUAL_CLAIMS_PAGE_SIZE}
@@ -896,9 +906,12 @@ export const AdminBattlePassManager = () => {
   const [passBackgroundImages, setPassBackgroundImages] = useState<string[]>(
     [],
   );
-  const [manualClaims, setManualClaims] = useState<AdminBattlePassClaim[]>([]);
+  const [manualClaims, setManualClaims] = useState<PendingBattlePassDelivery[]>([]);
   const [manualClaimsPage, setManualClaimsPage] = useState(1);
+  const [deliveryQuery, setDeliveryQuery] = useState("");
+  const deliveryRequestRef = useRef(0);
   const [manualClaimsTotal, setManualClaimsTotal] = useState(0);
+  const [deliveryPlayersTotal, setDeliveryPlayersTotal] = useState(0);
   const [manualClaimsTotalPages, setManualClaimsTotalPages] = useState(1);
   const [levelItems, setLevelItems] = useState<AdminBattlePassLevel[]>([]);
   const [passForm, setPassForm] = useState<PassFormState>(EMPTY_PASS_FORM);
@@ -929,7 +942,6 @@ export const AdminBattlePassManager = () => {
 
   const latestOrderRef = useRef<AdminBattlePassLevel[]>([]);
   const savedOrderRef = useRef("");
-  const skipManualClaimsPageLoadRef = useRef(true);
 
   const selectedPass = useMemo(
     () => passes.find((pass) => pass.id === selectedPassId) ?? null,
@@ -1033,18 +1045,28 @@ export const AdminBattlePassManager = () => {
   }, [selectedPassId]);
 
   const loadManualClaims = useCallback(async () => {
-    const result = await getAdminBattlePassClaimsAction({
-      status: "PENDING_FULFILLMENT",
-      page: manualClaimsPage,
-      perPage: MANUAL_CLAIMS_PAGE_SIZE,
-    });
-    setManualClaims(result.items);
-    setManualClaimsTotal(result.totalItems);
-    setManualClaimsTotalPages(result.totalPages);
-    if (result.currentPage !== manualClaimsPage) {
-      setManualClaimsPage(result.currentPage);
+    const request = ++deliveryRequestRef.current;
+    try {
+      const result = await getStoreBattlePassDeliveriesAction({
+        query: deliveryQuery, page: manualClaimsPage, perPage: MANUAL_CLAIMS_PAGE_SIZE,
+      });
+      if (request !== deliveryRequestRef.current) return;
+      setManualClaims(result.items);
+      setManualClaimsTotal(result.totalItems);
+      setDeliveryPlayersTotal(result.totalCount);
+      setManualClaimsTotalPages(result.totalPages);
+      if (result.currentPage !== manualClaimsPage) setManualClaimsPage(result.currentPage);
+    } catch (error) {
+      if (request === deliveryRequestRef.current) {
+        showToast(error instanceof Error ? error.message : "No se pudieron cargar las entregas.", "error");
+      }
     }
-  }, [manualClaimsPage]);
+  }, [deliveryQuery, manualClaimsPage, showToast]);
+
+  const searchDeliveryPlayers = useCallback((query: string) => {
+    setDeliveryQuery(query);
+    setManualClaimsPage(1);
+  }, []);
 
   const loadManualRewardImages = useCallback(async () => {
     try {
@@ -1080,22 +1102,13 @@ export const AdminBattlePassManager = () => {
     try {
       setError(null);
       showLoading("Cargando pase de batalla...");
-      const [passList, options, claimsResult] = await Promise.all([
+      const [passList, options] = await Promise.all([
         getAdminBattlePassesAction(),
         getBattlePassRewardOptionsAction(),
-        getAdminBattlePassClaimsAction({
-          status: "PENDING_FULFILLMENT",
-          page: 1,
-          perPage: MANUAL_CLAIMS_PAGE_SIZE,
-        }),
       ]);
 
       setPasses(passList);
       setRewardOptions(options);
-      setManualClaims(claimsResult.items);
-      setManualClaimsTotal(claimsResult.totalItems);
-      setManualClaimsTotalPages(claimsResult.totalPages);
-      setManualClaimsPage(claimsResult.currentPage);
       setSelectedPassId(passList[0]?.id ?? null);
     } catch (err) {
       setError(
@@ -1113,13 +1126,9 @@ export const AdminBattlePassManager = () => {
   }, [loadInitialData]);
 
   useEffect(() => {
-    if (skipManualClaimsPageLoadRef.current) {
-      skipManualClaimsPageLoadRef.current = false;
-      return;
-    }
-
-    loadManualClaims();
-  }, [loadManualClaims, manualClaimsPage]);
+    void loadManualClaims();
+    return () => { deliveryRequestRef.current += 1; };
+  }, [loadManualClaims]);
 
   useEffect(() => {
     loadManualRewardImages();
@@ -1541,11 +1550,46 @@ export const AdminBattlePassManager = () => {
     });
   };
 
-  const fulfillClaims = async (userId: string, claimIds: string[]) => {
+  const fulfillClaims = async (userId: string, levelIds: string[]) => {
     try {
       showLoading("Marcando recompensas...");
-      await fulfillStoreBattlePassDeliveriesAction({ userId, claimIds });
-      await Promise.all([loadManualClaims(), loadDetail()]);
+      const delivered = await fulfillStoreBattlePassDeliveriesAction({ userId, levelIds });
+      deliveryRequestRef.current += 1;
+      const removed = manualClaims.filter((item) => item.user.id === userId && delivered.levelIds.includes(item.level.id));
+      setManualClaims((current) => current.filter((item) => item.user.id !== userId || !delivered.levelIds.includes(item.level.id)));
+      setManualClaimsTotal((current) => Math.max(0, current - removed.length));
+      const userStillPending = manualClaims.some((item) => item.user.id === userId && !delivered.levelIds.includes(item.level.id));
+      const playersTotal = Math.max(0, deliveryPlayersTotal - (removed.length > 0 && !userStillPending ? 1 : 0));
+      setDeliveryPlayersTotal(playersTotal);
+      setManualClaimsTotalPages(Math.max(manualClaimsPage, Math.ceil(playersTotal / MANUAL_CLAIMS_PAGE_SIZE)));
+      const updateLevelClaims = (levels: AdminBattlePassLevel[]) => levels.map((level) => ({
+        ...level,
+        claimsCount: level.claimsCount + (delivered.newlyClaimedLevelIds.includes(level.id) ? 1 : 0),
+      }));
+      setLevelItems(updateLevelClaims);
+      setPasses((current) => current.map((pass) => ({
+        ...pass,
+        claimsCount: pass.claimsCount + delivered.items.filter((item) =>
+          item.battlePass.id === pass.id && delivered.newlyClaimedLevelIds.includes(item.level.id),
+        ).length,
+      })));
+      setDetail((current) => {
+        if (!current) return current;
+        const passItems = removed.filter((item) => item.battlePass.id === current.id);
+        const newClaims = passItems.filter((item) => delivered.newlyClaimedLevelIds.includes(item.level.id)).length;
+        const claimsCount = current.claimsCount + newClaims;
+        const possibleClaims = current.stats.playersWithProgress * current.levels.length;
+        return {
+          ...current,
+          claimsCount,
+          levels: updateLevelClaims(current.levels),
+          stats: {
+            ...current.stats,
+            pendingStoreDeliveriesCount: Math.max(0, current.stats.pendingStoreDeliveriesCount - passItems.length),
+            claimRatioPercent: possibleClaims > 0 ? Math.min(100, Math.round(claimsCount / possibleClaims * 100)) : 0,
+          },
+        };
+      });
       showToast("Recompensas marcadas como entregadas.", "success");
     } catch (err) {
       showToast(
@@ -1784,6 +1828,8 @@ export const AdminBattlePassManager = () => {
               currentPage={manualClaimsPage}
               totalPages={manualClaimsTotalPages}
               onPageChange={setManualClaimsPage}
+              onSearch={searchDeliveryPlayers}
+              onRefresh={loadManualClaims}
               onDeliverClaims={fulfillClaims}
             />
           )}
@@ -1796,7 +1842,9 @@ export const AdminBattlePassManager = () => {
             currentPage={manualClaimsPage}
             totalPages={manualClaimsTotalPages}
             onPageChange={setManualClaimsPage}
-            onDeliverClaims={fulfillClaims}
+            onSearch={searchDeliveryPlayers}
+              onRefresh={loadManualClaims}
+              onDeliverClaims={fulfillClaims}
           />
         </div>
       </div>

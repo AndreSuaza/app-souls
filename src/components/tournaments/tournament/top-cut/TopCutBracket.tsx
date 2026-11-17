@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import Link from "next/link";
 import { FiMaximize2 } from "react-icons/fi";
@@ -305,12 +305,14 @@ const TopCutMatch = ({
   players,
   placeholder,
   compact,
+  expanded = false,
   editable = false,
 }: {
   match?: MatchInterface;
   players: TournamentPlayerInterface[];
   placeholder: string;
   compact?: boolean;
+  expanded?: boolean;
   editable?: boolean;
 }) => {
   const player1Display = getPlayerDisplay(
@@ -340,7 +342,11 @@ const TopCutMatch = ({
       <div
         className={clsx(
           "grid grid-cols-[minmax(0,1fr)_44px] text-sm",
-          compact ? "min-h-[74px]" : "min-h-[92px]",
+          compact
+            ? "min-h-[74px]"
+            : expanded
+              ? "min-h-[112px]"
+              : "min-h-[92px]",
         )}
       >
         <div className="divide-y divide-slate-200 dark:divide-tournament-dark-border">
@@ -387,6 +393,8 @@ export const TopCutBracket = ({
     "idle",
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const bracketViewportRef = useRef<HTMLDivElement | null>(null);
+  const [availableBracketWidth, setAvailableBracketWidth] = useState(0);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
@@ -417,7 +425,15 @@ export const TopCutBracket = ({
     1,
     Math.ceil((stages[0]?.positions.length ?? 1) / 2),
   );
-  const matchHeight = compact ? 74 : 92;
+  // En pantalla completa los brackets cortos tienen espacio suficiente para
+  // hacer los matches más legibles. Los brackets grandes conservan el tamaño
+  // compacto para no forzar desplazamiento vertical innecesario.
+  const canExpandMatches =
+    !compact &&
+    !needsDesktopHorizontalScroll &&
+    (initialEliminationRound?.bracketSize ?? 8) <= 8 &&
+    availableBracketWidth >= 820;
+  const matchHeight = compact ? 74 : canExpandMatches ? 112 : 92;
   const matchGap = 12;
   const championId = getBracketChampionId(rounds, bracketType);
   const champion = championId
@@ -444,6 +460,17 @@ export const TopCutBracket = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    const viewport = bracketViewportRef.current;
+    if (!viewport) return;
+
+    const updateWidth = () => setAvailableBracketWidth(viewport.clientWidth);
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(viewport);
+    return () => observer.disconnect();
   }, [isFullscreen]);
 
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
@@ -535,7 +562,12 @@ export const TopCutBracket = ({
         fullscreen && "flex h-full flex-col",
       )}
     >
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div
+        className={clsx(
+          "mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between",
+          fullscreen && "pr-16",
+        )}
+      >
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-600 dark:text-amber-300">
             {bracketType === "elimination" ? "Eliminación directa" : "Top 8"}
@@ -582,17 +614,21 @@ export const TopCutBracket = ({
       </div>
 
       <div
+        ref={bracketViewportRef}
         className={clsx(
           "w-full min-w-0 max-w-full overscroll-x-contain pb-2",
           fullscreen ? "min-h-0 flex-1 overflow-auto" : "overflow-x-auto",
         )}
       >
         <div
+          className={fullscreen ? "flex min-h-full w-max min-w-full items-start justify-center" : undefined}
+        >
+        <div
           className={clsx(
             "inline-grid w-max items-center gap-4 align-middle",
             bracketMinWidthClass,
             !needsDesktopHorizontalScroll && !fullscreen && "lg:w-full lg:min-w-0",
-            fullscreen && !needsDesktopHorizontalScroll && "w-full min-w-0",
+            fullscreen && "shrink-0",
           )}
           style={{
             gridTemplateColumns: `repeat(${Math.max(bracketColumns.length, 1)}, minmax(0, 1fr))`,
@@ -650,6 +686,7 @@ export const TopCutBracket = ({
                         players={players}
                         placeholder={getPlaceholder(stage, position, bracketSize)}
                         compact={compact}
+                        expanded={canExpandMatches}
                         editable={canEdit && round?.id === editableRound?.id}
                       />
 
@@ -680,6 +717,7 @@ export const TopCutBracket = ({
               );
             },
           )}
+        </div>
         </div>
       </div>
     </section>

@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { calculateBattlePassProgress } from "@/logic/battle-pass-progress";
+import { calculateBattlePassProgress, isPhysicalRewardPending } from "@/logic/battle-pass-progress";
 import {
   ClaimBattlePassRewardSchema,
   type ClaimBattlePassRewardInput,
@@ -218,8 +218,14 @@ const mapLevel = ({
   manualRewardLabel: level.manualRewardLabel,
   rewardAvatar: mapRewardAvatar(level.rewardAvatar),
   unlocked: level.levelNumber <= progress,
-  claimed: Boolean(claim),
-  claimStatus: claim?.status ?? null,
+  claimed: level.rewardType === "MANUAL" ? claim?.status === "FULFILLED" : Boolean(claim),
+  claimStatus: level.rewardType === "MANUAL"
+    ? claim?.status === "FULFILLED"
+      ? "FULFILLED"
+      : isPhysicalRewardPending({ ...level, progress, claimStatus: claim?.status })
+        ? "PENDING_FULFILLMENT"
+        : null
+    : claim?.status ?? null,
 });
 
 const findActiveBattlePass = async (now: Date) =>
@@ -357,6 +363,10 @@ export const claimBattlePassRewardAction = async (
     throw new Error("Aun no has desbloqueado esta recompensa.");
   }
 
+  if (level.rewardType === "MANUAL") {
+    throw new Error("Esta recompensa queda pendiente de entrega automáticamente al alcanzar su nivel.");
+  }
+
   const result = await prisma.$transaction(async (tx) => {
     const existingClaim = await tx.battlePassClaim.findFirst({
       where: {
@@ -373,7 +383,7 @@ export const claimBattlePassRewardAction = async (
     }
 
     let nextVictoryPoints = user.victoryPoints ?? 0;
-    let status: "CLAIMED" | "PENDING_FULFILLMENT" = "CLAIMED";
+    const status = "CLAIMED" as const;
 
     if (level.rewardType === "AVATAR" || level.rewardType === "BANNER") {
       if (!level.rewardAvatarId || !level.rewardAvatar) {
@@ -436,10 +446,6 @@ export const claimBattlePassRewardAction = async (
       nextVictoryPoints = updated.victoryPoints ?? nextVictoryPoints;
     }
 
-    if (level.rewardType === "MANUAL") {
-      status = "PENDING_FULFILLMENT";
-    }
-
     await tx.battlePassClaim.create({
       data: {
         userId: user.id,
@@ -495,7 +501,7 @@ export const claimAllBattlePassRewardsAction =
       ),
     });
     const unlockedLevels = pass.levels.filter(
-      (level) => level.levelNumber <= progress,
+      (level) => level.rewardType !== "MANUAL" && level.levelNumber <= progress,
     );
 
     if (unlockedLevels.length === 0) {
@@ -525,7 +531,7 @@ export const claimAllBattlePassRewardsAction =
       for (const level of unlockedLevels) {
         if (existingLevelIds.has(level.id)) continue;
 
-        let status: "CLAIMED" | "PENDING_FULFILLMENT" = "CLAIMED";
+        const status = "CLAIMED" as const;
         let pvAwarded: number | null = null;
 
         if (level.rewardType === "AVATAR" || level.rewardType === "BANNER") {
@@ -583,10 +589,6 @@ export const claimAllBattlePassRewardsAction =
           });
           nextVictoryPoints = updated.victoryPoints ?? nextVictoryPoints;
           pvAwarded = points;
-        }
-
-        if (level.rewardType === "MANUAL") {
-          status = "PENDING_FULFILLMENT";
         }
 
         await tx.battlePassClaim.create({
@@ -679,7 +681,7 @@ export const syncEndedBattlePassRewardsAction =
         ),
       });
       const unlockedLevels = pass.levels.filter(
-        (level) => level.levelNumber <= progress,
+        (level) => level.rewardType !== "MANUAL" && level.levelNumber <= progress,
       );
 
       if (unlockedLevels.length === 0) continue;
@@ -707,7 +709,7 @@ export const syncEndedBattlePassRewardsAction =
         for (const level of unlockedLevels) {
           if (existingLevelIds.has(level.id)) continue;
 
-          let status: "CLAIMED" | "PENDING_FULFILLMENT" = "CLAIMED";
+          const status = "CLAIMED" as const;
           let pvAwarded: number | null = null;
 
           if (level.rewardType === "AVATAR" || level.rewardType === "BANNER") {
@@ -765,10 +767,6 @@ export const syncEndedBattlePassRewardsAction =
             });
             pvAwarded = points;
             passAwardedPv += points;
-          }
-
-          if (level.rewardType === "MANUAL") {
-            status = "PENDING_FULFILLMENT";
           }
 
           await tx.battlePassClaim.create({

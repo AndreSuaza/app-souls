@@ -23,7 +23,7 @@ import {
   type SyncedBattlePassReward,
 } from "@/actions/battle-pass/player-battle-pass.action";
 import { BattlePassSyncedRewardsOverlay } from "@/components/battle-pass/BattlePassSyncedRewardsOverlay";
-import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { useToastStore, useUIStore } from "@/store";
 import { toAssetStorageUrl } from "@/utils/asset-path";
 
 type Props = {
@@ -107,52 +107,6 @@ const getBadgeClassName = (level: PlayerBattlePassLevel) =>
       "border-[#4edea3]/50 bg-emerald-500/15 text-[#4edea3]",
   );
 
-const RewardClaimPreview = ({ level }: { level: PlayerBattlePassLevel }) => {
-  const image = getRewardImage(level);
-
-  return (
-    <div className="mx-auto grid max-w-[17rem] justify-items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center dark:border-tournament-dark-border dark:bg-tournament-dark-muted">
-      <div
-        className={clsx(
-          "relative flex items-center justify-center overflow-hidden bg-[#130a1c]",
-          level.rewardType === "BANNER"
-            ? "h-24 w-full rounded-lg"
-            : level.rewardType === "AVATAR"
-              ? "h-24 w-24 rounded-full"
-              : "h-24 w-24 rounded-xl",
-        )}
-      >
-        {image ? (
-          <Image
-            src={toAssetStorageUrl(image)}
-            alt={rewardLabel(level)}
-            fill
-            sizes="272px"
-            className={clsx(
-              level.rewardType === "PV"
-                ? "object-contain p-2"
-                : "object-cover object-center",
-            )}
-          />
-        ) : (
-          <IoGiftOutline className="h-10 w-10 text-[#ddb7ff]" />
-        )}
-      </div>
-      <div>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-600 dark:text-[#ddb7ff]">
-          Nivel {level.levelNumber}
-        </p>
-        <h4 className="mt-1 text-base font-black text-slate-900 dark:text-white">
-          {rewardLabel(level)}
-        </h4>
-        <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-300">
-          {rewardTypeLabels[level.rewardType]}
-        </p>
-      </div>
-    </div>
-  );
-};
-
 export const ProfileBattlePassSection = ({
   initialData,
   onClaim,
@@ -186,9 +140,6 @@ export const ProfileBattlePassSection = ({
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const showToast = useToastStore((state) => state.showToast);
-  const openConfirmation = useAlertConfirmationStore(
-    (state) => state.openAlertConfirmation,
-  );
 
   useEffect(() => {
     setData(initialData);
@@ -314,7 +265,7 @@ export const ProfileBattlePassSection = ({
   }, [data, fixedLevelId]);
   const claimableLevels = useMemo(
     () =>
-      data?.levels.filter((level) => level.unlocked && !level.claimed) ?? [],
+      data?.levels.filter((level) => level.rewardType !== "MANUAL" && level.unlocked && !level.claimed) ?? [],
     [data],
   );
 
@@ -437,26 +388,8 @@ export const ProfileBattlePassSection = ({
   };
 
   const handleClaim = (level: PlayerBattlePassLevel) => {
-    if (!enableClaims) return;
-    if (!level.unlocked || level.claimed) return;
-
-    if (level.rewardType !== "MANUAL") {
-      void completeClaim(level);
-      return;
-    }
-
-    openConfirmation({
-      text: "Reclamar recompensa",
-      description:
-        "Todas las recompensas se entregarán en el evento de final del pase de batalla.",
-      content: <RewardClaimPreview level={level} />,
-      action: async () => {
-        return completeClaim(level);
-      },
-      onError: () => {
-        hideLoading();
-      },
-    });
+    if (!enableClaims || !level.unlocked || level.claimed || level.rewardType === "MANUAL") return;
+    void completeClaim(level);
   };
 
   if (!data) {
@@ -685,7 +618,15 @@ export const ProfileBattlePassSection = ({
                 </p>
               )}
 
-              {enableClaims ? (
+              {selectedLevel.rewardType === "MANUAL" ? (
+                <div className="mt-6 w-full max-w-xs rounded-xl border border-[#4edea3]/40 bg-emerald-500/10 px-5 py-3 text-center text-sm font-bold text-[#4edea3]" role="status">
+                  {selectedLevel.claimStatus === "FULFILLED"
+                    ? "Entregada"
+                    : selectedLevel.claimStatus === "PENDING_FULFILLMENT"
+                      ? "Pendiente de entrega"
+                      : "Bloqueada"}
+                </div>
+              ) : enableClaims ? (
                 <button
                   type="button"
                   onClick={() => handleClaim(selectedLevel)}

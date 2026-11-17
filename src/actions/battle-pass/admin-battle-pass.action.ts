@@ -8,6 +8,7 @@ import {
   AdminBattlePassPlayersQuerySchema,
   AdminStoreBattlePassDeliveriesQuerySchema,
   AdminBattlePassProgressAdjustmentSchema,
+  FulfillBattlePassDeliveriesSchema,
   BattlePassClaimIdSchema,
   BattlePassIdSchema,
   BattlePassLevelIdSchema,
@@ -19,7 +20,7 @@ import {
   type UpdateBattlePassInput,
   type UpsertBattlePassLevelInput,
 } from "@/schemas/battle-pass/battle-pass.schema";
-import { calculateBattlePassProgress } from "@/logic/battle-pass-progress";
+import { calculateBattlePassProgress, isPhysicalRewardPending } from "@/logic/battle-pass-progress";
 import type { AvatarType, Prisma } from "@prisma/client";
 import sharp from "sharp";
 import { z } from "zod";
@@ -40,11 +41,6 @@ const AdminBattlePassClaimsFiltersSchema = z.object({
     .default("PENDING_FULFILLMENT"),
   page: z.number().int().min(1).optional().default(1),
   perPage: z.number().int().min(1).max(50).optional().default(10),
-});
-
-const FulfillBattlePassClaimsSchema = z.object({
-  userId: z.string().min(1, "El usuario es requerido."),
-  claimIds: z.array(z.string().min(1)).min(1, "Selecciona recompensas."),
 });
 
 const buildSafeName = (name: string) => {
@@ -206,6 +202,7 @@ export type AdminBattlePassPlayerProgress = {
   claimedLevels: number;
   claimedLockedLevels: number;
   lastAdjustmentAt: string | null;
+  pendingDeliveries: PendingBattlePassDelivery[];
 };
 
 export type AdminBattlePassPlayersResult = {
@@ -267,6 +264,132 @@ export type AdminBattlePassClaimsPage = {
   currentPage: number;
   perPage: number;
 };
+
+export type PendingBattlePassDelivery = Pick<
+  AdminBattlePassClaim,
+  "user" | "battlePass" | "level" | "rewardAvatar"
+> & {
+  claimId: string | null;
+  claimedAt: string | null;
+  progress: number;
+  maxLevel: number;
+};
+
+export type PendingBattlePassDeliveriesPage = Omit<AdminBattlePassClaimsPage, "items"> & {
+  items: PendingBattlePassDelivery[];
+};
+
+const deliveryPassSelect = {
+  id: true,
+  title: true,
+  seasonNumber: true,
+  status: true,
+  startsAt: true,
+  endsAt: true,
+  levels: {
+    orderBy: { levelNumber: "asc" },
+    select: {
+      id: true,
+      levelNumber: true,
+      title: true,
+      imageUrl: true,
+      manualRewardLabel: true,
+      rewardType: true,
+    },
+  },
+} satisfies Prisma.BattlePassSelect;
+
+type DeliveryPass = Prisma.BattlePassGetPayload<{ select: typeof deliveryPassSelect }>;
+
+// Una lectura nunca crea reclamos: los pendientes se derivan del progreso actual.
+const getPassProgressData = async (
+  db: Prisma.TransactionClient,
+  pass: Pick<DeliveryPass, "id" | "startsAt" | "endsAt" | "levels">,
+  userIds?: string[],
+) => {
+  const userFilter = userIds ? { userId: { in: userIds } } : {};
+  const [tournaments, overrides, claims] = await Promise.all([
+    db.tournament.findMany({
+      where: {
+        status: "finished",
+        date: { gte: pass.startsAt, lte: pass.endsAt },
+        ...(userIds ? { tournamentPlayers: { some: userFilter } } : {}),
+      },
+      select: {
+        tournamentPlayers: { where: userFilter, select: { userId: true } },
+      },
+    }),
+    db.battlePassUserProgress.findMany({
+      where: { battlePassId: pass.id, ...userFilter },
+      select: { userId: true, manualOffset: true },
+    }),
+    db.battlePassClaim.findMany({
+      where: { battlePassId: pass.id, ...userFilter },
+      select: {
+        id: true, userId: true, battlePassLevelId: true,
+        status: true, claimedAt: true,
+      },
+    }),
+  ]);
+  const automaticByUser = new Map<string, number>();
+  for (const tournament of tournaments) {
+    for (const userId of new Set(tournament.tournamentPlayers.map((player) => player.userId))) {
+      automaticByUser.set(userId, (automaticByUser.get(userId) ?? 0) + 1);
+    }
+  }
+  const offsetByUser = new Map(overrides.map((item) => [item.userId, item.manualOffset]));
+  const claimsByUser = new Map<string, Map<string, (typeof claims)[number]>>();
+  for (const claim of claims) {
+    const userClaims = claimsByUser.get(claim.userId) ?? new Map();
+    userClaims.set(claim.battlePassLevelId, claim);
+    claimsByUser.set(claim.userId, userClaims);
+  }
+  const maxLevel = Math.max(0, ...pass.levels.map((level) => level.levelNumber));
+  const candidateIds = new Set([
+    ...automaticByUser.keys(), ...offsetByUser.keys(), ...claimsByUser.keys(),
+  ]);
+  const progressByUser = new Map(Array.from(candidateIds, (userId) => [
+    userId,
+    calculateBattlePassProgress({
+      automaticProgress: automaticByUser.get(userId) ?? 0,
+      manualOffset: offsetByUser.get(userId) ?? 0,
+      maxLevel,
+    }),
+  ]));
+  return { automaticByUser, offsetByUser, claimsByUser, progressByUser, maxLevel };
+};
+
+type PassProgressData = Awaited<ReturnType<typeof getPassProgressData>>;
+
+const getPendingLevels = (pass: DeliveryPass, data: PassProgressData, userId: string) => {
+  if (pass.status !== "ACTIVE" && pass.status !== "ARCHIVED") return [];
+  return pass.levels.filter((level) => isPhysicalRewardPending({
+    ...level,
+    progress: data.progressByUser.get(userId) ?? 0,
+    claimStatus: data.claimsByUser.get(userId)?.get(level.id)?.status,
+  }));
+};
+
+const mapPendingDeliveries = (
+  pass: DeliveryPass,
+  data: PassProgressData,
+  user: PendingBattlePassDelivery["user"],
+): PendingBattlePassDelivery[] => getPendingLevels(pass, data, user.id).map((level) => {
+  const claim = data.claimsByUser.get(user.id)?.get(level.id);
+  return {
+    user,
+    battlePass: { id: pass.id, title: pass.title, seasonNumber: pass.seasonNumber },
+    level: {
+      id: level.id, levelNumber: level.levelNumber, title: level.title,
+      imageUrl: level.imageUrl, manualRewardLabel: level.manualRewardLabel,
+    },
+    rewardAvatar: null,
+    claimId: claim?.id ?? null,
+    claimedAt: claim?.claimedAt.toISOString() ?? null,
+    progress: data.progressByUser.get(user.id) ?? 0,
+    maxLevel: data.maxLevel,
+  };
+});
 
 const adminBattlePassClaimSelect = {
   id: true,
@@ -572,37 +695,9 @@ export const getAdminBattlePassDetailAction = async (
     throw new Error("El pase de batalla no existe.");
   }
 
-  const [pendingStoreDeliveriesCount, tournamentsInRange, progressOverrides] =
-    await Promise.all([
-    prisma.battlePassClaim.count({
-      where: {
-        battlePassId: pass.id,
-        rewardType: "MANUAL",
-        status: "PENDING_FULFILLMENT",
-      },
-    }),
-    prisma.tournament.findMany({
-      where: {
-        status: "finished",
-        date: {
-          gte: pass.startsAt,
-          lte: pass.endsAt,
-        },
-      },
-      select: {
-        id: true,
-        tournamentPlayers: {
-          select: {
-            userId: true,
-          },
-        },
-      },
-    }),
-      prisma.battlePassUserProgress.findMany({
-        where: { battlePassId: pass.id },
-        select: { userId: true, manualOffset: true },
-      }),
-    ]);
+  const progressData = await getPassProgressData(prisma, pass);
+  const pendingStoreDeliveriesCount = Array.from(progressData.progressByUser.keys())
+    .reduce((total, userId) => total + getPendingLevels(pass, progressData, userId).length, 0);
 
   const rewardMix = pass.levels.reduce<AdminBattlePassRewardMix>(
     (summary, level) => {
@@ -624,39 +719,9 @@ export const getAdminBattlePassDetailAction = async (
     (highest, level) => Math.max(highest, level.levelNumber),
     0,
   );
-  const progressByUser = new Map<string, number>();
-
-  tournamentsInRange.forEach((tournament) => {
-    const uniqueUsersInTournament = new Set(
-      tournament.tournamentPlayers.map((player) => player.userId),
-    );
-
-    uniqueUsersInTournament.forEach((userId) => {
-      progressByUser.set(userId, (progressByUser.get(userId) ?? 0) + 1);
-    });
-  });
-
-  const effectiveProgressByUser = new Map<string, number>();
-  const manualOffsetByUser = new Map(
-    progressOverrides.map((progress) => [progress.userId, progress.manualOffset]),
+  const effectiveProgressByUser = new Map(
+    Array.from(progressData.progressByUser).filter(([, progress]) => progress > 0),
   );
-  const progressUsers = new Set([
-    ...progressByUser.keys(),
-    ...progressOverrides.map((progress) => progress.userId),
-  ]);
-
-  progressUsers.forEach((userId) => {
-    const manualOffset = manualOffsetByUser.get(userId) ?? 0;
-    const effectiveProgress = calculateBattlePassProgress({
-      automaticProgress: progressByUser.get(userId) ?? 0,
-      manualOffset,
-      maxLevel: maxLevelNumber,
-    });
-
-    if (effectiveProgress > 0) {
-      effectiveProgressByUser.set(userId, effectiveProgress);
-    }
-  });
 
   const playersWithProgress = effectiveProgressByUser.size;
   const totalProgressPercent =
@@ -713,150 +778,48 @@ export const getAdminBattlePassPlayersAction = async (
   await requireAdmin();
   const parsed = AdminBattlePassPlayersQuerySchema.parse(input);
   const pass = await prisma.battlePass.findUnique({
-    where: { id: parsed.battlePassId },
-    select: {
-      id: true,
-      startsAt: true,
-      endsAt: true,
-      levels: { select: { levelNumber: true } },
-    },
+    where: { id: parsed.battlePassId }, select: deliveryPassSelect,
   });
-
-  if (!pass) {
-    throw new Error("El pase de batalla no existe.");
-  }
-
-  const searchFilter = buildPlayerSearchFilter(parsed.query);
-  const where: Prisma.UserWhereInput = searchFilter ?? {};
+  if (!pass) throw new Error("El pase de batalla no existe.");
+  const where = buildPlayerSearchFilter(parsed.query) ?? {};
   const totalCount = await prisma.user.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalCount / parsed.perPage));
   const currentPage = Math.min(parsed.page, totalPages);
   const users = await prisma.user.findMany({
-    where,
-    orderBy: [{ nickname: "asc" }],
-    skip: (currentPage - 1) * parsed.perPage,
-    take: parsed.perPage,
-    select: {
-      id: true,
-      nickname: true,
-      name: true,
-      lastname: true,
-      email: true,
-    },
+    where, orderBy: [{ nickname: "asc" }, { id: "asc" }],
+    skip: (currentPage - 1) * parsed.perPage, take: parsed.perPage,
+    select: { id: true, nickname: true, name: true, lastname: true, email: true },
   });
+  const pagination = { totalCount, totalPages, currentPage, perPage: parsed.perPage };
+  if (!users.length) return { items: [], ...pagination };
   const userIds = users.map((user) => user.id);
-  const maxLevel = pass.levels.reduce(
-    (highest, level) => Math.max(highest, level.levelNumber),
-    0,
-  );
-
-  if (userIds.length === 0) {
-    return {
-      items: [],
-      totalCount,
-      totalPages,
-      currentPage,
-      perPage: parsed.perPage,
-    };
-  }
-
-  const [tournaments, progressOverrides, claims, adjustments] =
-    await Promise.all([
-      prisma.tournament.findMany({
-        where: {
-          status: "finished",
-          date: { gte: pass.startsAt, lte: pass.endsAt },
-          tournamentPlayers: { some: { userId: { in: userIds } } },
-        },
-        select: {
-          tournamentPlayers: {
-            where: { userId: { in: userIds } },
-            select: { userId: true },
-          },
-        },
-      }),
-      prisma.battlePassUserProgress.findMany({
-        where: { battlePassId: pass.id, userId: { in: userIds } },
-        select: { userId: true, manualOffset: true },
-      }),
-      prisma.battlePassClaim.findMany({
-        where: { battlePassId: pass.id, userId: { in: userIds } },
-        select: {
-          userId: true,
-          battlePassLevel: { select: { levelNumber: true } },
-        },
-      }),
-      prisma.battlePassProgressAdjustment.findMany({
-        where: { battlePassId: pass.id, userId: { in: userIds } },
-        orderBy: { createdAt: "desc" },
-        select: { userId: true, createdAt: true },
-      }),
-    ]);
-
-  const automaticProgressByUser = new Map<string, number>();
-  tournaments.forEach((tournament) => {
-    new Set(tournament.tournamentPlayers.map((player) => player.userId)).forEach(
-      (userId) => {
-        automaticProgressByUser.set(
-          userId,
-          (automaticProgressByUser.get(userId) ?? 0) + 1,
-        );
-      },
-    );
-  });
-  const manualOffsetByUser = new Map(
-    progressOverrides.map((progress) => [progress.userId, progress.manualOffset]),
-  );
-  const claimedLevelsByUser = new Map<string, number>();
-  const claimedLevelNumbersByUser = new Map<string, number[]>();
-  claims.forEach((claim) => {
-    claimedLevelsByUser.set(
-      claim.userId,
-      (claimedLevelsByUser.get(claim.userId) ?? 0) + 1,
-    );
-    claimedLevelNumbersByUser.set(
-      claim.userId,
-      [
-        ...(claimedLevelNumbersByUser.get(claim.userId) ?? []),
-        claim.battlePassLevel.levelNumber,
-      ],
-    );
-  });
-  const lastAdjustmentByUser = new Map<string, Date>();
-  adjustments.forEach((adjustment) => {
-    if (!lastAdjustmentByUser.has(adjustment.userId)) {
-      lastAdjustmentByUser.set(adjustment.userId, adjustment.createdAt);
-    }
-  });
-
+  const [data, adjustments] = await Promise.all([
+    getPassProgressData(prisma, pass, userIds),
+    prisma.battlePassProgressAdjustment.findMany({
+      where: { battlePassId: pass.id, userId: { in: userIds } },
+      orderBy: { createdAt: "desc" }, distinct: ["userId"],
+      select: { userId: true, createdAt: true },
+    }),
+  ]);
+  const lastAdjustmentByUser = new Map(adjustments.map((item) => [item.userId, item.createdAt]));
   return {
+    ...pagination,
     items: users.map((user) => {
-      const automaticProgress = automaticProgressByUser.get(user.id) ?? 0;
-      const manualOffset = manualOffsetByUser.get(user.id) ?? 0;
-      const effectiveProgress = calculateBattlePassProgress({
-        automaticProgress,
-        manualOffset,
-        maxLevel,
-      });
-
+      const effectiveProgress = data.progressByUser.get(user.id) ?? 0;
+      const claims = data.claimsByUser.get(user.id);
       return {
         user,
-        automaticProgress,
-        manualOffset,
-        effectiveProgress,
-        maxLevel,
-        claimedLevels: claimedLevelsByUser.get(user.id) ?? 0,
-        claimedLockedLevels: (
-          claimedLevelNumbersByUser.get(user.id) ?? []
-        ).filter((levelNumber) => levelNumber > effectiveProgress).length,
-        lastAdjustmentAt:
-          lastAdjustmentByUser.get(user.id)?.toISOString() ?? null,
+        automaticProgress: data.automaticByUser.get(user.id) ?? 0,
+        manualOffset: data.offsetByUser.get(user.id) ?? 0,
+        effectiveProgress, maxLevel: data.maxLevel,
+        claimedLevels: claims?.size ?? 0,
+        claimedLockedLevels: pass.levels.filter((level) =>
+          level.levelNumber > effectiveProgress && claims?.has(level.id),
+        ).length,
+        lastAdjustmentAt: lastAdjustmentByUser.get(user.id)?.toISOString() ?? null,
+        pendingDeliveries: mapPendingDeliveries(pass, data, user),
       };
     }),
-    totalCount,
-    totalPages,
-    currentPage,
-    perPage: parsed.perPage,
   };
 };
 
@@ -1198,53 +1161,41 @@ export const getAdminBattlePassClaimsAction = async (
 
 export const getStoreBattlePassDeliveriesAction = async (
   input?: unknown,
-): Promise<AdminBattlePassClaimsPage> => {
+): Promise<PendingBattlePassDeliveriesPage> => {
   await requireAdmin();
   const parsed = AdminStoreBattlePassDeliveriesQuerySchema.parse(input ?? {});
-  const searchFilter = buildPlayerSearchFilter(parsed.query);
-  const claimWhere: Prisma.BattlePassClaimWhereInput = {
-    rewardType: "MANUAL",
-    status: "PENDING_FULFILLMENT",
-    battlePass: {
-      status: { in: ["ACTIVE", "ARCHIVED"] },
-    },
-  };
-  const userWhere: Prisma.UserWhereInput = {
-    ...(searchFilter ?? {}),
-    battlePassClaims: { some: claimWhere },
-  };
-  const totalCount = await prisma.user.count({ where: userWhere });
-  const totalItems = await prisma.battlePassClaim.count({
-    where: {
-      ...claimWhere,
-      ...(searchFilter ? { user: searchFilter } : {}),
-    },
+  const passes = await prisma.battlePass.findMany({
+    where: { status: { in: ["ACTIVE", "ARCHIVED"] }, levels: { some: { rewardType: "MANUAL" } } },
+    select: deliveryPassSelect, orderBy: { seasonNumber: "desc" },
   });
+  const contexts = await Promise.all(passes.map(async (pass) => ({
+    pass, data: await getPassProgressData(prisma, pass),
+  })));
+  const pendingCountByUser = new Map<string, number>();
+  for (const { pass, data } of contexts) {
+    for (const userId of data.progressByUser.keys()) {
+      const count = getPendingLevels(pass, data, userId).length;
+      if (count) pendingCountByUser.set(userId, (pendingCountByUser.get(userId) ?? 0) + count);
+    }
+  }
+  const where: Prisma.UserWhereInput = {
+    id: { in: Array.from(pendingCountByUser.keys()) },
+    ...(buildPlayerSearchFilter(parsed.query) ?? {}),
+  };
+  // Solo se transfieren detalles de los jugadores de la página solicitada.
+  const matchingUsers = await prisma.user.findMany({ where, select: { id: true } });
+  const totalCount = matchingUsers.length;
+  const totalItems = matchingUsers.reduce((total, user) => total + (pendingCountByUser.get(user.id) ?? 0), 0);
   const totalPages = Math.max(1, Math.ceil(totalCount / parsed.perPage));
   const currentPage = Math.min(parsed.page, totalPages);
-  const users = await prisma.user.findMany({
-    where: userWhere,
-    orderBy: [{ nickname: "asc" }, { id: "asc" }],
-    skip: (currentPage - 1) * parsed.perPage,
-    take: parsed.perPage,
-    select: { id: true },
-  });
-  const userIds = users.map((user) => user.id);
-  const claims = userIds.length
-    ? await prisma.battlePassClaim.findMany({
-        where: { ...claimWhere, userId: { in: userIds } },
-        orderBy: [{ claimedAt: "desc" }, { id: "desc" }],
-        select: adminBattlePassClaimSelect,
-      })
-    : [];
-
+  const users = totalCount ? await prisma.user.findMany({
+    where, orderBy: [{ nickname: "asc" }, { id: "asc" }],
+    skip: (currentPage - 1) * parsed.perPage, take: parsed.perPage,
+    select: { id: true, nickname: true, email: true, name: true, lastname: true },
+  }) : [];
   return {
-    items: claims.map(mapAdminBattlePassClaim),
-    totalCount,
-    totalItems,
-    totalPages,
-    currentPage,
-    perPage: parsed.perPage,
+    items: users.flatMap((user) => contexts.flatMap(({ pass, data }) => mapPendingDeliveries(pass, data, user))),
+    totalCount, totalItems, totalPages, currentPage, perPage: parsed.perPage,
   };
 };
 
@@ -1280,127 +1231,82 @@ export const getStoreBattlePassDeliveryHistoryAction = async (
   };
 };
 
-export const fulfillBattlePassClaimAction = async (input: unknown) => {
-  await requireAdmin();
-  const parsed = BattlePassClaimIdSchema.parse(input);
+const fulfillPhysicalDeliveries = async (input: unknown) => {
+  const parsed = FulfillBattlePassDeliveriesSchema.parse(input);
+  const levelIds = Array.from(new Set(parsed.levelIds));
 
-  const updated = await prisma.battlePassClaim.update({
-    where: { id: parsed.claimId },
-    data: {
-      status: "FULFILLED",
-      fulfilledAt: new Date(),
-    },
-    select: {
-      id: true,
-      status: true,
-      fulfilledAt: true,
-    },
-  });
-
-  return {
-    id: updated.id,
-    status: updated.status,
-    fulfilledAt: updated.fulfilledAt?.toISOString() ?? null,
-  };
-};
-
-export const fulfillStoreBattlePassDeliveryAction = async (input: unknown) => {
-  await requireAdmin();
-  const parsed = BattlePassClaimIdSchema.parse(input);
-  const now = new Date();
-
-  const claim = await prisma.battlePassClaim.findFirst({
-    where: {
-      id: parsed.claimId,
-      rewardType: "MANUAL",
-      status: "PENDING_FULFILLMENT",
-    },
-    select: { id: true },
-  });
-
-  if (!claim) {
-    throw new Error("La entrega no existe o ya no pertenece a un pase activo.");
+  // La restricción única usuario/nivel y la transacción impiden entregas duplicadas.
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await prisma.$transaction(async (tx) => {
+        const user = await tx.user.findUnique({ where: { id: parsed.userId }, select: { id: true } });
+        if (!user) throw new Error("El jugador no existe.");
+        const passes = await tx.battlePass.findMany({
+          where: { levels: { some: { id: { in: levelIds } } } }, select: deliveryPassSelect,
+        });
+        const selectedLevels = passes.flatMap((pass) => pass.levels.filter((level) => levelIds.includes(level.id)));
+        if (selectedLevels.length !== levelIds.length || selectedLevels.some((level) => level.rewardType !== "MANUAL")) {
+          throw new Error("Solo puedes entregar recompensas físicas existentes.");
+        }
+        const now = new Date();
+        const items: AdminBattlePassClaim[] = [];
+        const newlyClaimedLevelIds: string[] = [];
+        const newlyFulfilledLevelIds: string[] = [];
+        for (const pass of passes) {
+          const data = await getPassProgressData(tx, pass, [parsed.userId]);
+          const pendingIds = new Set(getPendingLevels(pass, data, parsed.userId).map((level) => level.id));
+          for (const level of pass.levels.filter((item) => levelIds.includes(item.id))) {
+            const previous = data.claimsByUser.get(parsed.userId)?.get(level.id);
+            // Un reintento conserva la fecha original incluso si el progreso bajó después.
+            if (previous?.status !== "FULFILLED" && !pendingIds.has(level.id)) {
+              throw new Error("Una recompensa seleccionada ya no está disponible con el progreso actual.");
+            }
+            if (!previous) newlyClaimedLevelIds.push(level.id);
+            if (previous?.status !== "FULFILLED") newlyFulfilledLevelIds.push(level.id);
+            const record = await tx.battlePassClaim.upsert({
+              where: { userId_battlePassLevelId: { userId: parsed.userId, battlePassLevelId: level.id } },
+              create: {
+                userId: parsed.userId, battlePassId: pass.id, battlePassLevelId: level.id,
+                rewardType: "MANUAL", status: "FULFILLED", fulfilledAt: now,
+              },
+              update: previous?.status === "FULFILLED" ? {} : { status: "FULFILLED", fulfilledAt: now },
+              select: adminBattlePassClaimSelect,
+            });
+            items.push(mapAdminBattlePassClaim(record));
+          }
+        }
+        return { userId: parsed.userId, levelIds, newlyClaimedLevelIds, newlyFulfilledLevelIds, items };
+      });
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error ? error.code : null;
+      if (attempt < 2 && (code === "P2034" || code === "P2002")) continue;
+      throw error;
+    }
   }
-
-  const updated = await prisma.battlePassClaim.update({
-    where: { id: parsed.claimId },
-    data: {
-      status: "FULFILLED",
-      fulfilledAt: now,
-    },
-    select: {
-      id: true,
-      status: true,
-      fulfilledAt: true,
-    },
-  });
-
-  return {
-    id: updated.id,
-    status: updated.status,
-    fulfilledAt: updated.fulfilledAt?.toISOString() ?? null,
-  };
 };
 
 export const fulfillStoreBattlePassDeliveriesAction = async (input: unknown) => {
   await requireAdmin();
-  const parsed = FulfillBattlePassClaimsSchema.parse(input);
-  const claimIds = Array.from(new Set(parsed.claimIds));
-  const now = new Date();
+  return fulfillPhysicalDeliveries(input);
+};
 
-  const count = await prisma.$transaction(async (tx) => {
-    const claims = await tx.battlePassClaim.findMany({
-      where: {
-        id: { in: claimIds },
-      },
-      select: {
-        id: true,
-        userId: true,
-        rewardType: true,
-        status: true,
-      },
-    });
-
-    if (claims.length !== claimIds.length) {
-      throw new Error("Una o mas recompensas seleccionadas no existen.");
-    }
-
-    const invalidClaim = claims.find(
-      (claim) =>
-        claim.userId !== parsed.userId ||
-        claim.rewardType !== "MANUAL" ||
-        claim.status !== "PENDING_FULFILLMENT",
-    );
-
-    if (invalidClaim) {
-      throw new Error(
-        "Solo puedes entregar recompensas pendientes de tienda para este jugador.",
-      );
-    }
-
-    const updated = await tx.battlePassClaim.updateMany({
-      where: {
-        id: { in: claimIds },
-        userId: parsed.userId,
-        rewardType: "MANUAL",
-        status: "PENDING_FULFILLMENT",
-      },
-      data: {
-        status: "FULFILLED",
-        fulfilledAt: now,
-      },
-    });
-
-    if (updated.count !== claimIds.length) {
-      throw new Error("No se pudieron entregar todas las recompensas.");
-    }
-
-    return updated.count;
+const fulfillExistingPhysicalClaim = async (input: unknown) => {
+  const parsed = BattlePassClaimIdSchema.parse(input);
+  const claim = await prisma.battlePassClaim.findUnique({
+    where: { id: parsed.claimId }, select: { userId: true, battlePassLevelId: true, rewardType: true },
   });
+  if (!claim || claim.rewardType !== "MANUAL") throw new Error("La entrega física no existe.");
+  const result = await fulfillPhysicalDeliveries({ userId: claim.userId, levelIds: [claim.battlePassLevelId] });
+  const item = result.items[0];
+  return { id: item.id, status: item.status, fulfilledAt: item.fulfilledAt };
+};
 
-  return {
-    count,
-    claimIds,
-    fulfilledAt: now.toISOString(),
-  };
+export const fulfillBattlePassClaimAction = async (input: unknown) => {
+  await requireAdmin();
+  return fulfillExistingPhysicalClaim(input);
+};
+
+export const fulfillStoreBattlePassDeliveryAction = async (input: unknown) => {
+  await requireAdmin();
+  return fulfillExistingPhysicalClaim(input);
 };

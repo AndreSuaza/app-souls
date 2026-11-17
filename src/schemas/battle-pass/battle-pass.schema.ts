@@ -170,6 +170,11 @@ export const AdminStoreBattlePassDeliveriesQuerySchema = z.object({
   query: z.string().trim().max(100).optional().default(""),
 });
 
+export const FulfillBattlePassDeliveriesSchema = z.object({
+  userId: ObjectIdSchema,
+  levelIds: z.array(ObjectIdSchema).min(1, "Selecciona recompensas."),
+});
+
 export const AdminBattlePassProgressAdjustmentSchema = z.object({
   battlePassId: ObjectIdSchema,
   userId: ObjectIdSchema,

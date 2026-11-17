@@ -540,7 +540,12 @@ export const Pefil = ({
             />
           ) : (
             <ProfileSectionHeader
-              title={sectionTitles[activeSection]}
+              eyebrow={activeSection === "general" ? fullName || user.nickname || "Jugador" : undefined}
+              title={
+                activeSection === "general"
+                  ? user.nickname || fullName || "Jugador"
+                  : sectionTitles[activeSection]
+              }
               description={sectionDescriptions[activeSection]}
               rightSlot={
                 shouldShowStore && activeSection === "store" ? (
