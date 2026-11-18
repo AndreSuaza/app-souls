@@ -129,6 +129,7 @@ export const OptionsDeckCreator = ({
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
   const deleteUserDeck = useUserDecksStore((state) => state.deleteDeck);
+  const refreshUserDecks = useUserDecksStore((state) => state.refreshDecks);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -352,6 +353,7 @@ export const OptionsDeckCreator = ({
           await deleteDeckAction({ deckId: deckData.id });
           // Limpia el mazo actual para que la vista no muestre cartas huérfanas.
           clearDecklist();
+          await refreshUserDecks(hasSession);
           showToast("Mazo eliminado correctamente.", "success");
           isNavigating = true;
           showLoading("Cargando mazo...");
@@ -413,6 +415,7 @@ export const OptionsDeckCreator = ({
         }
 
         showToast("Mazo guardado correctamente.", "success");
+        await refreshUserDecks(hasSession);
         return true;
       },
     });

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveDeck } from "@/actions";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { useUserDecksStore } from "@/store/mazos/user-decks.store";
 import { MdError } from "react-icons/md";
 
 type FormInputs = {
@@ -81,6 +82,7 @@ export const SaveDeckForm = ({
   const showToast = useToastStore((state) => state.showToast);
   const showLoading = useUIStore((state) => state.showLoading);
   const hideLoading = useUIStore((state) => state.hideLoading);
+  const refreshUserDecks = useUserDecksStore((state) => state.refreshDecks);
   const router = useRouter();
   const isPrivate = watch("visible");
   const shouldWarnPublic =
@@ -158,6 +160,7 @@ export const SaveDeckForm = ({
 
         showToast("Mazo guardado correctamente.", "success");
         onClose?.();
+        await refreshUserDecks(true);
         if ((mode === "clone" || mode === "create") && resp?.deckId) {
           // Mantiene al usuario en el laboratorio correcto segun el tipo de mazo.
           const basePath = isAdminDeck

@@ -1,19 +1,13 @@
 import { NextResponse } from "next/server";
-import { countMainDeckCards, deleteUserDeck, saveUserDeck } from "@/lib/deck-management";
+import { deleteUserDeck, saveUserDeck } from "@/lib/deck-management";
 import { loadDeckLabDetail, loadPlayableSimulatorDecks } from "@/lib/simulator-deck-lab";
+import { parseSimulatorDeckMutation } from "@/lib/simulator-deck-api";
 import { simulatorCorsHeaders, simulatorOptionsResponse } from "@/lib/simulator-cors";
 import { verifySimulatorToken } from "@/lib/simulator-token";
-import { normalizeEncodedDecklist, parseEncodedDeckSegment } from "@/utils/decklist";
 
 export const runtime = "nodejs";
 
 const getToken = (request: Request) => request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
-
-const countTokenDeckCards = (deckList?: string) =>
-  parseEncodedDeckSegment(normalizeEncodedDecklist(deckList ?? "")).reduce(
-    (total, entry) => total + entry.count,
-    0,
-  );
 
 export async function OPTIONS(request: Request) {
   return simulatorOptionsResponse(request, "GET, PATCH, DELETE, OPTIONS");
@@ -38,30 +32,15 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await request.json().catch(() => null);
-  if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "Datos de mazo invalidos." }, { status: 400, headers });
+  const parsed = parseSimulatorDeckMutation(body, id);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.message }, { status: 400, headers });
   }
 
-  const deckList = typeof body.deckList === "string" ? body.deckList : "";
-  const tokenDeckList = typeof body.tokenDeckList === "string" ? body.tokenDeckList : "";
-  const result = await saveUserDeck(
-    {
-      archetypesId: typeof body.archetypesId === "string" ? body.archetypesId : "",
-      cardsNumber:
-        typeof body.cardsNumber === "number"
-          ? Math.max(0, Math.trunc(body.cardsNumber))
-          : countMainDeckCards(deckList),
-      deckId: id,
-      deckList,
-      description: typeof body.description === "string" ? body.description : "",
-      imgDeck: typeof body.imgDeck === "string" ? body.imgDeck : "",
-      name: typeof body.name === "string" ? body.name : "",
-      tokenCardsNumber: countTokenDeckCards(tokenDeckList),
-      tokenDeckList,
-      visible: Boolean(body.visible),
-    },
-    { idd: session.userId, role: session.role },
-  );
+  const result = await saveUserDeck(parsed.data, {
+    idd: session.userId,
+    role: session.role,
+  });
 
   if (!result.success) {
     return NextResponse.json({ error: result.message ?? "No se pudo guardar el mazo." }, { status: 400, headers });

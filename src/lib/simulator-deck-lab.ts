@@ -255,6 +255,7 @@ export async function loadDeckLabCards(
 }
 
 export async function loadDeckLabProperties() {
+  const noArchetypeId = "67c5d1595d56151173f8f23b";
   const [products, types, archetypes, keywords, rarities] = await Promise.all([
     prisma.product.findMany({
       select: { code: true, name: true },
@@ -282,13 +283,19 @@ export async function loadDeckLabProperties() {
     products: products.map((product) => ({ id: product.code, name: product.name.trim() || product.code || "Sin nombre" })),
     rarities: rarities.map((item) => ({ id: item.id, name: item.name.trim() || item.id || "Sin nombre" })),
     types: types.map((item) => ({ id: item.id, name: item.name.trim() || item.id || "Sin nombre" })),
-    archetypes: archetypes.map((item) => ({ id: item.id, name: item.name.trim() || item.id || "Sin nombre" })),
+    archetypes: archetypes.map((item) => ({
+      id: item.id,
+      name:
+        item.name.trim() ||
+        (item.id.toLowerCase() === noArchetypeId ? "Sin arquetipo" : "Sin nombre"),
+    })),
     keywords: keywords.map((item) => ({ id: item.id, name: item.name.trim() || item.id || "Sin nombre" })),
   };
 }
 
 type OwnedDeckSource = {
   archetypeId?: string | null;
+  archetype?: { name?: string | null } | null;
   cards: string;
   cardsNumber?: number | null;
   description?: string | null;
@@ -312,6 +319,9 @@ export const toDeckLabSummary = (deck: OwnedDeckSource) => {
 
   return {
     ...(deck.archetypeId ? { archetypeId: deck.archetypeId } : {}),
+    ...(deck.archetype?.name?.trim()
+      ? { archetypeName: deck.archetype.name.trim() }
+      : {}),
     canDelete: true,
     canEdit: true,
     description: deck.description ?? null,
@@ -335,6 +345,7 @@ export async function loadOwnedDeckLabSummaries(session: SimulatorTokenPayload) 
       ],
     },
     select: {
+      archetype: { select: { name: true } },
       archetypeId: true,
       cards: true,
       cardsNumber: true,
@@ -465,6 +476,7 @@ export async function loadDeckLabDetail(session: SimulatorTokenPayload, deckId: 
       AND: [{ OR: [{ isAdminDeck: false }, { isAdminDeck: { isSet: false } }] }],
     },
     select: {
+      archetype: { select: { name: true } },
       archetypeId: true,
       cards: true,
       cardsNumber: true,
@@ -537,6 +549,7 @@ export async function loadPlayableSimulatorDecks(session: SimulatorTokenPayload)
       cardsNumber: true,
       tokenCards: true,
       tokenCardsNumber: true,
+      updatedAt: true,
       userId: true,
       visible: true,
     },

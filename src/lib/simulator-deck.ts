@@ -29,6 +29,7 @@ type SimulatorDeckSource = {
   name: string;
   tokenCards?: string | null;
   tokenCardsNumber?: number | null;
+  updatedAt?: Date;
   userId: string;
   visible?: boolean | null;
 };
@@ -258,6 +259,7 @@ export const toSimulatorDeckDto = (
     soulDeckCount: 0,
     limboDeckCount: countDeckEntries(limboDeck),
     tokenDeckCount: countDeckEntries(tokenDeck),
+    ...(deck.updatedAt ? { updatedAt: deck.updatedAt.toISOString() } : {}),
     visible: Boolean(deck.visible),
   };
 };
