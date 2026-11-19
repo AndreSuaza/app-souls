@@ -170,6 +170,11 @@ export const AdminStoreBattlePassDeliveriesQuerySchema = z.object({
   query: z.string().trim().max(100).optional().default(""),
 });
 
+export const BattlePassPhysicalRewardsExportSchema = z.object({
+  battlePassId: ObjectIdSchema,
+  includeFulfilled: z.boolean().optional().default(false),
+});
+
 export const FulfillBattlePassDeliveriesSchema = z.object({
   userId: ObjectIdSchema,
   levelIds: z.array(ObjectIdSchema).min(1, "Selecciona recompensas."),
@@ -205,6 +210,9 @@ export type AdminBattlePassPlayersQueryInput = z.infer<
 >;
 export type AdminStoreBattlePassDeliveriesQueryInput = z.infer<
   typeof AdminStoreBattlePassDeliveriesQuerySchema
+>;
+export type BattlePassPhysicalRewardsExportInput = z.infer<
+  typeof BattlePassPhysicalRewardsExportSchema
 >;
 export type AdminBattlePassProgressAdjustmentInput = z.infer<
   typeof AdminBattlePassProgressAdjustmentSchema

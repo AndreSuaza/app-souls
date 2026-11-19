@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { BattlePassPlayerSearch } from "./BattlePassPlayerSearch";
 import { BattlePassDeliveryGroups } from "./BattlePassDeliveryGroups";
+import { BattlePassPhysicalRewardsExport } from "./BattlePassPhysicalRewardsExport";
 import {
   adjustAdminBattlePassPlayerProgressAction,
   getAdminBattlePassPlayersAction,
@@ -16,6 +17,7 @@ import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 
 type BattlePassPlayersPanelProps = {
   battlePassId: string | null;
+  passLabel?: string;
 };
 
 const panelClassName =
@@ -48,6 +50,7 @@ const getUserLabel = (item: AdminBattlePassPlayerProgress) => {
 
 export const BattlePassPlayersPanel = ({
   battlePassId,
+  passLabel,
 }: BattlePassPlayersPanelProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -186,11 +189,17 @@ export const BattlePassPlayersPanel = ({
               Ajusta un escalón sin reemplazar el progreso obtenido en torneos.
             </p>
           </div>
-          <div className="w-full lg:max-w-sm">
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#988d9f]">
-              Buscar jugador
-            </label>
-            <BattlePassPlayerSearch onSearch={searchPlayers} />
+          <div className="flex w-full flex-col gap-3 lg:max-w-xl lg:flex-row lg:items-end">
+            <div className="min-w-0 flex-1">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#988d9f]">
+                Buscar jugador
+              </label>
+              <BattlePassPlayerSearch onSearch={searchPlayers} />
+            </div>
+            <BattlePassPhysicalRewardsExport
+              battlePassId={battlePassId}
+              passLabel={passLabel}
+            />
           </div>
         </div>
 

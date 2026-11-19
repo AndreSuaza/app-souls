@@ -7,6 +7,7 @@ import { MEDIA_SECTION_CONFIG } from "@/models/media.models";
 import {
   AdminBattlePassPlayersQuerySchema,
   AdminStoreBattlePassDeliveriesQuerySchema,
+  BattlePassPhysicalRewardsExportSchema,
   AdminBattlePassProgressAdjustmentSchema,
   FulfillBattlePassDeliveriesSchema,
   BattlePassClaimIdSchema,
@@ -277,6 +278,29 @@ export type PendingBattlePassDelivery = Pick<
 
 export type PendingBattlePassDeliveriesPage = Omit<AdminBattlePassClaimsPage, "items"> & {
   items: PendingBattlePassDelivery[];
+};
+
+export type BattlePassPhysicalRewardsExportRow = {
+  nickname: string;
+  name: string;
+  pass: string;
+  season: number;
+  level: string;
+  quantity: number;
+  reward: string;
+  status: "PENDING" | "FULFILLED" | "MIXED";
+  store: string;
+  city: string;
+  address: string;
+};
+
+export type BattlePassPhysicalRewardsExport = {
+  pass: {
+    id: string;
+    title: string;
+    seasonNumber: number;
+  };
+  rows: BattlePassPhysicalRewardsExportRow[];
 };
 
 const deliveryPassSelect = {
@@ -1196,6 +1220,183 @@ export const getStoreBattlePassDeliveriesAction = async (
   return {
     items: users.flatMap((user) => contexts.flatMap(({ pass, data }) => mapPendingDeliveries(pass, data, user))),
     totalCount, totalItems, totalPages, currentPage, perPage: parsed.perPage,
+  };
+};
+
+export const exportBattlePassPhysicalRewardsAction = async (
+  input: unknown,
+): Promise<BattlePassPhysicalRewardsExport> => {
+  await requireAdmin();
+  const parsed = BattlePassPhysicalRewardsExportSchema.parse(input);
+  const pass = await prisma.battlePass.findUnique({
+    where: { id: parsed.battlePassId },
+    select: deliveryPassSelect,
+  });
+
+  if (!pass) throw new Error("El pase de batalla no existe.");
+
+  const data = await getPassProgressData(prisma, pass);
+  const physicalLevels = pass.levels.filter((level) => level.rewardType === "MANUAL");
+  const candidateIds = new Set<string>();
+
+  for (const userId of data.progressByUser.keys()) {
+    const pending = getPendingLevels(pass, data, userId).length > 0;
+    const fulfilled = physicalLevels.some(
+      (level) => data.claimsByUser.get(userId)?.get(level.id)?.status === "FULFILLED",
+    );
+
+    if (pending || (parsed.includeFulfilled && fulfilled)) candidateIds.add(userId);
+  }
+
+  if (candidateIds.size === 0) {
+    return {
+      pass: { id: pass.id, title: pass.title, seasonNumber: pass.seasonNumber },
+      rows: [],
+    };
+  }
+
+  const userIds = Array.from(candidateIds);
+  const [users, tournaments] = await Promise.all([
+    prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, nickname: true, name: true, lastname: true },
+    }),
+    prisma.tournament.findMany({
+      where: {
+        status: "finished",
+        date: { gte: pass.startsAt, lte: pass.endsAt },
+        tournamentPlayers: { some: { userId: { in: userIds } } },
+      },
+      select: {
+        date: true,
+        storeId: true,
+        store: { select: { name: true, city: true, address: true } },
+        tournamentPlayers: {
+          where: { userId: { in: userIds } },
+          select: { userId: true },
+        },
+      },
+    }),
+  ]);
+
+  const storesByUser = new Map<
+    string,
+    Map<string, { id: string; name: string; city: string; address: string; count: number; latestDate: number }>
+  >();
+
+  for (const tournament of tournaments) {
+    const tournamentUserIds = new Set(
+      tournament.tournamentPlayers.map((player) => player.userId),
+    );
+
+    for (const userId of tournamentUserIds) {
+      const stores = storesByUser.get(userId) ?? new Map();
+      const existing = stores.get(tournament.storeId);
+      stores.set(tournament.storeId, {
+        id: tournament.storeId,
+        name: tournament.store.name,
+        city: tournament.store.city,
+        address: tournament.store.address,
+        count: (existing?.count ?? 0) + 1,
+        latestDate: Math.max(existing?.latestDate ?? 0, tournament.date.getTime()),
+      });
+      storesByUser.set(userId, stores);
+    }
+  }
+
+  const selectFrequentStore = (userId: string) => {
+    const stores = storesByUser.get(userId);
+    if (!stores) return null;
+
+    return Array.from(stores.values()).sort(
+      (a, b) =>
+        b.count - a.count ||
+        b.latestDate - a.latestDate ||
+        a.name.localeCompare(b.name, "es") ||
+        a.id.localeCompare(b.id),
+    )[0] ?? null;
+  };
+
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  const groupedRows = new Map<
+    string,
+    BattlePassPhysicalRewardsExportRow & { userId: string; levels: number[] }
+  >();
+
+  for (const userId of userIds) {
+    const user = usersById.get(userId);
+    if (!user) continue;
+
+    const progress = data.progressByUser.get(userId) ?? 0;
+    const claims = data.claimsByUser.get(userId);
+    const frequentStore = selectFrequentStore(userId);
+
+    for (const level of physicalLevels) {
+      const claim = claims?.get(level.id);
+      const isFulfilled = claim?.status === "FULFILLED";
+      const isPending = isPhysicalRewardPending({
+        ...level,
+        progress,
+        claimStatus: claim?.status,
+      });
+
+      if (!isPending && !(parsed.includeFulfilled && isFulfilled)) continue;
+
+      const reward = level.manualRewardLabel || level.title;
+      const status = isFulfilled ? "FULFILLED" : "PENDING";
+      const key = `${userId}:${reward}`;
+      const existing = groupedRows.get(key);
+
+      if (existing) {
+        existing.quantity += 1;
+        existing.levels.push(level.levelNumber);
+        existing.level = existing.levels.join(", ");
+        if (existing.status !== status) existing.status = "MIXED";
+        continue;
+      }
+
+      groupedRows.set(key, {
+        userId,
+        nickname: user.nickname,
+        name: [user.name, user.lastname].filter(Boolean).join(" "),
+        pass: pass.title,
+        season: pass.seasonNumber,
+        level: String(level.levelNumber),
+        quantity: 1,
+        reward,
+        status,
+        store: frequentStore?.name ?? "",
+        city: frequentStore?.city ?? "",
+        address: frequentStore?.address ?? "",
+        levels: [level.levelNumber],
+      });
+    }
+  }
+
+  const rows: BattlePassPhysicalRewardsExportRow[] = Array.from(groupedRows.values()).map(
+    (row) => ({
+      nickname: row.nickname,
+      name: row.name,
+      pass: row.pass,
+      season: row.season,
+      level: row.level,
+      quantity: row.quantity,
+      reward: row.reward,
+      status: row.status,
+      store: row.store,
+      city: row.city,
+      address: row.address,
+    }),
+  );
+  rows.sort(
+    (a, b) =>
+      a.nickname.localeCompare(b.nickname, "es") ||
+      a.reward.localeCompare(b.reward, "es"),
+  );
+
+  return {
+    pass: { id: pass.id, title: pass.title, seasonNumber: pass.seasonNumber },
+    rows,
   };
 };
 

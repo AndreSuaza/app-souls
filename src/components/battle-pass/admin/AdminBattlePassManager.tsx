@@ -43,6 +43,7 @@ import {
 import { getMediaImagesAction } from "@/actions/media/get-media-images.action";
 import { BattlePassDeliveryGroups } from "./BattlePassDeliveryGroups";
 import { BattlePassPlayerSearch } from "./BattlePassPlayerSearch";
+import { BattlePassPhysicalRewardsExport } from "./BattlePassPhysicalRewardsExport";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { AVATAR_AVAILABILITIES, AVATAR_RARITIES } from "@/models/avatar.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
@@ -101,6 +102,8 @@ type PassSummaryPanelProps = {
 };
 
 type DeliveriesPanelProps = {
+  battlePassId: string | null;
+  passLabel?: string;
   claims: PendingBattlePassDelivery[];
   totalClaims: number;
   currentPage: number;
@@ -728,6 +731,8 @@ const MobileSummaryPanel = ({
 };
 
 const DeliveriesPanel = ({
+  battlePassId,
+  passLabel,
   claims,
   totalClaims,
   currentPage,
@@ -755,6 +760,10 @@ const DeliveriesPanel = ({
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
+          <BattlePassPhysicalRewardsExport
+            battlePassId={battlePassId}
+            passLabel={passLabel}
+          />
           <button
             type="button"
             onClick={() => void onRefresh()}
@@ -1823,6 +1832,8 @@ export const AdminBattlePassManager = () => {
             />
           ) : (
             <DeliveriesPanel
+              battlePassId={selectedPassId}
+              passLabel={selectedPass ? `T${selectedPass.seasonNumber} · ${selectedPass.title}` : undefined}
               claims={manualClaims}
               totalClaims={manualClaimsTotal}
               currentPage={manualClaimsPage}
@@ -1837,6 +1848,8 @@ export const AdminBattlePassManager = () => {
 
         <div className="hidden xl:block">
           <DeliveriesPanel
+            battlePassId={selectedPassId}
+            passLabel={selectedPass ? `T${selectedPass.seasonNumber} · ${selectedPass.title}` : undefined}
             claims={manualClaims}
             totalClaims={manualClaimsTotal}
             currentPage={manualClaimsPage}

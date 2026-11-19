@@ -131,7 +131,10 @@ export const BattlePassPlayerProgressPage = () => {
         </div>
       )}
 
-      <BattlePassPlayersPanel battlePassId={selectedPassId} />
+      <BattlePassPlayersPanel
+        battlePassId={selectedPassId}
+        passLabel={selectedPass ? `T${selectedPass.seasonNumber} · ${selectedPass.title}` : undefined}
+      />
     </section>
   );
 };
