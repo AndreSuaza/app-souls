@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 
 const assetsBaseUrl = (process.env.NEXT_PUBLIC_ASSETS_BASE_URL ?? "").replace(
   /\/+$/,
@@ -25,50 +26,57 @@ const r2PublicAssetRedirectFolders = (
   .map((folder) => folder.trim())
   .filter((folder) => staticAssetFolders.includes(folder));
 
-const nextConfig: NextConfig = {
-  experimental: {
-    // Aumenta el limite para imports masivos de cartas con ZIP de imagenes.
-    serverActions: {
-      bodySizeLimit: "80mb",
-    },
-  },
-  images: {
-    // Limita variantes generadas para reducir transferencia de origen.
-    deviceSizes: [360, 640, 768, 1024, 1280, 1536],
-    imageSizes: [120, 160, 200, 240, 300, 360, 420],
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "lh3.googleusercontent.com",
-      },
-      {
-        protocol: "https",
-        hostname: "assets.soulsinxtinction.com",
-      },
-    ],
-  },
-  async redirects() {
-    if (!assetsBaseUrl || !enableR2PublicAssetRedirects) return [];
+const nextConfig = (phase: string): NextConfig => {
+  const isDevelopmentServer = phase === PHASE_DEVELOPMENT_SERVER;
 
-    return r2PublicAssetRedirectFolders.map((folder) => ({
-      source: `/${folder}/:path*`,
-      destination: `${assetsBaseUrl}/${folder}/:path*`,
-      permanent: false,
-    }));
-  },
-  async headers() {
-    return [
-      ...staticAssetFolders.map((folder) => ({
+  return {
+    // El servidor local y los builds de produccion no comparten manifiestos.
+    // Asi un `next build` no invalida el hot reload que ya esta corriendo.
+    distDir: isDevelopmentServer ? ".next-dev" : ".next",
+    experimental: {
+      // Aumenta el limite para imports masivos de cartas con ZIP de imagenes.
+      serverActions: {
+        bodySizeLimit: "80mb",
+      },
+    },
+    images: {
+      // Limita variantes generadas para reducir transferencia de origen.
+      deviceSizes: [360, 640, 768, 1024, 1280, 1536],
+      imageSizes: [120, 160, 200, 240, 300, 360, 420],
+      remotePatterns: [
+        {
+          protocol: "https",
+          hostname: "lh3.googleusercontent.com",
+        },
+        {
+          protocol: "https",
+          hostname: "assets.soulsinxtinction.com",
+        },
+      ],
+    },
+    async redirects() {
+      if (!assetsBaseUrl || !enableR2PublicAssetRedirects) return [];
+
+      return r2PublicAssetRedirectFolders.map((folder) => ({
         source: `/${folder}/:path*`,
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      })),
-    ];
-  },
+        destination: `${assetsBaseUrl}/${folder}/:path*`,
+        permanent: false,
+      }));
+    },
+    async headers() {
+      return [
+        ...staticAssetFolders.map((folder) => ({
+          source: `/${folder}/:path*`,
+          headers: [
+            {
+              key: "Cache-Control",
+              value: "public, max-age=31536000, immutable",
+            },
+          ],
+        })),
+      ];
+    },
+  };
 };
 
 export default nextConfig;

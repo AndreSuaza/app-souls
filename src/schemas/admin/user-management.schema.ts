@@ -80,6 +80,7 @@ export const BulkAdjustUserVictoryPointsSchema = z.object({
       )
       .transform((ids) => Array.from(new Set(ids))),
   }),
+  operation: z.enum(["add", "subtract"]).default("add"),
   amount: z
     .number()
     .int("El ajuste debe ser un numero entero.")

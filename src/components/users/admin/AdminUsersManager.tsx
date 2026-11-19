@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { createPortal } from "react-dom";
 import clsx from "clsx";
 import {
   adjustUserVictoryPointsAction,
@@ -22,12 +24,15 @@ import {
 } from "@/actions";
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { cardImageBlurDataURL } from "@/models/images.models";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
+import { resolveCardImageUrl } from "@/utils/card-image";
 import {
   IoAddCircleOutline,
   IoCloseOutline,
   IoCreateOutline,
   IoEyeOutline,
+  IoGiftOutline,
   IoRemoveCircleOutline,
   IoSearchOutline,
 } from "react-icons/io5";
@@ -37,6 +42,7 @@ const BULK_PV_MAX_USERS = 100;
 type RoleValue = "all" | "player" | "admin" | "store" | "news";
 type StatusValue = "all" | "active" | "inactive" | "banned";
 type PerPageValue = 10 | 20 | 50 | 100;
+type BulkPvOperation = "add" | "subtract";
 type OrderValue =
   | "recent"
   | "oldest"
@@ -141,6 +147,17 @@ type UserCardOwnershipItem = Awaited<
   ReturnType<typeof getAdminUserCardOwnershipAction>
 >[number];
 
+const AdminModalPortal = ({ children }: { children: ReactNode }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  return createPortal(children, document.body);
+};
+
 const UserDetailModal = ({
   user,
   history,
@@ -226,7 +243,8 @@ const UserDetailModal = ({
     canResendVerification;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <AdminModalPortal>
+      <div className="fixed inset-0 z-[9997] flex min-h-dvh items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <div
         className="max-h-[84vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-tournament-dark-accent bg-white shadow-2xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
         onWheel={(event) => {
@@ -491,7 +509,8 @@ const UserDetailModal = ({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </AdminModalPortal>
   );
 };
 
@@ -519,7 +538,8 @@ const PvAdjustmentModal = ({
     reason.trim().length >= 5;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <AdminModalPortal>
+      <div className="fixed inset-0 z-[9997] flex min-h-dvh items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <form
         className="w-full max-w-lg rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-2xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
         onSubmit={(event) => {
@@ -617,12 +637,14 @@ const PvAdjustmentModal = ({
           </button>
         </div>
       </form>
-    </div>
+      </div>
+    </AdminModalPortal>
   );
 };
 
 type BulkPvAdjustmentModalProps = {
   selectedUsers: AdminUserListItem[];
+  operation: BulkPvOperation;
   amount: string;
   reason: string;
   saving: boolean;
@@ -635,6 +657,7 @@ type BulkPvAdjustmentModalProps = {
 
 const BulkPvAdjustmentModal = ({
   selectedUsers,
+  operation,
   amount,
   reason,
   saving,
@@ -646,9 +669,11 @@ const BulkPvAdjustmentModal = ({
 }: BulkPvAdjustmentModalProps) => {
   const targetCount = selectedUsers.length;
   const exceedsMaxUsers = targetCount > BULK_PV_MAX_USERS;
+  const isSubtract = operation === "subtract";
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <AdminModalPortal>
+      <div className="fixed inset-0 z-[9997] flex min-h-dvh items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <form
         className="w-full max-w-2xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-2xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
         onSubmit={(event) => {
@@ -660,20 +685,22 @@ const BulkPvAdjustmentModal = ({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
-              Asignacion masiva de PV
+              Ajuste masivo de PV
             </p>
             <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">
-              Sumar puntos de victoria
+              {isSubtract ? "Restar puntos de victoria" : "Sumar puntos de victoria"}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Define la cantidad y deja un motivo de auditoria.
+              {isSubtract
+                ? "Los saldos no bajaran de 0 PV."
+                : "Define la cantidad y deja un motivo de auditoria."}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-xl border border-slate-200 p-2 text-slate-500 transition hover:text-slate-900 dark:border-tournament-dark-border dark:text-slate-300 dark:hover:text-white"
-            aria-label="Cerrar asignacion masiva de PV"
+            aria-label="Cerrar ajuste masivo de PV"
           >
             <IoCloseOutline className="h-6 w-6" />
           </button>
@@ -715,7 +742,7 @@ const BulkPvAdjustmentModal = ({
 
         <div className="mt-6 grid gap-4 sm:grid-cols-[160px_1fr]">
           <label className="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-            PV a sumar
+            {isSubtract ? "PV a restar" : "PV a sumar"}
             <input
               type="number"
               min={1}
@@ -740,7 +767,7 @@ const BulkPvAdjustmentModal = ({
 
         {exceedsMaxUsers && (
           <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-500/30 dark:bg-red-900/20 dark:text-red-200">
-            Solo puedes asignar PV masivamente a un maximo de{" "}
+            Solo puedes ajustar PV masivamente a un maximo de{" "}
             {BULK_PV_MAX_USERS} usuarios.
           </p>
         )}
@@ -756,13 +783,19 @@ const BulkPvAdjustmentModal = ({
           <button
             type="submit"
             disabled={!canSubmit || saving}
-            className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className={clsx(
+              "rounded-xl px-4 py-2 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50",
+              isSubtract
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-amber-500 text-slate-950 hover:bg-amber-400",
+            )}
           >
-            Asignar PV
+            {isSubtract ? "Restar PV" : "Asignar PV"}
           </button>
         </div>
       </form>
-    </div>
+      </div>
+    </AdminModalPortal>
   );
 };
 
@@ -779,69 +812,261 @@ const BulkCardOwnershipModal = ({
   onClose,
   onSubmit,
 }: BulkCardOwnershipModalProps) => {
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [cards, setCards] = useState<UserCardOwnershipItem[]>([]);
-  const [cardId, setCardId] = useState("");
+  const [selectedCard, setSelectedCard] = useState<UserCardOwnershipItem | null>(null);
   const [note, setNote] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const showToast = useToastStore((state) => state.showToast);
+  const userId = selectedUsers[0]?.id;
 
   useEffect(() => {
-    const userId = selectedUsers[0]?.id;
-    if (!userId) return;
     const timeout = setTimeout(() => {
-      void getAdminUserCardOwnershipAction({ userId, text: search, limit: 60 })
-        .then(setCards)
-        .catch((error) => showToast(getSafeErrorMessage(error, "No se pudieron cargar las variantes."), "error"));
-    }, 200);
+      setDebouncedSearch(searchInput.trim());
+    }, 300);
+
     return () => clearTimeout(timeout);
-  }, [search, selectedUsers, showToast]);
+  }, [searchInput]);
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    setSearchLoading(true);
+
+    void getAdminUserCardOwnershipAction({
+      userId,
+      text: debouncedSearch,
+      limit: 60,
+    })
+      .then((result) => {
+        if (!cancelled) setCards(result);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          showToast(
+            getSafeErrorMessage(error, "No se pudieron cargar las variantes."),
+            "error",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setSearchLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearch, showToast, userId]);
+
+  const selectCard = (card: UserCardOwnershipItem) => {
+    setSelectedCard(card);
+    setSearchInput("");
+    setSuggestionsOpen(false);
+  };
+
+  const clearCard = () => {
+    setSelectedCard(null);
+    setSearchInput("");
+    setSuggestionsOpen(true);
+  };
+
+  const selectedCardImage = selectedCard
+    ? resolveCardImageUrl(selectedCard)
+    : "";
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+    <AdminModalPortal>
+      <div className="fixed inset-0 z-[9997] flex min-h-dvh items-center justify-center bg-black/70 p-4 backdrop-blur-sm sm:p-6">
       <form
-        className="w-full max-w-2xl rounded-2xl border border-tournament-dark-accent bg-white p-6 shadow-2xl dark:border-tournament-dark-border dark:bg-tournament-dark-surface"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-5xl overflow-y-auto rounded-2xl border border-tournament-dark-border bg-tournament-dark-surface p-5 text-white shadow-2xl sm:p-6"
         onSubmit={(event) => {
           event.preventDefault();
-          if (cardId && selectedUsers.length > 0) onSubmit(cardId, note);
+          if (selectedCard && selectedUsers.length > 0) {
+            onSubmit(selectedCard.id, note);
+          }
         }}
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-500">Cartas exclusivas</p>
-            <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">Asignar a varios usuarios</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Se asignara un desbloqueo, no copias fisicas.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-400">
+              Cartas exclusivas
+            </p>
+            <h2 className="mt-2 text-xl font-bold">Asignar a varios usuarios</h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Selecciona una carta para otorgar su desbloqueo a los usuarios elegidos.
+            </p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 p-2 text-slate-500 dark:border-tournament-dark-border dark:text-slate-300" aria-label="Cerrar asignacion de cartas">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-tournament-dark-border p-2 text-slate-300 transition hover:border-purple-400 hover:text-white"
+            aria-label="Cerrar asignacion de cartas"
+          >
             <IoCloseOutline className="h-6 w-6" />
           </button>
         </div>
 
-        <div className="mt-5 rounded-xl border border-slate-200 p-4 dark:border-tournament-dark-border dark:bg-tournament-dark-muted/30">
-          <p className="text-sm font-semibold text-slate-900 dark:text-white">{selectedUsers.length} usuarios seleccionados</p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{selectedUsers.map((user) => user.nickname).join(", ")}</p>
+        <div className="mt-5 grid gap-5 md:grid-cols-[minmax(0,1fr)_250px]">
+          <div className="min-w-0">
+            <div className="rounded-xl border border-tournament-dark-border bg-tournament-dark-muted/25 p-4">
+              <p className="text-sm font-semibold">{selectedUsers.length} usuarios seleccionados</p>
+              <div className="mt-2 flex max-h-20 flex-wrap gap-2 overflow-y-auto">
+                {selectedUsers.map((user) => (
+                  <span
+                    key={user.id}
+                    className="rounded-full bg-purple-500/15 px-2.5 py-1 text-xs text-purple-200"
+                  >
+                    {user.nickname}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative mt-5">
+              <label
+                htmlFor="bulk-exclusive-card-search"
+                className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400"
+              >
+                Buscar carta exclusiva
+              </label>
+              <div className="relative mt-2">
+                <IoSearchOutline className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-purple-300" />
+                <input
+                  id="bulk-exclusive-card-search"
+                  value={searchInput}
+                  onChange={(event) => {
+                    setSearchInput(event.target.value);
+                    setSuggestionsOpen(true);
+                    if (selectedCard) setSelectedCard(null);
+                  }}
+                  onFocus={() => setSuggestionsOpen(true)}
+                  placeholder="Nombre, código o IDD"
+                  autoComplete="off"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={suggestionsOpen}
+                  aria-controls="bulk-exclusive-card-suggestions"
+                  className="w-full rounded-xl border border-tournament-dark-border bg-tournament-dark-muted py-3 pl-10 pr-3 text-sm text-white outline-none transition focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+                />
+              </div>
+
+              {suggestionsOpen && (
+                <div
+                  id="bulk-exclusive-card-suggestions"
+                  className="absolute left-0 right-0 top-full z-20 mt-2 max-h-64 overflow-y-auto rounded-xl border border-tournament-dark-border bg-tournament-dark-surface p-1 shadow-2xl"
+                >
+                  {searchLoading ? (
+                    <p className="px-3 py-4 text-sm text-slate-400">Buscando cartas...</p>
+                  ) : cards.length === 0 ? (
+                    <p className="px-3 py-4 text-sm text-slate-400">
+                      No se encontraron cartas exclusivas.
+                    </p>
+                  ) : (
+                    cards.map((card) => (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => selectCard(card)}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-purple-500/15"
+                      >
+                        <div className="relative h-12 w-9 shrink-0 overflow-hidden rounded border border-tournament-dark-border bg-tournament-dark-muted-strong">
+                          {resolveCardImageUrl(card) && (
+                            <Image
+                              src={resolveCardImageUrl(card)}
+                              alt=""
+                              fill
+                              sizes="36px"
+                              placeholder="blur"
+                              blurDataURL={cardImageBlurDataURL}
+                              className="object-cover"
+                            />
+                          )}
+                        </div>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-white">
+                            {card.name}
+                          </span>
+                          <span className="block truncate text-xs text-slate-400">
+                            {card.code} · {card.idd}
+                          </span>
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {selectedCard && (
+              <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-purple-400/40 bg-purple-500/10 p-3">
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-[0.2em] text-purple-300">
+                    Carta seleccionada
+                  </p>
+                  <p className="mt-1 truncate text-sm font-semibold text-white">
+                    {selectedCard.name}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearCard}
+                  className="shrink-0 rounded-lg border border-tournament-dark-border px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-purple-400 hover:text-white"
+                >
+                  Cambiar
+                </button>
+              </div>
+            )}
+
+            <label className="mt-5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Motivo opcional
+              <input
+                value={note}
+                maxLength={160}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Ej. Recompensa por evento"
+                className="mt-2 w-full rounded-xl border border-tournament-dark-border bg-tournament-dark-muted px-3 py-3 text-sm normal-case tracking-normal text-white outline-none transition placeholder:text-slate-500 focus:border-purple-400"
+              />
+            </label>
+          </div>
+
+          {selectedCard && (
+            <aside className="relative aspect-[500/718] w-full overflow-hidden rounded-xl border border-tournament-dark-border bg-tournament-dark-muted-strong shadow-lg shadow-purple-950/40">
+              {selectedCardImage && (
+                <Image
+                  src={selectedCardImage}
+                  alt={selectedCard.name}
+                  fill
+                  sizes="250px"
+                  placeholder="blur"
+                  blurDataURL={cardImageBlurDataURL}
+                  className="object-cover"
+                />
+              )}
+            </aside>
+          )}
         </div>
 
-        <label className="mt-5 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Buscar variante
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Nombre, código o idd" className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white" />
-        </label>
-        <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Variante exclusiva
-          <select value={cardId} onChange={(event) => setCardId(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white">
-            <option value="">Selecciona una variante</option>
-            {cards.map((card) => <option key={card.id} value={card.id}>{card.code} · {card.name}</option>)}
-          </select>
-        </label>
-        <label className="mt-4 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-          Motivo opcional
-          <input value={note} onChange={(event) => setNote(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm normal-case tracking-normal text-slate-900 focus:border-purple-500 focus:outline-none dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-white" />
-        </label>
         <div className="mt-6 flex justify-end gap-3">
-          <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 dark:border-tournament-dark-border dark:text-slate-300">Cancelar</button>
-          <button type="submit" disabled={!cardId || saving || selectedUsers.length === 0} className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50">Asignar variante</button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-tournament-dark-border px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-purple-400 hover:text-white"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={!selectedCard || saving || selectedUsers.length === 0}
+            className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Asignar carta
+          </button>
         </div>
       </form>
-    </div>
+      </div>
+    </AdminModalPortal>
   );
 };
 
@@ -940,6 +1165,7 @@ export const AdminUsersManager = () => {
   >({});
   const [bulkAmount, setBulkAmount] = useState("");
   const [bulkReason, setBulkReason] = useState("");
+  const [bulkOperation, setBulkOperation] = useState<BulkPvOperation>("add");
   const [bulkSaving, setBulkSaving] = useState(false);
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [bulkCardModalOpen, setBulkCardModalOpen] = useState(false);
@@ -1335,34 +1561,49 @@ export const AdminUsersManager = () => {
     const userIds = [...selectedUserIds];
     const amount = bulkNumericAmount;
     const reason = bulkReason.trim();
+    const operation = bulkOperation;
     if (userIds.length > BULK_PV_MAX_USERS) {
       showToast(
-        `Solo puedes asignar PV masivamente a ${BULK_PV_MAX_USERS} usuarios.`,
+        `Solo puedes ajustar PV masivamente a ${BULK_PV_MAX_USERS} usuarios.`,
         "error",
       );
       return;
     }
 
     openConfirmation({
-      text: "¿Confirmas la asignacion masiva de PV?",
-      description: `Vas a sumar ${amount} PV a ${userIds.length} usuarios seleccionados. Esta accion quedara registrada en el historial de cada usuario.`,
+      text:
+        operation === "subtract"
+          ? "¿Confirmas la resta masiva de PV?"
+          : "¿Confirmas la asignacion masiva de PV?",
+      description:
+        operation === "subtract"
+          ? `Vas a restar hasta ${amount} PV a ${userIds.length} usuarios seleccionados. Los saldos no bajaran de 0 PV y la accion quedara registrada en el historial.`
+          : `Vas a sumar ${amount} PV a ${userIds.length} usuarios seleccionados. Esta accion quedara registrada en el historial de cada usuario.`,
       action: async () => {
         try {
           setBulkSaving(true);
           const result = await bulkAdjustUserVictoryPointsAction({
             selection: { mode: "selected", userIds },
+            operation,
             amount,
             reason,
           });
 
           showToast(
-            `Se sumaron ${result.amount} PV a ${result.affectedCount} usuarios.`,
+            operation === "subtract"
+              ? `Se retiraron ${result.totalAdjusted} PV a ${result.affectedCount} usuarios.${
+                  result.skippedCount > 0
+                    ? ` ${result.skippedCount} ya estaban en 0 PV.`
+                    : ""
+                }`
+              : `Se sumaron ${result.amount} PV a ${result.affectedCount} usuarios.`,
             "success",
           );
           setSelectedUserIds([]);
           setSelectedUsersById({});
           setBulkAmount("");
           setBulkReason("");
+          setBulkOperation("add");
           setBulkModalOpen(false);
           await loadUsers();
           return true;
@@ -1370,7 +1611,7 @@ export const AdminUsersManager = () => {
           showToast(
             getSafeErrorMessage(
               error,
-              "No se pudieron asignar los PV masivos.",
+              "No se pudieron ajustar los PV masivos.",
             ),
             "error",
           );
@@ -1486,28 +1727,41 @@ export const AdminUsersManager = () => {
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              disabled={users.length === 0}
-              onClick={toggleCurrentPageSelection}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-purple-300 disabled:cursor-not-allowed disabled:opacity-50 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-300"
+              onClick={() => {
+                setBulkOperation("add");
+                setBulkModalOpen(true);
+              }}
+              aria-label="Asignar PV masivo"
+              title="Asignar PV masivo"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-400"
             >
-              {allCurrentPageSelected
-                ? "Quitar seleccion de esta pagina"
-                : "Seleccionar usuarios de esta pagina"}
+              <IoAddCircleOutline className="h-4 w-4" aria-hidden="true" />
+              <span>Asignar</span>
             </button>
             <button
               type="button"
-              onClick={() => setBulkModalOpen(true)}
-              className="rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-amber-400"
+              disabled={selectedUsersCount === 0 || selectedUsersCount > BULK_PV_MAX_USERS}
+              onClick={() => {
+                setBulkOperation("subtract");
+                setBulkModalOpen(true);
+              }}
+              aria-label="Restar PV masivo"
+              title="Restar PV masivo"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-3 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Asignar PV masivo
+              <IoRemoveCircleOutline className="h-4 w-4" aria-hidden="true" />
+              <span>Restar</span>
             </button>
             <button
               type="button"
               disabled={selectedUsersCount === 0 || selectedUsersCount > BULK_PV_MAX_USERS}
               onClick={() => setBulkCardModalOpen(true)}
-              className="rounded-xl bg-purple-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Asignar carta exclusiva"
+              title="Asignar carta exclusiva"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-purple-600 px-3 py-2 text-sm font-bold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Asignar carta exclusiva
+              <IoGiftOutline className="h-4 w-4" aria-hidden="true" />
+              <span>Carta</span>
             </button>
           </div>
         </div>
@@ -1699,6 +1953,7 @@ export const AdminUsersManager = () => {
       {bulkModalOpen && (
         <BulkPvAdjustmentModal
           selectedUsers={selectedUsersForBulkModal}
+          operation={bulkOperation}
           amount={bulkAmount}
           reason={bulkReason}
           saving={bulkSaving}

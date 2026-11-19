@@ -254,6 +254,57 @@ export async function loadDeckLabCards(
   };
 }
 
+export async function loadSimulatorExclusiveCards(
+  userId: string,
+  filters: Pick<DeckLabFilters, "text"> = {},
+) {
+  const text = filters.text?.trim();
+  const where = {
+    AND: [
+      activeCardWhere(),
+      { access: "OWNED" as const },
+      { userOwnerships: { some: { userId, unlocked: true } } },
+      ...(text
+        ? [
+            {
+              OR: [
+                { effect: { contains: text, mode: "insensitive" as const } },
+                { idd: { equals: text, mode: "insensitive" as const } },
+                { name: { contains: text, mode: "insensitive" as const } },
+                { code: { contains: text, mode: "insensitive" as const } },
+              ],
+            },
+          ]
+        : []),
+    ],
+  } satisfies Prisma.CardWhereInput;
+
+  const cards = await prisma.card.findMany({
+    where,
+    orderBy: [{ name: "asc" }, { code: "asc" }],
+    include: {
+      archetypes: { select: { id: true, name: true } },
+      keywords: { select: { id: true, name: true } },
+      product: { select: { code: true, name: true, show: true, url: true } },
+      rarities: { select: { id: true, name: true } },
+      types: { select: { id: true, name: true } },
+    },
+  });
+
+  const relatedProducts = await loadRelatedProductsByIdd(cards.map((card) => card.idd));
+
+  return {
+    cards: cards.map((card) =>
+      toDeckLabCardDto({
+        ...card,
+        price: card.price ?? null,
+        relatedProducts: relatedProducts.get(card.idd) ?? [],
+      }),
+    ),
+    totalCards: cards.length,
+  };
+}
+
 export async function loadDeckLabProperties() {
   const noArchetypeId = "67c5d1595d56151173f8f23b";
   const [products, types, archetypes, keywords, rarities] = await Promise.all([

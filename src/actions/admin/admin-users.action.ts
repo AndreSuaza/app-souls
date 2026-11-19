@@ -448,41 +448,81 @@ export const bulkAdjustUserVictoryPointsAction = async (input: unknown) => {
     }
 
     const userIds = users.map((user) => user.id);
-    const adjustmentRows = users.map((user) => {
+    const isSubtract = parsed.operation === "subtract";
+    const adjustmentRows = users.flatMap((user) => {
       const previousBalance = user.victoryPoints ?? 0;
+      const nextBalance = isSubtract
+        ? Math.max(previousBalance - parsed.amount, 0)
+        : previousBalance + parsed.amount;
+      const appliedAmount = nextBalance - previousBalance;
 
-      return {
+      // No registramos movimientos sin cambios, por ejemplo usuarios que ya tienen 0 PV.
+      if (appliedAmount === 0) return [];
+
+      return [{
         userId: user.id,
         adminId,
-        amount: parsed.amount,
+        amount: appliedAmount,
         previousBalance,
-        nextBalance: previousBalance + parsed.amount,
+        nextBalance,
         reason: parsed.reason,
-      };
+      }];
     });
 
-    // Evita 2 consultas por usuario dentro de la transaccion; con 100 usuarios
-    // el flujo anterior expiraba el timeout interactivo de Prisma.
-    const updateResult = await tx.user.updateMany({
-      where: { id: { in: userIds } },
-      data: {
-        victoryPoints: { increment: parsed.amount },
-      },
-    });
+    if (isSubtract) {
+      const decrementIds = users
+        .filter((user) => (user.victoryPoints ?? 0) >= parsed.amount)
+        .map((user) => user.id);
+      const zeroBalanceIds = users
+        .filter((user) => {
+          const balance = user.victoryPoints ?? 0;
+          return balance > 0 && balance < parsed.amount;
+        })
+        .map((user) => user.id);
 
-    await tx.victoryPointAdjustment.createMany({
-      data: adjustmentRows,
-    });
+      // Agrupa los casos para mantener el lote eficiente sin dejar saldos negativos.
+      if (decrementIds.length > 0) {
+        await tx.user.updateMany({
+          where: { id: { in: decrementIds } },
+          data: { victoryPoints: { decrement: parsed.amount } },
+        });
+      }
+      if (zeroBalanceIds.length > 0) {
+        await tx.user.updateMany({
+          where: { id: { in: zeroBalanceIds } },
+          data: { victoryPoints: 0 },
+        });
+      }
+    } else {
+      // Evita 2 consultas por usuario dentro de la transaccion; con 100 usuarios
+      // el flujo anterior expiraba el timeout interactivo de Prisma.
+      await tx.user.updateMany({
+        where: { id: { in: userIds } },
+        data: { victoryPoints: { increment: parsed.amount } },
+      });
+    }
+
+    if (adjustmentRows.length > 0) {
+      await tx.victoryPointAdjustment.createMany({ data: adjustmentRows });
+    }
 
     return {
-      affectedCount: updateResult.count,
+      affectedCount: adjustmentRows.length,
+      skippedCount: users.length - adjustmentRows.length,
+      totalAdjusted: adjustmentRows.reduce(
+        (total, adjustment) => total + Math.abs(adjustment.amount),
+        0,
+      ),
     };
   });
 
   return {
     ok: true,
     affectedCount: result.affectedCount,
+    skippedCount: result.skippedCount,
+    totalAdjusted: result.totalAdjusted,
     amount: parsed.amount,
+    operation: parsed.operation,
     selectionMode: "selected" as const,
   };
 };
