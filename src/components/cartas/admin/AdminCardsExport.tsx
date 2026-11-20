@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { FiCheck, FiDownload } from "react-icons/fi";
+import { IoCloseOutline } from "react-icons/io5";
 import { exportAdminCardsAction } from "@/actions/cards/admin-cards.action";
 import {
   ADMIN_CARD_EXPORT_COLUMNS,
@@ -243,9 +244,9 @@ export const AdminCardsExport = ({ products }: Props) => {
                 onClick={close}
                 disabled={isDownloading}
                 aria-label="Cerrar modal"
-                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-white"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg p-0 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:hover:bg-tournament-dark-muted dark:hover:text-white"
               >
-                <span className="text-2xl leading-none">×</span>
+                <IoCloseOutline className="h-6 w-6" aria-hidden="true" />
               </button>
             </div>
 
@@ -255,7 +256,7 @@ export const AdminCardsExport = ({ products }: Props) => {
                   Cartas a exportar
                 </legend>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-purple-300 bg-purple-50 p-3 dark:border-purple-400/40 dark:bg-purple-500/10">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-purple-300 bg-purple-50 p-3 dark:border-purple-400/40 dark:bg-purple-500/10">
                     <input
                       type="radio"
                       name="admin-card-export-scope"
@@ -264,7 +265,7 @@ export const AdminCardsExport = ({ products }: Props) => {
                         setScope("allActive");
                         setError(null);
                       }}
-                      className="mt-0.5 accent-purple-600"
+                      className="shrink-0 accent-purple-600"
                     />
                     <span>
                       <span className="block text-sm font-semibold text-slate-900 dark:text-white">
@@ -275,7 +276,7 @@ export const AdminCardsExport = ({ products }: Props) => {
                       </span>
                     </span>
                   </label>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3 dark:border-tournament-dark-border">
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 dark:border-tournament-dark-border">
                     <input
                       type="radio"
                       name="admin-card-export-scope"
@@ -284,7 +285,7 @@ export const AdminCardsExport = ({ products }: Props) => {
                         setScope("products");
                         setError(null);
                       }}
-                      className="mt-0.5 accent-purple-600"
+                      className="shrink-0 accent-purple-600"
                     />
                     <span>
                       <span className="block text-sm font-semibold text-slate-900 dark:text-white">
