@@ -5,12 +5,15 @@ import { auth } from "@/auth";
 import { uploadAsset } from "@/lib/assets-storage";
 import { prisma } from "@/lib/prisma";
 import {
+  ADMIN_CARD_EXPORT_COLUMNS,
+  AdminCardExportSchema,
   AdminCardsFiltersSchema,
   CreateAdminCardSchema,
   DeleteAdminCardSchema,
   UpdateAdminCardSchema,
   UploadCardImageSchema,
   type AdminCardsFiltersInput,
+  type AdminCardExportColumnKey,
   type CreateAdminCardInput,
   type DeleteAdminCardInput,
   type UpdateAdminCardInput,
@@ -82,6 +85,11 @@ const cardAdminSelect = {
       name: true,
     },
   },
+} as const;
+
+const cardExportSelect = {
+  ...cardAdminSelect,
+  createDate: true,
 } as const;
 
 const normalizeStatus = (status?: "active" | "deleted" | null) =>
@@ -288,6 +296,79 @@ export async function getAdminCardsAction(input: unknown = {}) {
     totalPages,
     currentPage: Math.min(filters.page, totalPages),
     perPage: filters.take,
+  };
+}
+
+export async function exportAdminCardsAction(input: unknown = {}) {
+  await ensureAdmin();
+  const parsed = AdminCardExportSchema.parse(input);
+  const productIds = Array.from(new Set(parsed.productIds));
+
+  if (parsed.scope === "products") {
+    const productCount = await prisma.product.count({
+      where: { id: { in: productIds } },
+    });
+
+    if (productCount !== productIds.length) {
+      throw new Error("Uno o más productos seleccionados no existen.");
+    }
+  }
+
+  const where: Prisma.CardWhereInput = {
+    AND: [
+      activeCardWhere(),
+      ...(parsed.scope === "products"
+        ? [{ productId: { in: productIds } }]
+        : []),
+    ],
+  };
+
+  const cards = await prisma.card.findMany({
+    where,
+    select: cardExportSelect,
+    orderBy: [{ id: "desc" }],
+  });
+
+  const valuesByCard = cards.map((card) => {
+    const values: Record<AdminCardExportColumnKey, string | number | null> = {
+      id: card.id,
+      idd: card.idd,
+      code: card.code,
+      name: card.name,
+      product: card.product.name,
+      productCode: card.product.code,
+      limit: card.limit,
+      rotation: card.rotation,
+      cost: card.cost,
+      force: card.force,
+      defense: card.defense,
+      effect: card.effect,
+      price: card.price ?? null,
+      status: normalizeStatus(card.status),
+      access: card.access ?? "PUBLIC",
+      baseCardId: card.baseCardId,
+      imageUrl: card.imageUrl,
+      types: card.types.map((type) => type.name).join(", "),
+      archetypes: card.archetypes.map((archetype) => archetype.name).join(", "),
+      keywords: card.keywords.map((keyword) => keyword.name).join(", "),
+      rarities: card.rarities.map((rarity) => rarity.name).join(", "),
+      createDate: card.createDate.toISOString(),
+    };
+
+    return Object.fromEntries(
+      parsed.columns.map((column) => [
+        column,
+        values[column as AdminCardExportColumnKey],
+      ]),
+    );
+  });
+
+  return {
+    format: parsed.format,
+    columns: ADMIN_CARD_EXPORT_COLUMNS.filter(({ key }) =>
+      parsed.columns.includes(key),
+    ),
+    rows: valuesByCard,
   };
 }
 

@@ -16,6 +16,7 @@ import {
 import { PaginationLine } from "@/components/ui/pagination/paginationLine";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { resolveCardImageUrl } from "@/utils/card-image";
+import { AdminCardsExport } from "./AdminCardsExport";
 
 type Properties = Awaited<ReturnType<typeof getAdminCardPropertiesAction>>;
 type AdminCardListItem = Awaited<
@@ -173,6 +174,7 @@ export const AdminCardsManager = ({ properties }: Props) => {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <AdminCardsExport products={properties.products} />
           <Link
             href="/admin/cartas/importar-cartas"
             className="inline-flex items-center gap-2 rounded-lg border border-tournament-dark-accent bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-tournament-dark-border dark:bg-tournament-dark-surface dark:text-slate-200 dark:hover:bg-tournament-dark-muted"

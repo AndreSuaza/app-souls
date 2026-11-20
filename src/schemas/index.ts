@@ -37,6 +37,7 @@ export * from "./cards/boveda-product-cards.schema";
 export * from "./cards/cards-excel-import.schema";
 export * from "./cards/cards-images-bulk-update.schema";
 export * from "./cards/admin-card.schema";
+export * from "./cards/admin-card-export.schema";
 export * from "./products/product-search.schema";
 export * from "./media/media.schema";
 export * from "./products/product.schema";
