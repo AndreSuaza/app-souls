@@ -264,7 +264,20 @@ export async function getAdminCardPropertiesAction() {
     }),
     prisma.card.findMany({
       where: { AND: [activeCardWhere(), publicCardWhere()] },
-      select: { id: true, idd: true, code: true, name: true },
+      select: {
+        id: true,
+        idd: true,
+        code: true,
+        name: true,
+        limit: true,
+        cost: true,
+        force: true,
+        defense: true,
+        effect: true,
+        typeIds: true,
+        archetypesIds: true,
+        keywordsIds: true,
+      },
       orderBy: [{ name: "asc" }, { code: "asc" }],
     }),
   ]);

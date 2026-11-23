@@ -21,7 +21,7 @@ const BaseAdminCardSchema = z.object({
     .min(1, "El codigo es obligatorio")
     .max(80)
     .refine((value) => !/[\\/]/.test(value), "El codigo no puede contener /"),
-  limit: z.string().trim().min(1, "El limite es obligatorio").max(40),
+  limit: z.string().trim().max(40).default(""),
   rotation: z.coerce.number().int().min(0),
   cost: z.coerce.number().int().min(0),
   force: z.string().trim().max(40).default(""),

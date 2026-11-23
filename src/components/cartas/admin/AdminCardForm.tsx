@@ -14,6 +14,7 @@ import {
 } from "@/actions/cards/admin-cards.action";
 import { useAlertConfirmationStore, useToastStore, useUIStore } from "@/store";
 import { resolveCardImageUrl } from "@/utils/card-image";
+import { CompactMultiSelect } from "@/components/form";
 
 type Properties = Awaited<ReturnType<typeof getAdminCardPropertiesAction>>;
 type AdminCard = NonNullable<
@@ -48,10 +49,52 @@ type Props = {
   cancelHref: string;
 };
 
+type RuleField =
+  | "idd"
+  | "limit"
+  | "cost"
+  | "force"
+  | "defense"
+  | "effect"
+  | "typeIds"
+  | "archetypesIds"
+  | "keywordsIds";
+
+type RuleErrors = Partial<Record<RuleField, string>>;
+
+type BaseCardRules = Properties["baseCards"][number];
+
+const sameIds = (left: string[], right: string[]) =>
+  left.length === right.length &&
+  left.every((id, index) => id === right[index]);
+
+const getRuleMismatches = (
+  values: FormValues,
+  baseCard: BaseCardRules,
+): RuleField[] => {
+  const mismatches: RuleField[] = [];
+
+  if (values.idd.trim() !== baseCard.idd) mismatches.push("idd");
+  if (values.limit.trim() !== baseCard.limit) mismatches.push("limit");
+  if (Number(values.cost) !== baseCard.cost) mismatches.push("cost");
+  if (values.force.trim() !== baseCard.force) mismatches.push("force");
+  if (values.defense.trim() !== baseCard.defense) mismatches.push("defense");
+  if (values.effect.trim() !== baseCard.effect) mismatches.push("effect");
+  if (!sameIds(values.typeIds, baseCard.typeIds)) mismatches.push("typeIds");
+  if (!sameIds(values.archetypesIds, baseCard.archetypesIds)) {
+    mismatches.push("archetypesIds");
+  }
+  if (!sameIds(values.keywordsIds, baseCard.keywordsIds)) {
+    mismatches.push("keywordsIds");
+  }
+
+  return mismatches;
+};
+
 const defaultValues: FormValues = {
   idd: "",
   code: "",
-  limit: "3",
+  limit: "",
   rotation: "0",
   cost: "0",
   force: "",
@@ -111,6 +154,7 @@ export const AdminCardForm = ({
   const [values, setValues] = useState<FormValues>(() => toInitialValues(card));
   const [file, setFile] = useState<File | null>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState("");
+  const [ruleErrors, setRuleErrors] = useState<RuleErrors>({});
 
   const isCreate = mode === "create";
   const previewUrl =
@@ -138,16 +182,66 @@ export const AdminCardForm = ({
     value: FormValues[K],
   ) => {
     setValues((current) => ({ ...current, [key]: value }));
+    setRuleErrors((current) => {
+      if (!(key in current)) return current;
+      const next = { ...current };
+      delete next[key as RuleField];
+      return next;
+    });
   };
 
-  const handleMultiChange = (
-    key: keyof FormValues,
-    selected: HTMLSelectElement,
-  ) => {
-    const next = Array.from(selected.selectedOptions).map(
-      (option) => option.value,
+  const handleBaseCardChange = (baseCardId: string) => {
+    const baseCard = properties.baseCards.find(
+      (candidate) => candidate.id === baseCardId,
     );
-    updateValue(key, next as never);
+
+    if (!baseCard) {
+      updateValue("baseCardId", baseCardId);
+      return;
+    }
+
+    setRuleErrors({});
+    setValues((current) => ({
+      ...current,
+      baseCardId,
+      idd: baseCard.idd,
+      limit: baseCard.limit,
+      cost: String(baseCard.cost),
+      force: baseCard.force,
+      defense: baseCard.defense,
+      effect: baseCard.effect,
+      typeIds: baseCard.typeIds,
+      archetypesIds: baseCard.archetypesIds,
+      keywordsIds: baseCard.keywordsIds,
+    }));
+  };
+
+  const validateBaseRules = () => {
+    if (values.access !== "OWNED" || !values.baseCardId) {
+      setRuleErrors({});
+      return true;
+    }
+
+    const baseCard = properties.baseCards.find(
+      (candidate) => candidate.id === values.baseCardId,
+    );
+    if (!baseCard) return true;
+
+    const mismatches = getRuleMismatches(values, baseCard);
+    if (mismatches.length === 0) {
+      setRuleErrors({});
+      return true;
+    }
+
+    const nextErrors = Object.fromEntries(
+      mismatches.map((field) => [field, "Debe coincidir con la carta base."]),
+    ) as RuleErrors;
+    setRuleErrors(nextErrors);
+    showToast(
+      "Revisa los campos marcados: deben coincidir con la carta base.",
+      "error",
+    );
+    return false;
   };
 
   const saveCard = async () => {
@@ -156,6 +250,8 @@ export const AdminCardForm = ({
         showToast("Selecciona una imagen para crear la carta", "error");
         return false;
       }
+
+      if (!validateBaseRules()) return false;
 
       setIsSaving(true);
       showLoading(isCreate ? "Creando carta..." : "Actualizando carta...");
@@ -188,7 +284,8 @@ export const AdminCardForm = ({
         raritiesIds: values.raritiesIds,
         imageUrl,
         access: values.access,
-        baseCardId: values.access === "OWNED" ? values.baseCardId || null : null,
+        baseCardId:
+          values.access === "OWNED" ? values.baseCardId || null : null,
       };
 
       if (isCreate) {
@@ -206,6 +303,25 @@ export const AdminCardForm = ({
       router.refresh();
       return true;
     } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("La variante debe compartir exactamente")
+      ) {
+        const baseCard = properties.baseCards.find(
+          (candidate) => candidate.id === values.baseCardId,
+        );
+        if (baseCard) {
+          const mismatches = getRuleMismatches(values, baseCard);
+          setRuleErrors(
+            Object.fromEntries(
+              mismatches.map((field) => [
+                field,
+                "Debe coincidir con la carta base.",
+              ]),
+            ) as RuleErrors,
+          );
+        }
+      }
       showToast(
         error instanceof Error ? error.message : "No se pudo guardar la carta",
         "error",
@@ -276,13 +392,14 @@ export const AdminCardForm = ({
               label="Numeración"
               value={values.idd}
               onChange={(value) => updateValue("idd", value)}
+              error={ruleErrors.idd}
               required
             />
             <TextInput
-              label="ímite"
+              label="Límite"
               value={values.limit}
               onChange={(value) => updateValue("limit", value)}
-              required
+              error={ruleErrors.limit}
             />
             <TextInput
               label="Rotación"
@@ -296,17 +413,20 @@ export const AdminCardForm = ({
               type="number"
               value={values.cost}
               onChange={(value) => updateValue("cost", value)}
+              error={ruleErrors.cost}
               required
             />
             <TextInput
               label="Fuerza"
               value={values.force}
               onChange={(value) => updateValue("force", value)}
+              error={ruleErrors.force}
             />
             <TextInput
               label="Defensa"
               value={values.defense}
               onChange={(value) => updateValue("defense", value)}
+              error={ruleErrors.defense}
             />
             <TextInput
               label="Precio"
@@ -330,7 +450,9 @@ export const AdminCardForm = ({
             <Select
               label="Acceso"
               value={values.access}
-              onChange={(value) => updateValue("access", value as FormValues["access"])}
+              onChange={(value) =>
+                updateValue("access", value as FormValues["access"])
+              }
               required
             >
               <option value="PUBLIC">Pública</option>
@@ -340,12 +462,14 @@ export const AdminCardForm = ({
               <Select
                 label="Carta base pública"
                 value={values.baseCardId}
-                onChange={(value) => updateValue("baseCardId", value)}
+                onChange={handleBaseCardChange}
                 required
               >
                 <option value="">Selecciona carta base</option>
                 {properties.baseCards
-                  .filter((base) => base.id !== card?.id && base.idd === values.idd)
+                  .filter(
+                    (base) => base.id !== card?.id && base.idd === values.idd,
+                  )
                   .map((base) => (
                     <option key={base.id} value={base.id}>
                       {base.code} · {base.name} ({base.idd})
@@ -356,31 +480,40 @@ export const AdminCardForm = ({
           </div>
 
           <div className="grid gap-4 rounded-xl border border-tournament-dark-accent bg-white p-4 shadow-sm dark:border-tournament-dark-border dark:bg-tournament-dark-surface md:grid-cols-2">
-            <MultiSelect
+            <CompactMultiSelect
               label="Tipos"
               value={values.typeIds}
               options={properties.types}
-              onChange={(target) => handleMultiChange("typeIds", target)}
+              onChange={(value) => updateValue("typeIds", value)}
+              error={ruleErrors.typeIds}
               required
             />
-            <MultiSelect
+            <CompactMultiSelect
               label="Rarezas"
               value={values.raritiesIds}
               options={properties.rarities}
-              onChange={(target) => handleMultiChange("raritiesIds", target)}
+              onChange={(value) => updateValue("raritiesIds", value)}
               required
             />
-            <MultiSelect
+            <CompactMultiSelect
               label="Arquetipos"
               value={values.archetypesIds}
-              options={properties.archetypes}
-              onChange={(target) => handleMultiChange("archetypesIds", target)}
+              options={properties.archetypes.map((option) => ({
+                ...option,
+                name: option.name.trim() || "Sin arquetipo",
+              }))}
+              onChange={(value) => updateValue("archetypesIds", value)}
+              error={ruleErrors.archetypesIds}
             />
-            <MultiSelect
+            <CompactMultiSelect
               label="Keywords"
               value={values.keywordsIds}
-              options={properties.keywords}
-              onChange={(target) => handleMultiChange("keywordsIds", target)}
+              options={properties.keywords.map((option) => ({
+                ...option,
+                name: option.name.trim() || "Sin keyword",
+              }))}
+              onChange={(value) => updateValue("keywordsIds", value)}
+              error={ruleErrors.keywordsIds}
             />
           </div>
 
@@ -392,8 +525,15 @@ export const AdminCardForm = ({
               value={values.effect}
               onChange={(event) => updateValue("effect", event.target.value)}
               rows={8}
-              className="w-full rounded-lg border border-tournament-dark-accent bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 dark:border-tournament-dark-border dark:bg-tournament-dark-muted dark:text-slate-200"
+              className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-700 outline-none transition dark:bg-tournament-dark-muted dark:text-slate-200 ${
+                ruleErrors.effect
+                  ? "!border-red-500 focus:!border-red-500 focus:!ring-red-500/30"
+                  : "border-tournament-dark-accent focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 dark:border-tournament-dark-border"
+              }`}
             />
+            {ruleErrors.effect && (
+              <p className="mt-1 text-xs text-red-500">{ruleErrors.effect}</p>
+            )}
           </label>
         </div>
 
@@ -460,85 +600,87 @@ const TextInput = ({
   value,
   type = "text",
   required,
+  error,
   onChange,
 }: {
   label: string;
   value: string;
   type?: string;
   required?: boolean;
+  error?: string;
   onChange: (value: string) => void;
 }) => (
   <label className="block">
-    <span className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+    <span
+      className={`mb-1 block text-sm font-semibold ${
+        error
+          ? "text-red-600 dark:text-red-400"
+          : "text-slate-700 dark:text-slate-200"
+      }`}
+    >
       {label}
+      {required && (
+        <span aria-hidden="true" className="ml-1 text-purple-500">
+          *
+        </span>
+      )}
     </span>
     <input
       type={type}
       value={value}
       required={required}
       onChange={(event) => onChange(event.target.value)}
-      className={fieldClass}
+      className={`${fieldClass} ${
+        error
+          ? "!border-red-500 focus:!border-red-500 focus:!ring-red-500/30"
+          : ""
+      }`}
     />
+    {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
   </label>
 );
-
 const Select = ({
   label,
   value,
   required,
+  error,
   children,
   onChange,
 }: {
   label: string;
   value: string;
   required?: boolean;
+  error?: string;
   children: React.ReactNode;
   onChange: (value: string) => void;
 }) => (
   <label className="block">
-    <span className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+    <span
+      className={`mb-1 block text-sm font-semibold ${
+        error
+          ? "text-red-600 dark:text-red-400"
+          : "text-slate-700 dark:text-slate-200"
+      }`}
+    >
       {label}
+      {required && (
+        <span aria-hidden="true" className="ml-1 text-purple-500">
+          *
+        </span>
+      )}
     </span>
     <select
       value={value}
       required={required}
       onChange={(event) => onChange(event.target.value)}
-      className={fieldClass}
+      className={`${fieldClass} ${
+        error
+          ? "!border-red-500 focus:!border-red-500 focus:!ring-red-500/30"
+          : ""
+      }`}
     >
       {children}
     </select>
-  </label>
-);
-
-const MultiSelect = ({
-  label,
-  value,
-  options,
-  required,
-  onChange,
-}: {
-  label: string;
-  value: string[];
-  options: Array<{ id: string; name: string }>;
-  required?: boolean;
-  onChange: (target: HTMLSelectElement) => void;
-}) => (
-  <label className="block">
-    <span className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
-      {label}
-    </span>
-    <select
-      multiple
-      required={required}
-      value={value}
-      onChange={(event) => onChange(event.target)}
-      className={`${fieldClass} min-h-[136px]`}
-    >
-      {options.map((option) => (
-        <option key={option.id} value={option.id}>
-          {option.name}
-        </option>
-      ))}
-    </select>
+    {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
   </label>
 );
