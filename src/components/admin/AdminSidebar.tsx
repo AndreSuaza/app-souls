@@ -65,6 +65,7 @@ const getAdminNavigation = (role?: string | null) => {
           { label: "Usuarios", href: "/admin/usuarios/dashboard", icon: IoPeopleOutline },
           { label: "Simulador", href: "/admin/simulador/dashboard", icon: IoAnalyticsOutline },
           { label: "PV", href: "/admin/pv/dashboard", icon: IoRibbonOutline },
+          { label: "Temporadas", href: "/admin/temporadas", icon: IoCalendarOutline },
         ],
       },
       {

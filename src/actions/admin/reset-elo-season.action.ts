@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { closeCompetitiveSeasonAction } from "./competitive-season.action";
 import { ResetEloSeasonSchema, type ResetEloSeasonInput } from "@/schemas";
 
 type ResetEloSeasonResult = {
@@ -23,53 +24,36 @@ export const resetEloSeasonAction = async (
     throw new Error("No autorizado para reiniciar Elo.");
   }
 
-  const lastSeason = await prisma.eloSeasonHistory.findFirst({
+  let activeSeason = await prisma.competitiveSeason.findFirst({
+    where: { status: "ACTIVE" },
+    select: { id: true, seasonNumber: true },
     orderBy: { seasonNumber: "desc" },
-    select: { seasonNumber: true },
   });
-
-  const nextSeason = (lastSeason?.seasonNumber ?? 0) + 1;
-
-  const players = await prisma.user.findMany({
-    where: { role: "player" },
-    select: { id: true, eloPoints: true, matchesPlayed: true },
-  });
-
-  if (players.length === 0) {
-    return { ok: true, seasonNumber: nextSeason, updatedUsers: 0 };
+  if (!activeSeason) {
+    activeSeason = await prisma.$transaction(async (tx) => {
+      const latest = await tx.competitiveSeason.findFirst({
+        orderBy: { seasonNumber: "desc" },
+        select: { seasonNumber: true },
+      });
+      return tx.competitiveSeason.create({
+        data: {
+          seasonNumber: (latest?.seasonNumber ?? 0) + 1,
+          name: `Temporada ${(latest?.seasonNumber ?? 0) + 1}`,
+          status: "ACTIVE",
+          startsAt: new Date(),
+          activatedAt: new Date(),
+        },
+        select: { id: true, seasonNumber: true },
+      });
+    });
   }
 
-  const now = new Date();
-  const playerIds = players.map((player) => player.id);
-  const historyData = players.map((player) => {
-    const eloPoints = player.eloPoints ?? 0;
-    const matchesPlayed = player.matchesPlayed ?? 0;
-    // Guardamos el winrate calculado con la misma fórmula usada en el perfil.
-    const winrateRaw = matchesPlayed > 0 ? (eloPoints / matchesPlayed) * 100 : 0;
-    const winrate = Math.min(100, Math.max(0, Math.round(winrateRaw)));
-
-    return {
-      userId: player.id,
-      eloPoints,
-      matchesPlayed,
-      winrate,
-      seasonNumber: nextSeason,
-      createdAt: now,
-    };
-  });
-
-  // Usamos los IDs encontrados para asegurar que se reinician los mismos jugadores historizados.
-  const [, updatedPlayers] = await prisma.$transaction([
-    prisma.eloSeasonHistory.createMany({ data: historyData }),
-    prisma.user.updateMany({
-      where: { id: { in: playerIds } },
-      data: { eloPoints: 0, matchesPlayed: 0 },
-    }),
-  ]);
+  const players = await prisma.user.count({ where: { role: "player" } });
+  await closeCompetitiveSeasonAction({ seasonId: activeSeason.id });
 
   return {
     ok: true,
-    seasonNumber: nextSeason,
-    updatedUsers: updatedPlayers.count,
+    seasonNumber: activeSeason.seasonNumber,
+    updatedUsers: players,
   };
 };

@@ -1,6 +1,7 @@
 ﻿"use server";
 
 import { prisma } from "@/lib/prisma";
+import { ensureActiveCompetitiveSeason } from "@/lib/competitive-season";
 import { FinalizeTournamentSchema } from "@/schemas";
 import {
   getTopCutPvByPlayerId,
@@ -162,19 +163,19 @@ export async function finalizeTournamentAction(input: {
     });
 
     // Agrupa usuarios con el mismo incremento para evitar una transaccion larga.
-    await prisma.$transaction([
-      prisma.tournament.update({
+    await prisma.$transaction(async (tx) => {
+      const season = await ensureActiveCompetitiveSeason(tx);
+      await tx.tournament.update({
         where: { id: data.tournamentId },
         data: {
           status: "finished",
           finishedAt: new Date(),
+          competitiveSeasonId: season.id,
         },
-        select: {
-          id: true,
-        },
-      }),
-      ...Array.from(playersByIncrement.values()).map((group) =>
-        prisma.user.updateMany({
+        select: { id: true },
+      });
+      for (const group of Array.from(playersByIncrement.values())) {
+        await tx.user.updateMany({
           where: { id: { in: group.userIds } },
           data: {
             victoryPoints: { increment: group.victoryPoints },
@@ -182,14 +183,14 @@ export async function finalizeTournamentAction(input: {
             matchesPlayed: { increment: group.matchesPlayed },
             tournamentsPlayed: { increment: 1 },
           },
-        })
-      ),
+        });
+      }
       // Al finalizar el torneo, todos los mazos asociados se vuelven públicos.
-      prisma.deck.updateMany({
+      await tx.deck.updateMany({
         where: { tournamentId: tournament.id },
         data: { visible: true },
-      }),
-    ]);
+      });
+    });
   } catch (error) {
     // Log interno para debugging (server only)
     console.error("[finalizeTournament]", error);

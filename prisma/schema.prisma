@@ -152,9 +152,9 @@ model Card {
   product   Product @relation(fields: [productId], references: [id])
   productId String  @db.ObjectId
 
-  baseCard       Card?                  @relation("CardVariantBase", fields: [baseCardId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  variants       Card[]                 @relation("CardVariantBase")
-  userOwnerships UserCardOwnership[]
+  baseCard        Card?                @relation("CardVariantBase", fields: [baseCardId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  variants        Card[]               @relation("CardVariantBase")
+  userOwnerships  UserCardOwnership[]
   ownershipAudits CardOwnershipAudit[]
 
   @@index([cost, force, defense])
@@ -176,28 +176,29 @@ model Store {
   url        String
   createDate DateTime @default(now())
 
-  Tournament Tournament[]
-  events     Event[]
-  users      User[]
+  Tournament                    Tournament[]
+  events                        Event[]
+  users                         User[]
+  competitiveSeasonStoreMetrics CompetitiveSeasonStoreMetric[]
 }
 
 model Tournament {
-  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
-  title              String
-  description        String
-  lat                Float
-  lgn                Float
-  format             TournamentFormat @default(Masters)
-  date               DateTime         @default(now())
-  image              String?
-  status             TournamentStatus @default(pending)
-  finishedAt         DateTime?
-  currentRoundNumber Int              @default(0)
-  maxRounds          Int              @default(1)
-  topCutGeneratedAt  DateTime?
+  id                     String           @id @default(auto()) @map("_id") @db.ObjectId
+  title                  String
+  description            String
+  lat                    Float
+  lgn                    Float
+  format                 TournamentFormat @default(Masters)
+  date                   DateTime         @default(now())
+  image                  String?
+  status                 TournamentStatus @default(pending)
+  finishedAt             DateTime?
+  currentRoundNumber     Int              @default(0)
+  maxRounds              Int              @default(1)
+  topCutGeneratedAt      DateTime?
   eliminationGeneratedAt DateTime?
-  topCutPvBonus      Int?
-  createDate         DateTime         @default(now())
+  topCutPvBonus          Int?
+  createDate             DateTime         @default(now())
 
   storeId String @db.ObjectId
   store   Store  @relation(fields: [storeId], references: [id])
@@ -205,11 +206,14 @@ model Tournament {
   typeTournamentId String         @db.ObjectId
   typeTournament   TypeTournament @relation(fields: [typeTournamentId], references: [id])
 
-  tournamentPlayers TournamentPlayer[]
-  tournamentRounds  Round[]
+  tournamentPlayers   TournamentPlayer[]
+  tournamentRounds    Round[]
+  competitiveSeasonId String?            @db.ObjectId
+  competitiveSeason   CompetitiveSeason? @relation(fields: [competitiveSeasonId], references: [id])
 
   @@index([status])
   @@index([storeId])
+  @@index([competitiveSeasonId, date])
 }
 
 model TypeTournament {
@@ -230,6 +234,98 @@ enum TournamentStatus {
   in_progress
   finished
   cancelled
+}
+
+enum CompetitiveSeasonStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+model CompetitiveSeason {
+  id           String                  @id @default(auto()) @map("_id") @db.ObjectId
+  seasonNumber Int                     @unique
+  name         String
+  description  String?
+  status       CompetitiveSeasonStatus @default(DRAFT)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  activatedAt  DateTime?
+  closedAt     DateTime?
+  createdById  String?                 @db.ObjectId
+  closedById   String?                 @db.ObjectId
+  isTransition Boolean                 @default(false)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  tournaments      Tournament[]
+  pvAdjustments    VictoryPointAdjustment[]
+  battlePassClaims BattlePassClaim[]
+  avatarPurchases  AvatarPurchase[]
+  playerSnapshots  CompetitiveSeasonPlayerSnapshot[]
+  dailyMetrics     CompetitiveSeasonDailyMetric[]
+  storeMetrics     CompetitiveSeasonStoreMetric[]
+
+  @@index([status])
+  @@index([status, seasonNumber])
+}
+
+model CompetitiveSeasonPlayerSnapshot {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  seasonId          String   @db.ObjectId
+  userId            String   @db.ObjectId
+  nickname          String
+  name              String?
+  lastname          String?
+  eloPoints         Int      @default(0)
+  victoryPoints     Int      @default(0)
+  matchesPlayed     Int      @default(0)
+  tournamentsPlayed Int      @default(0)
+  winrate           Int      @default(0)
+  eloRank           Int?
+  victoryPointsRank Int?
+  createdAt         DateTime @default(now())
+
+  season CompetitiveSeason @relation(fields: [seasonId], references: [id])
+  user   User              @relation(fields: [userId], references: [id])
+
+  @@unique([seasonId, userId])
+  @@index([seasonId, eloRank])
+  @@index([seasonId, victoryPointsRank])
+}
+
+model CompetitiveSeasonDailyMetric {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  seasonId      String   @db.ObjectId
+  date          DateTime
+  tournaments   Int      @default(0)
+  matches       Int      @default(0)
+  activePlayers Int      @default(0)
+  pvAwarded     Int      @default(0)
+  pvAdjusted    Int      @default(0)
+  pvSpent       Int      @default(0)
+
+  season CompetitiveSeason @relation(fields: [seasonId], references: [id])
+
+  @@unique([seasonId, date])
+}
+
+model CompetitiveSeasonStoreMetric {
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
+  seasonId      String @db.ObjectId
+  storeId       String @db.ObjectId
+  storeName     String
+  city          String
+  tournaments   Int    @default(0)
+  matches       Int    @default(0)
+  uniquePlayers Int    @default(0)
+  pvAwarded     Int    @default(0)
+
+  season CompetitiveSeason @relation(fields: [seasonId], references: [id])
+  store  Store             @relation(fields: [storeId], references: [id])
+
+  @@unique([seasonId, storeId])
+  @@index([seasonId, tournaments])
 }
 
 enum MatchResult {
@@ -279,14 +375,14 @@ model TournamentPlayer {
 }
 
 model Round {
-  id           String      @id @default(auto()) @map("_id") @db.ObjectId
-  roundNumber  Int
-  stage        RoundStage? @default(SWISS)
-  bracketSize  Int?
-  layoutRevision Int        @default(0)
-  tournamentId String      @db.ObjectId
-  matches      Match[]
-  createDate   DateTime    @default(now())
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  roundNumber    Int
+  stage          RoundStage? @default(SWISS)
+  bracketSize    Int?
+  layoutRevision Int         @default(0)
+  tournamentId   String      @db.ObjectId
+  matches        Match[]
+  createDate     DateTime    @default(now())
 
   startedAt  DateTime?
   finishedAt DateTime?
@@ -319,52 +415,53 @@ enum UserStatus {
 }
 
 model User {
-  id                String            @id @default(auto()) @map("_id") @db.ObjectId
-  name              String?
-  lastname          String?
-  email             String?           @unique
-  nickname          String            @unique
-  country           String?
-  city              String?
-  tournamentsPlayed Int               @default(0)
-  victoryPoints     Int               @default(0)
-  eloPoints         Int               @default(0)
-  matchesPlayed     Int               @default(0)
-  password          String?
-  emailVerified     DateTime?
-  profileCompleted  Boolean           @default(true)
-  image             String            @default("player")
-  bannerImage       String?
-  frameImage        String?
-  role              Role              @default(player)
-  status            UserStatus        @default(active)
-  accounts          Account[]
-  sessions          Session[]
-  likes             Like[]
-  decks             Deck[]
-  userAvatar        UserAvatar[]
-  avatarPurchases   AvatarPurchase[]
-  battlePassClaims  BattlePassClaim[]
-  battlePassProgresses BattlePassUserProgress[]
-  battlePassProgressAdjustments BattlePassProgressAdjustment[] @relation("BattlePassProgressAdjustmentUser")
-  battlePassProgressAdjustmentsMade BattlePassProgressAdjustment[] @relation("BattlePassProgressAdjustmentAdmin")
-  simulatorOAuthExchanges SimulatorOAuthExchange[]
-    simulatorGoogleOAuthTransactions SimulatorGoogleOAuthTransaction[]
-  cardOwnerships UserCardOwnership[] @relation("UserCardOwnershipUser")
-  cardOwnershipsGranted UserCardOwnership[] @relation("UserCardOwnershipGrantedBy")
-  cardOwnershipsRevoked UserCardOwnership[] @relation("UserCardOwnershipRevokedBy")
-  cardOwnershipAudits CardOwnershipAudit[] @relation("CardOwnershipAuditUser")
-  cardOwnershipAuditsMade CardOwnershipAudit[] @relation("CardOwnershipAuditAdmin")
+  id                                String                            @id @default(auto()) @map("_id") @db.ObjectId
+  name                              String?
+  lastname                          String?
+  email                             String?                           @unique
+  nickname                          String                            @unique
+  country                           String?
+  city                              String?
+  tournamentsPlayed                 Int                               @default(0)
+  victoryPoints                     Int                               @default(0)
+  eloPoints                         Int                               @default(0)
+  matchesPlayed                     Int                               @default(0)
+  password                          String?
+  emailVerified                     DateTime?
+  profileCompleted                  Boolean                           @default(true)
+  image                             String                            @default("player")
+  bannerImage                       String?
+  frameImage                        String?
+  role                              Role                              @default(player)
+  status                            UserStatus                        @default(active)
+  accounts                          Account[]
+  sessions                          Session[]
+  likes                             Like[]
+  decks                             Deck[]
+  userAvatar                        UserAvatar[]
+  avatarPurchases                   AvatarPurchase[]
+  battlePassClaims                  BattlePassClaim[]
+  battlePassProgresses              BattlePassUserProgress[]
+  battlePassProgressAdjustments     BattlePassProgressAdjustment[]    @relation("BattlePassProgressAdjustmentUser")
+  battlePassProgressAdjustmentsMade BattlePassProgressAdjustment[]    @relation("BattlePassProgressAdjustmentAdmin")
+  simulatorOAuthExchanges           SimulatorOAuthExchange[]
+  simulatorGoogleOAuthTransactions  SimulatorGoogleOAuthTransaction[]
+  cardOwnerships                    UserCardOwnership[]               @relation("UserCardOwnershipUser")
+  cardOwnershipsGranted             UserCardOwnership[]               @relation("UserCardOwnershipGrantedBy")
+  cardOwnershipsRevoked             UserCardOwnership[]               @relation("UserCardOwnershipRevokedBy")
+  cardOwnershipAudits               CardOwnershipAudit[]              @relation("CardOwnershipAuditUser")
+  cardOwnershipAuditsMade           CardOwnershipAudit[]              @relation("CardOwnershipAuditAdmin")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  storeId                     String?                  @db.ObjectId
-  store                       Store?                   @relation(fields: [storeId], references: [id])
+  storeId                     String?                           @db.ObjectId
+  store                       Store?                            @relation(fields: [storeId], references: [id])
   news                        New[]
   EloSeasonHistory            EloSeasonHistory[]
-  victoryPointAdjustments     VictoryPointAdjustment[] @relation("VictoryPointAdjustmentUser")
-  victoryPointAdjustmentsMade VictoryPointAdjustment[] @relation("VictoryPointAdjustmentAdmin")
+  competitiveSeasonSnapshots  CompetitiveSeasonPlayerSnapshot[]
+  victoryPointAdjustments     VictoryPointAdjustment[]          @relation("VictoryPointAdjustmentUser")
+  victoryPointAdjustmentsMade VictoryPointAdjustment[]          @relation("VictoryPointAdjustmentAdmin")
 }
 
 enum NewStatus {
@@ -556,14 +653,14 @@ model Deck {
 }
 
 model UserCardOwnership {
-  id         String                   @id @default(auto()) @map("_id") @db.ObjectId
-  unlocked   Boolean                  @default(true)
-  source     UserCardOwnershipSource  @default(ADMIN)
-  note       String?
-  grantedAt  DateTime                 @default(now())
-  revokedAt  DateTime?
-  createdAt  DateTime                 @default(now())
-  updatedAt  DateTime                 @updatedAt
+  id        String                  @id @default(auto()) @map("_id") @db.ObjectId
+  unlocked  Boolean                 @default(true)
+  source    UserCardOwnershipSource @default(ADMIN)
+  note      String?
+  grantedAt DateTime                @default(now())
+  revokedAt DateTime?
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
 
   userId String @db.ObjectId
   user   User   @relation("UserCardOwnershipUser", fields: [userId], references: [id], onDelete: Cascade)
@@ -583,11 +680,11 @@ model UserCardOwnership {
 }
 
 model CardOwnershipAudit {
-  id        String                    @id @default(auto()) @map("_id") @db.ObjectId
+  id        String                   @id @default(auto()) @map("_id") @db.ObjectId
   action    CardOwnershipAuditAction
-  source    UserCardOwnershipSource   @default(ADMIN)
+  source    UserCardOwnershipSource  @default(ADMIN)
   note      String?
-  createdAt DateTime                  @default(now())
+  createdAt DateTime                 @default(now())
 
   userId String @db.ObjectId
   user   User   @relation("CardOwnershipAuditUser", fields: [userId], references: [id], onDelete: Cascade)
@@ -687,20 +784,20 @@ model Avatar {
 }
 
 model BattlePass {
-  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
-  title              String
-  description        String?
-  seasonNumber       Int // Temporada asociada al pase.
-  startsAt           DateTime // Fecha desde la que cuenta el progreso.
-  endsAt             DateTime // Fecha hasta la que cuenta el progreso.
-  status             BattlePassStatus  @default(DRAFT) // Controla si el pase se muestra a jugadores.
-  backgroundImageUrl String? // Fondo atmosférico opcional para la vista del jugador.
-  levels             BattlePassLevel[]
-  claims             BattlePassClaim[]
-  userProgresses     BattlePassUserProgress[]
+  id                  String                         @id @default(auto()) @map("_id") @db.ObjectId
+  title               String
+  description         String?
+  seasonNumber        Int // Temporada asociada al pase.
+  startsAt            DateTime // Fecha desde la que cuenta el progreso.
+  endsAt              DateTime // Fecha hasta la que cuenta el progreso.
+  status              BattlePassStatus               @default(DRAFT) // Controla si el pase se muestra a jugadores.
+  backgroundImageUrl  String? // Fondo atmosférico opcional para la vista del jugador.
+  levels              BattlePassLevel[]
+  claims              BattlePassClaim[]
+  userProgresses      BattlePassUserProgress[]
   progressAdjustments BattlePassProgressAdjustment[]
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt           DateTime                       @default(now())
+  updatedAt           DateTime                       @updatedAt
 
   @@index([status])
   @@index([seasonNumber])
@@ -737,6 +834,8 @@ model BattlePassClaim {
   battlePass           BattlePass            @relation(fields: [battlePassId], references: [id])
   battlePassLevelId    String                @db.ObjectId // Nivel reclamado por el usuario.
   battlePassLevel      BattlePassLevel       @relation(fields: [battlePassLevelId], references: [id])
+  competitiveSeasonId  String?               @db.ObjectId // Temporada global en la que se entregó.
+  competitiveSeason    CompetitiveSeason?    @relation(fields: [competitiveSeasonId], references: [id])
   rewardType           BattlePassRewardType // Tipo de recompensa reclamada.
   rewardAvatarId       String?               @db.ObjectId // Cosmético entregado, si aplica.
   rewardAvatar         Avatar?               @relation("BattlePassClaimRewardAvatar", fields: [rewardAvatarId], references: [id])
@@ -751,15 +850,16 @@ model BattlePassClaim {
   @@index([battlePassId, status])
   @@index([battlePassLevelId])
   @@index([rewardAvatarId])
+  @@index([competitiveSeasonId, claimedAt])
 }
 
 model BattlePassUserProgress {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String     @db.ObjectId
-  battlePassId String     @db.ObjectId
-  manualOffset Int        @default(0)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  battlePassId String   @db.ObjectId
+  manualOffset Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user       User       @relation(fields: [userId], references: [id])
   battlePass BattlePass @relation(fields: [battlePassId], references: [id])
@@ -769,15 +869,15 @@ model BattlePassUserProgress {
 }
 
 model BattlePassProgressAdjustment {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
-  battlePassId  String   @db.ObjectId
-  adminId       String   @db.ObjectId
-  amount        Int
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @db.ObjectId
+  battlePassId   String   @db.ObjectId
+  adminId        String   @db.ObjectId
+  amount         Int
   previousOffset Int
-  nextOffset    Int
-  reason        String
-  createdAt     DateTime @default(now())
+  nextOffset     Int
+  reason         String
+  createdAt      DateTime @default(now())
 
   user       User       @relation("BattlePassProgressAdjustmentUser", fields: [userId], references: [id])
   battlePass BattlePass @relation(fields: [battlePassId], references: [id])
@@ -804,21 +904,24 @@ model UserAvatar {
 }
 
 model AvatarPurchase {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  pricePaid    Int
-  seasonNumber Int?
-  metadata     String?
-  createdAt    DateTime @default(now())
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  pricePaid           Int
+  seasonNumber        Int?
+  competitiveSeasonId String?  @db.ObjectId
+  metadata            String?
+  createdAt           DateTime @default(now())
 
   userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
 
-  avatarId String @db.ObjectId
-  avatar   Avatar @relation(fields: [avatarId], references: [id])
+  avatarId          String             @db.ObjectId
+  avatar            Avatar             @relation(fields: [avatarId], references: [id])
+  competitiveSeason CompetitiveSeason? @relation(fields: [competitiveSeasonId], references: [id])
 
   @@index([userId, createdAt])
   @@index([avatarId, createdAt])
   @@index([seasonNumber])
+  @@index([competitiveSeasonId, createdAt])
 }
 
 model VictoryPointAdjustment {
@@ -832,11 +935,14 @@ model VictoryPointAdjustment {
   userId String @db.ObjectId
   user   User   @relation("VictoryPointAdjustmentUser", fields: [userId], references: [id])
 
-  adminId String @db.ObjectId
-  admin   User   @relation("VictoryPointAdjustmentAdmin", fields: [adminId], references: [id])
+  adminId             String             @db.ObjectId
+  admin               User               @relation("VictoryPointAdjustmentAdmin", fields: [adminId], references: [id])
+  competitiveSeasonId String?            @db.ObjectId
+  competitiveSeason   CompetitiveSeason? @relation(fields: [competitiveSeasonId], references: [id])
 
   @@index([userId, createdAt])
   @@index([adminId, createdAt])
+  @@index([competitiveSeasonId, createdAt])
 }
 
 model EloSeasonHistory {

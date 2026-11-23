@@ -19,6 +19,7 @@ export * from "./profile/public-profile.schema";
 export * from "./profile/public-user-id.schema";
 export * from "./battle-pass/battle-pass.schema";
 export * from "./admin/reset-elo-season.schema";
+export * from "./admin/competitive-season.schema";
 export * from "./admin/user-management.schema";
 export * from "./admin/card-ownership.schema";
 export * from "./admin/dashboard.schema";

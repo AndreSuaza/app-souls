@@ -8,6 +8,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { CosmeticPurchaseSchema, type CosmeticPurchaseInput } from "@/schemas";
 import type { Prisma } from "@prisma/client";
+import { ensureActiveCompetitiveSeason } from "@/lib/competitive-season";
 
 const getCurrentSeasonNumber = async () => {
   const latestSeason = await prisma.eloSeasonHistory.findFirst({
@@ -118,6 +119,7 @@ export const purchaseCosmeticAction = async (
 
   const updatedUser = await prisma.$transaction(
     async (tx: Prisma.TransactionClient) => {
+      const competitiveSeason = await ensureActiveCompetitiveSeason(tx);
       const latestUser = await tx.user.findUnique({
         where: { id: user.id },
         select: { victoryPoints: true },
@@ -164,6 +166,7 @@ export const purchaseCosmeticAction = async (
           avatarId: cosmetic.id,
           pricePaid: price,
           seasonNumber: cosmetic.isSeasonal ? currentSeasonNumber : null,
+          competitiveSeasonId: competitiveSeason.id,
           metadata: JSON.stringify({
             cosmeticName: cosmetic.name,
             rarity: cosmetic.rarity,

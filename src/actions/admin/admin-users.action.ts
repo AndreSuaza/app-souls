@@ -15,6 +15,7 @@ import {
 } from "@/schemas";
 import { nanoid } from "nanoid";
 import type { Prisma } from "@prisma/client";
+import { ensureActiveCompetitiveSeason } from "@/lib/competitive-season";
 
 type ParsedAdminUsersFilters = ReturnType<typeof AdminUsersFiltersSchema.parse>;
 
@@ -363,6 +364,7 @@ export const adjustUserVictoryPointsAction = async (input: unknown) => {
   const parsed = AdjustUserVictoryPointsSchema.parse(input);
 
   const result = await prisma.$transaction(async (tx) => {
+    const season = await ensureActiveCompetitiveSeason(tx);
     const user = await tx.user.findUnique({
       where: { id: parsed.userId },
       select: { id: true, victoryPoints: true },
@@ -399,6 +401,7 @@ export const adjustUserVictoryPointsAction = async (input: unknown) => {
         previousBalance,
         nextBalance,
         reason: parsed.reason,
+        competitiveSeasonId: season.id,
       },
       select: {
         id: true,
@@ -429,6 +432,7 @@ export const bulkAdjustUserVictoryPointsAction = async (input: unknown) => {
   const parsed = BulkAdjustUserVictoryPointsSchema.parse(input);
 
   const result = await prisma.$transaction(async (tx) => {
+    const season = await ensureActiveCompetitiveSeason(tx);
     const users = await tx.user.findMany({
       where: { id: { in: parsed.selection.userIds } },
       select: {
@@ -466,6 +470,7 @@ export const bulkAdjustUserVictoryPointsAction = async (input: unknown) => {
         previousBalance,
         nextBalance,
         reason: parsed.reason,
+        competitiveSeasonId: season.id,
       }];
     });
 

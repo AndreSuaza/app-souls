@@ -100,6 +100,7 @@ export * from "./profile/get-cosmetic-store-data.action";
 export * from "./profile/purchase-cosmetic.action";
 export * from "./profile/get-admin-store-sales.action";
 export * from "./admin/reset-elo-season.action";
+export * from "./admin/competitive-season.action";
 export * from "./admin/admin-users.action";
 export * from "./admin/card-ownership.action";
 export * from "./profile/get-profile-deck-counts.action";

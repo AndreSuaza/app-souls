@@ -431,6 +431,7 @@ export const AdminDashboardNav = ({ active }: { active: string }) => (
         href: "/admin/simulador/dashboard",
       },
       { id: "pv", label: "PV", href: "/admin/pv/dashboard" },
+      { id: "temporadas", label: "Temporadas", href: "/admin/temporadas" },
     ].map((item) => (
       <Link
         key={item.id}

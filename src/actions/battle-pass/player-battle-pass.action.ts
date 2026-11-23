@@ -8,6 +8,7 @@ import {
   type ClaimBattlePassRewardInput,
 } from "@/schemas/battle-pass/battle-pass.schema";
 import type { Prisma } from "@prisma/client";
+import { ensureActiveCompetitiveSeason } from "@/lib/competitive-season";
 
 const playerLevelSelect = {
   id: true,
@@ -368,6 +369,7 @@ export const claimBattlePassRewardAction = async (
   }
 
   const result = await prisma.$transaction(async (tx) => {
+    const competitiveSeason = await ensureActiveCompetitiveSeason(tx);
     const existingClaim = await tx.battlePassClaim.findFirst({
       where: {
         userId: user.id,
@@ -453,6 +455,7 @@ export const claimBattlePassRewardAction = async (
         battlePassLevelId: level.id,
         rewardType: level.rewardType,
         rewardAvatarId: level.rewardAvatarId,
+        competitiveSeasonId: competitiveSeason.id,
         victoryPointsAwarded:
           level.rewardType === "PV" ? (level.victoryPointsReward ?? 0) : null,
         status,
@@ -509,6 +512,7 @@ export const claimAllBattlePassRewardsAction =
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      const competitiveSeason = await ensureActiveCompetitiveSeason(tx);
       const existingClaims = await tx.battlePassClaim.findMany({
         where: {
           userId: user.id,
@@ -598,6 +602,7 @@ export const claimAllBattlePassRewardsAction =
             battlePassLevelId: level.id,
             rewardType: level.rewardType,
             rewardAvatarId: level.rewardAvatarId,
+            competitiveSeasonId: competitiveSeason.id,
             victoryPointsAwarded: pvAwarded,
             status,
             metadata: JSON.stringify({
@@ -687,6 +692,7 @@ export const syncEndedBattlePassRewardsAction =
       if (unlockedLevels.length === 0) continue;
 
       const result = await prisma.$transaction(async (tx) => {
+        const competitiveSeason = await ensureActiveCompetitiveSeason(tx);
         const existingClaims = await tx.battlePassClaim.findMany({
           where: {
             userId: user.id,
@@ -776,6 +782,7 @@ export const syncEndedBattlePassRewardsAction =
               battlePassLevelId: level.id,
               rewardType: level.rewardType,
               rewardAvatarId: level.rewardAvatarId,
+              competitiveSeasonId: competitiveSeason.id,
               victoryPointsAwarded: pvAwarded,
               status,
               metadata: JSON.stringify({
